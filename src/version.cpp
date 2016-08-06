@@ -27,8 +27,8 @@
 
 #include "src/autorevision.h"  // Apparently must add the "src/" so make doesn't needlessly recompile version.cpp every time.
 
-static const char vcs_branch_cstr[] = VCS_BRANCH;
-static const char vcs_tag[] = VCS_TAG;
+static const char vcs_branch_cstr[] = "";
+static const char vcs_tag[] = "";
 
 /** Composes a nicely formatted version string.
 * Determine if we are on a tag (which will NOT show the hash)
@@ -47,12 +47,12 @@ const char *version_getVersionString()
 		}
 		else if (strlen(vcs_branch_cstr))
 		{
-			version_string = (VCS_BRANCH " " VCS_SHORT_HASH);
+			version_string = ("" " " "");
 		}
 		else
 		{
 			// not a branch or a tag, so we are detached most likely.
-			version_string = VCS_EXTRA;
+			version_string = "";
 		}
 	}
 

@@ -134,7 +134,7 @@ struct W_LABINIT : public W_INIT
 
 	QString	                pText;			///< label text
 	QString	                pTip;			///< Tool tip for the label.
-	enum iV_fonts           FontID;			///< ID of the IVIS font to use for this widget.
+	iV::fonts           FontID;			///< ID of the IVIS font to use for this widget.
 };
 
 /** Button initialisation structure */
@@ -144,7 +144,7 @@ struct W_BUTINIT : public W_INIT
 
 	const char *pText;	///< Button text
 	QString pTip;		///< Tool tip text
-	enum iV_fonts FontID;	//< ID of the IVIS font to use for this widget.
+	iV::fonts FontID;	//< ID of the IVIS font to use for this widget.
 };
 
 /** Edit box initialisation structure */
@@ -153,7 +153,7 @@ struct W_EDBINIT : public W_INIT
 	W_EDBINIT();
 
 	const char *pText;		///< initial contents of the edit box
-	enum iV_fonts FontID;		///< ID of the IVIS font to use for this widget.
+	iV::fonts FontID;		///< ID of the IVIS font to use for this widget.
 	WIDGET_DISPLAY pBoxDisplay;	///< Optional callback to display the form.
 };
 

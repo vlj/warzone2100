@@ -32,7 +32,7 @@
 #include "tip.h"
 
 W_LABINIT::W_LABINIT()
-	: FontID(font_regular)
+	: FontID(iV::fonts::font_regular)
 {}
 
 W_LABEL::W_LABEL(W_LABINIT const *init)
@@ -47,25 +47,25 @@ W_LABEL::W_LABEL(W_LABINIT const *init)
 
 W_LABEL::W_LABEL(WIDGET *parent)
 	: WIDGET(parent, WIDG_LABEL)
-	, FontID(font_regular)
+	, FontID(iV::fonts::font_regular)
 	, fontColour(WZCOL_FORM_TEXT)
 {}
 
 void W_LABEL::display(int xOffset, int yOffset)
 {
-	iV_SetFont(FontID);
-	iV_SetTextColour(fontColour);
+	iV::SetFont(FontID);
+	iV::SetTextColour(fontColour);
 
 	QByteArray text = aText.toUtf8();
 	int fx;
 	if (style & WLAB_ALIGNCENTRE)
 	{
-		int fw = iV_GetTextWidth(text.constData());
+		int fw = iV::GetTextWidth(text.constData());
 		fx = xOffset + x() + (width() - fw) / 2;
 	}
 	else if (style & WLAB_ALIGNRIGHT)
 	{
-		int fw = iV_GetTextWidth(text.constData());
+		int fw = iV::GetTextWidth(text.constData());
 		fx = xOffset + x() + width() - fw;
 	}
 	else
@@ -75,17 +75,17 @@ void W_LABEL::display(int xOffset, int yOffset)
 	int fy;
 	if ((style & WLAB_ALIGNTOPLEFT) != 0)  // Align top
 	{
-		fy = yOffset + y() - iV_GetTextAboveBase();
+		fy = yOffset + y() - iV::GetTextAboveBase();
 	}
 	else if ((style & WLAB_ALIGNBOTTOMLEFT) != 0)  // Align bottom
 	{
-		fy = yOffset + y() - iV_GetTextAboveBase() + (height() - iV_GetTextLineSize());
+		fy = yOffset + y() - iV::GetTextAboveBase() + (height() - iV::GetTextLineSize());
 	}
 	else
 	{
-		fy = yOffset + y() - iV_GetTextAboveBase() + (height() - iV_GetTextLineSize()) / 2;
+		fy = yOffset + y() - iV::GetTextAboveBase() + (height() - iV::GetTextLineSize()) / 2;
 	}
-	iV_DrawText(text.constData(), fx, fy);
+	iV::DrawText(text.constData(), fx, fy);
 }
 
 /* Respond to a mouse moving over a label */

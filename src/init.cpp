@@ -712,7 +712,7 @@ bool systemInitialise(void)
 
 	// Initialize the iVis text rendering module
 	wzSceneBegin("Main menu loop");
-	iV_TextInit();
+	iV::TextInit();
 
 	pie_InitRadar();
 

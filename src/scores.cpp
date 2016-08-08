@@ -288,9 +288,9 @@ void scoreDataToScreen(WIDGET *psWidget)
 	pie_UniTransBoxFill(16 + D_W, MT_Y_POS - 16, pie_GetVideoBufferWidth() - D_W - 16, MT_Y_POS + 256 + 16, WZCOL_SCORE_BOX);
 	iV_Box(16 + D_W, MT_Y_POS - 16, pie_GetVideoBufferWidth() - D_W - 16, MT_Y_POS + 256 + 16, WZCOL_SCORE_BOX_BORDER);
 
-	iV_DrawText(_("Unit Losses"), LC_X + D_W, 80 + 16 + D_H);
-	iV_DrawText(_("Structure Losses"), LC_X + D_W, 140 + 16 + D_H);
-	iV_DrawText(_("Force Information"), LC_X + D_W, 200 + 16 + D_H);
+	iV::DrawText(_("Unit Losses"), LC_X + D_W, 80 + 16 + D_H);
+	iV::DrawText(_("Structure Losses"), LC_X + D_W, 140 + 16 + D_H);
+	iV::DrawText(_("Force Information"), LC_X + D_W, 200 + 16 + D_H);
 
 	index = 0;
 	bMoreBars = true;
@@ -342,7 +342,7 @@ void scoreDataToScreen(WIDGET *psWidget)
 			}
 			/* Now render the text by the bar */
 			sprintf(text, getDescription((MR_STRING)infoBars[index].stringID), infoBars[index].number);
-			iV_DrawText(text, x + width + 16, y + 12);
+			iV::DrawText(text, x + width + 16, y + 12);
 
 			/* If we're beyond STAT_ROOKIE, then we're on rankings */
 			if (index >= STAT_GREEN && index <= STAT_ACE)
@@ -362,24 +362,24 @@ void scoreDataToScreen(WIDGET *psWidget)
 
 	/* Firstly, top of the screen, number of artefacts found */
 	sprintf(text, _("ARTIFACTS RECOVERED: %d"), missionData.artefactsFound);
-	iV_DrawText(text, (pie_GetVideoBufferWidth() - iV_GetTextWidth(text)) / 2, 300 + D_H);
+	iV::DrawText(text, (pie_GetVideoBufferWidth() - iV::GetTextWidth(text)) / 2, 300 + D_H);
 
 	/* Get the mission result time in a string - and write it out */
 	getAsciiTime((char *)&text2, gameTime - missionData.missionStarted);
 	sprintf(text, _("Mission Time - %s"), text2);
-	iV_DrawText(text, (pie_GetVideoBufferWidth() - iV_GetTextWidth(text)) / 2, 320 + D_H);
+	iV::DrawText(text, (pie_GetVideoBufferWidth() - iV::GetTextWidth(text)) / 2, 320 + D_H);
 
 	/* Write out total game time so far */
 	getAsciiTime((char *)&text2, gameTime);
 	sprintf(text, _("Total Game Time - %s"), text2);
-	iV_DrawText(text, (pie_GetVideoBufferWidth() - iV_GetTextWidth(text)) / 2, 340 + D_H);
+	iV::DrawText(text, (pie_GetVideoBufferWidth() - iV::GetTextWidth(text)) / 2, 340 + D_H);
 	if (Cheated)
 	{
 		// A quick way to flash the text
-		((realTime / 250) % 2) ? iV_SetTextColour(WZCOL_RED) : iV_SetTextColour(WZCOL_YELLOW);
+		((realTime / 250) % 2) ? iV::SetTextColour(WZCOL_RED) : iV::SetTextColour(WZCOL_YELLOW);
 		sprintf(text, _("You cheated!"));
-		iV_DrawText(text, (pie_GetVideoBufferWidth() - iV_GetTextWidth(text)) / 2, 360 + D_H);
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::DrawText(text, (pie_GetVideoBufferWidth() - iV::GetTextWidth(text)) / 2, 360 + D_H);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 	}
 }
 

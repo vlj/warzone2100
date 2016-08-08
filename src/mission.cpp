@@ -2286,7 +2286,7 @@ static bool _intAddMissionResult(bool result, bool bPlaySuccess)
 	{
 		sLabInit.pText = Cheated ? _("OBJECTIVE FAILED--and you cheated!") : _("OBJECTIVE FAILED"); //"Objective Failed;
 	}
-	sLabInit.FontID = font_regular;
+	sLabInit.FontID = iV::fonts::font_regular;
 	if (!widgAddLabel(psWScreen, &sLabInit))
 	{
 		return false;

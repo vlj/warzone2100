@@ -109,7 +109,7 @@ static bool addQuitOptions(void)
 		label->setGeometry(0, 0, inGamePopup->width(), inGamePopup->height());
 		label->setString(_("WARNING: You're the host. If you quit, the game ends for everyone!"));
 		label->setTextAlignment(WLAB_ALIGNCENTRE);
-		label->setFont(font_medium, WZCOL_YELLOW);
+		label->setFont(iV::fonts::font_medium, WZCOL_YELLOW);
 	}
 
 	return true;
@@ -275,7 +275,7 @@ void intAddInGamePopup(void)
 	sButInit.formID		= INTINGAMEPOPUP;
 	sButInit.style		= OPALIGN;
 	sButInit.width		= 600;
-	sButInit.FontID		= font_large;
+	sButInit.FontID		= iV::fonts::font_large;
 	sButInit.x			= 0;
 	sButInit.height		= 10;
 	sButInit.pDisplay	= displayTextOption;

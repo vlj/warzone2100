@@ -455,7 +455,7 @@ bool intAddMessageView(MESSAGE *psMessage)
 	//sLabInit.pText=psResearch->pName;
 	sLabInit.pText = psResearch->name;
 
-	sLabInit.FontID = font_regular;
+	sLabInit.FontID = iV::fonts::font_regular;
 	if (!widgAddLabel(psWScreen, &sLabInit))
 	{
 		return false;
@@ -555,11 +555,11 @@ static bool intDisplaySeqTextViewPage(VIEW_REPLAY *psViewReplay,
 		return true;	/* nothing to do */
 	}
 
-	iV_SetFont(font_regular);
+	iV::SetFont(iV::fonts::font_regular);
 
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 
-	cur_y = y0 + iV_GetTextLineSize() / 2 + 2 * TEXT_YINDENT;
+	cur_y = y0 + iV::GetTextLineSize() / 2 + 2 * TEXT_YINDENT;
 
 	/* add each message */
 	for (sequence = *cur_seq, i = *cur_seqpage; sequence < psViewReplay->numSeq; sequence++)
@@ -569,13 +569,13 @@ static bool intDisplaySeqTextViewPage(VIEW_REPLAY *psViewReplay,
 		{
 			if (render)
 			{
-				cur_y = iV_DrawFormattedText(psSeqDisplay->textMsg[i].toUtf8().constData(),
+				cur_y = iV::DrawFormattedText(psSeqDisplay->textMsg[i].toUtf8().constData(),
 				                             x0 + TEXT_XINDENT,
-				                             cur_y, width, false);
+				                             cur_y, width, iV::justification::FTEXT_CENTRE);
 			}
 			else
 			{
-				cur_y += iV_GetTextLineSize();
+				cur_y += iV::GetTextLineSize();
 			}
 			if (cur_y > y0 + height)
 			{
@@ -1110,16 +1110,16 @@ void intDisplayTEXTView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 	if (psMessage)
 	{
-		iV_SetFont(font_regular);
+		iV::SetFont(iV::fonts::font_regular);
 		/* Get the travel to the next line */
-		int linePitch = iV_GetTextLineSize();
+		int linePitch = iV::GetTextLineSize();
 		/* Fix for spacing.... */
 		linePitch += 3;
 		ty += 3;
 		/* Fix for spacing.... */
 
 
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 		//add each message
 		for (unsigned i = 0; i < ((VIEWDATA *)psMessage->pViewData)->textMsg.size(); i++)
 		{
@@ -1130,7 +1130,7 @@ void intDisplayTEXTView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 				return;
 			}
 			//need to check the string will fit!
-			iV_DrawText(_(((VIEWDATA *)psMessage->pViewData)->textMsg[i].toUtf8().constData()), x0 + TEXT_XINDENT,
+			iV::DrawText(_(((VIEWDATA *)psMessage->pViewData)->textMsg[i].toUtf8().constData()), x0 + TEXT_XINDENT,
 			            (ty + TEXT_YINDENT * 3) + (i * linePitch));
 		}
 	}

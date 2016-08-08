@@ -24,7 +24,21 @@
 #include "ivisdef.h"
 #include "piepalette.h"
 
-enum iV_fonts
+#ifdef WZ_OS_MAC
+# include <CoreFoundation/CoreFoundation.h>
+# include <CoreFoundation/CFURL.h>
+# include <QuesoGLC/glc.h>
+#else
+#ifdef WZ_OS_WIN
+#define GLCAPI extern
+#endif
+# include <GL/glc.h>
+#endif
+#include <array>
+
+namespace iV
+{
+enum class fonts
 {
 	font_regular,
 	font_large,
@@ -34,42 +48,55 @@ enum iV_fonts
 	font_count
 };
 
-extern void iV_TextInit(void);
-extern void iV_TextShutdown(void);
-extern void iV_font(const char *fontName, const char *fontFace, const char *fontFaceBold);
-
-extern void iV_SetFont(enum iV_fonts FontID);
-extern int iV_GetTextAboveBase(void);
-extern int iV_GetTextBelowBase(void);
-extern int iV_GetTextLineSize(void);
-extern unsigned int iV_GetTextWidth(const char *String);
-extern unsigned int iV_GetCountedTextWidth(const char *string, size_t string_length);
-extern unsigned int iV_GetCharWidth(uint32_t charCode);
-
-extern unsigned int iV_GetTextHeight(const char *string);
-extern void iV_SetTextColour(PIELIGHT colour);
-
 // Valid values for "Justify" argument of iV_DrawFormattedText().
-enum
+enum class justification
 {
 	FTEXT_LEFTJUSTIFY,			// Left justify.
 	FTEXT_CENTRE,				// Centre justify.
 	FTEXT_RIGHTJUSTIFY,			// Right justify.
 };
 
-extern int iV_DrawFormattedText(const char *String, UDWORD x, UDWORD y, UDWORD Width, UDWORD Justify);
+struct font_state
+{
+	std::string font_family;
+	std::string font_face_regular;
+	std::string font_face_bold;
 
-extern void iV_SetTextSize(float size);
+	float font_size = 12.f;
+	// Contains the font color in the following order: red, green, blue, alpha
+	std::array<float,4> font_colour = { 1.f, 1.f, 1.f, 1.f };
 
-extern void iV_DrawTextRotated(const char *string, float x, float y, float rotation);
+	GLint _glcContext = 0;
+	GLint _glcFont_Regular = 0;
+	GLint _glcFont_Bold = 0;
+};
+
+extern font_state default_font_state;
+
+void TextInit(font_state& = default_font_state);
+void TextShutdown(font_state& = default_font_state);
+void font(const std::string &fontName, const std::string &fontFace, const std::string &fontFaceBold, font_state& = default_font_state);
+void SetFont(fonts FontID, font_state& = default_font_state);
+int GetTextAboveBase(font_state& = default_font_state);
+int GetTextBelowBase(font_state& = default_font_state);
+int GetTextLineSize(font_state& = default_font_state);
+unsigned int GetTextWidth(const std::string &string, font_state& = default_font_state);
+unsigned int GetCharWidth(uint32_t charCode, font_state& = default_font_state);
+unsigned int GetTextHeight(const std::string &string, font_state& = default_font_state);
+void SetTextColour(PIELIGHT colour, font_state& = default_font_state);
+int DrawFormattedText(const std::string &String, UDWORD x, UDWORD y, UDWORD Width, justification Justify, font_state& = default_font_state);
+void SetTextSize(float size, font_state& = default_font_state);
+void DrawTextRotated(const std::string &string, float x, float y, float rotation, font_state& = default_font_state);
 
 /** Draws text with a printf syntax to the screen.
  */
-static inline void iV_DrawText(const char *string, float x, float y)
+inline void DrawText(const std::string &string, float x, float y)
 {
-	iV_DrawTextRotated(string, x, y, 0.f);
+	DrawTextRotated(string, x, y, 0.f, default_font_state);
 }
 
-extern void iV_DrawTextF(float x, float y, const char *format, ...) WZ_DECL_FORMAT(printf, 3, 4);
+void DrawTextF(float x, float y, const char *format, ...) WZ_DECL_FORMAT(printf, 3, 4);
+
+} // end namespace iV
 
 #endif // _INCLUDED_TEXTDRAW_

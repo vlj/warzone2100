@@ -228,7 +228,7 @@ void WIDGET::widgetLost(WIDGET *widget)
 W_SCREEN::W_SCREEN()
 	: psFocus(NULL)
 	, lastHighlight(nullptr)
-	, TipFontID(font_regular)
+	, TipFontID(iV::fonts::font_regular)
 {
 	W_FORMINIT sInit;
 	sInit.id = 0;

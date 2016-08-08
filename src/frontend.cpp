@@ -1422,23 +1422,23 @@ static void displayTitleBitmap(WZ_DECL_UNUSED WIDGET *psWidget, WZ_DECL_UNUSED U
 {
 	char modListText[MAX_STR_LENGTH] = "";
 
-	iV_SetFont(font_regular);
-	iV_SetTextColour(WZCOL_GREY);
-	iV_DrawTextRotated(version_getFormattedVersionString(), pie_GetVideoBufferWidth() - 9, pie_GetVideoBufferHeight() - 14, 270.f);
+	iV::SetFont(iV::fonts::font_regular);
+	iV::SetTextColour(WZCOL_GREY);
+	iV::DrawTextRotated(version_getFormattedVersionString(), pie_GetVideoBufferWidth() - 9, pie_GetVideoBufferHeight() - 14, 270.f);
 
 	if (*getModList())
 	{
 		sstrcat(modListText, _("Mod: "));
 		sstrcat(modListText, getModList());
-		iV_DrawText(modListText, 9, 14);
+		iV::DrawText(modListText, 9, 14);
 	}
 
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
-	iV_DrawTextRotated(version_getFormattedVersionString(), pie_GetVideoBufferWidth() - 10, pie_GetVideoBufferHeight() - 15, 270.f);
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::DrawTextRotated(version_getFormattedVersionString(), pie_GetVideoBufferWidth() - 10, pie_GetVideoBufferHeight() - 15, 270.f);
 
 	if (*getModList())
 	{
-		iV_DrawText(modListText, 10, 15);
+		iV::DrawText(modListText, 10, 15);
 	}
 }
 
@@ -1473,15 +1473,15 @@ static void displayTextAt270(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 	psLab = (W_LABEL *)psWidget;
 
-	iV_SetFont(font_large);
+	iV::SetFont(iV::fonts::font_large);
 
 	fx = xOffset + psWidget->x();
-	fy = yOffset + psWidget->y() + iV_GetTextWidth(psLab->aText.toUtf8().constData());
+	fy = yOffset + psWidget->y() + iV::GetTextWidth(psLab->aText.toUtf8().constData());
 
-	iV_SetTextColour(WZCOL_GREY);
-	iV_DrawTextRotated(psLab->aText.toUtf8().constData(), fx + 2, fy + 2, 270.f);
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
-	iV_DrawTextRotated(psLab->aText.toUtf8().constData(), fx, fy, 270.f);
+	iV::SetTextColour(WZCOL_GREY);
+	iV::DrawTextRotated(psLab->aText.toUtf8().constData(), fx + 2, fy + 2, 270.f);
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::DrawTextRotated(psLab->aText.toUtf8().constData(), fx, fy, 270.f);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -1494,15 +1494,15 @@ void displayTextOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	bool			greyOut = psWidget->UserData; // if option is unavailable.
 
 	psBut = (W_BUTTON *)psWidget;
-	iV_SetFont(psBut->FontID);
+	iV::SetFont(psBut->FontID);
 
 	if (widgGetMouseOver(psWScreen) == psBut->id)					// if mouse is over text then hilight.
 	{
 		hilight = true;
 	}
 
-	fw = iV_GetTextWidth(psBut->pText.toUtf8().constData());
-	fy = yOffset + psWidget->y() + (psWidget->height() - iV_GetTextLineSize()) / 2 - iV_GetTextAboveBase();
+	fw = iV::GetTextWidth(psBut->pText.toUtf8().constData());
+	fy = yOffset + psWidget->y() + (psWidget->height() - iV::GetTextLineSize()) / 2 - iV::GetTextAboveBase();
 
 	if (psWidget->style & WBUT_TXTCENTRE)							//check for centering, calculate offset.
 	{
@@ -1515,25 +1515,25 @@ void displayTextOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 	if (greyOut)														// unavailable
 	{
-		iV_SetTextColour(WZCOL_TEXT_DARK);
+		iV::SetTextColour(WZCOL_TEXT_DARK);
 	}
 	else															// available
 	{
 		if (hilight)													// hilight
 		{
-			iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+			iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 		}
 		else if (psWidget->id == FRONTEND_HYPERLINK || psWidget->id == FRONTEND_DONATELINK)				// special case for our hyperlink
 		{
-			iV_SetTextColour(WZCOL_YELLOW);
+			iV::SetTextColour(WZCOL_YELLOW);
 		}
 		else														// dont highlight
 		{
-			iV_SetTextColour(WZCOL_TEXT_MEDIUM);
+			iV::SetTextColour(WZCOL_TEXT_MEDIUM);
 		}
 	}
 
-	iV_DrawText(psBut->pText.toUtf8().constData(), fx, fy);
+	iV::DrawText(psBut->pText.toUtf8().constData(), fx, fy);
 
 	return;
 }
@@ -1616,7 +1616,7 @@ void addText(UDWORD id, UDWORD PosX, UDWORD PosY, const char *txt, UDWORD formID
 	label->id = id;
 	label->setGeometry(PosX, PosY, MULTIOP_READY_WIDTH, FRONTEND_BUTHEIGHT);
 	label->setTextAlignment(WLAB_ALIGNCENTRE);
-	label->setFont(font_small, WZCOL_TEXT_BRIGHT);
+	label->setFont(iV::fonts::font_small, WZCOL_TEXT_BRIGHT);
 	label->setString(txt);
 }
 
@@ -1632,7 +1632,7 @@ void addSideText(UDWORD id,  UDWORD PosX, UDWORD PosY, const char *txt)
 	sLabInit.width = 30;
 	sLabInit.height = FRONTEND_BOTFORMH;
 
-	sLabInit.FontID = font_large;
+	sLabInit.FontID = iV::fonts::font_large;
 
 	sLabInit.pDisplay = displayTextAt270;
 	sLabInit.pText = txt;
@@ -1652,7 +1652,7 @@ void addTextButton(UDWORD id,  UDWORD PosX, UDWORD PosY, const char *txt, unsign
 	// Align
 	if (!(style & WBUT_TXTCENTRE))
 	{
-		sButInit.width = (short)(iV_GetTextWidth(txt) + 10);
+		sButInit.width = (short)(iV::GetTextWidth(txt) + 10);
 		sButInit.x += 35;
 	}
 	else
@@ -1671,7 +1671,7 @@ void addTextButton(UDWORD id,  UDWORD PosX, UDWORD PosY, const char *txt, unsign
 
 	sButInit.height = FRONTEND_BUTHEIGHT;
 	sButInit.pDisplay = displayTextOption;
-	sButInit.FontID = font_large;
+	sButInit.FontID = iV::fonts::font_large;
 	sButInit.pText = txt;
 	widgAddButton(psWScreen, &sButInit);
 
@@ -1694,8 +1694,8 @@ void addSmallTextButton(UDWORD id,  UDWORD PosX, UDWORD PosY, const char *txt, u
 	// Align
 	if (!(style & WBUT_TXTCENTRE))
 	{
-		iV_SetFont(font_small);
-		sButInit.width = (short)(iV_GetTextWidth(txt) + 10);
+		iV::SetFont(iV::fonts::font_small);
+		sButInit.width = (short)(iV::GetTextWidth(txt) + 10);
 		sButInit.x += 35;
 	}
 	else
@@ -1714,7 +1714,7 @@ void addSmallTextButton(UDWORD id,  UDWORD PosX, UDWORD PosY, const char *txt, u
 
 	sButInit.height = FRONTEND_BUTHEIGHT;
 	sButInit.pDisplay = displayTextOption;
-	sButInit.FontID = font_small;
+	sButInit.FontID = iV::fonts::font_small;
 	sButInit.pText = txt;
 	widgAddButton(psWScreen, &sButInit);
 

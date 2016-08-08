@@ -551,7 +551,7 @@ bool intAddDesign(bool bShowCentreScreen)
 	sButInit.x = DES_PARTSEPARATIONX;
 	sButInit.y = DES_PARTFORMHEIGHT - 2 * sButInit.height - 2 * DES_PARTSEPARATIONY;
 	sButInit.pTip = _("Store Template");
-	sButInit.FontID = font_regular;
+	sButInit.FontID = iV::fonts::font_regular;
 	sButInit.pDisplay = intDisplayButtonHilight;
 	sButInit.UserData = PACKDWORD_TRI(0, IMAGE_DES_SAVEH, IMAGE_DES_SAVE);
 

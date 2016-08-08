@@ -58,7 +58,7 @@ static SDWORD		fx, fy;				// Position of the text
 static int              lineHeight;
 static QStringList      pTip;                   // Tip text
 static WIDGET		*psWidget;			// The button the tip is for
-static enum iV_fonts FontID = font_regular;	// ID for the Ivis Font.
+static iV::fonts FontID = iV::fonts::font_regular;	// ID for the Ivis Font.
 static PIELIGHT TipColour;
 
 /* Initialise the tool tip module */
@@ -85,7 +85,7 @@ void widgSetTipColour(PIELIGHT colour)
  * x,y,width,height - specify the position of the button to place the
  * tip by.
  */
-void tipStart(WIDGET *psSource, QString pNewTip, iV_fonts NewFontID, int x, int y, int width, int height)
+void tipStart(WIDGET *psSource, QString pNewTip, iV::fonts NewFontID, int x, int y, int width, int height)
 {
 	ASSERT(psSource != NULL, "Invalid widget pointer");
 
@@ -138,17 +138,17 @@ void tipDisplay()
 
 			/* Calculate the size of the tip box */
 			topGap = TIP_VGAP;
-			iV_SetFont(FontID);
+			iV::SetFont(FontID);
 
-			lineHeight = iV_GetTextLineSize();
+			lineHeight = iV::GetTextLineSize();
 
 			fw = 0;
 			for (int n = 0; n < pTip.size(); ++n)
 			{
-				fw = std::max<int>(fw, iV_GetTextWidth(pTip[n].toUtf8().constData()));
+				fw = std::max<int>(fw, iV::GetTextWidth(pTip[n].toUtf8().constData()));
 			}
 			tw = fw + TIP_HGAP * 2;
-			th = topGap * 2 + lineHeight * pTip.size() + iV_GetTextBelowBase();
+			th = topGap * 2 + lineHeight * pTip.size() + iV::GetTextBelowBase();
 
 			/* Position the tip box */
 			tx = clip(wx + ww / 2, 0, screenWidth - tw - 1);
@@ -161,7 +161,7 @@ void tipDisplay()
 
 			/* Position the text */
 			fx = tx + TIP_HGAP;
-			fy = ty + (th - lineHeight * pTip.size()) / 2 - iV_GetTextAboveBase();
+			fy = ty + (th - lineHeight * pTip.size()) / 2 - iV::GetTextAboveBase();
 
 			/* Note the time */
 			startTime = wzGetTicks();
@@ -184,11 +184,11 @@ void tipDisplay()
 		iV_Line(tx + tw, ty + th - 1, tx + tw,     ty,      WZCOL_FORM_DARK);
 		iV_Box(tx, ty, tx + tw - 1, ty + th - 1, WZCOL_FORM_LIGHT);
 
-		iV_SetFont(FontID);
-		iV_SetTextColour(TipColour);
+		iV::SetFont(FontID);
+		iV::SetTextColour(TipColour);
 		for (int n = 0; n < pTip.size(); ++n)
 		{
-			iV_DrawText(pTip[n].toUtf8().constData(), fx, fy + lineHeight * n);
+			iV::DrawText(pTip[n].toUtf8().constData(), fx, fy + lineHeight * n);
 		}
 
 		break;

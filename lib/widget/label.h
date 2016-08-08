@@ -45,7 +45,7 @@ public:
 	void setString(QString string);
 	void setTip(QString string);
 
-	void setFont(iV_fonts font)
+	void setFont(iV::fonts font)
 	{
 		FontID = font;
 	}
@@ -53,7 +53,7 @@ public:
 	{
 		fontColour = colour;
 	}
-	void setFont(iV_fonts font, PIELIGHT colour)
+	void setFont(iV::fonts font, PIELIGHT colour)
 	{
 		setFont(font);
 		setFontColour(colour);
@@ -70,7 +70,7 @@ public:
 	}
 
 	QString  aText;         // Text on the label
-	iV_fonts FontID;
+	iV::fonts FontID;
 	QString  pTip;          // The tool tip for the button
 
 private:

@@ -85,7 +85,7 @@ public:
 	SWORD HilightAudioID;				// Audio ID for form clicked sound
 	SWORD ClickedAudioID;				// Audio ID for form hilighted sound
 	WIDGET_AUDIOCALLBACK AudioCallback;	// Pointer to audio callback function
-	iV_fonts        FontID;
+	iV::fonts        FontID;
 };
 
 class StateButton : public W_BUTTON

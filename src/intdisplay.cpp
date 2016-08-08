@@ -524,9 +524,9 @@ void intDisplayPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	realPower = (displayPower + 1e-8) - ManuPower;
 
 	BarWidth = BarGraph->width();
-	iV_SetFont(font_regular);
+	iV::SetFont(iV::fonts::font_regular);
 	sprintf(szVal, "%d", realPower);
-	textWidth = iV_GetTextWidth(szVal);
+	textWidth = iV::GetTextWidth(szVal);
 	BarWidth -= textWidth;
 
 	if (ManPow > Avail)
@@ -604,25 +604,25 @@ void intDisplayPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		const char *need = _("Need more resources!");
 		if ((realTime / 1250) % 5 == 0)
 		{
-			iV_SetTextColour(WZCOL_BLACK);
-			iV_SetFont(font_small);
-			iV_DrawText(need, iX + 102, iY - 1);
-			iV_SetTextColour(WZCOL_RED);
+			iV::SetTextColour(WZCOL_BLACK);
+			iV::SetFont(iV::fonts::font_small);
+			iV::DrawText(need, iX + 102, iY - 1);
+			iV::SetTextColour(WZCOL_RED);
 		}
 		else
 		{
-			iV_SetTextColour(WZCOL_RED);
-			iV_SetFont(font_small);
-			iV_DrawText(need, iX + 102, iY - 1);
+			iV::SetTextColour(WZCOL_RED);
+			iV::SetFont(iV::fonts::font_small);
+			iV::DrawText(need, iX + 102, iY - 1);
 		}
 	}
 	else
 	{
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 	}
 	// draw text value
-	iV_SetFont(font_regular);
-	iV_DrawText(szVal, iX, iY);
+	iV::SetFont(iV::fonts::font_regular);
+	iV::DrawText(szVal, iX, iY);
 }
 
 IntFancyButton::IntFancyButton(WIDGET *parent)
@@ -1952,8 +1952,8 @@ static void intDisplayBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset, bool
 	y0 += arbitaryOffset;
 
 	/* indent to allow text value */
-	iX = x0 + iV_GetTextWidth(szCheckWidth);
-	iY = y0 + (iV_GetImageHeight(IntImages, IMAGE_DES_STATSCURR) - iV_GetTextLineSize()) / 2 - iV_GetTextAboveBase();
+	iX = x0 + iV::GetTextWidth(szCheckWidth);
+	iY = y0 + (iV_GetImageHeight(IntImages, IMAGE_DES_STATSCURR) - iV::GetTextLineSize()) / 2 - iV::GetTextAboveBase();
 
 	if (isPowerBar)
 	{
@@ -1972,8 +1972,8 @@ static void intDisplayBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset, bool
 	}
 	value = (BarGraph->iOriginal * precisionFactor + BarGraph->denominator / 2) / BarGraph->denominator;
 	sprintf(szVal, "%d%s%.*d", value / precisionFactor, precisionFactor == 1 ? "" : ".", BarGraph->precision, value % precisionFactor);
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
-	iV_DrawText(szVal, x0, iY);
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::DrawText(szVal, x0, iY);
 
 	//draw the comparison value - only if not zero
 	if (BarGraph->minorSize != 0)

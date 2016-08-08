@@ -59,7 +59,7 @@ public:
 
 	UDWORD		state;						// The current edit box state
 	QString		aText;						// The text in the edit box
-	iV_fonts	FontID;
+	iV::fonts	FontID;
 	int			blinkOffset;				// Cursor should be visible at time blinkOffset.
 	int			maxStringSize;				// max characters string will accept
 	int			insPos;						// The insertion point in the buffer

@@ -160,20 +160,20 @@ static void SetPlayerTextColor(int mode, UDWORD player)
 	// override color if they are dead...
 	if (!apsDroidLists[player] && !apsStructLists[player])
 	{
-		iV_SetTextColour(WZCOL_GREY);			// dead text color
+		iV::SetTextColour(WZCOL_GREY);			// dead text color
 	}
 	// the colors were chosen to match the FRIEND/FOE radar map colors.
 	else if (mode == ALLIANCE_FORMED)
 	{
-		iV_SetTextColour(WZCOL_YELLOW);			// Human alliance text color
+		iV::SetTextColour(WZCOL_YELLOW);			// Human alliance text color
 	}
 	else if (isHumanPlayer(player))				// Human player, no alliance
 	{
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);	// Normal text color
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);	// Normal text color
 	}
 	else
 	{
-		iV_SetTextColour(WZCOL_RED);			// Enemy color
+		iV::SetTextColour(WZCOL_RED);			// Enemy color
 	}
 }
 
@@ -191,24 +191,24 @@ void displayRequestOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 	drawBlueBox(x, y, psWidget->width(), psWidget->height());
 
-	iV_SetFont(font_regular);					// font
+	iV::SetFont(iV::fonts::font_regular);					// font
 
 	if (mapData && CheckForMod(mapData->realFileName))
 	{
-		iV_SetTextColour(WZCOL_RED);
+		iV::SetTextColour(WZCOL_RED);
 	}
 	else
 	{
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 	}
 
 
-	while (iV_GetTextWidth(butString) > psWidget->width() - 10)
+	while (iV::GetTextWidth(butString) > psWidget->width() - 10)
 	{
 		butString[strlen(butString) - 1] = '\0';
 	}
 
-	iV_DrawText(butString, x + 6, y + 12);	//draw text
+	iV::DrawText(butString, x + 6, y + 12);	//draw text
 
 	if (mapData != NULL)
 	{
@@ -225,15 +225,15 @@ void displayRequestOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		}
 		if (!hash.isZero())
 		{
-			iV_SetFont(font_small);
-			iV_SetTextColour(WZCOL_TEXT_DARK);
+			iV::SetFont(iV::fonts::font_small);
+			iV::SetTextColour(WZCOL_TEXT_DARK);
 			sstrcpy(butString, hash.toString().c_str());
-			while (iV_GetTextWidth(butString) > psWidget->width() - 10 - (8 + mapData->players * 6))
+			while (iV::GetTextWidth(butString) > psWidget->width() - 10 - (8 + mapData->players * 6))
 			{
 				butString[strlen(butString) - 1] = '\0';
 			}
-			iV_DrawText(butString, x + 6 + 8 + mapData->players * 6, y + 26);
-			iV_SetFont(font_regular);
+			iV::DrawText(butString, x + 6 + 8 + mapData->players * 6, y + 26);
+			iV::SetFont(iV::fonts::font_regular);
 		}
 
 		// if map, then draw no. of players.
@@ -253,18 +253,18 @@ static void displayCamTypeBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	int y = yOffset + psWidget->y();
 	char buffer[8];
 
-	iV_SetFont(font_regular);
+	iV::SetFont(iV::fonts::font_regular);
 	drawBlueBox(x, y, psWidget->width(), psWidget->height());
 	sprintf(buffer, "T%i", (int)(psWidget->UserData));
 	if ((unsigned int)(psWidget->UserData) == current_tech)
 	{
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 	}
 	else
 	{
-		iV_SetTextColour(WZCOL_TEXT_MEDIUM);
+		iV::SetTextColour(WZCOL_TEXT_MEDIUM);
 	}
-	iV_DrawText(buffer, x + 2, y + 12);
+	iV::DrawText(buffer, x + 2, y + 12);
 }
 
 static void displayNumPlayersBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
@@ -273,15 +273,15 @@ static void displayNumPlayersBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffse
 	int y = yOffset + psWidget->y();
 	char buffer[8];
 
-	iV_SetFont(font_regular);
+	iV::SetFont(iV::fonts::font_regular);
 	drawBlueBox(x, y, psWidget->width(), psWidget->height());
 	if ((unsigned int)(psWidget->UserData) == current_numplayers)
 	{
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 	}
 	else
 	{
-		iV_SetTextColour(WZCOL_TEXT_MEDIUM);
+		iV::SetTextColour(WZCOL_TEXT_MEDIUM);
 	}
 	if ((unsigned int)(psWidget->UserData) == 0)
 	{
@@ -292,7 +292,7 @@ static void displayNumPlayersBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffse
 		sprintf(buffer, "%iP", (int)(psWidget->UserData));
 		buffer[2] = '\0';  // Truncate 'P' if 2 digits, since there isn't room.
 	}
-	iV_DrawText(buffer, x + 2, y + 12);
+	iV::DrawText(buffer, x + 2, y + 12);
 
 }
 
@@ -627,38 +627,38 @@ static void displayExtraGubbins(UDWORD height)
 	iV_Line(MULTIMENU_FORM_X				, MULTIMENU_FORM_Y + MULTIMENU_PLAYER_H,
 	        MULTIMENU_FORM_X + MULTIMENU_FORM_W, MULTIMENU_FORM_Y + MULTIMENU_PLAYER_H, WZCOL_BLACK);
 
-	iV_SetFont(font_regular);						// font
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);			// main wz text color
+	iV::SetFont(iV::fonts::font_regular);						// font
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);			// main wz text color
 
 	// draw timer
 	getAsciiTime(str, gameTime);
-	iV_DrawText(str, MULTIMENU_FORM_X + MULTIMENU_C2, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET) ;
+	iV::DrawText(str, MULTIMENU_FORM_X + MULTIMENU_C2, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET) ;
 
 	// draw titles.
-	iV_DrawText(_("Alliances"), MULTIMENU_FORM_X + MULTIMENU_C0, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
-	iV_DrawText(_("Score"), MULTIMENU_FORM_X + MULTIMENU_C8, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
-	iV_DrawText(_("Kills"), MULTIMENU_FORM_X + MULTIMENU_C9, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
-	iV_DrawText(_("Units"), MULTIMENU_FORM_X + MULTIMENU_C10, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+	iV::DrawText(_("Alliances"), MULTIMENU_FORM_X + MULTIMENU_C0, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+	iV::DrawText(_("Score"), MULTIMENU_FORM_X + MULTIMENU_C8, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+	iV::DrawText(_("Kills"), MULTIMENU_FORM_X + MULTIMENU_C9, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+	iV::DrawText(_("Units"), MULTIMENU_FORM_X + MULTIMENU_C10, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
 
 	if (getDebugMappingStatus())
 	{
-		iV_DrawText(_("Power"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+		iV::DrawText(_("Power"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
 	}
 	else
 	{
 		// ping is useless for non MP games, so display something useful depending on mode.
 		if (runningMultiplayer())
 		{
-			iV_DrawText(_("Ping"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+			iV::DrawText(_("Ping"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
 		}
 		else
 		{
-			iV_DrawText(_("Structs"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
+			iV::DrawText(_("Structs"), MULTIMENU_FORM_X + MULTIMENU_C11, MULTIMENU_FORM_Y + MULTIMENU_FONT_OSET);
 		}
 	}
 
 #ifdef DEBUG
-	iV_SetFont(font_small);
+	iV::SetFont(iV::fonts::font_small);
 	for (unsigned q = 0; q < 2; ++q)
 	{
 		unsigned xPos = 0;
@@ -667,19 +667,19 @@ static void displayExtraGubbins(UDWORD height)
 
 		char const *srText[2] = {_("Sent/Received per sec —"), _("Total Sent/Received —")};
 		sprintf(str, srText[q]);
-		iV_DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
-		xPos += iV_GetTextWidth(str) + 20;
+		iV::DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
+		xPos += iV::GetTextWidth(str) + 20;
 
 		sprintf(str, _("Traf: %u/%u"), NETgetStatistic(NetStatisticRawBytes, true, isTotal), NETgetStatistic(NetStatisticRawBytes, false, isTotal));
-		iV_DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
-		xPos += iV_GetTextWidth(str) + 20;
+		iV::DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
+		xPos += iV::GetTextWidth(str) + 20;
 
 		sprintf(str, _("Uncompressed: %u/%u"), NETgetStatistic(NetStatisticUncompressedBytes, true, isTotal), NETgetStatistic(NetStatisticUncompressedBytes, false, isTotal));
-		iV_DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
-		xPos += iV_GetTextWidth(str) + 20;
+		iV::DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
+		xPos += iV::GetTextWidth(str) + 20;
 
 		sprintf(str, _("Pack: %u/%u"), NETgetStatistic(NetStatisticPackets, true, isTotal), NETgetStatistic(NetStatisticPackets, false, isTotal));
-		iV_DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
+		iV::DrawText(str, MULTIMENU_FORM_X + xPos, MULTIMENU_FORM_Y + height + yPos);
 	}
 #endif
 	return;
@@ -698,8 +698,8 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		displayExtraGubbins(widgGetFromID(psWScreen, MULTIMENU_FORM)->height());
 	}
 
-	iV_SetFont(font_regular);  // font
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::SetFont(iV::fonts::font_regular);  // font
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 
 	const bool isHuman = isHumanPlayer(player);
 	const bool isAlly = aiCheckAlliances(selectedPlayer, player);
@@ -711,11 +711,11 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	{
 		ssprintf(str, "%d: %s", NetPlay.players[player].position, getPlayerName(player));
 
-		while (iV_GetTextWidth(str) >= MULTIMENU_C0 - MULTIMENU_C2 - 10)
+		while (iV::GetTextWidth(str) >= MULTIMENU_C0 - MULTIMENU_C2 - 10)
 		{
 			str[strlen(str) - 1] = '\0';
 		}
-		iV_DrawText(str, x + MULTIMENU_C2, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C2, y + MULTIMENU_FONT_OSET);
 
 		//c3-7 alliance
 		//manage buttons by showing or hiding them. gifts only in campaign,
@@ -757,20 +757,20 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		{
 			sprintf(str, "%d", getMultiStats(player).recentScore);
 		}
-		iV_DrawText(str, x + MULTIMENU_C8, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C8, y + MULTIMENU_FONT_OSET);
 
 		//c9:kills,
 		sprintf(str, "%d", getMultiStats(player).recentKills);
-		iV_DrawText(str, x + MULTIMENU_C9, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C9, y + MULTIMENU_FONT_OSET);
 	}
 	else
 	{
 		// estimate of score for skirmish games
 		sprintf(str, "%d", ingame.skScores[player][0]);
-		iV_DrawText(str, x + MULTIMENU_C8, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C8, y + MULTIMENU_FONT_OSET);
 		// estimated kills
 		sprintf(str, "%d", ingame.skScores[player][1]);
-		iV_DrawText(str, x + MULTIMENU_C9, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C9, y + MULTIMENU_FONT_OSET);
 	}
 
 	//only show player's and allies' unit counts, and nobody elses.
@@ -778,7 +778,7 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	if (isAlly || getDebugMappingStatus())
 	{
 		sprintf(str, "%d", getNumDroids(player) + getNumTransporterDroids(player));
-		iV_DrawText(str, x + MULTIMENU_C10, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, x + MULTIMENU_C10, y + MULTIMENU_FONT_OSET);
 	}
 
 	/* Display player power instead of number of played games
@@ -788,7 +788,7 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	{
 		//c11: Player power
 		sprintf(str, "%u", (int)getPower(player));
-		iV_DrawText(str, MULTIMENU_FORM_X + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
+		iV::DrawText(str, MULTIMENU_FORM_X + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
 	}
 	else if (runningMultiplayer())
 	{
@@ -803,7 +803,7 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 			{
 				sprintf(str, "∞");
 			}
-			iV_DrawText(str, x + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
+			iV::DrawText(str, x + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
 		}
 	}
 	else
@@ -818,7 +818,7 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 				++num;
 			}
 			sprintf(str, "%d", num);
-			iV_DrawText(str, x + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
+			iV::DrawText(str, x + MULTIMENU_C11, y + MULTIMENU_FONT_OSET);
 		}
 	}
 

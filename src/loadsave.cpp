@@ -216,7 +216,7 @@ bool addLoadSave(LOADSAVE_MODE savemode, const char *title)
 	// Add Banner Label
 	W_LABINIT sLabInit;
 	sLabInit.formID = LOADSAVE_BANNER;
-	sLabInit.FontID = font_large;
+	sLabInit.FontID = iV::fonts::font_large;
 	sLabInit.id		= LOADSAVE_LABEL;
 	sLabInit.style	= WLAB_ALIGNCENTRE;
 	sLabInit.x		= 0;
@@ -661,16 +661,16 @@ static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	{
 		sstrcpy(butString, ((W_BUTTON *)psWidget)->pText.toUtf8().constData());
 
-		iV_SetFont(font_regular);									// font
-		iV_SetTextColour(WZCOL_FORM_TEXT);
+		iV::SetFont(iV::fonts::font_regular);									// font
+		iV::SetTextColour(WZCOL_FORM_TEXT);
 
-		while (iV_GetTextWidth(butString) > psWidget->width())
+		while (iV::GetTextWidth(butString) > psWidget->width())
 		{
 			butString[strlen(butString) - 1] = '\0';
 		}
 
 		//draw text
-		iV_DrawText(butString, x + 4, y + 17);
+		iV::DrawText(butString, x + 4, y + 17);
 	}
 }
 

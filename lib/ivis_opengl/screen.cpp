@@ -416,7 +416,7 @@ void screenShutDown(void)
 {
 	pie_ShutDown();
 	pie_TexShutDown();
-	iV_TextShutdown();
+	iV::TextShutdown();
 
 	pie_Skybox_Shutdown();
 
@@ -503,14 +503,14 @@ void screen_Display()
 			x = screenWidth / 2 - w / 2 + x * scale;
 			y = screenHeight / 2 - h / 2 + y * scale;
 			ssprintf(text, "%d", i);
-			iV_SetFont(font_large);
-			iV_SetTextColour(WZCOL_BLACK);
-			iV_DrawText(text, x - 1, y - 1);
-			iV_DrawText(text, x + 1, y - 1);
-			iV_DrawText(text, x - 1, y + 1);
-			iV_DrawText(text, x + 1, y + 1);
-			iV_SetTextColour(WZCOL_WHITE);
-			iV_DrawText(text, x, y);
+			iV::SetFont(iV::fonts::font_large);
+			iV::SetTextColour(WZCOL_BLACK);
+			iV::DrawText(text, x - 1, y - 1);
+			iV::DrawText(text, x + 1, y - 1);
+			iV::DrawText(text, x - 1, y + 1);
+			iV::DrawText(text, x + 1, y + 1);
+			iV::SetTextColour(WZCOL_WHITE);
+			iV::DrawText(text, x, y);
 		}
 	}
 	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);

@@ -65,10 +65,10 @@ struct CONSOLE_MESSAGE
 {
 	std::string text;
 	UDWORD	timeAdded;		// When was it added to our list?
-	int		JustifyType;	// text justification
+	iV::justification JustifyType;	// text justification
 	int		player;			// Player who sent this message or SYSTEM_MESSAGE
 	bool	team;			// team message or not
-	CONSOLE_MESSAGE() : timeAdded(0), JustifyType(0), player(0), team(false) {}
+	CONSOLE_MESSAGE() : timeAdded(0), JustifyType(iV::justification::FTEXT_CENTRE), player(0), team(false) {}
 };
 WZ_MUTEX *mtx = wzMutexCreate();                        // prevent adding messages when we are not expecting them
 std::deque<CONSOLE_MESSAGE> ActiveMessages;		// we add all messages to this container
@@ -101,8 +101,8 @@ static void	setConsoleMessageDuration(UDWORD time)
 /** Sets the system up */
 void	initConsoleMessages(void)
 {
-	iV_SetFont(font_regular);
-	linePitch = iV_GetTextLineSize();						// NOTE: if font changes, this must also be changed!
+	iV::SetFont(iV::fonts::font_regular);
+	linePitch = iV::GetTextLineSize();						// NOTE: if font changes, this must also be changed!
 	bConsoleDropped = false;
 	setConsoleMessageDuration(DEFAULT_MESSAGE_DURATION);	// Setup how long messages are displayed for
 	setConsoleBackdropStatus(true);							// No box under the text
@@ -162,7 +162,7 @@ bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, SDW
 		std::string FitText(lines);
 		while (!FitText.empty())
 		{
-			int pixelWidth = iV_GetTextWidth(FitText.c_str());
+			int pixelWidth = iV::GetTextWidth(FitText.c_str());
 			if (pixelWidth <= mainConsole.width)
 			{
 				break;
@@ -178,15 +178,15 @@ bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, SDW
 		switch (jusType)
 		{
 		case LEFT_JUSTIFY:
-			consoleStorage.JustifyType = FTEXT_LEFTJUSTIFY;		// Align to left edge of screen
+			consoleStorage.JustifyType = iV::justification::FTEXT_LEFTJUSTIFY;		// Align to left edge of screen
 			break;
 
 		case RIGHT_JUSTIFY:
-			consoleStorage.JustifyType = FTEXT_RIGHTJUSTIFY;	// Align to right edge of screen
+			consoleStorage.JustifyType = iV::justification::FTEXT_RIGHTJUSTIFY;	// Align to right edge of screen
 			break;
 
 		case CENTRE_JUSTIFY:
-			consoleStorage.JustifyType = FTEXT_CENTRE;			// Align to centre of the screen
+			consoleStorage.JustifyType = iV::justification::FTEXT_CENTRE;			// Align to centre of the screen
 			break;
 		default:
 			debug(LOG_FATAL, "Unknown type of text justification for console print, aborting.");
@@ -292,15 +292,15 @@ static void setConsoleTextColor(SDWORD player)
 	// System messages
 	if (player == SYSTEM_MESSAGE)
 	{
-		iV_SetTextColour(WZCOL_CONS_TEXT_SYSTEM);
+		iV::SetTextColour(WZCOL_CONS_TEXT_SYSTEM);
 	}
 	else if (player == NOTIFY_MESSAGE)
 	{
-		iV_SetTextColour(WZCOL_YELLOW);
+		iV::SetTextColour(WZCOL_YELLOW);
 	}
 	else if (player == INFO_MESSAGE)
 	{
-		iV_SetTextColour(WZCOL_CONS_TEXT_INFO);
+		iV::SetTextColour(WZCOL_CONS_TEXT_INFO);
 	}
 	else
 	{
@@ -309,17 +309,17 @@ static void setConsoleTextColor(SDWORD player)
 		{
 			if (aiCheckAlliances(player, selectedPlayer))
 			{
-				iV_SetTextColour(WZCOL_CONS_TEXT_USER_ALLY);
+				iV::SetTextColour(WZCOL_CONS_TEXT_USER_ALLY);
 			}
 			else
 			{
-				iV_SetTextColour(WZCOL_CONS_TEXT_USER_ENEMY);
+				iV::SetTextColour(WZCOL_CONS_TEXT_USER_ENEMY);
 			}
 		}
 		else
 		{
 			// Friend-foe is off
-			iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+			iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 		}
 	}
 }
@@ -382,13 +382,13 @@ void displayOldMessages(bool mode)
 			// Set text color depending on message type
 			if (mode)
 			{
-				iV_SetTextColour(WZCOL_CONS_TEXT_USER_ALLY);
+				iV::SetTextColour(WZCOL_CONS_TEXT_USER_ALLY);
 			}
 			else
 			{
 				setConsoleTextColor((*WhichMessages)[i].player);
 			}
-			TextYpos = iV_DrawFormattedText((*WhichMessages)[i].text.c_str(),
+			TextYpos = iV::DrawFormattedText((*WhichMessages)[i].text.c_str(),
 			                                historyConsole.topX + nudgeright,
 			                                TextYpos,
 			                                historyConsole.width,
@@ -412,7 +412,7 @@ void	displayConsoleMessages(void)
 		return;
 	}
 
-	iV_SetFont(font_regular);
+	iV::SetFont(iV::fonts::font_regular);
 
 	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_ON);
 	pie_SetFogStatus(false);
@@ -430,8 +430,8 @@ void	displayConsoleMessages(void)
 
 		int tmp = pie_GetVideoBufferWidth();
 		drawBlueBox(0, 0,tmp, 18);
-		tmp -= iV_GetTextWidth(i->text.c_str());
-		iV_DrawFormattedText(i->text.c_str(), tmp - 6, linePitch - 2, iV_GetTextWidth(i->text.c_str()), i->JustifyType);
+		tmp -= iV::GetTextWidth(i->text.c_str());
+		iV::DrawFormattedText(i->text.c_str(), tmp - 6, linePitch - 2, iV::GetTextWidth(i->text.c_str()), i->JustifyType);
 	}
 	int TextYpos = mainConsole.topY;
 	// Draw the blue background for the text (only in game, not lobby)
@@ -443,7 +443,7 @@ void	displayConsoleMessages(void)
 	for (auto i = ActiveMessages.begin(); i != ActiveMessages.end(); ++i)
 	{
 		setConsoleTextColor(i->player);
-		TextYpos = iV_DrawFormattedText(i->text.c_str(), mainConsole.topX, TextYpos, mainConsole.width, i->JustifyType);
+		TextYpos = iV::DrawFormattedText(i->text.c_str(), mainConsole.topX, TextYpos, mainConsole.width, i->JustifyType);
 	}
 	wzMutexUnlock(mtx);
 }

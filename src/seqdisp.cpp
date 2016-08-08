@@ -161,8 +161,8 @@ bool seq_RenderVideoToBuffer(const char *sequenceName, int seqCommand)
 	{
 		//start the ball rolling
 
-		iV_SetFont(font_scaled);
-		iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+		iV::SetFont(iV::fonts::font_scaled);
+		iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 
 		/* We do *NOT* want to use the user-choosen resolution when we
 		 * are doing intelligence videos.
@@ -228,8 +228,8 @@ static bool seq_StartFullScreenVideo(QString videoName, QString audioName, VIDEO
 	aVideoName = QString("sequences/" + videoName);
 
 	cdAudio_Pause();
-	iV_SetFont(font_scaled);
-	iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+	iV::SetFont(iV::fonts::font_scaled);
+	iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 
 	/* We do not want to enter loop_SetVideoPlaybackMode() when we are
 	 * doing intelligence videos.
@@ -242,8 +242,8 @@ static bool seq_StartFullScreenVideo(QString videoName, QString audioName, VIDEO
 			// check to see if we need to pause, and set font each time
 			cdAudio_Pause();
 			loop_SetVideoPlaybackMode();
-			iV_SetFont(font_scaled);
-			iV_SetTextColour(WZCOL_TEXT_BRIGHT);
+			iV::SetFont(iV::fonts::font_scaled);
+			iV::SetTextColour(WZCOL_TEXT_BRIGHT);
 		}
 
 		// set the dimensions to show full screen or native or ...
@@ -348,13 +348,13 @@ bool seq_UpdateFullScreenVideo(int *pbClear)
 				{
 					currentText.x = 20 + D_W2;
 				}
-				iV_SetTextColour(WZCOL_GREY);
-				iV_DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y - 1);
-				iV_DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y + 1);
-				iV_DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y + 1);
-				iV_DrawText(&(currentText.pText[0]), currentText.x + 1, currentText.y + 1);
-				iV_SetTextColour(WZCOL_WHITE);
-				iV_DrawText(&(currentText.pText[0]), currentText.x, currentText.y);
+				iV::SetTextColour(WZCOL_GREY);
+				iV::DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y - 1);
+				iV::DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y + 1);
+				iV::DrawText(&(currentText.pText[0]), currentText.x - 1, currentText.y + 1);
+				iV::DrawText(&(currentText.pText[0]), currentText.x + 1, currentText.y + 1);
+				iV::SetTextColour(WZCOL_WHITE);
+				iV::DrawText(&(currentText.pText[0]), currentText.x, currentText.y);
 			}
 		}
 	}
@@ -408,7 +408,7 @@ bool seq_AddTextForVideo(const char *pText, SDWORD xOffset, SDWORD yOffset, doub
 	// make sure we take xOffset into account, we don't always start at 0
 	const unsigned int buffer_width = pie_GetVideoBufferWidth() - xOffset;
 
-	iV_SetFont(font_scaled);
+	iV::SetFont(iV::fonts::font_scaled);
 
 	ASSERT_OR_RETURN(false, aSeqList[currentSeq].currentText < MAX_TEXT_OVERLAYS, "too many text lines");
 
@@ -433,7 +433,7 @@ bool seq_AddTextForVideo(const char *pText, SDWORD xOffset, SDWORD yOffset, doub
 
 	//check the string is shortenough to print
 	//if not take a word of the end and try again
-	while (iV_GetTextWidth(currentText) > buffer_width)
+	while (iV::GetTextWidth(currentText) > buffer_width)
 	{
 		currentLength--;
 		while ((pText[currentLength] != ' ') && (currentLength > 0))
@@ -449,7 +449,7 @@ bool seq_AddTextForVideo(const char *pText, SDWORD xOffset, SDWORD yOffset, doub
 	{
 		aSeqList[currentSeq].aText[aSeqList[currentSeq].currentText].x = lastX;
 		aSeqList[currentSeq].aText[aSeqList[currentSeq].currentText].y =
-		    aSeqList[currentSeq].aText[aSeqList[currentSeq].currentText - 1].y + iV_GetTextLineSize();
+		    aSeqList[currentSeq].aText[aSeqList[currentSeq].currentText - 1].y + iV::GetTextLineSize();
 	}
 	else
 	{
@@ -463,7 +463,7 @@ bool seq_AddTextForVideo(const char *pText, SDWORD xOffset, SDWORD yOffset, doub
 		static const int MIN_JUSTIFICATION = 40;
 		static const int FOLLOW_ON_JUSTIFICATION = 160;
 		//justify this text
-		const int justification = buffer_width - iV_GetTextWidth(currentText);
+		const int justification = buffer_width - iV::GetTextWidth(currentText);
 
 		if (textJustification == SEQ_TEXT_JUSTIFY && justification > MIN_JUSTIFICATION)
 		{

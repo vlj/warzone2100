@@ -32,6 +32,17 @@
 #include "lib/ivis_opengl/bitimage.h"
 #include "src/multiplay.h"
 
+#include <dwrite_1.h>
+#pragma comment(lib, "dwrite.lib")
+#include <wrl\client.h>
+
+#include <memory>
+#include <locale>
+#include <codecvt>
+#include <string>
+
+std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
 #define ASCII_SPACE			(32)
 #define ASCII_NEWLINE			('@')
 #define ASCII_COLOURMODE		('#')
@@ -193,16 +204,252 @@ extern "C"
 
 iV::font_state iV::default_font_state{};
 
+#define CHECK_HRESULT(x) { HRESULT hr = (x); if (hr != 0) abort(); }
 namespace
 {
+	struct GLRenderer : public IDWriteTextRenderer
+	{
+		GLuint textureId;
+		IDWriteFactory* factory;
+		GLRenderer(IDWriteFactory* f) : factory(f)
+		{
+			glGenTextures(1, &textureId);
+		}
+
+		~GLRenderer()
+		{
+			glDeleteTextures(1, &textureId);
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE DrawGlyphRun(
+			void* clientDrawingContext,
+			FLOAT baselineOriginX,
+			FLOAT baselineOriginY,
+			DWRITE_MEASURING_MODE measuringMode,
+			DWRITE_GLYPH_RUN const* glyphRun,
+			DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
+			IUnknown* clientDrawingEffect) override
+		{
+			glEnable(GL_TEXTURE_2D);
+			GLenum err;
+			err = glGetError();
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			err = glGetError();
+			Microsoft::WRL::ComPtr<IDWriteGlyphRunAnalysis> textureCreator;
+			float DIP = 1.f;
+			CHECK_HRESULT(factory->CreateGlyphRunAnalysis(glyphRun, DIP, nullptr, DWRITE_RENDERING_MODE_NATURAL_SYMMETRIC, measuringMode, baselineOriginX, baselineOriginY,
+				textureCreator.GetAddressOf()));
+
+			RECT rect{};
+			CHECK_HRESULT(textureCreator->GetAlphaTextureBounds(DWRITE_TEXTURE_CLEARTYPE_3x1, &rect));
+			size_t w = rect.right - rect.left;
+			size_t h = rect.bottom - rect.top;
+
+			if (h * w == 0) return S_OK;
+			std::vector<BYTE> tex(w * h * 3);
+			CHECK_HRESULT(textureCreator->CreateAlphaTexture(DWRITE_TEXTURE_CLEARTYPE_3x1, &rect, tex.data(), w * h * 3));
+
+			std::vector<BYTE> tex2(w * h * 4);
+			// counter gamma correction
+			for (int i = 0; i < h; i++)
+			{
+				for (int j = 0; j < w ; j++)
+				{
+					tex2[w * 4 * i + 3 * j] = 255.f * powf(tex[w * 3 * i + 3 * j] / 255.f, .45);
+					tex2[w * 4 * i + 3 * j + 1] = 255.f * powf(tex[w * 3 * i + 3 * j + 1] / 255.f, .45);
+					tex2[w * 4 * i + 3 * j + 2] = 255.f * powf(tex[w * 3 * i + 3 * j + 2] / 255.f, .45);
+				}
+			}
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, tex2.data());
+			err = glGetError();
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			err = glGetError();
+			glEnable(GL_BLEND);
+
+			const GLfloat ones[] = { 1., 1., 1., 1. };
+			glColor4fv(ones);
+			glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+			err = glGetError();
+			glBegin(GL_QUADS);
+			glTexCoord2f(0., 1.);
+			glVertex3f(rect.left + baselineOriginX, rect.bottom - baselineOriginY, 1.0f);
+
+			glTexCoord2f(1., 1.);
+			glVertex3f(rect.right + baselineOriginX, rect.bottom - baselineOriginY, 1.0f);
+
+			glTexCoord2f(1., 0.);
+			glVertex3f(rect.right + baselineOriginX, rect.top - baselineOriginY, 1.0f);
+
+			glTexCoord2f(0., 0.);
+			glVertex3f(rect.left + baselineOriginX, rect.top - baselineOriginY, 1.0f);
+			glEnd();
+
+			glColor4fv(iV::default_font_state.font_colour.data());
+
+			glBlendFunc(GL_ONE, GL_ONE);
+			glBegin(GL_QUADS);
+			glTexCoord2f(0., 1.);
+			glVertex3f(rect.left + baselineOriginX, rect.bottom - baselineOriginY, 1.0f);
+
+			glTexCoord2f(1., 1.);
+			glVertex3f(rect.right + baselineOriginX, rect.bottom - baselineOriginY, 1.0f);
+
+			glTexCoord2f(1., 0.);
+			glVertex3f(rect.right + baselineOriginX, rect.top - baselineOriginY, 1.0f);
+
+			glTexCoord2f(0., 0.);
+			glVertex3f(rect.left + baselineOriginX, rect.top - baselineOriginY, 1.0f);
+			glEnd();
+
+			err = glGetError();
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE DrawUnderline(
+			void* clientDrawingContext,
+			FLOAT baselineOriginX,
+			FLOAT baselineOriginY,
+			DWRITE_UNDERLINE const* underline,
+			IUnknown* clientDrawingEffect) override
+		{
+			return E_NOTIMPL;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE DrawStrikethrough(
+			void* clientDrawingContext,
+			FLOAT baselineOriginX,
+			FLOAT baselineOriginY,
+			DWRITE_STRIKETHROUGH const* strikethrough,
+			IUnknown* clientDrawingEffect) override
+		{
+			return E_NOTIMPL;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE DrawInlineObject(
+			void* clientDrawingContext,
+			FLOAT originX,
+			FLOAT originY,
+			IDWriteInlineObject* inlineObject,
+			BOOL isSideways,
+			BOOL isRightToLeft,
+			IUnknown* clientDrawingEffect) override
+		{
+			return E_NOTIMPL;
+		}
+
+		// IDWritePixelSnapping methods
+		virtual HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled(
+			void* clientDrawingContext,
+			BOOL* isDisabled) override
+		{
+			*isDisabled = FALSE;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE GetCurrentTransform(
+			void* clientDrawingContext,
+			DWRITE_MATRIX* transform) override
+		{
+			const DWRITE_MATRIX ident = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+			*transform = ident;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE GetPixelsPerDip(
+			void* clientDrawingContext,
+			FLOAT* pixelsPerDip) override
+		{
+			*pixelsPerDip = 1.0f;
+			return S_OK;
+		}
+
+		// IUnknown methods
+		ULONG STDMETHODCALLTYPE AddRef() override {
+			return InterlockedIncrement(&fRefCount);
+		}
+
+		ULONG STDMETHODCALLTYPE Release() override {
+			ULONG newCount = InterlockedDecrement(&fRefCount);
+			if (0 == newCount) {
+				delete this;
+			}
+			return newCount;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE QueryInterface(
+			IID const& riid, void** ppvObject) override
+		{
+			if (__uuidof(IUnknown) == riid ||
+				__uuidof(IDWritePixelSnapping) == riid ||
+				__uuidof(IDWriteTextRenderer) == riid)
+			{
+				*ppvObject = this;
+				this->AddRef();
+				return S_OK;
+			}
+			*ppvObject = nullptr;
+			return E_FAIL;
+		}
+
+	protected:
+		ULONG fRefCount;
+	};
+
+	struct DWriteProxy
+	{
+		Microsoft::WRL::ComPtr<IDWriteFactory1> factory;
+		Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
+		std::unique_ptr<GLRenderer> glRenderer;
+
+		DWriteProxy()
+		{
+			CHECK_HRESULT(
+				DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory1), reinterpret_cast<IUnknown**>(factory.GetAddressOf()))
+				);
+			CHECK_HRESULT(factory->CreateTextFormat(
+				L"DejaVu Sans",
+				nullptr,
+				DWRITE_FONT_WEIGHT_NORMAL,
+				DWRITE_FONT_STYLE_NORMAL,
+				DWRITE_FONT_STRETCH_NORMAL,
+				12.,
+				L"en-us",
+				textFormat.GetAddressOf()
+			));
+
+			glRenderer.reset(new GLRenderer(factory.Get()));
+		}
+
+		void printText(const std::wstring &str)
+		{
+			Microsoft::WRL::ComPtr<IDWriteTextLayout1> textLayout;
+			CHECK_HRESULT(factory->CreateTextLayout(
+				str.data(),      // The string to be laid out and formatted.
+				str.size(),  // The length of the string.
+				textFormat.Get(),  // The text format to apply to the string (contains font information, etc).
+				10000.,         // The width of the layout box.
+				10000.,        // The height of the layout box.
+				reinterpret_cast<IDWriteTextLayout**>(textLayout.GetAddressOf())  // The IDWriteTextLayout interface pointer.
+			));
+			textLayout->SetFontSize(iV::default_font_state.font_size, { 0, str.size() });
+			textLayout->SetCharacterSpacing(1., 1., 0., { 0, str.size() });
+			textLayout->Draw(nullptr, glRenderer.get(), 0.f, 0.f);
+		}
+	};
+
+	DWriteProxy* state;
+
 	void initializeGLC(iV::font_state &st)
 	{
 		loadDLL();
-
 		if (st._glcContext)
 		{
 			return;
 		}
+		state = new DWriteProxy();
 
 		st._glcContext = glcGenContext();
 		if (!st._glcContext)
@@ -747,18 +994,20 @@ void DrawTextRotated(const std::string &string, float XPos, float YPos, float ro
 
 	if (rotation != 0.f)
 	{
-		rotation = 360.f - rotation;
+		rotation = 360.f + rotation;
 	}
 
-	glTranslatef(XPos, YPos, 0.f);
-	glRotatef(180.f, 1.f, 0.f, 0.f);
+	glTranslatef(floor(XPos), floor(YPos), 0.f);
+//	glRotatef(180.f, 1.f, 0.f, 0.f);
 	glRotatef(rotation, 0.f, 0.f, 1.f);
+	glPushMatrix();
 	glScalef(st.font_size, st.font_size, 0.f);
 
-	glColor4fv(st.font_colour.data());
 
 	glFrontFace(GL_CW);
-	glcRenderString(string.data());
+	//glcRenderString(string.data());
+	glPopMatrix();
+	state->printText(converter.from_bytes(string));
 	glFrontFace(GL_CCW);
 
 	glPopMatrix();

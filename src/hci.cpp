@@ -271,9 +271,6 @@ static OBJ_SELECT		objSelectFunc;
 static OBJ_GETSTATS		objGetStatsFunc;
 static OBJ_SETSTATS		objSetStatsFunc;
 
-/* Whether the objects that are on the object screen have changed this frame */
-static bool				objectsChanged;
-
 /* The current stats list being used by the stats screen */
 static BASE_STATS		**ppsStatsList;
 static UDWORD			numStatsListEntries;
@@ -304,9 +301,6 @@ static BASE_OBJECT		*psStatsScreenOwner = NULL;
 
 /* The previous object for each object bar */
 static BASE_OBJECT		*apsPreviousObj[IOBJ_MAX];
-
-/* The jump position for each object on the base bar */
-static std::vector<Vector2i> asJumpPos;
 
 /***************************************************************************************/
 /*              Function Prototypes                                                    */
@@ -543,6 +537,10 @@ protected:
 	std::vector<BASE_OBJECT *> apsObjectList;
 	/* The selected object on the object screen when the stats screen is displayed */
 	BASE_OBJECT *psObjSelected;
+	/* Whether the objects that are on the object screen have changed this frame */
+	bool objectsChanged;
+	/* The jump position for each object on the base bar */
+	std::vector<Vector2i> asJumpPos;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -635,7 +633,7 @@ human_computer_interface::human_computer_interface()
 
 	if (GetGameMode() == GS_NORMAL)
 	{
-		if (!intAddPower())
+		if (!addPower())
 		{
 			debug(LOG_ERROR, "Couldn't create power Bar widget(Out of memory ?)");
 		}
@@ -647,10 +645,7 @@ human_computer_interface::human_computer_interface()
 	objectsChanged = false;
 
 	// reset the previous objects
-	intResetPreviousObj();
-
-	// reset the jump positions
-	asJumpPos.clear();
+	resetPreviousObj();
 
 	/* make demolish stat always available */
 	if (!bInTutorial)

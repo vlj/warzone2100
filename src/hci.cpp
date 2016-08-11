@@ -558,7 +558,7 @@ struct human_computer_interface
 	void stopReticuleButtonFlash(uint32_t buttonID);
 
 	void togglePowerBar();
-	void intShowPowerBar();
+	void showPowerBar();
 	void intHidePowerBar();
 
 	void forceHidePowerBar();
@@ -4682,7 +4682,7 @@ static void intObjStatRMBPressed(UDWORD id)
 
 
 //sets up the Intelligence Screen as far as the interface is concerned
-void addIntelScreen(void)
+void human_computer_interface::addIntelScreen()
 {
 	bool	radOnScreen;
 
@@ -4720,8 +4720,13 @@ void addIntelScreen(void)
 	intMode = INT_INTELMAP;
 }
 
+void addIntelScreen(void)
+{
+	default_hci->addIntelScreen();
+}
+
 //sets up the Transporter Screen as far as the interface is concerned
-void addTransporterInterface(DROID *psSelected, bool onMission)
+void human_computer_interface::addTransporterInterface(DROID *psSelected, bool onMission)
 {
 	// if psSelected = NULL add interface but if psSelected != NULL make sure its not flying
 	if (!psSelected || (psSelected && !transporterFlying(psSelected)))
@@ -4730,6 +4735,11 @@ void addTransporterInterface(DROID *psSelected, bool onMission)
 		intAddTransporter(psSelected, onMission);
 		intMode = INT_TRANSPORTER;
 	}
+}
+
+void addTransporterInterface(DROID *psSelected, bool onMission)
+{
+	default_hci->addTransporterInterface(psSelected, onMission);
 }
 
 /*sets which list of structures to use for the interface*/
@@ -4769,13 +4779,18 @@ void stopReticuleButtonFlash(UDWORD buttonID)
 }
 
 //displays the Power Bar
-void intShowPowerBar(void)
+void human_computer_interface::showPowerBar()
 {
 	//if its not already on display
 	if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
 	{
 		widgReveal(psWScreen, IDPOW_POWERBAR_T);
 	}
+}
+
+void intShowPowerBar(void)
+{
+	default_hci->showPowerBar();
 }
 
 //hides the power bar from the display - regardless of what player requested!

@@ -4773,7 +4773,7 @@ void addTransporterInterface(DROID *psSelected, bool onMission)
 }
 
 /*sets which list of structures to use for the interface*/
-STRUCTURE *interfaceStructList(void)
+STRUCTURE *human_computer_interface::interfaceStructList()
 {
 	if (offWorldKeepLists)
 	{
@@ -4785,9 +4785,14 @@ STRUCTURE *interfaceStructList(void)
 	}
 }
 
+STRUCTURE *interfaceStructList(void)
+{
+	return default_hci->interfaceStructList();
+}
+
 
 /*causes a reticule button to start flashing*/
-void flashReticuleButton(UDWORD buttonID)
+void human_computer_interface::flashReticuleButton(uint32_t buttonID)
 {
 	//get the button for the id
 	WIDGET *psButton = widgGetFromID(psWScreen, buttonID);
@@ -4797,8 +4802,13 @@ void flashReticuleButton(UDWORD buttonID)
 	}
 }
 
+void flashReticuleButton(UDWORD buttonID)
+{
+	default_hci->flashReticuleButton(buttonID);
+}
+
 // stop a reticule button flashing
-void stopReticuleButtonFlash(UDWORD buttonID)
+void human_computer_interface::stopReticuleButtonFlash(uint32_t buttonID)
 {
 	WIDGET	*psButton = widgGetFromID(psWScreen, buttonID);
 	if (psButton)
@@ -4806,6 +4816,11 @@ void stopReticuleButtonFlash(UDWORD buttonID)
 		retbutstats[psButton->UserData].flashTime = 0;
 		retbutstats[psButton->UserData].flashing = 0;
 	}
+}
+
+void stopReticuleButtonFlash(UDWORD buttonID)
+{
+	default_hci->stopReticuleButtonFlash(buttonID);
 }
 
 //displays the Power Bar

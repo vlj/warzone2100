@@ -135,7 +135,6 @@ static BUTOFFSET ReticuleOffsets[NUMRETBUTS] =  	// Reticule button form relativ
 };
 
 static UDWORD	keyButtonMapping = 0;
-static bool Refreshing = false;
 
 /***************************************************************************************/
 /*                  Widget ID numbers                                                  */
@@ -507,6 +506,7 @@ protected:
 	// Reticule button enable states.
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 	bool refreshPending = false;
+	bool refreshing = false;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -703,7 +703,7 @@ void human_computer_interface::refreshScreen()
 
 bool human_computer_interface::isRefreshing()
 {
-	return Refreshing;
+	return refreshing;
 }
 
 // see if a delivery point is selected
@@ -732,7 +732,7 @@ void human_computer_interface::doScreenRefresh()
 
 	if (refreshPending)
 	{
-		Refreshing = true;
+		refreshing = true;
 
 		if ((intMode == INT_OBJECT ||
 		     intMode == INT_STAT ||
@@ -834,7 +834,7 @@ void human_computer_interface::doScreenRefresh()
 		// Refresh the order interface.
 		intRefreshOrder();
 
-		Refreshing = false;
+		refreshing = false;
 	}
 
 	refreshPending = false;

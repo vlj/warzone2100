@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <functional>
 
 #include "lib/framework/frame.h"
 #include "lib/framework/strres.h"
@@ -241,20 +242,6 @@ static enum _obj_mode
 
 	IOBJ_MAX,			        // maximum object mode
 } objMode;
-
-/* Function type for selecting a base object while building the object screen */
-typedef bool (* OBJ_SELECT)(BASE_OBJECT *psObj);
-
-/* Function type for getting the appropriate stats for an object */
-typedef BASE_STATS *(* OBJ_GETSTATS)(BASE_OBJECT *psObj);
-
-/* Function type for setting the appropriate stats for an object */
-typedef bool (* OBJ_SETSTATS)(BASE_OBJECT *psObj, BASE_STATS *psStats);
-
-/* functions to select and get stats from the current object list */
-static OBJ_SELECT		objSelectFunc;
-static OBJ_GETSTATS		objGetStatsFunc;
-static OBJ_SETSTATS		objSetStatsFunc;
 
 /* The current stats list being used by the stats screen */
 static BASE_STATS		**ppsStatsList;
@@ -502,6 +489,11 @@ protected:
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
 	uint32_t keyButtonMapping = 0;
+
+	/* functions to select and get stats from the current object list */
+	std::function<bool(BASE_OBJECT *)> objSelectFunc; /* Function for selecting a base object while building the object screen */
+	std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc; /* Function type for getting the appropriate stats for an object */
+	std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc; /* Function type for setting the appropriate stats for an object */
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);

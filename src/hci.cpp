@@ -90,11 +90,6 @@
 //
 #define buttonIsHilite(p)  ((p->getState() & WBUT_HIGHLIGHT) != 0)
 
-// Empty edit window
-static bool SecondaryWindowUp = false;
-// Chat dialog
-static bool ChatDialogUp = false;
-
 #define RETXOFFSET (0)// Reticule button offset
 #define RETYOFFSET (0)
 #define NUMRETBUTS	7 // Number of reticule buttons.
@@ -428,6 +423,7 @@ struct human_computer_interface
 	void notifyResearchFinished(STRUCTURE *psBuilding);
 	void notifyManufactureFinished(STRUCTURE *psBuilding);
 	void updateManufacture(STRUCTURE *psBuilding);
+	bool coordInBuild(int x, int y);
 
 	void objectSelected(BASE_OBJECT *psObj);
 	void constructorSelected(DROID *psDroid);
@@ -504,6 +500,10 @@ protected:
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
 	/* The previous object for each object bar */
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
+	// Empty edit window
+	bool secondaryWindowUp = false;
+	// Chat dialog
+	bool ChatDialogUp = false;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -1005,7 +1005,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	default:
 		break;
 	}
-	SecondaryWindowUp = false;
+	secondaryWindowUp = false;
 	intMode = INT_NORMAL;
 	//clearSel() sets IntRefreshPending = true by calling intRefreshScreen() but if we're doing this then we won't need to refresh - hopefully!
 	refreshPending = false;
@@ -1298,7 +1298,7 @@ INT_RETVAL human_computer_interface::display()
 	/* Extra code for the design screen to deal with the shadow bar graphs */
 	if (intMode == INT_DESIGN)
 	{
-		SecondaryWindowUp = true;
+		secondaryWindowUp = true;
 		intRunDesign();
 	}
 
@@ -3790,7 +3790,7 @@ bool human_computer_interface::addStats(BASE_STATS **ppsStatsList, uint32_t numS
 			return false;
 		}
 	}
-	SecondaryWindowUp = true;
+	secondaryWindowUp = true;
 	psStatsScreenOwner = psOwner;
 
 	WIDGET *parent = psWScreen->psForm;
@@ -5151,7 +5151,7 @@ BASE_OBJECT *human_computer_interface::getCurrentSelected()
 }
 
 // Checks if a coordinate is over the build menu
-bool CoordInBuild(int x, int y)
+bool human_computer_interface::coordInBuild(int x, int y)
 {
 	// This measurement is valid for the menu, so the buildmenu_height
 	// value is used to "nudge" it all upwards from the command menu.
@@ -5162,7 +5162,7 @@ bool CoordInBuild(int x, int y)
 	pos.x = x - RET_X;
 	pos.y = y - RET_Y + buildmenu_height; // guesstimation
 
-	if ((pos.x < 0 || pos.y < 0 || pos.x >= RET_FORMWIDTH || pos.y >= buildmenu_height) || !SecondaryWindowUp)
+	if ((pos.x < 0 || pos.y < 0 || pos.x >= RET_FORMWIDTH || pos.y >= buildmenu_height) || !secondaryWindowUp)
 	{
 		return false;
 	}
@@ -5233,7 +5233,7 @@ bool human_computer_interface::isChatUp()
 // Helper call to see if we have builder/research/... window up or not.
 bool human_computer_interface::isSecondaryWindowUp()
 {
-	return SecondaryWindowUp;
+	return secondaryWindowUp;
 }
 
 /* Initialise the in game interface */
@@ -5491,4 +5491,9 @@ bool isChatUp(void)
 bool isSecondaryWindowUp(void)
 {
 	return default_hci->isSecondaryWindowUp();
+}
+
+bool CoordInBuild(int x, int y)
+{
+	return default_hci->coordInBuild(x, y);
 }

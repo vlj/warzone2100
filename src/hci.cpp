@@ -290,19 +290,12 @@ static UDWORD			statID;
 /* The stats for the current getStructPos */
 static BASE_STATS		*psPositionStats;
 
-/* Store a list of research pointers for topics that can be performed*/
-static RESEARCH			**ppResearchList;
-
 /* Store a list of Template pointers for Droids that can be built */
 std::vector<DROID_TEMPLATE *>   apsTemplateList;
 std::list<DROID_TEMPLATE>       localTemplates;
 
 /* Store a list of Feature pointers for features to be placed on the map */
 static FEATURE_STATS	**apsFeatureList;
-
-/*Store a list of research indices which can be performed*/
-static UWORD			*pList;
-static UWORD			*pSList;
 
 /* Store a list of component stats pointers for the design screen */
 UDWORD			numComponent;
@@ -501,9 +494,6 @@ struct human_computer_interface
 	human_computer_interface();
 	~human_computer_interface();
 
-	/* Store a list of stats pointers from the main structure stats */
-	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
-
 	void update();
 	INT_RETVAL display();
 	bool addReticule();
@@ -565,6 +555,14 @@ struct human_computer_interface
 	bool isSecondaryWindowUp();
 
 protected:
+	/* Store a list of stats pointers from the main structure stats */
+	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
+	/* Store a list of research pointers for topics that can be performed*/
+	std::array<RESEARCH *, MAXRESEARCH> ppResearchList;
+	/*Store a list of research indices which can be performed*/
+	std::array<UWORD, MAXRESEARCH> pList;
+	std::array<UWORD, MAXRESEARCH> pSList;
+
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
 	/* Set the shadow for the PowerBar */
@@ -612,16 +610,7 @@ human_computer_interface::human_computer_interface()
 	}
 
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
-
 	WidgSetAudio(WidgetAudioCallback, ID_SOUND_BUTTON_CLICK_3, ID_SOUND_SELECT, ID_SOUND_BUILD_FAIL);
-
-	//create the storage for Research topics - max possible size
-	ppResearchList = (RESEARCH **)malloc(sizeof(RESEARCH *) * MAXRESEARCH);
-
-	//create the list for the selected player
-	//needs to be UWORD sized for Patches
-	pList = (UWORD *)malloc(sizeof(UWORD) * MAXRESEARCH);
-	pSList = (UWORD *)malloc(sizeof(UWORD) * MAXRESEARCH);
 
 	/* Create storage for Templates that can be built */
 	apsTemplateList.clear();
@@ -684,9 +673,6 @@ human_computer_interface::~human_computer_interface()
 	delete psWScreen;
 	psWScreen = NULL;
 
-	free(ppResearchList);
-	free(pList);
-	free(pSList);
 	apsTemplateList.clear();
 	free(apsFeatureList);
 	free(apsComponentList);
@@ -695,9 +681,6 @@ human_computer_interface::~human_computer_interface()
 	psObjSelected = nullptr;
 
 	psWScreen = NULL;
-	ppResearchList = NULL;
-	pList = NULL;
-	pSList = NULL;
 	apsFeatureList = NULL;
 	apsComponentList = NULL;
 	apsExtraSysList = NULL;
@@ -1872,7 +1855,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 			index = ((RESEARCH *)psStats)->index;
 		}
 		//recalculate the list
-		numStatsListEntries = fillResearchList(pList, selectedPlayer, (UWORD)index, MAXRESEARCH);
+		numStatsListEntries = fillResearchList(pList.data(), selectedPlayer, (UWORD)index, MAXRESEARCH);
 
 		//	-- Alex's reordering of the list
 		// NOTE!  Do we even want this anymore, since we can have basically
@@ -4418,7 +4401,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
-	ppsStatsList = (BASE_STATS **)ppResearchList;
+	ppsStatsList = (BASE_STATS **)ppResearchList.data();
 
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
@@ -4958,7 +4941,7 @@ int human_computer_interface::getResearchState()
 		//set to value that won't be reached in fillResearchList
 		int index = asResearch.size() + 1;
 		//calculate the list
-		int preCount = fillResearchList(pList, selectedPlayer, index, MAXRESEARCH);
+		int preCount = fillResearchList(pList.data(), selectedPlayer, index, MAXRESEARCH);
 		count = preCount;
 		for (int n = 0; n < preCount; ++n)
 		{

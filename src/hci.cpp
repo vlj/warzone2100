@@ -351,9 +351,6 @@ static void intObjectDied(UDWORD objID);
 /* Add the build widgets to the widget screen */
 /* If psSelected != NULL it specifies which droid should be hilited */
 static bool intAddBuild(DROID *psSelected);
-/* Add the manufacture widgets to the widget screen */
-/* If psSelected != NULL it specifies which factory should be hilited */
-static bool intAddManufacture(STRUCTURE *psSelected);
 /* Add the research widgets to the widget screen */
 /* If psSelected != NULL it specifies which droid should be hilited */
 static bool intAddResearch(STRUCTURE *psSelected);
@@ -372,9 +369,6 @@ static DROID *CurrentDroid = NULL;
 static DROID_TYPE CurrentDroidType = DROID_ANY;
 
 /******************Power Bar Stuff!**************/
-
-/* Set the shadow for the PowerBar */
-static void intRunPower(void);
 
 static void intRunStats(void);
 
@@ -616,7 +610,11 @@ protected:
 	bool addResearch(STRUCTURE *psSelected);
 	/* Add the command droid widgets to the widget screen */
 	/* If psSelected != NULL it specifies which droid should be hilited */
-	bool addCommand(DROID *psSelected)
+	bool addCommand(DROID *psSelected);
+
+	void resetWindows(BASE_OBJECT *psObj);
+	/*Deals with the RMB click for the Object Stats buttons */
+	void objStatRMBPressed(uint32_t id);
 };
 
 human_computer_interface::human_computer_interface()
@@ -1102,7 +1100,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
 			}
-			ppsStatsList = (BASE_STATS **)apsStructStatsList;
+			ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 			objMode = IOBJ_BUILD;
 			intAddStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
@@ -1234,7 +1232,7 @@ INT_RETVAL human_computer_interface::display()
 				intAddBuild(NULL);
 				break;
 			case IOBJ_MANUFACTURE:
-				intAddManufacture(NULL);
+				addManufacture(NULL);
 				break;
 			case IOBJ_RESEARCH:
 				intAddResearch(NULL);
@@ -1319,7 +1317,7 @@ INT_RETVAL human_computer_interface::display()
 	/* Extra code for the power bars to deal with the shadow */
 	if (powerBarUp)
 	{
-		intRunPower();
+		runPower();
 	}
 
 	if (StatsUp)
@@ -1380,7 +1378,7 @@ INT_RETVAL human_computer_interface::display()
 		case IDRET_MANUFACTURE:
 			intResetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
-			intAddManufacture(NULL);
+			addManufacture(NULL);
 			break;
 
 		case IDRET_RESEARCH:
@@ -1468,7 +1466,7 @@ INT_RETVAL human_computer_interface::display()
 			switch (intMode)
 			{
 			case INT_OPTION:
-				intProcessOptions(retID);
+				processOptions(retID);
 				break;
 			case INT_EDITSTAT:
 				intProcessEditStats(retID);
@@ -1862,10 +1860,10 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	//determine the Structures that can be built
 	if (objMode == IOBJ_BUILD)
 	{
-		numStatsListEntries = fillStructureList(apsStructStatsList,
+		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 		                                        selectedPlayer, MAXSTRUCTURES - 1);
 
-		ppsStatsList = (BASE_STATS **)apsStructStatsList;
+		ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 	}
 
 	//have to determine the Template list once the factory has been chosen
@@ -1967,8 +1965,7 @@ static void intSelectDroid(BASE_OBJECT *psObj)
 	triggerEventSelected();
 }
 
-
-static void intResetWindows(BASE_OBJECT *psObj)
+void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 {
 	if (psObj)
 	{
@@ -1984,7 +1981,7 @@ static void intResetWindows(BASE_OBJECT *psObj)
 			intAddResearch((STRUCTURE *)psObj);
 			break;
 		case IOBJ_MANUFACTURE:
-			intAddManufacture((STRUCTURE *)psObj);
+			addManufacture((STRUCTURE *)psObj);
 			break;
 		case IOBJ_COMMAND:
 
@@ -2046,7 +2043,7 @@ void human_computer_interface::processObject(uint32_t id)
 			}
 			psObj->selected = true;
 			widgSetButtonState(psWScreen, statButID, WBUT_CLICKLOCK);
-			intAddObjectStats(psObj, statButID);
+			addObjectStats(psObj, statButID);
 		}
 		triggerEventSelected();
 	}
@@ -2116,7 +2113,7 @@ void human_computer_interface::processObject(uint32_t id)
 				}
 			}
 
-			intResetWindows(psObj);
+			resetWindows(psObj);
 
 			// If a construction droid button was clicked then
 			// clear all other selections and select it.
@@ -2143,7 +2140,7 @@ void human_computer_interface::processObject(uint32_t id)
 			psObj = intGetObject(id);
 			ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
 
-			intResetWindows(psObj);
+			resetWindows(psObj);
 
 			// If a droid button was clicked then clear all other selections and select it.
 			if (psObj->type == OBJ_DROID)
@@ -2490,7 +2487,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 				    ((STRUCTURE *)psObj)->pStructureType->type == REF_CYBORG_FACTORY ||
 				    ((STRUCTURE *)psObj)->pStructureType->type == REF_VTOL_FACTORY)
 				{
-					intAddManufacture((STRUCTURE *)psObj);
+					addManufacture((STRUCTURE *)psObj);
 				}
 				else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
 				{
@@ -3578,7 +3575,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
 		{
 			objStatID = statID;
-			intAddObjectStats(psSelected, statID);
+			addObjectStats(psSelected, statID);
 			intMode = INT_STAT;
 		}
 		else
@@ -3619,7 +3616,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 
 bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
-	intAddObjectWindow(psObjects, psSelected, bForceStats);
+	addObjectWindow(psObjects, psSelected, bForceStats);
 
 	// if the stats screen is up and..
 	if (StatsUp)
@@ -4397,7 +4394,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 bool human_computer_interface::addBuild(DROID *psSelected)
 {
 	/* Store the correct stats list for future reference */
-	ppsStatsList = (BASE_STATS **)apsStructStatsList;
+	ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
@@ -4408,7 +4405,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 
 	/* Create the object screen with the required data */
 
-	return intAddObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
+	return addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
@@ -4428,7 +4425,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	objMode = IOBJ_MANUFACTURE;
 
 	/* Create the object screen with the required data */
-	return intAddObjectWindow((BASE_OBJECT *)interfaceStructList(),
+	return addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
@@ -4444,7 +4441,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	objMode = IOBJ_RESEARCH;
 
 	/* Create the object screen with the required data */
-	return intAddObjectWindow((BASE_OBJECT *)interfaceStructList(),
+	return addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
@@ -4460,7 +4457,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	objMode = IOBJ_COMMAND;
 
 	/* Create the object screen with the required data */
-	return intAddObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
+	return addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
@@ -4538,8 +4535,7 @@ static void intObjectRMBPressed(UDWORD id)
 	}
 }
 
-/*Deals with the RMB click for the Object Stats buttons */
-static void intObjStatRMBPressed(UDWORD id)
+void human_computer_interface::objStatRMBPressed(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
@@ -4552,7 +4548,7 @@ static void intObjStatRMBPressed(UDWORD id)
 	{
 		return;
 	}
-	intResetWindows(psObj);
+	resetWindows(psObj);
 	if (psObj->type == OBJ_STRUCTURE)
 	{
 		psStructure = (STRUCTURE *)psObj;

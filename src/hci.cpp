@@ -318,8 +318,6 @@ static void intRemoveObjectNoAnim(void);
 /* If psSelected != NULL it specifies which stat should be hilited */
 static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
                         BASE_STATS *psSelected, BASE_OBJECT *psOwner);
-/* Process return codes from the stats screen */
-static void intProcessStats(UDWORD id);
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
@@ -2151,7 +2149,7 @@ void human_computer_interface::processObject(uint32_t id)
 		if (objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
 		{
 			/* Not a button on the build form, must be on the stats form */
-			intProcessStats(id);
+			processStats(id);
 		}
 		else  if (id != IDOBJ_TABFORM)
 		{

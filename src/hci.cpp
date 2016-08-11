@@ -112,7 +112,7 @@ enum  				  // Reticule button indecies.
 
 struct BUTSTATE
 {
-	UDWORD id;
+	uint32_t id;
 	bool Enabled;
 	bool Hidden;
 };
@@ -132,17 +132,6 @@ static BUTOFFSET ReticuleOffsets[NUMRETBUTS] =  	// Reticule button form relativ
 	{53, 86},	// RETBUT_DESIGN,
 	{19, 68},	// RETBUT_INTELMAP,
 	{19, 33},	// RETBUT_COMMAND,
-};
-
-static BUTSTATE ReticuleEnabled[NUMRETBUTS] =  	// Reticule button enable states.
-{
-	{IDRET_CANCEL, false, false},
-	{IDRET_MANUFACTURE, false, false},
-	{IDRET_RESEARCH, false, false},
-	{IDRET_BUILD, false, false},
-	{IDRET_DESIGN, false, false},
-	{IDRET_INTEL_MAP, false, false},
-	{IDRET_COMMAND, false, false},
 };
 
 static UDWORD	keyButtonMapping = 0;
@@ -332,8 +321,6 @@ static void processProximityButtons(UDWORD id);
 static DROID *intCheckForDroid(UDWORD droidType);
 static STRUCTURE *intCheckForStructure(UDWORD structType);
 
-static void intCheckReticuleButtons(void);
-
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType);
 
@@ -432,31 +419,6 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 	retbutstats[psWidget->UserData].downTime = DownTime;
 }
 
-// Set the x,y members of a button widget initialiser given a reticule button index.
-//
-void setReticuleBut(int ButId)
-{
-	/* Default button data */
-	W_BUTINIT sButInit;
-	sButInit.formID = IDRET_FORM;
-	sButInit.id = ReticuleEnabled[ButId].id;
-	sButInit.width = RET_BUTWIDTH;
-	sButInit.height = RET_BUTHEIGHT;
-	sButInit.pDisplay = intDisplayReticuleButton;
-	sButInit.x = ReticuleOffsets[ButId].x + RETXOFFSET;
-	sButInit.y = ReticuleOffsets[ButId].y + RETYOFFSET;
-	sButInit.pTip = retbutstats[ButId].tip;
-	sButInit.style = WBUT_SECONDARY;
-	sButInit.UserData = ButId;
-	retbutstats[ButId].downTime = 0;
-	retbutstats[ButId].flashing = 0;
-	retbutstats[ButId].flashTime = 0;
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		debug(LOG_ERROR, "Failed to add reticule button");
-	}
-}
-
 struct human_computer_interface
 {
 	human_computer_interface();
@@ -542,6 +504,8 @@ protected:
 	/* The jump position for each object on the base bar */
 	std::vector<Vector2i> asJumpPos;
 	bool ReticuleUp = false;
+	// Reticule button enable states.
+	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -605,15 +569,26 @@ protected:
 	void setStats(uint32_t id, BASE_STATS *psStats);
 	// clean up when an object dies
 	void objectDied(uint32_t objID);
+	// Set the x,y members of a button widget initialiser given a reticule button index.
+	//
+	void setReticuleBut(int ButId);
+	// Check that each reticule button has the structure or droid required for it and
+	// enable/disable accordingly.
+	//
+	void checkReticuleButtons();
 };
 
 human_computer_interface::human_computer_interface()
 {
-	for (int i = 0; i < NUMRETBUTS; i++)
-	{
-		ReticuleEnabled[i].Hidden = false;
-	}
-
+	ReticuleEnabled = {
+		BUTSTATE{ IDRET_CANCEL, false, false },
+		BUTSTATE{ IDRET_MANUFACTURE, false, false },
+		BUTSTATE{ IDRET_RESEARCH, false, false },
+		BUTSTATE{ IDRET_BUILD, false, false },
+		BUTSTATE{ IDRET_DESIGN, false, false },
+		BUTSTATE{ IDRET_INTEL_MAP, false, false },
+		BUTSTATE{ IDRET_COMMAND, false, false },
+	};
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
 	WidgSetAudio(WidgetAudioCallback, ID_SOUND_BUTTON_CLICK_3, ID_SOUND_SELECT, ID_SOUND_BUILD_FAIL);
 
@@ -683,6 +658,30 @@ human_computer_interface::~human_computer_interface()
 namespace
 {
 	std::unique_ptr<human_computer_interface> default_hci;
+}
+
+
+void human_computer_interface::setReticuleBut(int ButId)
+{
+	/* Default button data */
+	W_BUTINIT sButInit;
+	sButInit.formID = IDRET_FORM;
+	sButInit.id = ReticuleEnabled[ButId].id;
+	sButInit.width = RET_BUTWIDTH;
+	sButInit.height = RET_BUTHEIGHT;
+	sButInit.pDisplay = intDisplayReticuleButton;
+	sButInit.x = ReticuleOffsets[ButId].x + RETXOFFSET;
+	sButInit.y = ReticuleOffsets[ButId].y + RETYOFFSET;
+	sButInit.pTip = retbutstats[ButId].tip;
+	sButInit.style = WBUT_SECONDARY;
+	sButInit.UserData = ButId;
+	retbutstats[ButId].downTime = 0;
+	retbutstats[ButId].flashing = 0;
+	retbutstats[ButId].flashTime = 0;
+	if (!widgAddButton(psWScreen, &sButInit))
+	{
+		debug(LOG_ERROR, "Failed to add reticule button");
+	}
 }
 
 //initialise all the previous obj - particularly useful for when go Off world!
@@ -2505,7 +2504,7 @@ void human_computer_interface::displayWidgets()
 {
 	if (ReticuleUp && !bInTutorial)
 	{
-		intCheckReticuleButtons();
+		checkReticuleButtons();
 	}
 
 	/*draw the background for the design screen and the Intelligence screen*/
@@ -4809,10 +4808,7 @@ static SDWORD intNumSelectedDroids(UDWORD droidType)
 	return num;
 }
 
-// Check that each reticule button has the structure or droid required for it and
-// enable/disable accordingly.
-//
-void intCheckReticuleButtons(void)
+void human_computer_interface::checkReticuleButtons()
 {
 	STRUCTURE	*psStruct;
 	DROID	*psDroid;

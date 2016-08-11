@@ -264,9 +264,6 @@ static UDWORD			numStatsListEntries;
 /* The button ID of the objects stat when the stat screen is displayed */
 UDWORD			objStatID;
 
-/* The button ID of an objects stat on the stat screen if it is locked down */
-static UDWORD			statID;
-
 /* The stats for the current getStructPos */
 static BASE_STATS		*psPositionStats;
 
@@ -290,11 +287,6 @@ static void intRemoveObjectNoAnim(void);
 static void intStartStructPosition(BASE_STATS *psStats);
 /* Stop looking for a structure location */
 static void intStopStructPosition(void);
-
-static STRUCTURE *CurrentStruct = NULL;
-static SWORD CurrentStructType = 0;
-static DROID *CurrentDroid = NULL;
-static DROID_TYPE CurrentDroidType = DROID_ANY;
 
 /******************Power Bar Stuff!**************/
 
@@ -504,6 +496,12 @@ protected:
 	bool secondaryWindowUp = false;
 	// Chat dialog
 	bool ChatDialogUp = false;
+	STRUCTURE *CurrentStruct = nullptr;
+	int32_t CurrentStructType = 0;
+	DROID *CurrentDroid = nullptr;
+	DROID_TYPE CurrentDroidType = DROID_ANY;
+	/* The button ID of an objects stat on the stat screen if it is locked down */
+	uint32_t statID;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);

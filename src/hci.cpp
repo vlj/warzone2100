@@ -186,16 +186,19 @@ static UDWORD	keyButtonMapping = 0;
 #define STAT_BUTWIDTH		60
 #define STAT_BUTHEIGHT		46
 
+namespace
+{
 /* Close strings */
-static char pCloseText[] = "X";
+const std::string pCloseText = "X";
 
 /* Player button strings */
-static const char	*apPlayerText[] =
+const std::array<std::string, 16> apPlayerText =
 {
 	"0", "1", "2", "3", "4", "5", "6", "7",
 	"8", "9", "10", "11", "12", "13", "14", "15",
 };
-static const char	*apPlayerTip[] =
+
+const std::array<std::string, 16> apPlayerTip =
 {
 	"Select Player 0",
 	"Select Player 1",
@@ -214,6 +217,7 @@ static const char	*apPlayerTip[] =
 	"Select Player 14",
 	"Select Player 15",
 };
+}
 
 /* The widget screen */
 W_SCREEN		*psWScreen;
@@ -2918,7 +2922,7 @@ bool human_computer_interface::addOptions()
 	sButInit.y = OPT_GAP;
 	sButInit.width = CLOSE_SIZE;
 	sButInit.height = CLOSE_SIZE;
-	sButInit.pText = pCloseText;
+	sButInit.pText = pCloseText.data();
 	sButInit.pTip = _("Close");
 	if (!widgAddButton(psWScreen, &sButInit))
 	{
@@ -3009,9 +3013,8 @@ bool human_computer_interface::addOptions()
 	sButInit.height = OPT_BUTHEIGHT;
 	for (player = 0; player < MAX_PLAYERS; player++)
 	{
-		STATIC_ASSERT(MAX_PLAYERS <= ARRAY_SIZE(apPlayerText) && MAX_PLAYERS <= ARRAY_SIZE(apPlayerTip));
-		sButInit.pText = apPlayerText[player];
-		sButInit.pTip = apPlayerTip[player];
+		sButInit.pText = apPlayerText[player].data();
+		sButInit.pTip = apPlayerTip[player].data();
 		if (!widgAddButton(psWScreen, &sButInit))
 		{
 			return false;

@@ -278,9 +278,6 @@ static bool				objectsChanged;
 static BASE_STATS		**ppsStatsList;
 static UDWORD			numStatsListEntries;
 
-/* The selected object on the object screen when the stats screen is displayed */
-static BASE_OBJECT		*psObjSelected;
-
 /* The button ID of the objects stat when the stat screen is displayed */
 UDWORD			objStatID;
 
@@ -294,17 +291,11 @@ static BASE_STATS		*psPositionStats;
 std::vector<DROID_TEMPLATE *>   apsTemplateList;
 std::list<DROID_TEMPLATE>       localTemplates;
 
-/* Store a list of Feature pointers for features to be placed on the map */
-static FEATURE_STATS	**apsFeatureList;
-
 /* Store a list of component stats pointers for the design screen */
 UDWORD			numComponent;
 COMPONENT_STATS	**apsComponentList;
 UDWORD			numExtraSys;
 COMPONENT_STATS	**apsExtraSysList;
-
-// store the objects that are being used for the object bar
-static std::vector<BASE_OBJECT *> apsObjectList;
 
 /* Flags to check whether the power bars are currently on the screen */
 static bool				powerBarUp = false;
@@ -322,12 +313,6 @@ static std::vector<Vector2i> asJumpPos;
 /* Remove the object widgets from the widget screen */
 void intRemoveObject(void);
 static void intRemoveObjectNoAnim(void);
-/* Get the object refered to by a button ID on the object screen.
- * This works for droid or structure buttons
- */
-static BASE_OBJECT *intGetObject(UDWORD id);
-/* Reset the stats button for an object */
-static void intSetStats(UDWORD id, BASE_STATS *psStats);
 
 /* Add the stats widgets to the widget screen */
 /* If psSelected != NULL it specifies which stat should be hilited */
@@ -335,8 +320,6 @@ static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
                         BASE_STATS *psSelected, BASE_OBJECT *psOwner);
 /* Process return codes from the stats screen */
 static void intProcessStats(UDWORD id);
-// clean up when an object dies
-static void intObjectDied(UDWORD objID);
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
@@ -351,12 +334,6 @@ static DROID_TYPE CurrentDroidType = DROID_ANY;
 /******************Power Bar Stuff!**************/
 
 static void intRunStats(void);
-
-/*Deals with the RMB click for the stats screen */
-static void intStatsRMBPressed(UDWORD id);
-
-/*Deals with the RMB click for the object screen */
-static void intObjectRMBPressed(UDWORD id);
 
 //proximity display stuff
 static void processProximityButtons(UDWORD id);
@@ -562,6 +539,12 @@ protected:
 	/*Store a list of research indices which can be performed*/
 	std::array<UWORD, MAXRESEARCH> pList;
 	std::array<UWORD, MAXRESEARCH> pSList;
+	/* Store a list of Feature pointers for features to be placed on the map */
+	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
+	// store the objects that are being used for the object bar
+	std::vector<BASE_OBJECT *> apsObjectList;
+	/* The selected object on the object screen when the stats screen is displayed */
+	BASE_OBJECT *psObjSelected;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -593,6 +576,9 @@ protected:
 	/* Add the command droid widgets to the widget screen */
 	/* If psSelected != NULL it specifies which droid should be hilited */
 	bool addCommand(DROID *psSelected);
+	/*puts the selected players factories in order - Standard factories 1-5, then
+	cyborg factories 1-5 and then Vtol factories 1-5*/
+	void orderFactories();
 
 	void resetWindows(BASE_OBJECT *psObj);
 	/*Deals with the RMB click for the Object Stats buttons */
@@ -600,6 +586,28 @@ protected:
 	// Refresh widgets once per game cycle if pending flag is set.
 	//
 	void doScreenRefresh();
+	/* Process return codes from the stats screen */
+	void processStats(uint32_t id);
+	//reorder the research facilities so that first built is first in the list
+	void orderResearch();
+	// reorder the commanders
+	void orderDroids();
+	/** Order the objects in the bottom bar according to their type. */
+	void orderObjectInterface();
+	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
+	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
+	/**
+	* Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
+	*/
+	BASE_OBJECT *getObject(uint32_t id);
+	/*Deals with the RMB click for the Object screen */
+	void objectRMBPressed(uint32_t id);
+	/*Deals with the RMB click for the stats screen */
+	void statsRMBPressed(uint32_t id);
+	/* Reset the stats button for an object */
+	void setStats(uint32_t id, BASE_STATS *psStats);
+	// clean up when an object dies
+	void objectDied(uint32_t objID);
 };
 
 human_computer_interface::human_computer_interface()
@@ -615,17 +623,11 @@ human_computer_interface::human_computer_interface()
 	/* Create storage for Templates that can be built */
 	apsTemplateList.clear();
 
-	/* Create storage for the feature list */
-	apsFeatureList = (FEATURE_STATS **)malloc(sizeof(FEATURE_STATS *) * MAXFEATURES);
-
 	/* Create storage for the component list */
 	apsComponentList = (COMPONENT_STATS **)malloc(sizeof(COMPONENT_STATS *) * MAXCOMPONENT);
 
 	/* Create storage for the extra systems list */
 	apsExtraSysList = (COMPONENT_STATS **)malloc(sizeof(COMPONENT_STATS *) * MAXEXTRASYS);
-
-	// allocate the object list
-	apsObjectList.clear();
 
 	psObjSelected = nullptr;
 
@@ -674,14 +676,12 @@ human_computer_interface::~human_computer_interface()
 	psWScreen = NULL;
 
 	apsTemplateList.clear();
-	free(apsFeatureList);
 	free(apsComponentList);
 	free(apsExtraSysList);
 	apsObjectList.clear();
 	psObjSelected = nullptr;
 
 	psWScreen = NULL;
-	apsFeatureList = NULL;
 	apsComponentList = NULL;
 	apsExtraSysList = NULL;
 
@@ -1082,7 +1082,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			ppsStatsList = (BASE_STATS **)apsFeatureList;
+			ppsStatsList = (BASE_STATS **)apsFeatureList.data();
 			intAddStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1152,7 +1152,7 @@ void human_computer_interface::update()
 		{
 			if (apsObjectList[i] && apsObjectList[i]->died)
 			{
-				intObjectDied(i + IDOBJ_OBJSTART);
+				objectDied(i + IDOBJ_OBJSTART);
 				apsObjectList[i] = nullptr;
 			}
 		}
@@ -1979,7 +1979,7 @@ void human_computer_interface::processObject(uint32_t id)
 	     (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
 	{
 		/* Find the object that the ID refers to */
-		psObj = intGetObject(id);
+		psObj = getObject(id);
 		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
 		{
 			statButID = IDOBJ_STATSTART + id - IDOBJ_OBJSTART;
@@ -2022,14 +2022,14 @@ void human_computer_interface::processObject(uint32_t id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			intObjectRMBPressed(id);
+			objectRMBPressed(id);
 		}
 		/* deal with LMB clicks */
 		else
 		{
 			/* An object button has been pressed */
 			/* Find the object that the ID refers to */
-			psObj = intGetObject(id);
+			psObj = getObject(id);
 			if (!psObj)
 			{
 				return;
@@ -2107,7 +2107,7 @@ void human_computer_interface::processObject(uint32_t id)
 		else
 		{
 			/* Find the object that the stats ID refers to */
-			psObj = intGetObject(id);
+			psObj = getObject(id);
 			ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
 
 			resetWindows(psObj);
@@ -2160,9 +2160,7 @@ void human_computer_interface::processObject(uint32_t id)
 	}
 }
 
-
-/* Process return codes from the stats screen */
-static void intProcessStats(UDWORD id)
+void human_computer_interface::processStats(uint32_t id)
 {
 	BASE_STATS		*psStats;
 	STRUCTURE		*psStruct;
@@ -2179,7 +2177,7 @@ static void intProcessStats(UDWORD id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			intStatsRMBPressed(id);
+			statsRMBPressed(id);
 		}
 		/* deal with LMB clicks */
 		else
@@ -2219,7 +2217,7 @@ static void intProcessStats(UDWORD id)
 					}
 
 					// Reset the button on the object form
-					intSetStats(objStatID, (BASE_STATS *)psNext);
+					setStats(objStatID, (BASE_STATS *)psNext);
 				}
 			}
 			else
@@ -2244,7 +2242,7 @@ static void intProcessStats(UDWORD id)
 					objSetStatsFunc(psObjSelected, NULL);
 
 					/* Reset the button on the object form */
-					intSetStats(objStatID, NULL);
+					setStats(objStatID, NULL);
 
 					/* Unlock the button on the stats form */
 					widgSetButtonState(psWScreen, id, 0);
@@ -2282,12 +2280,12 @@ static void intProcessStats(UDWORD id)
 					//if this returns false, there's a problem so set the button to NULL
 					if (!objSetStatsFunc(psObjSelected, psStats))
 					{
-						intSetStats(objStatID, NULL);
+						setStats(objStatID, NULL);
 					}
 					else
 					{
 						// Reset the button on the object form
-						intSetStats(objStatID, psStats);
+						setStats(objStatID, psStats);
 					}
 				}
 
@@ -2562,8 +2560,7 @@ void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 	}
 }
 
-// clean up when an object dies
-static void intObjectDied(UDWORD objID)
+void human_computer_interface::objectDied(uint32_t objID)
 {
 	UDWORD				statsID, gubbinsID;
 
@@ -2581,7 +2578,7 @@ static void intObjectDied(UDWORD objID)
 
 		// clear the stats button
 		statsID = IDOBJ_STATSTART + objID - IDOBJ_OBJSTART;
-		intSetStats(statsID, NULL);
+		setStats(statsID, NULL);
 		// and disable it
 		widgSetButtonState(psWScreen, statsID, WBUT_DISABLE);
 
@@ -2610,7 +2607,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 			{
 				if (psCurr == psDroid)
 				{
-					intSetStats(droidID + IDOBJ_STATSTART, NULL);
+					setStats(droidID + IDOBJ_STATSTART, NULL);
 					break;
 				}
 				droidID++;
@@ -2635,7 +2632,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 				if (psCurr == psDroid)
 				{
 					STRUCTURE *target = castStructure(psCurr->order.psObj);
-					intSetStats(droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr);
+					setStats(droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr);
 					break;
 				}
 				droidID++;
@@ -2671,8 +2668,7 @@ void human_computer_interface::demolishCancel()
 	}
 }
 
-//reorder the research facilities so that first built is first in the list
-static void orderResearch(void)
+void human_computer_interface::orderResearch()
 {
 	std::reverse(apsObjectList.begin(), apsObjectList.end());  // Why reverse this list, instead of sorting it?
 }
@@ -2684,7 +2680,7 @@ static inline bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 }
 
 // reorder the commanders
-static void orderDroids(void)
+void human_computer_interface::orderDroids()
 {
 	// bubble sort on the ID - first built will always be first in the list
 	std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
@@ -2706,16 +2702,12 @@ static inline bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	return x->psAssemblyPoint->factoryInc < y->psAssemblyPoint->factoryInc;
 }
 
-/*puts the selected players factories in order - Standard factories 1-5, then
-cyborg factories 1-5 and then Vtol factories 1-5*/
-static void orderFactories(void)
+void human_computer_interface::orderFactories()
 {
 	std::sort(apsObjectList.begin(), apsObjectList.end(), sortFactoryByTypeFunction);
 }
 
-
-/** Order the objects in the bottom bar according to their type. */
-static void orderObjectInterface(void)
+void human_computer_interface::orderObjectInterface()
 {
 	if (apsObjectList.empty())
 	{
@@ -2743,8 +2735,7 @@ static void orderObjectInterface(void)
 	}
 }
 
-// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
-static unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
+unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
 {
 	apsObjectList.clear();
 	for (STRUCTURE *psCurr = interfaceStructList(); psCurr; psCurr = psCurr->psNext)
@@ -2772,7 +2763,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != apsObjectList.size())
 		{
-			intSetStats(structureIndex + IDOBJ_STATSTART, NULL);
+			setStats(structureIndex + IDOBJ_STATSTART, NULL);
 			// clear the loop button if interface is up
 			if (widgGetFromID(psWScreen, IDSTAT_LOOP_BUTTON))
 			{
@@ -2793,7 +2784,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != apsObjectList.size())
 		{
-			intSetStats(structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject);
+			setStats(structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject);
 		}
 	}
 }
@@ -3667,10 +3658,7 @@ void human_computer_interface::removeStatsNoAnim()
 	psStatsScreenOwner = NULL;
 }
 
-/**
- * Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
- */
-static BASE_OBJECT *intGetObject(UDWORD id)
+BASE_OBJECT *human_computer_interface::getObject(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 
@@ -3687,9 +3675,7 @@ static BASE_OBJECT *intGetObject(UDWORD id)
 	return psObj;
 }
 
-
-/* Reset the stats button for an object */
-static void intSetStats(UDWORD id, BASE_STATS *psStats)
+void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 {
 	/* Update the button on the object screen */
 	IntStatusButton *statButton = (IntStatusButton *)widgGetFromID(psWScreen, id);
@@ -3719,7 +3705,7 @@ static void intSetStats(UDWORD id, BASE_STATS *psStats)
 	sBarInit.iRange = GAME_TICKS_PER_SEC;
 	// Setup widget update callback and object pointer so we can update the progress bar.
 	sBarInit.pCallback = intUpdateProgressBar;
-	sBarInit.pUserData = intGetObject(id);
+	sBarInit.pUserData = getObject(id);
 
 	W_LABINIT sLabInit;
 	sLabInit.formID = id;
@@ -3734,7 +3720,7 @@ static void intSetStats(UDWORD id, BASE_STATS *psStats)
 	if (psStats)
 	{
 		statButton->setTip(getName(psStats));
-		statButton->setObjectAndStats(intGetObject(id), psStats);
+		statButton->setObjectAndStats(getObject(id), psStats);
 
 		// Add a text label for the size of the production run.
 		sLabInit.pCallback = intUpdateQuantity;
@@ -3756,7 +3742,7 @@ static void intSetStats(UDWORD id, BASE_STATS *psStats)
 	widgAddLabel(psWScreen, &sLabInit)->setFontColour(WZCOL_ACTION_PRODUCTION_RUN_TEXT);
 	widgAddBarGraph(psWScreen, &sBarInit)->setBackgroundColour(WZCOL_ACTION_PRODUCTION_RUN_BACKGROUND);
 
-	BASE_OBJECT *psObj = intGetObject(id);
+	BASE_OBJECT *psObj = getObject(id);
 	if (psObj && psObj->selected)
 	{
 		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
@@ -4431,9 +4417,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
-
-/*Deals with the RMB click for the stats screen */
-static void intStatsRMBPressed(UDWORD id)
+void human_computer_interface::statsRMBPressed(uint32_t id)
 {
 	ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
 
@@ -4471,13 +4455,12 @@ static void intStatsRMBPressed(UDWORD id)
 			}
 
 			// Reset the button on the object form
-			intSetStats(objStatID, (BASE_STATS *)psNext);
+			setStats(objStatID, (BASE_STATS *)psNext);
 		}
 	}
 }
 
-/*Deals with the RMB click for the Object screen */
-static void intObjectRMBPressed(UDWORD id)
+void human_computer_interface::objectRMBPressed(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
@@ -4485,7 +4468,7 @@ static void intObjectRMBPressed(UDWORD id)
 	ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid object id");
 
 	/* Find the object that the ID refers to */
-	psObj = intGetObject(id);
+	psObj = getObject(id);
 	if (psObj)
 	{
 		//don't jump around when offworld
@@ -4513,7 +4496,7 @@ void human_computer_interface::objStatRMBPressed(uint32_t id)
 	ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < apsObjectList.size(), "Invalid stat id");
 
 	/* Find the object that the ID refers to */
-	psObj = intGetObject(id);
+	psObj = getObject(id);
 	if (!psObj)
 	{
 		return;

@@ -146,7 +146,6 @@ static BUTSTATE ReticuleEnabled[NUMRETBUTS] =  	// Reticule button enable states
 };
 
 static UDWORD	keyButtonMapping = 0;
-static bool ReticuleUp = false;
 static bool Refreshing = false;
 
 /***************************************************************************************/
@@ -464,6 +463,7 @@ struct human_computer_interface
 	~human_computer_interface();
 
 	void update();
+	void displayWidgets();
 	INT_RETVAL display();
 	bool addReticule();
 	bool addPower();
@@ -541,6 +541,7 @@ protected:
 	bool objectsChanged;
 	/* The jump position for each object on the base bar */
 	std::vector<Vector2i> asJumpPos;
+	bool ReticuleUp = false;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -677,9 +678,6 @@ human_computer_interface::~human_computer_interface()
 	psWScreen = NULL;
 	apsComponentList = NULL;
 	apsExtraSysList = NULL;
-
-	//obviously!
-	ReticuleUp = false;
 }
 
 namespace
@@ -2503,7 +2501,7 @@ static void intStopStructPosition(void)
 
 
 /* Display the widgets for the in game interface */
-void intDisplayWidgets(void)
+void human_computer_interface::displayWidgets()
 {
 	if (ReticuleUp && !bInTutorial)
 	{
@@ -2532,6 +2530,11 @@ void intDisplayWidgets(void)
 	{
 		displayLoadSave();
 	}
+}
+
+void intDisplayWidgets(void)
+{
+	default_hci->displayWidgets();
 }
 
 

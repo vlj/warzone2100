@@ -559,7 +559,7 @@ struct human_computer_interface
 
 	void togglePowerBar();
 	void showPowerBar();
-	void intHidePowerBar();
+	void hidePowerBar();
 
 	void forceHidePowerBar();
 	bool addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
@@ -875,7 +875,7 @@ static void intDoScreenRefresh(void)
 
 
 //hides the power bar from the display
-void intHidePowerBar()
+void human_computer_interface::hidePowerBar()
 {
 	//only hides the power bar if the player has requested no power bar
 	if (!powerBarUp)
@@ -885,6 +885,11 @@ void intHidePowerBar()
 			widgHide(psWScreen, IDPOW_POWERBAR_T);
 		}
 	}
+}
+
+void intHidePowerBar()
+{
+	default_hci->hidePowerBar();
 }
 
 /* Remove the options widgets from the widget screen */
@@ -2934,7 +2939,7 @@ void intRemoveReticule(void)
 }
 
 //toggles the Power Bar display on and off
-void togglePowerBar(void)
+void human_computer_interface::togglePowerBar()
 {
 	//toggle the flag
 	powerBarUp = !powerBarUp;
@@ -2947,6 +2952,11 @@ void togglePowerBar(void)
 	{
 		intHidePowerBar();
 	}
+}
+
+void togglePowerBar(void)
+{
+	default_hci->togglePowerBar();
 }
 
 /* Add the power bars to the screen */

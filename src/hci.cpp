@@ -521,9 +521,15 @@ void setReticuleBut(int ButId)
 	}
 }
 
-/* Initialise the in game interface */
-bool intInitialise(void)
+struct human_computer_interface
 {
+	human_computer_interface();
+	~human_computer_interface();
+};
+
+human_computer_interface::human_computer_interface()
+{
+
 	for (int i = 0; i < NUMRETBUTS; i++)
 	{
 		ReticuleEnabled[i].Hidden = false;
@@ -537,12 +543,12 @@ bool intInitialise(void)
 	apsStructStatsList = (STRUCTURE_STATS **)malloc(sizeof(STRUCTURE_STATS *) * MAXSTRUCTURES);
 
 	//create the storage for Research topics - max possible size
-	ppResearchList = (RESEARCH **) malloc(sizeof(RESEARCH *) * MAXRESEARCH);
+	ppResearchList = (RESEARCH **)malloc(sizeof(RESEARCH *) * MAXRESEARCH);
 
 	//create the list for the selected player
 	//needs to be UWORD sized for Patches
-	pList = (UWORD *) malloc(sizeof(UWORD) * MAXRESEARCH);
-	pSList = (UWORD *) malloc(sizeof(UWORD) * MAXRESEARCH);
+	pList = (UWORD *)malloc(sizeof(UWORD) * MAXRESEARCH);
+	pSList = (UWORD *)malloc(sizeof(UWORD) * MAXRESEARCH);
 
 	/* Create storage for Templates that can be built */
 	apsTemplateList.clear();
@@ -570,7 +576,6 @@ bool intInitialise(void)
 		if (!intAddPower())
 		{
 			debug(LOG_ERROR, "Couldn't create power Bar widget(Out of memory ?)");
-			return false;
 		}
 	}
 
@@ -599,23 +604,9 @@ bool intInitialise(void)
 			}
 		}
 	}
-
-	return true;
 }
 
-
-//initialise all the previous obj - particularly useful for when go Off world!
-void intResetPreviousObj(void)
-{
-	//make sure stats screen doesn't think it should be up
-	StatsUp = false;
-	// reset the previous objects
-	memset(apsPreviousObj, 0, sizeof(apsPreviousObj));
-}
-
-
-/* Shut down the in game interface */
-void interfaceShutDown(void)
+human_computer_interface::~human_computer_interface()
 {
 	delete psWScreen;
 	psWScreen = NULL;
@@ -642,6 +633,35 @@ void interfaceShutDown(void)
 
 	//obviously!
 	ReticuleUp = false;
+}
+
+namespace
+{
+	std::unique_ptr<human_computer_interface> default_hci;
+}
+
+/* Initialise the in game interface */
+bool intInitialise(void)
+{
+	default_hci.reset(new human_computer_interface);
+	return true;
+}
+
+
+//initialise all the previous obj - particularly useful for when go Off world!
+void intResetPreviousObj(void)
+{
+	//make sure stats screen doesn't think it should be up
+	StatsUp = false;
+	// reset the previous objects
+	memset(apsPreviousObj, 0, sizeof(apsPreviousObj));
+}
+
+
+/* Shut down the in game interface */
+void interfaceShutDown(void)
+{
+	default_hci.release();
 }
 
 static bool IntRefreshPending = false;

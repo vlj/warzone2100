@@ -709,12 +709,17 @@ bool intInitialise(void)
 
 
 //initialise all the previous obj - particularly useful for when go Off world!
-void intResetPreviousObj(void)
+void human_computer_interface::resetPreviousObj()
 {
 	//make sure stats screen doesn't think it should be up
 	StatsUp = false;
 	// reset the previous objects
 	memset(apsPreviousObj, 0, sizeof(apsPreviousObj));
+}
+
+void intResetPreviousObj(void)
+{
+	default_hci->resetPreviousObj();
 }
 
 
@@ -733,9 +738,14 @@ void intRefreshScreen(void)
 	IntRefreshPending = true;
 }
 
-bool intIsRefreshing(void)
+bool human_computer_interface::isRefreshing()
 {
 	return Refreshing;
+}
+
+bool intIsRefreshing(void)
+{
+	return default_hci->isRefreshing();
 }
 
 
@@ -2733,12 +2743,17 @@ bool intBuildMode(void)
 }
 
 //Written to allow demolish order to be added to the queuing system
-void intDemolishCancel(void)
+void human_computer_interface::demolishCancel()
 {
 	if (objMode == IOBJ_DEMOLISHSEL)
 	{
 		objMode = IOBJ_NONE;
 	}
+}
+
+void intDemolishCancel(void)
+{
+	default_hci->demolishCancel();
 }
 
 
@@ -3877,7 +3892,7 @@ static void intSetStats(UDWORD id, BASE_STATS *psStats)
 	}
 }
 
-StateButton *makeObsoleteButton(WIDGET *parent)
+StateButton *human_computer_interface::makeObsoleteButton(WIDGET *parent)
 {
 	StateButton *obsoleteButton = new StateButton(parent);
 	obsoleteButton->id = IDSTAT_OBSOLETE_BUTTON;
@@ -3889,6 +3904,11 @@ StateButton *makeObsoleteButton(WIDGET *parent)
 	obsoleteButton->setTip(true, _("Showing Obsolete Tech"));
 	obsoleteButton->move(4 + Image(IntImages, IMAGE_FDP_UP).width() + 4, STAT_SLDY);
 	return obsoleteButton;
+}
+
+StateButton *makeObsoleteButton(WIDGET *parent)
+{
+	return default_hci->makeObsoleteButton(parent);
 }
 
 /* Add the stats widgets to the widget screen */
@@ -4804,7 +4824,7 @@ void intShowPowerBar(void)
 }
 
 //hides the power bar from the display - regardless of what player requested!
-void forceHidePowerBar(void)
+void human_computer_interface::forceHidePowerBar()
 {
 	if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
 	{
@@ -4812,9 +4832,14 @@ void forceHidePowerBar(void)
 	}
 }
 
+void forceHidePowerBar(void)
+{
+	default_hci->forceHidePowerBar();
+}
+
 
 /* Add the Proximity message buttons */
-bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)
+bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
 {
 	PROXIMITY_DISPLAY	*psProxDisp2;
 	UDWORD				cnt;
@@ -4860,12 +4885,22 @@ bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)
 	return true;
 }
 
+bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)
+{
+	return default_hci->addProximityButton(psProxDisp, inc);
+}
+
 
 /*Remove a Proximity Button - when the message is deleted*/
-void intRemoveProximityButton(PROXIMITY_DISPLAY *psProxDisp)
+void human_computer_interface::removeProximityButton(PROXIMITY_DISPLAY *psProxDisp)
 {
 	ASSERT_OR_RETURN(, psProxDisp->buttonID >= IDPROX_START && psProxDisp->buttonID <= IDPROX_END, "Invalid proximity ID");
 	widgDelete(psWScreen, psProxDisp->buttonID);
+}
+
+void intRemoveProximityButton(PROXIMITY_DISPLAY *psProxDisp)
+{
+	default_hci->removeProximityButton(psProxDisp);
 }
 
 /*deals with the proximity message when clicked on*/
@@ -4898,9 +4933,14 @@ void processProximityButtons(UDWORD id)
 }
 
 /*	Fools the widgets by setting a key value */
-void	setKeyButtonMapping(UDWORD	val)
+void human_computer_interface::setKeyButtonMapping(uint32_t val)
 {
 	keyButtonMapping = val;
+}
+
+void	setKeyButtonMapping(UDWORD	val)
+{
+	default_hci->setKeyButtonMapping(val);
 }
 
 
@@ -5066,7 +5106,7 @@ void intCheckReticuleButtons(void)
 
 /*Checks to see if there are any research topics to do and flashes the button -
 only if research facility is free*/
-int intGetResearchState()
+int human_computer_interface::getResearchState()
 {
 	bool resFree = false;
 	for (STRUCTURE *psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
@@ -5105,7 +5145,12 @@ int intGetResearchState()
 	return count;
 }
 
-void intNotifyResearchButton(int prevState)
+int intGetResearchState()
+{
+	return default_hci->getResearchState();
+}
+
+void human_computer_interface::notifyResearchButton(int prevState)
 {
 	int newState = intGetResearchState();
 	if (newState > prevState)
@@ -5119,8 +5164,13 @@ void intNotifyResearchButton(int prevState)
 	}
 }
 
+void intNotifyResearchButton(int prevState)
+{
+	default_hci->notifyResearchButton(prevState);
+}
+
 // see if a reticule button is enabled
-bool intCheckReticuleButEnabled(UDWORD id)
+bool human_computer_interface::checkReticuleButEnabled(uint32_t id)
 {
 	for (int i = 0; i < NUMRETBUTS; i++)
 	{
@@ -5132,9 +5182,14 @@ bool intCheckReticuleButEnabled(UDWORD id)
 	return false;
 }
 
+bool intCheckReticuleButEnabled(UDWORD id)
+{
+	return default_hci->checkReticuleButEnabled(id);
+}
+
 // Find any structure. Returns NULL if none found.
 //
-STRUCTURE *intFindAStructure(void)
+STRUCTURE *human_computer_interface::findAStructure()
 {
 	STRUCTURE *Struct;
 
@@ -5154,10 +5209,15 @@ STRUCTURE *intFindAStructure(void)
 	return Struct;
 }
 
+STRUCTURE *intFindAStructure(void)
+{
+	return default_hci->findAStructure();
+}
+
 
 // Look through the players structures and find the next one of type structType.
 //
-STRUCTURE *intGotoNextStructureType(UDWORD structType, bool JumpTo, bool CancelDrive)
+STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive)
 {
 	STRUCTURE	*psStruct;
 	bool Found = false;
@@ -5235,10 +5295,15 @@ STRUCTURE *intGotoNextStructureType(UDWORD structType, bool JumpTo, bool CancelD
 	return CurrentStruct;
 }
 
+STRUCTURE *intGotoNextStructureType(UDWORD structType, bool JumpTo, bool CancelDrive)
+{
+	return default_hci->gotoNextStructureType(structType, JumpTo, CancelDrive);
+}
+
 // Look through the players droids and find the next one of type droidType.
 // If Current=NULL then start at the beginning overwise start at Current.
 //
-DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
+DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
 {
 	DROID *psDroid;
 	bool Found = false;
@@ -5317,10 +5382,20 @@ DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGr
 	return NULL;
 }
 
+DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
+{
+	return default_hci->gotoNextDroidType(CurrDroid, droidType, AllowGroup);
+}
+
 //access function for selected object in the interface
-BASE_OBJECT *getCurrentSelected(void)
+BASE_OBJECT *human_computer_interface::getCurrentSelected()
 {
 	return psObjSelected;
+}
+
+BASE_OBJECT *getCurrentSelected(void)
+{
+	return default_hci->getCurrentSelected();
 }
 
 // Checks if a coordinate is over the build menu
@@ -5345,7 +5420,7 @@ bool CoordInBuild(int x, int y)
 
 // Our chat dialog for global & team communication
 // \mode sets if global or team communication is wanted
-void chatDialog(int mode)
+void human_computer_interface::chatDialog(int mode)
 {
 	if (!ChatDialogUp)
 	{
@@ -5397,14 +5472,29 @@ void chatDialog(int mode)
 	}
 }
 
+void chatDialog(int mode)
+{
+	default_hci->chatDialog(mode);
+}
+
 // If chat dialog is up
-bool isChatUp(void)
+bool human_computer_interface::isChatUp()
 {
 	return ChatDialogUp;
 }
 
+bool isChatUp(void)
+{
+	return default_hci->isChatUp();
+}
+
 // Helper call to see if we have builder/research/... window up or not.
-bool isSecondaryWindowUp(void)
+bool human_computer_interface::isSecondaryWindowUp()
 {
 	return SecondaryWindowUp;
+}
+
+bool isSecondaryWindowUp(void)
+{
+	return default_hci->isSecondaryWindowUp();
 }

@@ -290,9 +290,6 @@ static UDWORD			statID;
 /* The stats for the current getStructPos */
 static BASE_STATS		*psPositionStats;
 
-/* Store a list of stats pointers from the main structure stats */
-static STRUCTURE_STATS	**apsStructStatsList;
-
 /* Store a list of research pointers for topics that can be performed*/
 static RESEARCH			**ppResearchList;
 
@@ -526,6 +523,9 @@ struct human_computer_interface
 	human_computer_interface();
 	~human_computer_interface();
 
+	/* Store a list of stats pointers from the main structure stats */
+	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
+
 	void update();
 	INT_RETVAL display();
 	bool addReticule();
@@ -585,11 +585,42 @@ struct human_computer_interface
 	void chatDialog(int mode);
 	bool isChatUp();
 	bool isSecondaryWindowUp();
+
+protected:
+	/* Process return codes from the Options screen */
+	void processOptions(uint32_t id);
+	/* Set the shadow for the PowerBar */
+	void runPower();
+	/* Add the stats screen for a given object */
+	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
+	/* Process return codes from the object screen */
+	void processObject(uint32_t id);
+	/* Add the object screen widgets to the widget screen.
+	* select is a pointer to a function that returns true when the object is
+	* to be added to the screen.
+	* getStats is a pointer to a function that returns the appropriate stats
+	* for the object.
+	* If psSelected != NULL it specifies which object should be hilited.
+	*/
+	bool addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
+
+	bool updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
+	/* Add the build widgets to the widget screen */
+	/* If psSelected != NULL it specifies which droid should be hilited */
+	bool addBuild(DROID *psSelected);
+	/* Add the manufacture widgets to the widget screen */
+	/* If psSelected != NULL it specifies which factory should be hilited */
+	bool addManufacture(STRUCTURE *psSelected);
+	/* Add the research widgets to the widget screen */
+	/* If psSelected != NULL it specifies which droid should be hilited */
+	bool addResearch(STRUCTURE *psSelected);
+	/* Add the command droid widgets to the widget screen */
+	/* If psSelected != NULL it specifies which droid should be hilited */
+	bool addCommand(DROID *psSelected)
 };
 
 human_computer_interface::human_computer_interface()
 {
-
 	for (int i = 0; i < NUMRETBUTS; i++)
 	{
 		ReticuleEnabled[i].Hidden = false;
@@ -598,9 +629,6 @@ human_computer_interface::human_computer_interface()
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
 
 	WidgSetAudio(WidgetAudioCallback, ID_SOUND_BUTTON_CLICK_3, ID_SOUND_SELECT, ID_SOUND_BUILD_FAIL);
-
-	/* Create storage for Structures that can be built */
-	apsStructStatsList = (STRUCTURE_STATS **)malloc(sizeof(STRUCTURE_STATS *) * MAXSTRUCTURES);
 
 	//create the storage for Research topics - max possible size
 	ppResearchList = (RESEARCH **)malloc(sizeof(RESEARCH *) * MAXRESEARCH);
@@ -671,7 +699,6 @@ human_computer_interface::~human_computer_interface()
 	delete psWScreen;
 	psWScreen = NULL;
 
-	free(apsStructStatsList);
 	free(ppResearchList);
 	free(pList);
 	free(pSList);
@@ -683,7 +710,6 @@ human_computer_interface::~human_computer_interface()
 	psObjSelected = nullptr;
 
 	psWScreen = NULL;
-	apsStructStatsList = NULL;
 	ppResearchList = NULL;
 	pList = NULL;
 	pSList = NULL;
@@ -1038,9 +1064,7 @@ static void intCalcStructCenter(STRUCTURE_STATS *psStats, UDWORD tilex, UDWORD t
 	*pcy = tiley * TILE_UNITS + height / 2;
 }
 
-
-/* Process return codes from the Options screen */
-static void intProcessOptions(UDWORD id)
+void human_computer_interface::processOptions(uint32_t id)
 {
 	if (id >= IDOPT_PLAYERSTART && id <= IDOPT_PLAYEREND)
 	{
@@ -1728,8 +1752,7 @@ INT_RETVAL human_computer_interface::display()
 	return retCode;
 }
 
-/* Set the shadow for the PowerBar */
-static void intRunPower(void)
+void human_computer_interface::runPower()
 {
 	UDWORD				statID;
 	BASE_STATS			*psStat;
@@ -1802,9 +1825,7 @@ static void intRunStats(void)
 	}
 }
 
-
-/* Add the stats screen for a given object */
-static void intAddObjectStats(BASE_OBJECT *psObj, UDWORD id)
+void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 {
 	BASE_STATS		*psStats;
 	UWORD               statMajor = 0;
@@ -1975,9 +1996,7 @@ static void intResetWindows(BASE_OBJECT *psObj)
 	}
 }
 
-
-/* Process return codes from the object screen */
-static void intProcessObject(UDWORD id)
+void human_computer_interface::processObject(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStruct;
@@ -3077,14 +3096,7 @@ bool human_computer_interface::addOptions()
 	return true;
 }
 
-/* Add the object screen widgets to the widget screen.
- * select is a pointer to a function that returns true when the object is
- * to be added to the screen.
- * getStats is a pointer to a function that returns the appropriate stats
- * for the object.
- * If psSelected != NULL it specifies which object should be hilited.
- */
-static bool intAddObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
+bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
 	UDWORD                  statID = 0;
 	BASE_OBJECT            *psFirst;
@@ -3605,7 +3617,7 @@ static bool intAddObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, 
 }
 
 
-static bool intUpdateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
+bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
 	intAddObjectWindow(psObjects, psSelected, bForceStats);
 
@@ -4382,10 +4394,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 	return true;
 }
 
-
-/* Add the build widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddBuild(DROID *psSelected)
+bool human_computer_interface::addBuild(DROID *psSelected)
 {
 	/* Store the correct stats list for future reference */
 	ppsStatsList = (BASE_STATS **)apsStructStatsList;
@@ -4403,10 +4412,7 @@ static bool intAddBuild(DROID *psSelected)
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
-
-/* Add the manufacture widgets to the widget screen */
-/* If psSelected != NULL it specifies which factory should be hilited */
-static bool intAddManufacture(STRUCTURE *psSelected)
+bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 {
 	/* Store the correct stats list for future reference */
 	if (!apsTemplateList.empty())
@@ -4426,10 +4432,7 @@ static bool intAddManufacture(STRUCTURE *psSelected)
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
-
-/* Add the research widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddResearch(STRUCTURE *psSelected)
+bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
 	ppsStatsList = (BASE_STATS **)ppResearchList;
 
@@ -4445,10 +4448,7 @@ static bool intAddResearch(STRUCTURE *psSelected)
 	                          (BASE_OBJECT *)psSelected, true);
 }
 
-
-/* Add the command droid widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddCommand(DROID *psSelected)
+bool human_computer_interface::addCommand(DROID *psSelected)
 {
 	ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
 

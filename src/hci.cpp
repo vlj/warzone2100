@@ -525,6 +525,66 @@ struct human_computer_interface
 {
 	human_computer_interface();
 	~human_computer_interface();
+
+	void update();
+	INT_RETVAL display();
+	bool addReticule();
+	bool addPower();
+	void removeReticule();
+
+	void setMapPos(uint32_t x, uint32_t y);
+	void notifyNewObject(BASE_OBJECT *);
+	void notifyBuildFinished(DROID *psDroid);
+	void notifyBuildStarted(DROID *psDroid);
+	void notifyResearchFinished(STRUCTURE *psBuilding);
+	void notifyManufactureFinished(STRUCTURE *psBuilding);
+	void updateManufacture(STRUCTURE *psBuilding);
+
+	void objectSelected(BASE_OBJECT *psObj);
+	void constructorSelected(DROID *psDroid);
+	bool buildSelectMode();
+	bool demolishSelectMode();
+	bool buildMode();
+	void commanderSelected(DROID *psDroid);
+	void addIntelScreen();
+	void resetScreen(bool NoAnim);
+	void refreshScreen();
+	bool addOptions();
+	void removeStats();
+	void removeStatsNoAnim();
+	STRUCTURE *interfaceStructList();
+	void addTransporterInterface(DROID *psSelected, bool onMission);
+	void flashReticuleButton(uint32_t buttonID);
+	void stopReticuleButtonFlash(uint32_t buttonID);
+
+	void togglePowerBar();
+	void intShowPowerBar();
+	void intHidePowerBar();
+
+	void forceHidePowerBar();
+	bool addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
+	void removeProximityButton(PROXIMITY_DISPLAY *psProxDisp);
+
+	void setKeyButtonMapping(uint32_t val);
+
+	STRUCTURE *findAStructure();
+	STRUCTURE *gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive);
+	DROID *gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup);
+
+	int getResearchState();
+	void notifyResearchButton(int prevState);
+
+	bool checkReticuleButEnabled(uint32_t id);
+	BASE_OBJECT *getCurrentSelected();
+	void resetPreviousObj();
+	bool isRefreshing();
+	void demolishCancel();
+
+	StateButton *makeObsoleteButton(WIDGET *parent);  ///< Makes a button to toggle showing obsolete items.
+
+	void chatDialog(int mode);
+	bool isChatUp();
+	bool isSecondaryWindowUp();
 };
 
 human_computer_interface::human_computer_interface()
@@ -1108,7 +1168,7 @@ static void intProcessEditStats(UDWORD id)
 	}
 }
 
-void hciUpdate()
+void human_computer_interface::update()
 {
 	// Update the object list if necessary, prune dead objects.
 	if (intMode == INT_OBJECT || intMode == INT_STAT || intMode == INT_CMDORDER)
@@ -1140,8 +1200,13 @@ void hciUpdate()
 	}
 }
 
+void hciUpdate()
+{
+	default_hci->update();
+}
+
 /* Run the widgets for the in game interface */
-INT_RETVAL intRunWidgets(void)
+INT_RETVAL human_computer_interface::display()
 {
 	bool			quitting = false;
 	UDWORD			structX, structY, structX2, structY2;
@@ -1684,6 +1749,12 @@ INT_RETVAL intRunWidgets(void)
 		retCode = INT_QUIT;
 	}
 	return retCode;
+}
+
+/* Run the widgets for the in game interface */
+INT_RETVAL intRunWidgets(void)
+{
+	return default_hci->display();
 }
 
 /* Set the shadow for the PowerBar */
@@ -2377,12 +2448,17 @@ static void intProcessStats(UDWORD id)
 
 
 /* Set the map view point to the world coordinates x,y */
-void intSetMapPos(UDWORD x, UDWORD y)
+void human_computer_interface::setMapPos(uint32_t x, uint32_t y)
 {
 	if (!driveModeActive())
 	{
 		setViewPos(map_coord(x), map_coord(y), true);
 	}
+}
+
+void intSetMapPos(UDWORD x, UDWORD y)
+{
+	default_hci->setMapPos(x, y);
 }
 
 
@@ -2518,7 +2594,7 @@ void intDisplayWidgets(void)
 
 
 /* Tell the interface when an object is created - it may have to be added to a screen */
-void intNewObj(BASE_OBJECT *psObj)
+void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 {
 	if (intMode == INT_OBJECT || intMode == INT_STAT)
 	{
@@ -2533,6 +2609,11 @@ void intNewObj(BASE_OBJECT *psObj)
 			objectsChanged = true;
 		}
 	}
+}
+
+void intNewObj(BASE_OBJECT *psObj)
+{
+	default_hci->notifyNewObject(psObj);
 }
 
 
@@ -2570,7 +2651,7 @@ static void intObjectDied(UDWORD objID)
 
 
 /* Tell the interface a construction droid has finished building */
-void intBuildFinished(DROID *psDroid)
+void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
@@ -2593,8 +2674,13 @@ void intBuildFinished(DROID *psDroid)
 	}
 }
 
+void intBuildFinished(DROID *psDroid)
+{
+	default_hci->notifyBuildFinished(psDroid);
+}
+
 /* Tell the interface a construction droid has started building*/
-void intBuildStarted(DROID *psDroid)
+void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
@@ -2616,6 +2702,11 @@ void intBuildStarted(DROID *psDroid)
 			}
 		}
 	}
+}
+
+void intBuildStarted(DROID *psDroid)
+{
+	default_hci->notifyBuildStarted(psDroid);
 }
 
 /* Are we in build select mode*/
@@ -2737,7 +2828,7 @@ static unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
 }
 
 /* Tell the interface a factory has completed building ALL droids */
-void intManufactureFinished(STRUCTURE *psBuilding)
+void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
@@ -2757,7 +2848,12 @@ void intManufactureFinished(STRUCTURE *psBuilding)
 	}
 }
 
-void intUpdateManufacture(STRUCTURE *psBuilding)
+void intManufactureFinished(STRUCTURE *psBuilding)
+{
+	default_hci->notifyManufactureFinished(psBuilding);
+}
+
+void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
@@ -2772,13 +2868,23 @@ void intUpdateManufacture(STRUCTURE *psBuilding)
 	}
 }
 
+void intUpdateManufacture(STRUCTURE *psBuilding)
+{
+	default_hci->updateManufacture(psBuilding);
+}
+
 /* Tell the interface a research facility has completed a topic */
-void intResearchFinished(STRUCTURE *psBuilding)
+void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
 	// just do a screen refresh
 	intRefreshScreen();
+}
+
+void intResearchFinished(STRUCTURE *psBuilding)
+{
+	default_hci->notifyResearchFinished(psBuilding);
 }
 
 void intAlliedResearchChanged()
@@ -2790,7 +2896,7 @@ void intAlliedResearchChanged()
 }
 
 /* Add the reticule widgets to the widget screen */
-bool intAddReticule()
+bool human_computer_interface::addReticule()
 {
 	if (ReticuleUp)
 	{
@@ -2808,13 +2914,23 @@ bool intAddReticule()
 	return true;
 }
 
-void intRemoveReticule(void)
+bool intAddReticule()
+{
+	return default_hci->addReticule();
+}
+
+void human_computer_interface::removeReticule(void)
 {
 	if (ReticuleUp == true)
 	{
 		widgDelete(psWScreen, IDRET_FORM);		// remove reticule
 		ReticuleUp = false;
 	}
+}
+
+void intRemoveReticule(void)
+{
+	default_hci->removeReticule();
 }
 
 //toggles the Power Bar display on and off
@@ -2834,7 +2950,7 @@ void togglePowerBar(void)
 }
 
 /* Add the power bars to the screen */
-bool intAddPower()
+bool human_computer_interface::addPower()
 {
 	W_BARINIT sBarInit;
 
@@ -2860,6 +2976,11 @@ bool intAddPower()
 
 	powerBarUp = true;
 	return true;
+}
+
+bool intAddPower()
+{
+	return default_hci->addPower();
 }
 
 /* Add the options widgets to the widget screen */

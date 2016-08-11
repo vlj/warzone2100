@@ -326,12 +326,9 @@ static std::vector<Vector2i> asJumpPos;
 
 /***************************************************************************************/
 /*              Function Prototypes                                                    */
-static bool intUpdateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
 /* Remove the object widgets from the widget screen */
 void intRemoveObject(void);
 static void intRemoveObjectNoAnim(void);
-/* Process the object widgets */
-static void intProcessObject(UDWORD id);
 /* Get the object refered to by a button ID on the object screen.
  * This works for droid or structure buttons
  */
@@ -347,16 +344,6 @@ static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
 static void intProcessStats(UDWORD id);
 // clean up when an object dies
 static void intObjectDied(UDWORD objID);
-
-/* Add the build widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddBuild(DROID *psSelected);
-/* Add the research widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddResearch(STRUCTURE *psSelected);
-/* Add the command droid widgets to the widget screen */
-/* If psSelected != NULL it specifies which droid should be hilited */
-static bool intAddCommand(DROID *psSelected);
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
@@ -377,9 +364,6 @@ static void intStatsRMBPressed(UDWORD id);
 
 /*Deals with the RMB click for the object screen */
 static void intObjectRMBPressed(UDWORD id);
-
-/*Deals with the RMB click for the Object Stats buttons */
-static void intObjStatRMBPressed(UDWORD id);
 
 //proximity display stuff
 static void processProximityButtons(UDWORD id);
@@ -615,6 +599,9 @@ protected:
 	void resetWindows(BASE_OBJECT *psObj);
 	/*Deals with the RMB click for the Object Stats buttons */
 	void objStatRMBPressed(uint32_t id);
+	// Refresh widgets once per game cycle if pending flag is set.
+	//
+	void doScreenRefresh();
 };
 
 human_computer_interface::human_computer_interface()
@@ -766,7 +753,7 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 
 // Refresh widgets once per game cycle if pending flag is set.
 //
-static void intDoScreenRefresh(void)
+void human_computer_interface::doScreenRefresh()
 {
 	UWORD           objMajor = 0, statMajor = 0;
 	FLAG_POSITION	*psFlag;
@@ -822,7 +809,7 @@ static void intDoScreenRefresh(void)
 			case IOBJ_MANUFACTURE:	// The manufacture screen (factorys on bottom bar)
 			case IOBJ_RESEARCH:		// The research screen
 				//pass in the currently selected object
-				intUpdateObject((BASE_OBJECT *)interfaceStructList(), psObjSelected, StatsWasUp);
+				updateObject((BASE_OBJECT *)interfaceStructList(), psObjSelected, StatsWasUp);
 				break;
 
 			case IOBJ_BUILD:
@@ -830,7 +817,7 @@ static void intDoScreenRefresh(void)
 			case IOBJ_BUILDSEL:		// Selecting a position for a new structure
 			case IOBJ_DEMOLISHSEL:	// Selecting a structure to demolish
 				//pass in the currently selected object
-				intUpdateObject((BASE_OBJECT *)apsDroidLists[selectedPlayer], psObjSelected, StatsWasUp);
+				updateObject((BASE_OBJECT *)apsDroidLists[selectedPlayer], psObjSelected, StatsWasUp);
 				break;
 
 			default:
@@ -1210,7 +1197,7 @@ INT_RETVAL human_computer_interface::display()
 	bool			quitting = false;
 	UDWORD			structX, structY, structX2, structY2;
 
-	intDoScreenRefresh();
+	doScreenRefresh();
 
 	/* if objects in the world have changed, may have to update the interface */
 	if (objectsChanged)
@@ -1229,13 +1216,13 @@ INT_RETVAL human_computer_interface::display()
 			{
 			case IOBJ_BUILD:
 			case IOBJ_BUILDSEL:
-				intAddBuild(NULL);
+				addBuild(NULL);
 				break;
 			case IOBJ_MANUFACTURE:
 				addManufacture(NULL);
 				break;
 			case IOBJ_RESEARCH:
-				intAddResearch(NULL);
+				addResearch(NULL);
 				break;
 			default:
 				break;
@@ -1366,13 +1353,13 @@ INT_RETVAL human_computer_interface::display()
 		case IDRET_COMMAND:
 			intResetScreen(false);
 			widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
-			intAddCommand(NULL);
+			addCommand(NULL);
 			break;
 
 		case IDRET_BUILD:
 			intResetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
-			intAddBuild(NULL);
+			addBuild(NULL);
 			break;
 
 		case IDRET_MANUFACTURE:
@@ -1384,7 +1371,7 @@ INT_RETVAL human_computer_interface::display()
 		case IDRET_RESEARCH:
 			intResetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
-			(void)intAddResearch(NULL);
+			(void)addResearch(NULL);
 			break;
 
 		case IDRET_INTEL_MAP:
@@ -1478,7 +1465,7 @@ INT_RETVAL human_computer_interface::display()
 			*/
 			// NO BREAK HERE! THIS IS CORRECT;
 			case INT_OBJECT:
-				intProcessObject(retID);
+				processObject(retID);
 				break;
 			case INT_ORDER:
 				intProcessOrder(retID);
@@ -1975,17 +1962,17 @@ void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 		case IOBJ_BUILD:
 		case IOBJ_BUILDSEL:
 		case IOBJ_DEMOLISHSEL:
-			intAddBuild((DROID *)psObj);
+			addBuild((DROID *)psObj);
 			break;
 		case IOBJ_RESEARCH:
-			intAddResearch((STRUCTURE *)psObj);
+			addResearch((STRUCTURE *)psObj);
 			break;
 		case IOBJ_MANUFACTURE:
 			addManufacture((STRUCTURE *)psObj);
 			break;
 		case IOBJ_COMMAND:
 
-			intAddCommand((DROID *)psObj);
+			addCommand((DROID *)psObj);
 			break;
 		default:
 			break;
@@ -2132,7 +2119,7 @@ void human_computer_interface::processObject(uint32_t id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			intObjStatRMBPressed(id);
+			objStatRMBPressed(id);
 		}
 		else
 		{
@@ -2491,7 +2478,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 				}
 				else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
 				{
-					intAddResearch((STRUCTURE *)psObj);
+					addResearch((STRUCTURE *)psObj);
 				}
 			}
 			break;
@@ -2509,7 +2496,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 void human_computer_interface::constructorSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
-	intAddBuild(psDroid);
+	addBuild(psDroid);
 	widgHide(psWScreen, IDOBJ_FORM);
 }
 
@@ -2517,7 +2504,7 @@ void human_computer_interface::constructorSelected(DROID *psDroid)
 void human_computer_interface::commanderSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
-	intAddCommand(psDroid);
+	addCommand(psDroid);
 	widgHide(psWScreen, IDOBJ_FORM);
 }
 

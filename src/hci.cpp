@@ -733,9 +733,14 @@ static bool IntRefreshPending = false;
 
 // Set widget refresh pending flag.
 //
-void intRefreshScreen(void)
+void human_computer_interface::refreshScreen()
 {
 	IntRefreshPending = true;
+}
+
+void intRefreshScreen(void)
+{
+	default_hci->refreshScreen();
 }
 
 bool human_computer_interface::isRefreshing()
@@ -910,7 +915,7 @@ static void intRemoveOptions(void)
 
 
 /* Reset the widget screen to just the reticule */
-void intResetScreen(bool NoAnim)
+void human_computer_interface::resetScreen(bool NoAnim)
 {
 	// Ensure driver mode is turned off.
 	StopDriverMode();
@@ -1059,6 +1064,10 @@ void intResetScreen(bool NoAnim)
 	IntRefreshPending = false;
 }
 
+void intResetScreen(bool NoAnim)
+{
+	default_hci->resetScreen(NoAnim);
+}
 
 // calulate the center world coords for a structure stat given
 // top left tile coords
@@ -2482,7 +2491,7 @@ void intSetMapPos(UDWORD x, UDWORD y)
 //
 // There should be two version of this function, one for left clicking and one got right.
 //
-void intObjectSelected(BASE_OBJECT *psObj)
+void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 {
 	if (psObj)
 	{
@@ -2538,21 +2547,36 @@ void intObjectSelected(BASE_OBJECT *psObj)
 	}
 }
 
+void intObjectSelected(BASE_OBJECT *psObj)
+{
+	default_hci->objectSelected(psObj);
+}
+
 
 // add the construction interface if a constructor droid is selected
-void intConstructorSelected(DROID *psDroid)
+void human_computer_interface::constructorSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	intAddBuild(psDroid);
 	widgHide(psWScreen, IDOBJ_FORM);
 }
 
+void intConstructorSelected(DROID *psDroid)
+{
+	default_hci->constructorSelected(psDroid);
+}
+
 // add the construction interface if a constructor droid is selected
-void intCommanderSelected(DROID *psDroid)
+void human_computer_interface::commanderSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	intAddCommand(psDroid);
 	widgHide(psWScreen, IDOBJ_FORM);
+}
+
+void intCommanderSelected(DROID *psDroid)
+{
+	default_hci->commanderSelected(psDroid);
 }
 
 /* Start looking for a structure location */
@@ -2725,21 +2749,36 @@ void intBuildStarted(DROID *psDroid)
 }
 
 /* Are we in build select mode*/
-bool intBuildSelectMode(void)
+bool human_computer_interface::buildSelectMode()
 {
 	return (objMode == IOBJ_BUILDSEL);
 }
 
+bool intBuildSelectMode(void)
+{
+	return default_hci->buildSelectMode();
+}
+
 /* Are we in demolish select mode*/
-bool intDemolishSelectMode(void)
+bool human_computer_interface::demolishSelectMode()
 {
 	return (objMode == IOBJ_DEMOLISHSEL);
 }
 
+bool intDemolishSelectMode(void)
+{
+	return default_hci->demolishSelectMode();
+}
+
 //is the build interface up?
-bool intBuildMode(void)
+bool human_computer_interface::buildMode()
 {
 	return (objMode == IOBJ_BUILD);
+}
+
+bool intBuildMode(void)
+{
+	return default_hci->buildMode();
 }
 
 //Written to allow demolish order to be added to the queuing system
@@ -3009,7 +3048,7 @@ bool intAddPower()
 }
 
 /* Add the options widgets to the widget screen */
-bool intAddOptions(void)
+bool human_computer_interface::addOptions()
 {
 	W_FORMINIT	sFormInit;
 	W_BUTINIT	sButInit;
@@ -3181,6 +3220,11 @@ bool intAddOptions(void)
 	widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, WBUT_LOCK);
 
 	return true;
+}
+
+bool intAddOptions(void)
+{
+	return default_hci->addOptions();
 }
 
 
@@ -3768,7 +3812,7 @@ static void intRemoveObjectNoAnim(void)
 
 
 /* Remove the stats widgets from the widget screen */
-void intRemoveStats(void)
+void human_computer_interface::removeStats()
 {
 	widgDelete(psWScreen, IDSTAT_CLOSE);
 	widgDelete(psWScreen, IDSTAT_TABFORM);
@@ -3784,9 +3828,13 @@ void intRemoveStats(void)
 	psStatsScreenOwner = NULL;
 }
 
+void intRemoveStats(void)
+{
+	default_hci->removeStats();
+}
 
 /* Remove the stats widgets from the widget screen */
-void intRemoveStatsNoAnim(void)
+void human_computer_interface::removeStatsNoAnim()
 {
 	widgDelete(psWScreen, IDSTAT_CLOSE);
 	widgDelete(psWScreen, IDSTAT_TABFORM);
@@ -3794,6 +3842,11 @@ void intRemoveStatsNoAnim(void)
 
 	StatsUp = false;
 	psStatsScreenOwner = NULL;
+}
+
+void intRemoveStatsNoAnim(void)
+{
+	default_hci->removeStatsNoAnim();
 }
 
 /**

@@ -118,19 +118,6 @@ struct BUTOFFSET
 	SWORD y;
 };
 
-static BUTOFFSET ReticuleOffsets[NUMRETBUTS] =  	// Reticule button form relative positions.
-{
-	{48, 47},	// RETBUT_CANCEL,
-	{53, 15},	// RETBUT_FACTORY,
-	{87, 33},	// RETBUT_RESEARCH,
-	{87, 68},	// RETBUT_BUILD,
-	{53, 86},	// RETBUT_DESIGN,
-	{19, 68},	// RETBUT_INTELMAP,
-	{19, 33},	// RETBUT_COMMAND,
-};
-
-static UDWORD	keyButtonMapping = 0;
-
 /***************************************************************************************/
 /*                  Widget ID numbers                                                  */
 
@@ -183,6 +170,18 @@ static UDWORD	keyButtonMapping = 0;
 
 namespace
 {
+// Reticule button form relative positions.
+constexpr std::array<BUTOFFSET, NUMRETBUTS> ReticuleOffsets =
+{
+	BUTOFFSET{ 48, 47 },	// RETBUT_CANCEL,
+	BUTOFFSET{ 53, 15 },	// RETBUT_FACTORY,
+	BUTOFFSET{ 87, 33 },	// RETBUT_RESEARCH,
+	BUTOFFSET{ 87, 68 },	// RETBUT_BUILD,
+	BUTOFFSET{ 53, 86 },	// RETBUT_DESIGN,
+	BUTOFFSET{ 19, 68 },	// RETBUT_INTELMAP,
+	BUTOFFSET{ 19, 33 },	// RETBUT_COMMAND,
+};
+
 /* Close strings */
 const std::string pCloseText = "X";
 
@@ -502,6 +501,7 @@ protected:
 	DROID_TYPE CurrentDroidType = DROID_ANY;
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
+	uint32_t keyButtonMapping = 0;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);

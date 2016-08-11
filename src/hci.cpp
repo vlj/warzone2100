@@ -506,6 +506,7 @@ protected:
 	bool ReticuleUp = false;
 	// Reticule button enable states.
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
+	bool refreshPending = false;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -693,13 +694,11 @@ void human_computer_interface::resetPreviousObj()
 	memset(apsPreviousObj, 0, sizeof(apsPreviousObj));
 }
 
-static bool IntRefreshPending = false;
-
 // Set widget refresh pending flag.
 //
 void human_computer_interface::refreshScreen()
 {
-	IntRefreshPending = true;
+	refreshPending = true;
 }
 
 bool human_computer_interface::isRefreshing()
@@ -731,7 +730,7 @@ void human_computer_interface::doScreenRefresh()
 	UWORD           objMajor = 0, statMajor = 0;
 	FLAG_POSITION	*psFlag;
 
-	if (IntRefreshPending)
+	if (refreshPending)
 	{
 		Refreshing = true;
 
@@ -838,7 +837,7 @@ void human_computer_interface::doScreenRefresh()
 		Refreshing = false;
 	}
 
-	IntRefreshPending = false;
+	refreshPending = false;
 }
 
 
@@ -1008,7 +1007,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	SecondaryWindowUp = false;
 	intMode = INT_NORMAL;
 	//clearSel() sets IntRefreshPending = true by calling intRefreshScreen() but if we're doing this then we won't need to refresh - hopefully!
-	IntRefreshPending = false;
+	refreshPending = false;
 }
 
 // calulate the center world coords for a structure stat given
@@ -2310,7 +2309,7 @@ void human_computer_interface::processStats(uint32_t id)
 					// hack to stop the stats window re-opening in demolish mode
 					if (objMode == IOBJ_DEMOLISHSEL)
 					{
-						IntRefreshPending = false;
+						refreshPending = false;
 					}
 				}
 			}

@@ -285,24 +285,11 @@ COMPONENT_STATS	**apsComponentList;
 UDWORD			numExtraSys;
 COMPONENT_STATS	**apsExtraSysList;
 
-/* Flags to check whether the power bars are currently on the screen */
-static bool				powerBarUp = false;
-static bool				StatsUp = false;
-static BASE_OBJECT		*psStatsScreenOwner = NULL;
-
-/* The previous object for each object bar */
-static BASE_OBJECT		*apsPreviousObj[IOBJ_MAX];
-
 /***************************************************************************************/
 /*              Function Prototypes                                                    */
 /* Remove the object widgets from the widget screen */
 void intRemoveObject(void);
 static void intRemoveObjectNoAnim(void);
-
-/* Add the stats widgets to the widget screen */
-/* If psSelected != NULL it specifies which stat should be hilited */
-static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
-                        BASE_STATS *psSelected, BASE_OBJECT *psOwner);
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
@@ -511,6 +498,12 @@ protected:
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 	bool refreshPending = false;
 	bool refreshing = false;
+	/* Flags to check whether the power bars are currently on the screen */
+	bool powerBarUp = false;
+	bool statsUp = false;
+	BASE_OBJECT *psStatsScreenOwner = nullptr;
+	/* The previous object for each object bar */
+	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -581,6 +574,10 @@ protected:
 	// enable/disable accordingly.
 	//
 	void checkReticuleButtons();
+	/* Add the stats widgets to the widget screen */
+	/* If psSelected != NULL it specifies which stat should be hilited
+	psOwner specifies which object is hilighted on the object bar for this stat*/
+	bool addStats(BASE_STATS **ppsStatsList, uint32_t numStats, BASE_STATS *psSelected, BASE_OBJECT *psOwner);
 };
 
 human_computer_interface::human_computer_interface()
@@ -693,9 +690,9 @@ void human_computer_interface::setReticuleBut(int ButId)
 void human_computer_interface::resetPreviousObj()
 {
 	//make sure stats screen doesn't think it should be up
-	StatsUp = false;
+	statsUp = false;
 	// reset the previous objects
-	memset(apsPreviousObj, 0, sizeof(apsPreviousObj));
+	memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
 }
 
 // Set widget refresh pending flag.
@@ -1053,7 +1050,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			}
 			ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 			objMode = IOBJ_MANUFACTURE;
-			intAddStats(ppsStatsList, apsTemplateList.size(), NULL, NULL);
+			addStats(ppsStatsList, apsTemplateList.size(), NULL, NULL);
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
 			break;
@@ -1065,7 +1062,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			}
 			ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 			objMode = IOBJ_BUILD;
-			intAddStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL);
+			addStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
 			break;
@@ -1076,7 +1073,7 @@ void human_computer_interface::processOptions(uint32_t id)
 				apsFeatureList[i] = asFeatureStats + i;
 			}
 			ppsStatsList = (BASE_STATS **)apsFeatureList.data();
-			intAddStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL);
+			addStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
 			break;
@@ -1283,7 +1280,7 @@ INT_RETVAL human_computer_interface::display()
 		runPower();
 	}
 
-	if (StatsUp)
+	if (statsUp)
 	{
 		intRunStats();
 	}
@@ -1887,7 +1884,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		}
 	}
 
-	intAddStats(ppsStatsList, numStatsListEntries, psStats, psObj);
+	addStats(ppsStatsList, numStatsListEntries, psStats, psObj);
 
 	// get the tab positions for the new stat form
 	// Restore the tab positions.
@@ -3577,7 +3574,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	addObjectWindow(psObjects, psSelected, bForceStats);
 
 	// if the stats screen is up and..
-	if (StatsUp)
+	if (statsUp)
 	{
 		if (psStatsScreenOwner != NULL)
 		{
@@ -3640,7 +3637,7 @@ void human_computer_interface::removeStats()
 		Form->closeAnimateDelete();
 	}
 
-	StatsUp = false;
+	statsUp = false;
 	psStatsScreenOwner = NULL;
 }
 
@@ -3651,7 +3648,7 @@ void human_computer_interface::removeStatsNoAnim()
 	widgDelete(psWScreen, IDSTAT_TABFORM);
 	widgDelete(psWScreen, IDSTAT_FORM);
 
-	StatsUp = false;
+	statsUp = false;
 	psStatsScreenOwner = NULL;
 }
 
@@ -3763,8 +3760,8 @@ StateButton *human_computer_interface::makeObsoleteButton(WIDGET *parent)
 /* Add the stats widgets to the widget screen */
 /* If psSelected != NULL it specifies which stat should be hilited
    psOwner specifies which object is hilighted on the object bar for this stat*/
-static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
-                        BASE_STATS *psSelected, BASE_OBJECT *psOwner)
+bool human_computer_interface::addStats(BASE_STATS **ppsStatsList, uint32_t numStats,
+                                           BASE_STATS *psSelected, BASE_OBJECT *psOwner)
 {
 	FACTORY				*psFactory;
 
@@ -4067,7 +4064,7 @@ static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
 		sBarInit.id += 1;
 	}
 
-	StatsUp = true;
+	statsUp = true;
 
 	// call the tutorial callbacks if necessary
 	if (bInTutorial)

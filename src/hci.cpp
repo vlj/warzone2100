@@ -1742,16 +1742,12 @@ INT_RETVAL human_computer_interface::display()
 
 void human_computer_interface::runPower()
 {
-	UDWORD				statID;
-	BASE_STATS			*psStat;
-	UDWORD				quantity = 0;
-	RESEARCH			*psResearch;
-
 	/* Find out which button was hilited */
-	statID = widgGetMouseOver(psWScreen);
+	uint32_t statID = widgGetMouseOver(psWScreen);
 	if (statID >= IDSTAT_START && statID <= IDSTAT_END)
 	{
-		psStat = ppsStatsList[statID - IDSTAT_START];
+		BASE_STATS *psStat = ppsStatsList[statID - IDSTAT_START];
+		uint32_t quantity = 0;
 		if (psStat->ref >= REF_STRUCTURE_START && psStat->ref <
 		    REF_STRUCTURE_START + REF_RANGE)
 		{
@@ -1769,7 +1765,7 @@ void human_computer_interface::runPower()
 		         psStat->ref < REF_RESEARCH_START + REF_RANGE)
 		{
 			//get the research points
-			psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
+			RESEARCH *psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
 
 			// has research been not been canceled
 			int rindex = psResearch->index;
@@ -1790,19 +1786,15 @@ void human_computer_interface::runPower()
 
 void human_computer_interface::runStats()
 {
-	BASE_OBJECT			*psOwner;
-	STRUCTURE			*psStruct;
-	FACTORY				*psFactory;
-
 	if (intMode != INT_EDITSTAT && objMode == IOBJ_MANUFACTURE)
 	{
-		psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+		BASE_OBJECT *psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
 		ASSERT_OR_RETURN(, psOwner->type == OBJ_STRUCTURE, "Invalid object type");
 
-		psStruct = (STRUCTURE *)psOwner;
+		STRUCTURE *psStruct = (STRUCTURE *)psOwner;
 		ASSERT_OR_RETURN(, StructIsFactory(psStruct), "Invalid Structure type");
 
-		psFactory = (FACTORY *)psStruct->pFunctionality;
+		FACTORY *psFactory = (FACTORY *)psStruct->pFunctionality;
 		//adjust the loop button if necessary
 		if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
 		{

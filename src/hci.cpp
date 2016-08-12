@@ -258,9 +258,6 @@ COMPONENT_STATS	**apsExtraSysList;
 
 /***************************************************************************************/
 /*              Function Prototypes                                                    */
-/* Remove the object widgets from the widget screen */
-void intRemoveObject(void);
-static void intRemoveObjectNoAnim(void);
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
@@ -275,7 +272,6 @@ static void intRunStats(void);
 static void processProximityButtons(UDWORD id);
 
 static DROID *intCheckForDroid(UDWORD droidType);
-static STRUCTURE *intCheckForStructure(UDWORD structType);
 
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType);
@@ -906,23 +902,23 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		intStopStructPosition();
 		if (NoAnim)
 		{
-			intRemoveObjectNoAnim();
+			removeObjectNoAnim();
 		}
 		else
 		{
-			intRemoveObject();
+			removeObject();
 		}
 		break;
 	case INT_STAT:
 		if (NoAnim)
 		{
 			removeStatsNoAnim();
-			intRemoveObjectNoAnim();
+			removeObjectNoAnim();
 		}
 		else
 		{
 			removeStats();
-			intRemoveObject();
+			removeObject();
 		}
 		break;
 
@@ -930,12 +926,12 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		if (NoAnim)
 		{
 			intRemoveOrderNoAnim();
-			intRemoveObjectNoAnim();
+			removeObjectNoAnim();
 		}
 		else
 		{
 			intRemoveOrder();
-			intRemoveObject();
+			removeObject();
 		}
 		break;
 	case INT_ORDER:
@@ -1182,7 +1178,7 @@ INT_RETVAL human_computer_interface::display()
 
 			/* Remove the old screen */
 			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-			intRemoveObject();
+			removeObject();
 
 			/* Add the new screen */
 			switch (objMode)
@@ -2303,10 +2299,10 @@ void human_computer_interface::processStats(uint32_t id)
 						}
 						driveDisableTactical();
 						driveStartBuild();
-						intRemoveObject();
+						removeObject();
 					}
 
-					intRemoveObject();
+					removeObject();
 					// hack to stop the stats window re-opening in demolish mode
 					if (objMode == IOBJ_DEMOLISHSEL)
 					{
@@ -3060,7 +3056,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	// Is the form already up?
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
 	{
-		intRemoveObjectNoAnim();
+		removeObjectNoAnim();
 	}
 	else
 	{
@@ -3109,18 +3105,18 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		switch (objMode)
 		{
 		case IOBJ_RESEARCH:
-			psSelected = (BASE_OBJECT *)intCheckForStructure(REF_RESEARCH);
+			psSelected = (BASE_OBJECT *)checkForStructure(REF_RESEARCH);
 			break;
 		case IOBJ_MANUFACTURE:
-			psSelected = (BASE_OBJECT *)intCheckForStructure(REF_FACTORY);
+			psSelected = (BASE_OBJECT *)checkForStructure(REF_FACTORY);
 			//if haven't got a Factory, check for specific types of factory
 			if (!psSelected)
 			{
-				psSelected = (BASE_OBJECT *)intCheckForStructure(REF_CYBORG_FACTORY);
+				psSelected = (BASE_OBJECT *)checkForStructure(REF_CYBORG_FACTORY);
 			}
 			if (!psSelected)
 			{
-				psSelected = (BASE_OBJECT *)intCheckForStructure(REF_VTOL_FACTORY);
+				psSelected = (BASE_OBJECT *)checkForStructure(REF_VTOL_FACTORY);
 			}
 			break;
 		case IOBJ_BUILD:

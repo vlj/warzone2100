@@ -778,6 +778,83 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 	return NULL;
 }
 
+namespace
+{
+	bool state_is_OBJECT_STAT_CMDORDER_ORDER_TRANSPORTER()
+	{
+		return (intMode == INT_OBJECT ||
+			intMode == INT_STAT ||
+			intMode == INT_CMDORDER ||
+			intMode == INT_ORDER ||
+			intMode == INT_TRANSPORTER);
+	}
+
+	bool state_is_OPTION()
+	{
+		return intMode == INT_OPTION;
+	}
+
+	bool state_is_EDITSTAT()
+	{
+		return intMode == INT_EDITSTAT;
+	}
+
+	bool state_is_OBJECT()
+	{
+		return intMode == INT_OBJECT;
+	}
+
+	bool state_is_STAT()
+	{
+		return intMode == INT_STAT;
+	}
+
+	bool state_is_CMDORDER()
+	{
+		return intMode == INT_CMDORDER;
+	}
+
+	bool state_is_ORDER()
+	{
+		return intMode == INT_ORDER;
+	}
+
+	bool state_is_INGAMEOP()
+	{
+		return intMode == INT_INGAMEOP;
+	}
+
+	bool state_is_MISSIONRES()
+	{
+		return intMode == INT_MISSIONRES;
+	}
+
+	bool state_is_MULTIMENU()
+	{
+		return intMode == INT_MULTIMENU;
+	}
+
+	bool state_is_DESIGN()
+	{
+		return intMode == INT_DESIGN;
+	}
+
+	bool state_is_INTELMAP()
+	{
+		return intMode == INT_INTELMAP;
+	}
+
+	bool state_is_TRANSPORTER()
+	{
+		return intMode == INT_TRANSPORTER;
+	}
+
+	void state_transition_NORMAL()
+	{
+		intMode = INT_NORMAL;
+	}
+}
+
 // Refresh widgets once per game cycle if pending flag is set.
 //
 void human_computer_interface::doScreenRefresh()
@@ -786,11 +863,7 @@ void human_computer_interface::doScreenRefresh()
 		return;
 	refreshPending = false;
 
-	if ((intMode == INT_OBJECT ||
-		intMode == INT_STAT ||
-		intMode == INT_CMDORDER ||
-		intMode == INT_ORDER ||
-		intMode == INT_TRANSPORTER) &&
+	if (state_is_OBJECT_STAT_CMDORDER_ORDER_TRANSPORTER() &&
 		widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr &&
 		widgGetFromID(psWScreen, IDOBJ_FORM)->visible())
 	{
@@ -917,12 +990,10 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	}
 
 	/* Remove whatever extra screen was displayed */
-	switch (intMode)
-	{
-	case INT_OPTION:
+	if (state_is_OPTION())
 		intRemoveOptions();
-		break;
-	case INT_EDITSTAT:
+	else if (state_is_EDITSTAT)
+	{
 		stopStructPosition();
 		if (NoAnim)
 		{
@@ -932,8 +1003,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			removeStats();
 		}
-		break;
-	case INT_OBJECT:
+	}
+	else if (state_is_OBJECT())
+	{
 		stopStructPosition();
 		if (NoAnim)
 		{
@@ -943,8 +1015,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			removeObject();
 		}
-		break;
-	case INT_STAT:
+	}
+	else if (state_is_STAT())
+	{
 		if (NoAnim)
 		{
 			removeStatsNoAnim();
@@ -955,9 +1028,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 			removeStats();
 			removeObject();
 		}
-		break;
-
-	case INT_CMDORDER:
+	}
+	else if (state_is_CMDORDER())
+	{
 		if (NoAnim)
 		{
 			intRemoveOrderNoAnim();
@@ -968,8 +1041,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 			intRemoveOrder();
 			removeObject();
 		}
-		break;
-	case INT_ORDER:
+	}
+	else if (state_is_ORDER())
+	{
 		if (NoAnim)
 		{
 			intRemoveOrderNoAnim();
@@ -978,8 +1052,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intRemoveOrder();
 		}
-		break;
-	case INT_INGAMEOP:
+	}
+	else if (state_is_INGAMEOP())
+	{
 		if (NoAnim)
 		{
 			intCloseInGameOptionsNoAnim(true);
@@ -988,11 +1063,11 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intCloseInGameOptions(false, true);
 		}
-		break;
-	case INT_MISSIONRES:
+	}
+	else if (state_is_MISSIONRES())
 		intRemoveMissionResultNoAnim();
-		break;
-	case INT_MULTIMENU:
+	else if (state_is_MULTIMENU())
+	{
 		if (NoAnim)
 		{
 			intCloseMultiMenuNoAnim();
@@ -1001,16 +1076,18 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intCloseMultiMenu();
 		}
-		break;
-	case INT_DESIGN:
+	}
+	else if (state_is_DESIGN())
+	{
 		intRemoveDesign();
 		hidePowerBar();
 		if (bInTutorial)
 		{
 			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_DESIGN_QUIT);
 		}
-		break;
-	case INT_INTELMAP:
+	}
+	if (state_is_INTELMAP())
+	{
 		if (NoAnim)
 		{
 			intRemoveIntelMapNoAnim();
@@ -1024,8 +1101,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			gameTimeStart();
 		}
-		break;
-	case INT_TRANSPORTER:
+	}
+	else if (state_is_TRANSPORTER())
+	{
 		if (NoAnim)
 		{
 			intRemoveTransNoAnim();
@@ -1034,12 +1112,9 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intRemoveTrans();
 		}
-		break;
-	default:
-		break;
 	}
 	secondaryWindowUp = false;
-	intMode = INT_NORMAL;
+	state_transition_NORMAL();
 	//clearSel() sets IntRefreshPending = true by calling intRefreshScreen() but if we're doing this then we won't need to refresh - hopefully!
 	refreshPending = false;
 }

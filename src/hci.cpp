@@ -789,6 +789,16 @@ namespace
 			intMode == INT_TRANSPORTER);
 	}
 
+	bool state_is_OBJECT_STAT_CMDORDER()
+	{
+		return intMode == INT_OBJECT || intMode == INT_STAT || intMode == INT_CMDORDER;
+	}
+
+	bool state_is_OBJECT_STAT()
+	{
+		return (intMode == INT_OBJECT || intMode == INT_STAT);
+	}
+
 	bool state_is_OPTION()
 	{
 		return intMode == INT_OPTION;
@@ -852,6 +862,51 @@ namespace
 	void state_transition_NORMAL()
 	{
 		intMode = INT_NORMAL;
+	}
+
+	void state_transition_EDITSTAT()
+	{
+		intMode = INT_EDITSTAT;
+	}
+
+	void state_transition_OPTION()
+	{
+		intMode = INT_OPTION;
+	}
+
+	void state_transition_DESIGN()
+	{
+		intMode = INT_DESIGN;
+	}
+
+	void state_transition_STAT()
+	{
+		intMode = INT_STAT;
+	}
+
+	void state_transition_OBJECT()
+	{
+		intMode = INT_OBJECT;
+	}
+
+	void state_transition_ORDER()
+	{
+		intMode = INT_ORDER;
+	}
+
+	void state_transition_CMDORDER()
+	{
+		intMode = INT_CMDORDER;
+	}
+
+	void state_transition_INTELMAP()
+	{
+		intMode = INT_INTELMAP;
+	}
+
+	void state_transition_TRANSPORTER()
+	{
+		intMode = INT_TRANSPORTER;
 	}
 }
 
@@ -1159,7 +1214,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 			objMode = IOBJ_MANUFACTURE;
 			addStats(ppsStatsList, apsTemplateList.size(), NULL, NULL);
-			intMode = INT_EDITSTAT;
+			state_transition_EDITSTAT();
 			editPosMode = _edit_pos_mode::nopos;
 			break;
 		case IDOPT_STRUCT:
@@ -1171,7 +1226,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 			objMode = IOBJ_BUILD;
 			addStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL);
-			intMode = INT_EDITSTAT;
+			state_transition_EDITSTAT();
 			editPosMode = _edit_pos_mode::nopos;
 			break;
 		case IDOPT_FEATURE:
@@ -1182,13 +1237,13 @@ void human_computer_interface::processOptions(uint32_t id)
 			}
 			ppsStatsList = (BASE_STATS **)apsFeatureList.data();
 			addStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL);
-			intMode = INT_EDITSTAT;
+			state_transition_EDITSTAT();
 			editPosMode = _edit_pos_mode::nopos;
 			break;
 		/* Close window buttons */
 		case IDOPT_CLOSE:
 			intRemoveOptions();
-			intMode = INT_NORMAL;
+			state_transition_NORMAL();
 			break;
 		/* Ignore these */
 		case IDOPT_FORM:
@@ -1233,7 +1288,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	{
 		removeStats();
 		stopStructPosition();
-		intMode = INT_NORMAL;
+		state_transition_NORMAL();
 		objMode = IOBJ_NONE;
 	}
 }
@@ -1241,7 +1296,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 void human_computer_interface::update()
 {
 	// Update the object list if necessary, prune dead objects.
-	if (intMode == INT_OBJECT || intMode == INT_STAT || intMode == INT_CMDORDER)
+	if (state_is_OBJECT_STAT_CMDORDER())
 	{
 		// see if there is a dead object in the list
 		for (unsigned i = 0; i < apsObjectList.size(); ++i)
@@ -1281,7 +1336,7 @@ INT_RETVAL human_computer_interface::display()
 	if (objectsChanged)
 	{
 		/* The objects on the object screen have changed */
-		if (intMode == INT_OBJECT)
+		if (state_is_OBJECT())
 		{
 			ASSERT_OR_RETURN(INT_NONE, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "No object form");
 
@@ -1309,7 +1364,7 @@ INT_RETVAL human_computer_interface::display()
 			/* Reset the tabs on the object screen */
 			((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
 		}
-		else if (intMode == INT_STAT)
+		else if (state_is_STAT())
 		{
 			/* Need to get the stats screen to update as well */
 		}
@@ -1401,7 +1456,7 @@ INT_RETVAL human_computer_interface::display()
 	}
 
 	/* Extra code for the design screen to deal with the shadow bar graphs */
-	if (intMode == INT_DESIGN)
+	if (state_is_DESIGN())
 	{
 		secondaryWindowUp = true;
 		intRunDesign();
@@ -1425,7 +1480,7 @@ INT_RETVAL human_computer_interface::display()
 		case IDRET_OPTIONS:
 			resetScreen(false);
 			(void)addOptions();
-			intMode = INT_OPTION;
+			state_transition_OPTION();
 			break;
 
 		case IDRET_COMMAND:
@@ -1473,7 +1528,7 @@ INT_RETVAL human_computer_interface::display()
 			/*add the power bar - for looks! */
 			showPowerBar();
 			intAddDesign(false);
-			intMode = INT_DESIGN;
+			state_transition_DESIGN();
 			break;
 
 		case IDRET_CANCEL:
@@ -1528,49 +1583,27 @@ INT_RETVAL human_computer_interface::display()
 
 		/* Default case passes remaining IDs to appropriate function */
 		default:
-			switch (intMode)
-			{
-			case INT_OPTION:
+		{
+			if (state_is_OPTION())
 				processOptions(retID);
-				break;
-			case INT_EDITSTAT:
+			else if (state_is_EDITSTAT())
 				processEditStats(retID);
-				break;
-			case INT_STAT:
-			case INT_CMDORDER:
-			/* In stat mode ids get passed to processObject
-			* and then through to processStats
-			*/
-			// NO BREAK HERE! THIS IS CORRECT;
-			case INT_OBJECT:
+			else if (state_is_OBJECT_STAT_CMDORDER())
 				processObject(retID);
-				break;
-			case INT_ORDER:
+			else if (state_is_ORDER())
 				intProcessOrder(retID);
-				break;
-			case INT_MISSIONRES:
+			else if (state_is_MISSIONRES())
 				intProcessMissionResult(retID);
-				break;
-			case INT_INGAMEOP:
+			else if (state_is_INGAMEOP())
 				intProcessInGameOptions(retID);
-				break;
-			case INT_MULTIMENU:
+			else if (state_is_MULTIMENU())
 				intProcessMultiMenu(retID);
-				break;
-			case INT_DESIGN:
+			else if (state_is_DESIGN())
 				intProcessDesign(retID);
-				break;
-			case INT_INTELMAP:
+			else if (state_is_INTELMAP())
 				intProcessIntelMap(retID);
-				break;
-			case INT_TRANSPORTER:
+			else if (state_is_TRANSPORTER())
 				intProcessTransporter(retID);
-				break;
-			case INT_NORMAL:
-				break;
-			default:
-				ASSERT(false, "intRunWidgets: unknown interface mode");
-				break;
 			}
 			break;
 		}
@@ -1578,7 +1611,7 @@ INT_RETVAL human_computer_interface::display()
 
 	if (!quitting && retIDs.empty())
 	{
-		if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILDSEL)
+		if (state_is_OBJECT_STAT() && objMode == IOBJ_BUILDSEL)
 		{
 			// See if a position for the structure has been found
 			if (found3DBuildLocTwo(&structX, &structY, &structX2, &structY2))
@@ -1659,7 +1692,7 @@ INT_RETVAL human_computer_interface::display()
 				resetScreen(false);
 			}
 		}
-		else if (intMode == INT_EDITSTAT && editPosMode == _edit_pos_mode::pos)
+		else if (state_is_EDITSTAT() && editPosMode == _edit_pos_mode::pos)
 		{
 			/* Directly positioning some type of object */
 			unsigned structX1 = INT32_MAX;
@@ -1893,7 +1926,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 	// Store the tab positions.
-	if (intMode == INT_STAT)
+	if (state_is_STAT())
 	{
 		if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 		{
@@ -1989,7 +2022,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->setCurrentPage(statMajor);
 	}
 
-	intMode = INT_STAT;
+	state_transition_STAT();
 	/* Note the object */
 	psObjSelected = psObj;
 	objStatID = id;
@@ -2229,7 +2262,7 @@ void human_computer_interface::processObject(uint32_t id)
 	else if (id == IDOBJ_CLOSE)
 	{
 		resetScreen(false);
-		intMode = INT_NORMAL;
+		state_transition_NORMAL();
 	}
 	else
 	{
@@ -2379,7 +2412,7 @@ void human_computer_interface::processStats(uint32_t id)
 
 				// Close the stats box
 				removeStats();
-				intMode = INT_OBJECT;
+				state_transition_OBJECT();
 
 				// Reset the tabs on the object form
 				((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
@@ -2418,7 +2451,7 @@ void human_computer_interface::processStats(uint32_t id)
 
 		/* Close the structure box without doing anything */
 		removeStats();
-		intMode = INT_OBJECT;
+		state_transition_OBJECT();
 
 		/* Reset the tabs on the build form */
 		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
@@ -2508,7 +2541,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 				resetScreen(false);
 				// changed to a BASE_OBJECT to accomodate the factories - AB 21/04/99
 				intAddOrder(psObj);
-				intMode = INT_ORDER;
+				state_transition_ORDER();
 			}
 			else
 			{
@@ -2657,7 +2690,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 		return;
 	// remove the stat screen if necessary
 	removeStatsNoAnim();
-	intMode = INT_OBJECT;
+	state_transition_OBJECT();
 }
 
 
@@ -2957,7 +2990,7 @@ bool human_computer_interface::addOptions()
 	}
 
 	// set the interface mode
-	intMode = INT_OPTION;
+	state_transition_OPTION();
 
 	/* Add the Option screen label */
 	sLabInit.formID = IDOPT_FORM;
@@ -3591,12 +3624,12 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		{
 			objStatID = statID;
 			addObjectStats(psSelected, statID);
-			intMode = INT_STAT;
+			state_transition_STAT();
 		}
 		else
 		{
 			widgSetButtonState(psWScreen, statID, WBUT_CLICKLOCK);
-			intMode = INT_OBJECT;
+			state_transition_OBJECT();
 		}
 	}
 	else if (psSelected)
@@ -3607,11 +3640,11 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		intAddOrder(psSelected);
 		widgSetButtonState(psWScreen, statID, WBUT_CLICKLOCK);
 
-		intMode = INT_CMDORDER;
+		state_transition_CMDORDER();
 	}
 	else
 	{
-		intMode = INT_OBJECT;
+		state_transition_OBJECT();
 	}
 
 	if (objMode == IOBJ_BUILD || objMode == IOBJ_MANUFACTURE || objMode == IOBJ_RESEARCH)
@@ -4628,7 +4661,7 @@ void human_computer_interface::addIntelScreen()
 
 	//add all the intelligence screen interface
 	(void)intAddIntelMap();
-	intMode = INT_INTELMAP;
+	state_transition_INTELMAP();
 }
 
 void human_computer_interface::addTransporterInterface(DROID *psSelected, bool onMission)
@@ -4638,7 +4671,7 @@ void human_computer_interface::addTransporterInterface(DROID *psSelected, bool o
 	{
 		resetScreen(false);
 		intAddTransporter(psSelected, onMission);
-		intMode = INT_TRANSPORTER;
+		state_transition_TRANSPORTER();
 	}
 }
 

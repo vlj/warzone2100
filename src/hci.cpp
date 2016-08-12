@@ -639,16 +639,14 @@ struct powerbar_widgets
 	{
 		if (!powerBarUp)
 			return;
-		UDWORD				statID;
-		BASE_STATS			*psStat;
-		UDWORD				quantity = 0;
-		RESEARCH			*psResearch;
+
 
 		/* Find out which button was hilited */
-		statID = widgGetMouseOver(psWScreen);
+		uint32_t statID = widgGetMouseOver(psWScreen);
 		if (statID >= IDSTAT_START && statID <= IDSTAT_END)
 		{
-			psStat = ppsStatsList[statID - IDSTAT_START];
+			BASE_STATS *psStat = ppsStatsList[statID - IDSTAT_START];
+			uint32_t quantity = 0;
 			if (psStat->ref >= REF_STRUCTURE_START && psStat->ref <
 				REF_STRUCTURE_START + REF_RANGE)
 			{
@@ -666,7 +664,7 @@ struct powerbar_widgets
 				psStat->ref < REF_RESEARCH_START + REF_RANGE)
 			{
 				//get the research points
-				psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
+				RESEARCH *psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
 
 				// has research been not been canceled
 				int rindex = psResearch->index;
@@ -719,24 +717,19 @@ struct statistics
 	{
 		if (!statsUp)
 			return;
-		BASE_OBJECT			*psOwner;
-		STRUCTURE			*psStruct;
-		FACTORY				*psFactory;
+		if (intMode == INT_EDITSTAT || objMode != IOBJ_MANUFACTURE)
+			return;
+		BASE_OBJECT *psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+		ASSERT_OR_RETURN(, psOwner->type == OBJ_STRUCTURE, "Invalid object type");
 
-		if (intMode != INT_EDITSTAT && objMode == IOBJ_MANUFACTURE)
+		STRUCTURE *psStruct = (STRUCTURE *)psOwner;
+		ASSERT_OR_RETURN(, StructIsFactory(psStruct), "Invalid Structure type");
+
+		FACTORY *psFactory = (FACTORY *)psStruct->pFunctionality;
+		//adjust the loop button if necessary
+		if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
 		{
-			psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
-			ASSERT_OR_RETURN(, psOwner->type == OBJ_STRUCTURE, "Invalid object type");
-
-			psStruct = (STRUCTURE *)psOwner;
-			ASSERT_OR_RETURN(, StructIsFactory(psStruct), "Invalid Structure type");
-
-			psFactory = (FACTORY *)psStruct->pFunctionality;
-			//adjust the loop button if necessary
-			if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
-			{
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
-			}
+			widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
 		}
 	}
 
@@ -790,10 +783,6 @@ struct statistics
 	bool addStats(BASE_STATS **ppsStatsList, uint32_t numStats,
 		BASE_STATS *psSelected, BASE_OBJECT *psOwner, _obj_mode objMode)
 	{
-		FACTORY				*psFactory;
-
-		int                             allyResearchIconCount = 0;
-
 		// should this ever be called with psOwner == NULL?
 
 		// Is the form already up?
@@ -858,7 +847,7 @@ struct statistics
 
 			if (psOwner != NULL)
 			{
-				psFactory = (FACTORY *)((STRUCTURE *)psOwner)->pFunctionality;
+				FACTORY *psFactory = (FACTORY *)((STRUCTURE *)psOwner)->pFunctionality;
 				if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
 				{
 					widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
@@ -1029,6 +1018,7 @@ struct statistics
 				{
 					std::vector<AllyResearch> const &researches = listAllyResearch(Stat->ref);
 					unsigned numResearches = std::min<unsigned>(researches.size(), 4);  // Only display at most 4 allies, since that's what there's room for.
+					int allyResearchIconCount = 0;
 					for (unsigned ii = 0; ii < numResearches; ++ii)
 					{
 						// add a label.

@@ -452,9 +452,6 @@ struct reticule_widgets
 	{
 		if (!ReticuleUp)
 			return;
-		STRUCTURE	*psStruct;
-		DROID	*psDroid;
-
 		ReticuleEnabled[RETBUT_CANCEL].Enabled = true;
 		ReticuleEnabled[RETBUT_FACTORY].Enabled = false;
 		ReticuleEnabled[RETBUT_RESEARCH].Enabled = false;
@@ -463,7 +460,7 @@ struct reticule_widgets
 		ReticuleEnabled[RETBUT_INTELMAP].Enabled = true;
 		ReticuleEnabled[RETBUT_COMMAND].Enabled = false;
 
-		for (psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
+		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
 		{
 			if (psStruct->status == SS_BUILT)
 			{
@@ -489,7 +486,7 @@ struct reticule_widgets
 			}
 		}
 
-		for (psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
+		for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
 		{
 			switch (psDroid->droidType)
 			{
@@ -505,32 +502,23 @@ struct reticule_widgets
 			}
 		}
 
-		for (int i = 0; i < NUMRETBUTS; i++)
+		for (const BUTSTATE &but : ReticuleEnabled)
 		{
-			WIDGET *psWidget = widgGetFromID(psWScreen, ReticuleEnabled[i].id);
+			WIDGET *psWidget = widgGetFromID(psWScreen, but.id);
 
-			if (psWidget != NULL)
+			if (psWidget == nullptr)
+				continue;
+			if (psWidget->type == WIDG_LABEL)
+				continue;
+			widgSetButtonState(psWScreen, but.id, but.Enabled ? 0 : WBUT_DISABLE);
+
+			if (but.Hidden)
 			{
-				if (psWidget->type != WIDG_LABEL)
-				{
-					if (ReticuleEnabled[i].Enabled)
-					{
-						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, 0);
-					}
-					else
-					{
-						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, WBUT_DISABLE);
-					}
-
-					if (ReticuleEnabled[i].Hidden)
-					{
-						widgHide(psWScreen, ReticuleEnabled[i].id);
-					}
-					else
-					{
-						widgReveal(psWScreen, ReticuleEnabled[i].id);
-					}
-				}
+				widgHide(psWScreen, but.id);
+			}
+			else
+			{
+				widgReveal(psWScreen, but.id);
 			}
 		}
 	}
@@ -538,14 +526,10 @@ struct reticule_widgets
 	// see if a reticule button is enabled
 	bool checkReticuleButEnabled(uint32_t id)
 	{
-		for (int i = 0; i < NUMRETBUTS; i++)
-		{
-			if (ReticuleEnabled[i].id == id)
-			{
-				return ReticuleEnabled[i].Enabled;
-			}
-		}
-		return false;
+		const auto &It = std::find_if(ReticuleEnabled.begin(), ReticuleEnabled.end(), [id](const BUTSTATE& but) { return but.id == id; });
+		if (It == ReticuleEnabled.end())
+			return false;
+		return It->Enabled;
 	}
 
 

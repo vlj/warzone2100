@@ -115,8 +115,8 @@ struct BUTSTATE
 
 struct BUTOFFSET
 {
-	SWORD x;
-	SWORD y;
+	int32_t x;
+	int32_t y;
 };
 
 /***************************************************************************************/
@@ -243,15 +243,8 @@ static enum _obj_mode
 	IOBJ_MAX,			        // maximum object mode
 } objMode;
 
-/* The current stats list being used by the stats screen */
-static BASE_STATS		**ppsStatsList;
-static UDWORD			numStatsListEntries;
-
 /* The button ID of the objects stat when the stat screen is displayed */
 UDWORD			objStatID;
-
-/* The stats for the current getStructPos */
-static BASE_STATS		*psPositionStats;
 
 /* Store a list of Template pointers for Droids that can be built */
 std::vector<DROID_TEMPLATE *>   apsTemplateList;
@@ -489,11 +482,15 @@ protected:
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
 	uint32_t keyButtonMapping = 0;
-
 	/* functions to select and get stats from the current object list */
 	std::function<bool(BASE_OBJECT *)> objSelectFunc; /* Function for selecting a base object while building the object screen */
 	std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc; /* Function type for getting the appropriate stats for an object */
 	std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc; /* Function type for setting the appropriate stats for an object */
+	/* The stats for the current getStructPos */
+	BASE_STATS *psPositionStats;
+	/* The current stats list being used by the stats screen */
+	BASE_STATS **ppsStatsList;
+	uint32_t numStatsListEntries;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -568,6 +565,10 @@ protected:
 	/* If psSelected != NULL it specifies which stat should be hilited
 	psOwner specifies which object is hilighted on the object bar for this stat*/
 	bool addStats(BASE_STATS **ppsStatsList, uint32_t numStats, BASE_STATS *psSelected, BASE_OBJECT *psOwner);
+	/* Process return codes from the object placement stats screen */
+	void processEditStats(uint32_t id);
+	/* Set the stats for a construction droid */
+	bool setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
 };
 
 human_computer_interface::human_computer_interface()
@@ -1087,9 +1088,7 @@ void human_computer_interface::processOptions(uint32_t id)
 	}
 }
 
-
-/* Process return codes from the object placement stats screen */
-static void intProcessEditStats(UDWORD id)
+void human_computer_interface::processEditStats(uint32_t id)
 {
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
@@ -1419,7 +1418,7 @@ INT_RETVAL human_computer_interface::display()
 				processOptions(retID);
 				break;
 			case INT_EDITSTAT:
-				intProcessEditStats(retID);
+				processEditStats(retID);
 				break;
 			case INT_STAT:
 			case INT_CMDORDER:
@@ -4159,8 +4158,7 @@ static BASE_STATS *getConstructionStats(BASE_OBJECT *psObj)
 	return NULL;
 }
 
-/* Set the stats for a construction droid */
-static bool setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
+bool human_computer_interface::setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 {
 	DROID *psDroid = castDroid(psObj);
 	ASSERT_OR_RETURN(false, psDroid != NULL, "invalid droid pointer");
@@ -4338,7 +4336,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
-	objSetStatsFunc = setConstructionStats;
+	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setConstructionStats(psObj, psStats); };
 
 	/* Set the sub mode */
 	objMode = IOBJ_BUILD;

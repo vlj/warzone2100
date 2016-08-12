@@ -375,66 +375,121 @@ struct human_computer_interface
 	~human_computer_interface();
 
 	void update();
+	/* Display the widgets for the in game interface */
 	void displayWidgets();
+	/* Run the widgets for the in game interface */
 	INT_RETVAL display();
+	/* Add the reticule widgets to the widget screen */
 	bool addReticule();
+	/* Add the power bars to the screen */
 	bool addPower();
 	void removeReticule();
 
+	/* Set the map view point to the world coordinates x,y */
 	void setMapPos(uint32_t x, uint32_t y);
+	/* Tell the interface when an object is created - it may have to be added to a screen */
 	void notifyNewObject(BASE_OBJECT *);
+	/* Tell the interface a construction droid has finished building */
 	void notifyBuildFinished(DROID *psDroid);
+	/* Tell the interface a construction droid has started building*/
 	void notifyBuildStarted(DROID *psDroid);
+	/* Tell the interface a research facility has completed a topic */
 	void notifyResearchFinished(STRUCTURE *psBuilding);
+	/* Tell the interface a factory has completed building ALL droids */
 	void notifyManufactureFinished(STRUCTURE *psBuilding);
 	void updateManufacture(STRUCTURE *psBuilding);
+	// Checks if a coordinate is over the build menu
 	bool coordInBuild(int x, int y);
 
+	/* Sync the interface to an object */
+	// If psObj is NULL then reset interface displays.
+	//
+	// There should be two version of this function, one for left clicking and one got right.
+	//
 	void objectSelected(BASE_OBJECT *psObj);
+	// add the construction interface if a constructor droid is selected
 	void constructorSelected(DROID *psDroid);
+	/* Are we in build select mode*/
 	bool buildSelectMode();
+	/* Are we in demolish select mode*/
 	bool demolishSelectMode();
+	//is the build interface up?
 	bool buildMode();
+	// add the construction interface if a constructor droid is selected
 	void commanderSelected(DROID *psDroid);
+	//sets up the Intelligence Screen as far as the interface is concerned
 	void addIntelScreen();
+	/* Reset the widget screen to just the reticule */
 	void resetScreen(bool NoAnim);
+	// Set widget refresh pending flag.
+	//
 	void refreshScreen();
+	/* Add the options widgets to the widget screen */
 	bool addOptions();
+	/* Remove the stats widgets from the widget screen */
 	void removeStats();
+	/* Remove the stats widgets from the widget screen */
 	void removeStatsNoAnim();
+	/*sets which list of structures to use for the interface*/
 	STRUCTURE *interfaceStructList();
+	//sets up the Transporter Screen as far as the interface is concerned
 	void addTransporterInterface(DROID *psSelected, bool onMission);
+	/*causes a reticule button to start flashing*/
 	void flashReticuleButton(uint32_t buttonID);
+	// stop a reticule button flashing
 	void stopReticuleButtonFlash(uint32_t buttonID);
 	void alliedResearchChanged();
 
+	//toggles the Power Bar display on and off
 	void togglePowerBar();
+	//displays the Power Bar
 	void showPowerBar();
+	//hides the power bar from the display
 	void hidePowerBar();
-
+	//hides the power bar from the display - regardless of what player requested!
 	void forceHidePowerBar();
+	/* Add the Proximity message buttons */
 	bool addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
+	/*Remove a Proximity Button - when the message is deleted*/
 	void removeProximityButton(PROXIMITY_DISPLAY *psProxDisp);
 
+	/*	Fools the widgets by setting a key value */
 	void setKeyButtonMapping(uint32_t val);
 
+	// Find any structure. Returns NULL if none found.
+	//
 	STRUCTURE *findAStructure();
+	// Look through the players structures and find the next one of type structType.
+	//
 	STRUCTURE *gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive);
+	// Look through the players droids and find the next one of type droidType.
+	// If Current=NULL then start at the beginning overwise start at Current.
+	//
 	DROID *gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup);
 
+	/*Checks to see if there are any research topics to do and flashes the button -
+	only if research facility is free*/
 	int getResearchState();
 	void notifyResearchButton(int prevState);
 
+	// see if a reticule button is enabled
 	bool checkReticuleButEnabled(uint32_t id);
+	//access function for selected object in the interface
 	BASE_OBJECT *getCurrentSelected();
+	//initialise all the previous obj - particularly useful for when go Off world!
 	void resetPreviousObj();
 	bool isRefreshing();
+	//Written to allow demolish order to be added to the queuing system
 	void demolishCancel();
 
 	StateButton *makeObsoleteButton(WIDGET *parent);  ///< Makes a button to toggle showing obsolete items.
 
+	// Our chat dialog for global & team communication
+	// \mode sets if global or team communication is wanted
 	void chatDialog(int mode);
+	// If chat dialog is up
 	bool isChatUp();
+	// Helper call to see if we have builder/research/... window up or not.
 	bool isSecondaryWindowUp();
 
 protected:
@@ -688,7 +743,6 @@ void human_computer_interface::setReticuleBut(int ButId)
 	}
 }
 
-//initialise all the previous obj - particularly useful for when go Off world!
 void human_computer_interface::resetPreviousObj()
 {
 	//make sure stats screen doesn't think it should be up
@@ -697,8 +751,6 @@ void human_computer_interface::resetPreviousObj()
 	memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
 }
 
-// Set widget refresh pending flag.
-//
 void human_computer_interface::refreshScreen()
 {
 	refreshPending = true;
@@ -827,8 +879,6 @@ void human_computer_interface::doScreenRefresh()
 	intRefreshOrder();
 }
 
-
-//hides the power bar from the display
 void human_computer_interface::hidePowerBar()
 {
 	//only hides the power bar if the player has requested no power bar
@@ -845,7 +895,6 @@ static void intRemoveOptions(void)
 	widgDelete(psWScreen, IDOPT_FORM);
 }
 
-/* Reset the widget screen to just the reticule */
 void human_computer_interface::resetScreen(bool NoAnim)
 {
 	// Ensure driver mode is turned off.
@@ -1146,7 +1195,6 @@ void human_computer_interface::update()
 	}
 }
 
-/* Run the widgets for the in game interface */
 INT_RETVAL human_computer_interface::display()
 {
 	bool			quitting = false;
@@ -2372,7 +2420,6 @@ void human_computer_interface::processStats(uint32_t id)
 }
 
 
-/* Set the map view point to the world coordinates x,y */
 void human_computer_interface::setMapPos(uint32_t x, uint32_t y)
 {
 	if (!driveModeActive())
@@ -2381,12 +2428,6 @@ void human_computer_interface::setMapPos(uint32_t x, uint32_t y)
 	}
 }
 
-
-/* Sync the interface to an object */
-// If psObj is NULL then reset interface displays.
-//
-// There should be two version of this function, one for left clicking and one got right.
-//
 void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 {
 	if (psObj)
@@ -2443,7 +2484,6 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 	}
 }
 
-// add the construction interface if a constructor droid is selected
 void human_computer_interface::constructorSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
@@ -2451,7 +2491,6 @@ void human_computer_interface::constructorSelected(DROID *psDroid)
 	widgHide(psWScreen, IDOBJ_FORM);
 }
 
-// add the construction interface if a constructor droid is selected
 void human_computer_interface::commanderSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
@@ -2476,8 +2515,6 @@ void human_computer_interface::stopStructPosition()
 	kill3DBuilding();
 }
 
-
-/* Display the widgets for the in game interface */
 void human_computer_interface::displayWidgets()
 {
 	if (ReticuleUp && !bInTutorial)
@@ -2515,7 +2552,6 @@ void intDisplayWidgets(void)
 }
 
 
-/* Tell the interface when an object is created - it may have to be added to a screen */
 void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 {
 	if (intMode == INT_OBJECT || intMode == INT_STAT)
@@ -2558,7 +2594,6 @@ void human_computer_interface::objectDied(uint32_t objID)
 }
 
 
-/* Tell the interface a construction droid has finished building */
 void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
@@ -2581,7 +2616,6 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 	}
 }
 
-/* Tell the interface a construction droid has started building*/
 void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
@@ -2605,25 +2639,21 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	}
 }
 
-/* Are we in build select mode*/
 bool human_computer_interface::buildSelectMode()
 {
 	return (objMode == IOBJ_BUILDSEL);
 }
 
-/* Are we in demolish select mode*/
 bool human_computer_interface::demolishSelectMode()
 {
 	return (objMode == IOBJ_DEMOLISHSEL);
 }
 
-//is the build interface up?
 bool human_computer_interface::buildMode()
 {
 	return (objMode == IOBJ_BUILD);
 }
 
-//Written to allow demolish order to be added to the queuing system
 void human_computer_interface::demolishCancel()
 {
 	if (objMode == IOBJ_DEMOLISHSEL)
@@ -2716,7 +2746,6 @@ unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psB
 	return std::find(apsObjectList.begin(), apsObjectList.end(), psBuilding) - apsObjectList.begin();
 }
 
-/* Tell the interface a factory has completed building ALL droids */
 void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
@@ -2753,7 +2782,6 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 	}
 }
 
-/* Tell the interface a research facility has completed a topic */
 void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
@@ -2770,7 +2798,6 @@ void human_computer_interface::alliedResearchChanged()
 	}
 }
 
-/* Add the reticule widgets to the widget screen */
 bool human_computer_interface::addReticule()
 {
 	if (ReticuleUp)
@@ -2798,7 +2825,6 @@ void human_computer_interface::removeReticule(void)
 	}
 }
 
-//toggles the Power Bar display on and off
 void human_computer_interface::togglePowerBar()
 {
 	//toggle the flag
@@ -2814,7 +2840,6 @@ void human_computer_interface::togglePowerBar()
 	}
 }
 
-/* Add the power bars to the screen */
 bool human_computer_interface::addPower()
 {
 	W_BARINIT sBarInit;
@@ -2843,7 +2868,6 @@ bool human_computer_interface::addPower()
 	return true;
 }
 
-/* Add the options widgets to the widget screen */
 bool human_computer_interface::addOptions()
 {
 	W_FORMINIT	sFormInit;
@@ -3590,8 +3614,6 @@ void human_computer_interface::removeObjectNoAnim()
 	hidePowerBar();
 }
 
-
-/* Remove the stats widgets from the widget screen */
 void human_computer_interface::removeStats()
 {
 	widgDelete(psWScreen, IDSTAT_CLOSE);
@@ -3608,7 +3630,6 @@ void human_computer_interface::removeStats()
 	psStatsScreenOwner = NULL;
 }
 
-/* Remove the stats widgets from the widget screen */
 void human_computer_interface::removeStatsNoAnim()
 {
 	widgDelete(psWScreen, IDSTAT_CLOSE);
@@ -4505,8 +4526,6 @@ void human_computer_interface::objStatRMBPressed(uint32_t id)
 	}
 }
 
-
-//sets up the Intelligence Screen as far as the interface is concerned
 void human_computer_interface::addIntelScreen()
 {
 	bool	radOnScreen;
@@ -4545,7 +4564,6 @@ void human_computer_interface::addIntelScreen()
 	intMode = INT_INTELMAP;
 }
 
-//sets up the Transporter Screen as far as the interface is concerned
 void human_computer_interface::addTransporterInterface(DROID *psSelected, bool onMission)
 {
 	// if psSelected = NULL add interface but if psSelected != NULL make sure its not flying
@@ -4557,7 +4575,6 @@ void human_computer_interface::addTransporterInterface(DROID *psSelected, bool o
 	}
 }
 
-/*sets which list of structures to use for the interface*/
 STRUCTURE *human_computer_interface::interfaceStructList()
 {
 	if (offWorldKeepLists)
@@ -4570,7 +4587,6 @@ STRUCTURE *human_computer_interface::interfaceStructList()
 	}
 }
 
-/*causes a reticule button to start flashing*/
 void human_computer_interface::flashReticuleButton(uint32_t buttonID)
 {
 	//get the button for the id
@@ -4581,7 +4597,6 @@ void human_computer_interface::flashReticuleButton(uint32_t buttonID)
 	}
 }
 
-// stop a reticule button flashing
 void human_computer_interface::stopReticuleButtonFlash(uint32_t buttonID)
 {
 	WIDGET	*psButton = widgGetFromID(psWScreen, buttonID);
@@ -4592,7 +4607,6 @@ void human_computer_interface::stopReticuleButtonFlash(uint32_t buttonID)
 	}
 }
 
-//displays the Power Bar
 void human_computer_interface::showPowerBar()
 {
 	//if its not already on display
@@ -4602,7 +4616,6 @@ void human_computer_interface::showPowerBar()
 	}
 }
 
-//hides the power bar from the display - regardless of what player requested!
 void human_computer_interface::forceHidePowerBar()
 {
 	if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
@@ -4611,7 +4624,6 @@ void human_computer_interface::forceHidePowerBar()
 	}
 }
 
-/* Add the Proximity message buttons */
 bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
 {
 	PROXIMITY_DISPLAY	*psProxDisp2;
@@ -4658,7 +4670,6 @@ bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp,
 	return true;
 }
 
-/*Remove a Proximity Button - when the message is deleted*/
 void human_computer_interface::removeProximityButton(PROXIMITY_DISPLAY *psProxDisp)
 {
 	ASSERT_OR_RETURN(, psProxDisp->buttonID >= IDPROX_START && psProxDisp->buttonID <= IDPROX_END, "Invalid proximity ID");
@@ -4694,7 +4705,6 @@ void processProximityButtons(UDWORD id)
 	}
 }
 
-/*	Fools the widgets by setting a key value */
 void human_computer_interface::setKeyButtonMapping(uint32_t val)
 {
 	keyButtonMapping = val;
@@ -4857,8 +4867,6 @@ void human_computer_interface::checkReticuleButtons()
 	}
 }
 
-/*Checks to see if there are any research topics to do and flashes the button -
-only if research facility is free*/
 int human_computer_interface::getResearchState()
 {
 	bool resFree = false;
@@ -4912,7 +4920,6 @@ void human_computer_interface::notifyResearchButton(int prevState)
 	}
 }
 
-// see if a reticule button is enabled
 bool human_computer_interface::checkReticuleButEnabled(uint32_t id)
 {
 	for (int i = 0; i < NUMRETBUTS; i++)
@@ -4925,8 +4932,6 @@ bool human_computer_interface::checkReticuleButEnabled(uint32_t id)
 	return false;
 }
 
-// Find any structure. Returns NULL if none found.
-//
 STRUCTURE *human_computer_interface::findAStructure()
 {
 	STRUCTURE *Struct;
@@ -4947,8 +4952,6 @@ STRUCTURE *human_computer_interface::findAStructure()
 	return Struct;
 }
 
-// Look through the players structures and find the next one of type structType.
-//
 STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive)
 {
 	STRUCTURE	*psStruct;
@@ -5027,9 +5030,6 @@ STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, 
 	return CurrentStruct;
 }
 
-// Look through the players droids and find the next one of type droidType.
-// If Current=NULL then start at the beginning overwise start at Current.
-//
 DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
 {
 	DROID *psDroid;
@@ -5109,13 +5109,11 @@ DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE 
 	return NULL;
 }
 
-//access function for selected object in the interface
 BASE_OBJECT *human_computer_interface::getCurrentSelected()
 {
 	return psObjSelected;
 }
 
-// Checks if a coordinate is over the build menu
 bool human_computer_interface::coordInBuild(int x, int y)
 {
 	// This measurement is valid for the menu, so the buildmenu_height
@@ -5135,8 +5133,6 @@ bool human_computer_interface::coordInBuild(int x, int y)
 	return true;
 }
 
-// Our chat dialog for global & team communication
-// \mode sets if global or team communication is wanted
 void human_computer_interface::chatDialog(int mode)
 {
 	if (!ChatDialogUp)
@@ -5189,13 +5185,11 @@ void human_computer_interface::chatDialog(int mode)
 	}
 }
 
-// If chat dialog is up
 bool human_computer_interface::isChatUp()
 {
 	return ChatDialogUp;
 }
 
-// Helper call to see if we have builder/research/... window up or not.
 bool human_computer_interface::isSecondaryWindowUp()
 {
 	return secondaryWindowUp;

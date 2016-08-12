@@ -428,7 +428,6 @@ struct reticule_widgets
 	//
 	void checkReticule()
 	{
-
 		STRUCTURE	*psStruct;
 		DROID	*psDroid;
 
@@ -512,6 +511,24 @@ struct reticule_widgets
 		}
 	}
 
+	// see if a reticule button is enabled
+	bool checkReticuleButEnabled(uint32_t id)
+	{
+		for (int i = 0; i < NUMRETBUTS; i++)
+		{
+			if (ReticuleEnabled[i].id == id)
+			{
+				return ReticuleEnabled[i].Enabled;
+			}
+		}
+		return false;
+	}
+
+protected:
+	// Reticule button enable states.
+	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
+	bool ReticuleUp = false;
+
 	// Set the x,y members of a button widget initialiser given a reticule button index.
 	//
 	void setReticuleBut(int ButId)
@@ -536,24 +553,6 @@ struct reticule_widgets
 			debug(LOG_ERROR, "Failed to add reticule button");
 		}
 	}
-
-	// see if a reticule button is enabled
-	bool checkReticuleButEnabled(uint32_t id)
-	{
-		for (int i = 0; i < NUMRETBUTS; i++)
-		{
-			if (ReticuleEnabled[i].id == id)
-			{
-				return ReticuleEnabled[i].Enabled;
-			}
-		}
-		return false;
-	}
-
-protected:
-	// Reticule button enable states.
-	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
-	bool ReticuleUp = false;
 };
 
 struct human_computer_interface

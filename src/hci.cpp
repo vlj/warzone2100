@@ -514,14 +514,10 @@ struct reticule_widgets
 	// see if a reticule button is enabled
 	bool checkReticuleButEnabled(uint32_t id)
 	{
-		for (int i = 0; i < NUMRETBUTS; i++)
-		{
-			if (ReticuleEnabled[i].id == id)
-			{
-				return ReticuleEnabled[i].Enabled;
-			}
-		}
-		return false;
+		const auto &It = std::find_if(ReticuleEnabled.begin(), ReticuleEnabled.end(), [id](const auto &reticuleInfo) {return reticuleInfo.id == id;});
+		if (It == ReticuleEnabled.end())
+			return false;
+		return It->Enabled;
 	}
 
 protected:

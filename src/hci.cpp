@@ -412,6 +412,7 @@ struct human_computer_interface
 	void addTransporterInterface(DROID *psSelected, bool onMission);
 	void flashReticuleButton(uint32_t buttonID);
 	void stopReticuleButtonFlash(uint32_t buttonID);
+	void alliedResearchChanged();
 
 	void togglePowerBar();
 	void showPowerBar();
@@ -569,6 +570,16 @@ protected:
 	void processEditStats(uint32_t id);
 	/* Set the stats for a construction droid */
 	bool setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
+	/* Remove the build widgets from the widget screen */
+	void removeObject();
+	/* Remove the build widgets from the widget screen */
+	void removeObjectNoAnim();
+	/* Set the stats for a research facility */
+	bool setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
+	/*Looks through the players list of structures to see if there is one selected
+	of the required type. If there is more than one, they are all deselected and
+	the first one reselected*/
+	STRUCTURE *checkForStructure(uint32_t structType);
 };
 
 human_computer_interface::human_computer_interface()
@@ -755,7 +766,7 @@ void human_computer_interface::doScreenRefresh()
 			// now make sure the stats screen isn't up
 			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 			{
-				intRemoveStatsNoAnim();
+				removeStatsNoAnim();
 			}
 
 			// see if there was a delivery point being positioned
@@ -884,11 +895,11 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		intStopStructPosition();
 		if (NoAnim)
 		{
-			intRemoveStatsNoAnim();
+			removeStatsNoAnim();
 		}
 		else
 		{
-			intRemoveStats();
+			removeStats();
 		}
 		break;
 	case INT_OBJECT:
@@ -905,12 +916,12 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	case INT_STAT:
 		if (NoAnim)
 		{
-			intRemoveStatsNoAnim();
+			removeStatsNoAnim();
 			intRemoveObjectNoAnim();
 		}
 		else
 		{
-			intRemoveStats();
+			removeStats();
 			intRemoveObject();
 		}
 		break;
@@ -962,7 +973,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		break;
 	case INT_DESIGN:
 		intRemoveDesign();
-		intHidePowerBar();
+		hidePowerBar();
 		if (bInTutorial)
 		{
 			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_DESIGN_QUIT);
@@ -977,7 +988,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intRemoveIntelMap();
 		}
-		intHidePowerBar();
+		hidePowerBar();
 		if (!bMultiPlayer)
 		{
 			gameTimeStart();
@@ -1114,7 +1125,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	}
 	else if (id == IDSTAT_CLOSE)
 	{
-		intRemoveStats();
+		removeStats();
 		intStopStructPosition();
 		intMode = INT_NORMAL;
 		objMode = IOBJ_NONE;
@@ -1307,31 +1318,31 @@ INT_RETVAL human_computer_interface::display()
 		/*****************  Reticule buttons  *****************/
 
 		case IDRET_OPTIONS:
-			intResetScreen(false);
-			(void)intAddOptions();
+			resetScreen(false);
+			(void)addOptions();
 			intMode = INT_OPTION;
 			break;
 
 		case IDRET_COMMAND:
-			intResetScreen(false);
+			resetScreen(false);
 			widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
 			addCommand(NULL);
 			break;
 
 		case IDRET_BUILD:
-			intResetScreen(true);
+			resetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
 			addBuild(NULL);
 			break;
 
 		case IDRET_MANUFACTURE:
-			intResetScreen(true);
+			resetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
 			addManufacture(NULL);
 			break;
 
 		case IDRET_RESEARCH:
-			intResetScreen(true);
+			resetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
 			(void)addResearch(NULL);
 			break;
@@ -1352,16 +1363,16 @@ INT_RETVAL human_computer_interface::display()
 			break;
 
 		case IDRET_DESIGN:
-			intResetScreen(true);
+			resetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
 			/*add the power bar - for looks! */
-			intShowPowerBar();
+			showPowerBar();
 			intAddDesign(false);
 			intMode = INT_DESIGN;
 			break;
 
 		case IDRET_CANCEL:
-			intResetScreen(false);
+			resetScreen(false);
 			psCurrentMsg = NULL;
 			break;
 
@@ -1379,7 +1390,7 @@ INT_RETVAL human_computer_interface::display()
 		case IDMISSIONRES_QUIT:			// mission quit
 		case INTINGAMEOP_QUIT_CONFIRM:			// esc quit confrim
 		case IDOPT_QUIT:						// options screen quit
-			intResetScreen(false);
+			resetScreen(false);
 			quitting = true;
 			break;
 
@@ -1492,7 +1503,7 @@ INT_RETVAL human_computer_interface::display()
 				if (!quickQueueMode)
 				{
 					// Clear the object screen, only if we aren't immediately building something else
-					intResetScreen(false);
+					resetScreen(false);
 				}
 
 			}
@@ -1535,12 +1546,12 @@ INT_RETVAL human_computer_interface::display()
 				if (!quickQueueMode)
 				{
 					// Clear the object screen, only if we aren't immediately building something else
-					intResetScreen(false);
+					resetScreen(false);
 				}
 			}
 			if (buildState == BUILD3D_NONE)
 			{
-				intResetScreen(false);
+				resetScreen(false);
 			}
 		}
 		else if (intMode == INT_EDITSTAT && editPosMode == IED_POS)
@@ -1693,7 +1704,7 @@ INT_RETVAL human_computer_interface::display()
 	if ((testPlayerHasLost() || testPlayerHasWon()) && !bMultiPlayer && intMode != INT_MISSIONRES && !getDebugMappingStatus())
 	{
 		debug(LOG_ERROR, "PlayerHasLost Or Won");
-		intResetScreen(true);
+		resetScreen(true);
 		retCode = INT_QUIT;
 	}
 	return retCode;
@@ -1793,7 +1804,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		{
 			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 		}
-		intRemoveStatsNoAnim();
+		removeStatsNoAnim();
 	}
 
 	/* Display the stats window
@@ -1973,7 +1984,7 @@ void human_computer_interface::processObject(uint32_t id)
 			widgSetButtonState(psWScreen, statButID, 0);
 			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
 			{
-				intRemoveStats();
+				removeStats();
 			}
 			if (psObjSelected == psObj)
 			{
@@ -2122,7 +2133,7 @@ void human_computer_interface::processObject(uint32_t id)
 	}
 	else if (id == IDOBJ_CLOSE)
 	{
-		intResetScreen(false);
+		resetScreen(false);
 		intMode = INT_NORMAL;
 	}
 	else
@@ -2272,7 +2283,7 @@ void human_computer_interface::processStats(uint32_t id)
 				int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 				// Close the stats box
-				intRemoveStats();
+				removeStats();
 				intMode = INT_OBJECT;
 
 				// Reset the tabs on the object form
@@ -2311,7 +2322,7 @@ void human_computer_interface::processStats(uint32_t id)
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		/* Close the structure box without doing anything */
-		intRemoveStats();
+		removeStats();
 		intMode = INT_OBJECT;
 
 		/* Reset the tabs on the build form */
@@ -2376,7 +2387,7 @@ void human_computer_interface::processStats(uint32_t id)
 		includeRedundantDesigns = !includeRedundantDesigns;
 		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
 		obsoleteButton->setState(includeRedundantDesigns);
-		intRefreshScreen();
+		refreshScreen();
 	}
 }
 
@@ -2406,7 +2417,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 		case OBJ_DROID:
 			if (!OrderUp)
 			{
-				intResetScreen(false);
+				resetScreen(false);
 				// changed to a BASE_OBJECT to accomodate the factories - AB 21/04/99
 				intAddOrder(psObj);
 				intMode = INT_ORDER;
@@ -2420,7 +2431,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 
 		case OBJ_STRUCTURE:
 			//don't do anything if structure is only partially built
-			intResetScreen(false);
+			resetScreen(false);
 
 			if (objMode == IOBJ_DEMOLISHSEL)
 			{
@@ -2448,7 +2459,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 	}
 	else
 	{
-		intResetScreen(false);
+		resetScreen(false);
 	}
 }
 
@@ -2569,7 +2580,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 		// remove the stat screen if necessary
 		if ((intMode == INT_STAT) && statsID == objStatID)
 		{
-			intRemoveStatsNoAnim();
+			removeStatsNoAnim();
 			intMode = INT_OBJECT;
 		}
 	}
@@ -2779,14 +2790,14 @@ void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
 	// just do a screen refresh
-	intRefreshScreen();
+	refreshScreen();
 }
 
-void intAlliedResearchChanged()
+void human_computer_interface::alliedResearchChanged()
 {
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_RESEARCH)
 	{
-		intRefreshScreen();
+		refreshScreen();
 	}
 }
 
@@ -2826,11 +2837,11 @@ void human_computer_interface::togglePowerBar()
 
 	if (powerBarUp)
 	{
-		intShowPowerBar();
+		showPowerBar();
 	}
 	else
 	{
-		intHidePowerBar();
+		hidePowerBar();
 	}
 }
 
@@ -3072,7 +3083,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		// No objects so close the stats window if it's up...
 		if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 		{
-			intRemoveStatsNoAnim();
+			removeStatsNoAnim();
 		}
 		// and return.
 		return false;
@@ -3545,7 +3556,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 
 	if (objMode == IOBJ_BUILD || objMode == IOBJ_MANUFACTURE || objMode == IOBJ_RESEARCH)
 	{
-		intShowPowerBar();
+		showPowerBar();
 	}
 
 	if (bInTutorial)
@@ -3571,7 +3582,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 			if (psStatsScreenOwner->died != 0)
 			{
 				// remove it.
-				intRemoveStatsNoAnim();
+				removeStatsNoAnim();
 			}
 		}
 	}
@@ -3580,7 +3591,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 }
 
 /* Remove the build widgets from the widget screen */
-void intRemoveObject(void)
+void human_computer_interface::removeObject()
 {
 	widgDelete(psWScreen, IDOBJ_TABFORM);
 	widgDelete(psWScreen, IDOBJ_CLOSE);
@@ -3592,7 +3603,7 @@ void intRemoveObject(void)
 		Form->closeAnimateDelete();
 	}
 
-	intHidePowerBar();
+	hidePowerBar();
 
 	if (bInTutorial)
 	{
@@ -3601,15 +3612,13 @@ void intRemoveObject(void)
 	}
 }
 
-
-/* Remove the build widgets from the widget screen */
-static void intRemoveObjectNoAnim(void)
+void human_computer_interface::removeObjectNoAnim()
 {
 	widgDelete(psWScreen, IDOBJ_TABFORM);
 	widgDelete(psWScreen, IDOBJ_CLOSE);
 	widgDelete(psWScreen, IDOBJ_FORM);
 
-	intHidePowerBar();
+	hidePowerBar();
 }
 
 
@@ -3761,7 +3770,7 @@ bool human_computer_interface::addStats(BASE_STATS **ppsStatsList, uint32_t numS
 	// Is the form already up?
 	if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 	{
-		intRemoveStatsNoAnim();
+		removeStatsNoAnim();
 	}
 
 	// is the order form already up ?
@@ -4222,8 +4231,7 @@ static BASE_STATS *getResearchStats(BASE_OBJECT *psObj)
 	return psResearchFacility->psSubject;
 }
 
-/* Set the stats for a research facility */
-static bool setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
+bool human_computer_interface::setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 {
 	STRUCTURE			*psBuilding;
 	RESEARCH               *pResearch = (RESEARCH *)psStats;
@@ -4373,7 +4381,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
-	objSetStatsFunc = setResearchStats;
+	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setResearchStats(psObj, psStats); };
 
 	/* Set the sub mode */
 	objMode = IOBJ_RESEARCH;
@@ -4540,13 +4548,13 @@ void human_computer_interface::addIntelScreen()
 		driveEnableInterface(true);
 	}
 
-	intResetScreen(false);
+	resetScreen(false);
 
 	//lock the reticule button
 	widgSetButtonState(psWScreen, IDRET_INTEL_MAP, WBUT_CLICKLOCK);
 
 	//add the power bar - for looks!
-	intShowPowerBar();
+	showPowerBar();
 
 	// Only do this in main game.
 	if ((GetGameMode() == GS_NORMAL) && !bMultiPlayer)
@@ -4574,7 +4582,7 @@ void human_computer_interface::addTransporterInterface(DROID *psSelected, bool o
 	// if psSelected = NULL add interface but if psSelected != NULL make sure its not flying
 	if (!psSelected || (psSelected && !transporterFlying(psSelected)))
 	{
-		intResetScreen(false);
+		resetScreen(false);
 		intAddTransporter(psSelected, onMission);
 		intMode = INT_TRANSPORTER;
 	}
@@ -4726,7 +4734,7 @@ void human_computer_interface::setKeyButtonMapping(uint32_t val)
 /*Looks through the players list of structures to see if there is one selected
 of the required type. If there is more than one, they are all deselected and
 the first one reselected*/
-STRUCTURE *intCheckForStructure(UDWORD structType)
+STRUCTURE *human_computer_interface::checkForStructure(uint32_t structType)
 {
 	STRUCTURE	*psStruct, *psSel = NULL;
 
@@ -4923,7 +4931,7 @@ int human_computer_interface::getResearchState()
 
 void human_computer_interface::notifyResearchButton(int prevState)
 {
-	int newState = intGetResearchState();
+	int newState = getResearchState();
 	if (newState > prevState)
 	{
 		// Set the research reticule button to flash.
@@ -4955,15 +4963,15 @@ STRUCTURE *human_computer_interface::findAStructure()
 	STRUCTURE *Struct;
 
 	// First try and find a factory.
-	Struct = intGotoNextStructureType(REF_FACTORY, false, false);
+	Struct = gotoNextStructureType(REF_FACTORY, false, false);
 	if (Struct == NULL)
 	{
 		// If that fails then look for a command center.
-		Struct = intGotoNextStructureType(REF_HQ, false, false);
+		Struct = gotoNextStructureType(REF_HQ, false, false);
 		if (Struct == NULL)
 		{
 			// If that fails then look for a any structure.
-			Struct = intGotoNextStructureType(REF_ANY, false, false);
+			Struct = gotoNextStructureType(REF_ANY, false, false);
 		}
 	}
 
@@ -5042,7 +5050,7 @@ STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, 
 	// Center it on screen.
 	if ((CurrentStruct) && (JumpTo))
 	{
-		intSetMapPos(CurrentStruct->pos.x, CurrentStruct->pos.y);
+		setMapPos(CurrentStruct->pos.x, CurrentStruct->pos.y);
 	}
 
 	triggerEventSelected();
@@ -5125,7 +5133,7 @@ DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE 
 		// Center it on screen.
 		if (CurrentDroid)
 		{
-			intSetMapPos(CurrentDroid->pos.x, CurrentDroid->pos.y);
+			setMapPos(CurrentDroid->pos.x, CurrentDroid->pos.y);
 		}
 		return CurrentDroid;
 	}

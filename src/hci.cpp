@@ -548,6 +548,29 @@ struct reticule_widgets
 		return false;
 	}
 
+
+	/*causes a reticule button to start flashing*/
+	void flashReticuleButton(uint32_t buttonID)
+	{
+		//get the button for the id
+		WIDGET *psButton = widgGetFromID(psWScreen, buttonID);
+		if (psButton)
+		{
+			retbutstats[psButton->UserData].flashing = 1;
+		}
+	}
+
+	// stop a reticule button flashing
+	void stopReticuleButtonFlash(uint32_t buttonID)
+	{
+		WIDGET	*psButton = widgGetFromID(psWScreen, buttonID);
+		if (psButton)
+		{
+			retbutstats[psButton->UserData].flashTime = 0;
+			retbutstats[psButton->UserData].flashing = 0;
+		}
+	}
+
 protected:
 	bool ReticuleUp = false;
 	// Reticule button enable states.
@@ -678,6 +701,15 @@ struct powerbar_widgets
 		}
 	}
 
+	//hides the power bar from the display - regardless of what player requested!
+	void forceHidePowerBar()
+	{
+		if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
+		{
+			widgHide(psWScreen, IDPOW_POWERBAR_T);
+		}
+	}
+
 protected:
 	/* Flags to check whether the power bars are currently on the screen */
 	bool powerBarUp = false;
@@ -720,11 +752,8 @@ struct human_computer_interface
 	void removeStatsNoAnim();
 	STRUCTURE *interfaceStructList();
 	void addTransporterInterface(DROID *psSelected, bool onMission);
-	void flashReticuleButton(uint32_t buttonID);
-	void stopReticuleButtonFlash(uint32_t buttonID);
 	void alliedResearchChanged();
 
-	void forceHidePowerBar();
 	bool addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
 	void removeProximityButton(PROXIMITY_DISPLAY *psProxDisp);
 
@@ -4726,37 +4755,6 @@ STRUCTURE *human_computer_interface::interfaceStructList()
 	}
 }
 
-/*causes a reticule button to start flashing*/
-void human_computer_interface::flashReticuleButton(uint32_t buttonID)
-{
-	//get the button for the id
-	WIDGET *psButton = widgGetFromID(psWScreen, buttonID);
-	if (psButton)
-	{
-		retbutstats[psButton->UserData].flashing = 1;
-	}
-}
-
-// stop a reticule button flashing
-void human_computer_interface::stopReticuleButtonFlash(uint32_t buttonID)
-{
-	WIDGET	*psButton = widgGetFromID(psWScreen, buttonID);
-	if (psButton)
-	{
-		retbutstats[psButton->UserData].flashTime = 0;
-		retbutstats[psButton->UserData].flashing = 0;
-	}
-}
-
-//hides the power bar from the display - regardless of what player requested!
-void human_computer_interface::forceHidePowerBar()
-{
-	if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
-	{
-		widgHide(psWScreen, IDPOW_POWERBAR_T);
-	}
-}
-
 /* Add the Proximity message buttons */
 bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
 {
@@ -5433,12 +5431,12 @@ STRUCTURE *interfaceStructList(void)
 
 void flashReticuleButton(UDWORD buttonID)
 {
-	default_hci->flashReticuleButton(buttonID);
+	default_hci->reticule.flashReticuleButton(buttonID);
 }
 
 void stopReticuleButtonFlash(UDWORD buttonID)
 {
-	default_hci->stopReticuleButtonFlash(buttonID);
+	default_hci->reticule.stopReticuleButtonFlash(buttonID);
 }
 
 void intShowPowerBar(void)
@@ -5448,7 +5446,7 @@ void intShowPowerBar(void)
 
 void forceHidePowerBar(void)
 {
-	default_hci->forceHidePowerBar();
+	default_hci->powerbar.forceHidePowerBar();
 }
 
 bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)

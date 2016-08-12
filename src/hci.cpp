@@ -554,18 +554,147 @@ protected:
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 };
 
+struct powerbar_widgets
+{
+	/* Add the power bars to the screen */
+	bool addPower()
+	{
+		W_BARINIT sBarInit;
+
+		/* Add the trough bar */
+		sBarInit.formID = 0;	//IDPOW_FORM;
+		sBarInit.id = IDPOW_POWERBAR_T;
+		//start the power bar off in view (default)
+		sBarInit.style = WBAR_TROUGH;
+		sBarInit.x = (SWORD)POW_X;
+		sBarInit.y = (SWORD)POW_Y;
+		sBarInit.width = POW_BARWIDTH;
+		sBarInit.height = iV_GetImageHeight(IntImages, IMAGE_PBAR_EMPTY);
+		sBarInit.sCol = WZCOL_POWER_BAR;
+		sBarInit.pDisplay = intDisplayPowerBar;
+		sBarInit.iRange = POWERBAR_SCALE;
+
+		sBarInit.pTip = _("Power");
+
+		if (!widgAddBarGraph(psWScreen, &sBarInit))
+		{
+			return false;
+		}
+
+		powerBarUp = true;
+		return true;
+	}
+
+	//hides the power bar from the display
+	void hidePowerBar()
+	{
+		//only hides the power bar if the player has requested no power bar
+		if (!powerBarUp)
+		{
+			if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
+			{
+				widgHide(psWScreen, IDPOW_POWERBAR_T);
+			}
+		}
+	}
+
+	//displays the Power Bar
+	void showPowerBar()
+	{
+		//if its not already on display
+		if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
+		{
+			widgReveal(psWScreen, IDPOW_POWERBAR_T);
+		}
+	}
+
+	//toggles the Power Bar display on and off
+	void togglePowerBar()
+	{
+		//toggle the flag
+		powerBarUp = !powerBarUp;
+
+		if (powerBarUp)
+		{
+			showPowerBar();
+		}
+		else
+		{
+			hidePowerBar();
+		}
+	}
+
+	/* Set the shadow for the PowerBar */
+	void runPower(BASE_STATS **ppsStatsList,
+		const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &apsStructStatsList,
+		const std::array<RESEARCH *, MAXRESEARCH> &ppResearchList
+		)
+	{
+		if (!powerBarUp)
+			return;
+		UDWORD				statID;
+		BASE_STATS			*psStat;
+		UDWORD				quantity = 0;
+		RESEARCH			*psResearch;
+
+		/* Find out which button was hilited */
+		statID = widgGetMouseOver(psWScreen);
+		if (statID >= IDSTAT_START && statID <= IDSTAT_END)
+		{
+			psStat = ppsStatsList[statID - IDSTAT_START];
+			if (psStat->ref >= REF_STRUCTURE_START && psStat->ref <
+				REF_STRUCTURE_START + REF_RANGE)
+			{
+				//get the structure build points
+				quantity = ((STRUCTURE_STATS *)apsStructStatsList[statID -
+					IDSTAT_START])->powerToBuild;
+			}
+			else if (psStat->ref >= REF_TEMPLATE_START &&
+				psStat->ref < REF_TEMPLATE_START + REF_RANGE)
+			{
+				//get the template build points
+				quantity = calcTemplatePower(apsTemplateList[statID - IDSTAT_START]);
+			}
+			else if (psStat->ref >= REF_RESEARCH_START &&
+				psStat->ref < REF_RESEARCH_START + REF_RANGE)
+			{
+				//get the research points
+				psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
+
+				// has research been not been canceled
+				int rindex = psResearch->index;
+				if (IsResearchCancelled(&asPlayerResList[selectedPlayer][rindex]) == 0)
+				{
+					quantity = ((RESEARCH *)ppResearchList[statID - IDSTAT_START])->researchPower;
+				}
+			}
+
+			//update the power bars
+			intSetShadowPower(quantity);
+		}
+		else
+		{
+			intSetShadowPower(0);
+		}
+	}
+
+protected:
+	/* Flags to check whether the power bars are currently on the screen */
+	bool powerBarUp = false;
+};
+
 struct human_computer_interface
 {
 	human_computer_interface();
 	~human_computer_interface();
 
 	reticule_widgets reticule;
+	powerbar_widgets powerbar;
 
 	void update();
 	void displayWidgets();
 	INT_RETVAL display();
 	bool addReticule();
-	bool addPower();
 	void removeReticule();
 
 	void setMapPos(uint32_t x, uint32_t y);
@@ -594,10 +723,6 @@ struct human_computer_interface
 	void flashReticuleButton(uint32_t buttonID);
 	void stopReticuleButtonFlash(uint32_t buttonID);
 	void alliedResearchChanged();
-
-	void togglePowerBar();
-	void showPowerBar();
-	void hidePowerBar();
 
 	void forceHidePowerBar();
 	bool addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
@@ -643,8 +768,6 @@ protected:
 	std::vector<Vector2i> asJumpPos;
 	bool refreshPending = false;
 	bool refreshing = false;
-	/* Flags to check whether the power bars are currently on the screen */
-	bool powerBarUp = false;
 	bool statsUp = false;
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
 	/* The previous object for each object bar */
@@ -674,8 +797,6 @@ protected:
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
-	/* Set the shadow for the PowerBar */
-	void runPower();
 	/* Add the stats screen for a given object */
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
 	/* Process return codes from the object screen */
@@ -780,7 +901,7 @@ human_computer_interface::human_computer_interface()
 
 	if (GetGameMode() == GS_NORMAL)
 	{
-		if (!addPower())
+		if (!powerbar.addPower())
 		{
 			debug(LOG_ERROR, "Couldn't create power Bar widget(Out of memory ?)");
 		}
@@ -986,20 +1107,6 @@ void human_computer_interface::doScreenRefresh()
 	refreshPending = false;
 }
 
-
-//hides the power bar from the display
-void human_computer_interface::hidePowerBar()
-{
-	//only hides the power bar if the player has requested no power bar
-	if (!powerBarUp)
-	{
-		if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
-		{
-			widgHide(psWScreen, IDPOW_POWERBAR_T);
-		}
-	}
-}
-
 /* Remove the options widgets from the widget screen */
 static void intRemoveOptions(void)
 {
@@ -1107,7 +1214,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		break;
 	case INT_DESIGN:
 		intRemoveDesign();
-		hidePowerBar();
+		powerbar.hidePowerBar();
 		if (bInTutorial)
 		{
 			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_DESIGN_QUIT);
@@ -1122,7 +1229,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intRemoveIntelMap();
 		}
-		hidePowerBar();
+		powerbar.hidePowerBar();
 		if (!bMultiPlayer)
 		{
 			gameTimeStart();
@@ -1409,10 +1516,7 @@ INT_RETVAL human_computer_interface::display()
 	}
 
 	/* Extra code for the power bars to deal with the shadow */
-	if (powerBarUp)
-	{
-		runPower();
-	}
+	powerbar.runPower(ppsStatsList, apsStructStatsList, ppResearchList);
 
 	if (statsUp)
 	{
@@ -1500,7 +1604,7 @@ INT_RETVAL human_computer_interface::display()
 			resetScreen(true);
 			widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
 			/*add the power bar - for looks! */
-			showPowerBar();
+			powerbar.showPowerBar();
 			intAddDesign(false);
 			intMode = INT_DESIGN;
 			break;
@@ -1842,54 +1946,6 @@ INT_RETVAL human_computer_interface::display()
 		retCode = INT_QUIT;
 	}
 	return retCode;
-}
-
-void human_computer_interface::runPower()
-{
-	UDWORD				statID;
-	BASE_STATS			*psStat;
-	UDWORD				quantity = 0;
-	RESEARCH			*psResearch;
-
-	/* Find out which button was hilited */
-	statID = widgGetMouseOver(psWScreen);
-	if (statID >= IDSTAT_START && statID <= IDSTAT_END)
-	{
-		psStat = ppsStatsList[statID - IDSTAT_START];
-		if (psStat->ref >= REF_STRUCTURE_START && psStat->ref <
-		    REF_STRUCTURE_START + REF_RANGE)
-		{
-			//get the structure build points
-			quantity = ((STRUCTURE_STATS *)apsStructStatsList[statID -
-			            IDSTAT_START])->powerToBuild;
-		}
-		else if (psStat->ref >= REF_TEMPLATE_START &&
-		         psStat->ref < REF_TEMPLATE_START + REF_RANGE)
-		{
-			//get the template build points
-			quantity = calcTemplatePower(apsTemplateList[statID - IDSTAT_START]);
-		}
-		else if (psStat->ref >= REF_RESEARCH_START &&
-		         psStat->ref < REF_RESEARCH_START + REF_RANGE)
-		{
-			//get the research points
-			psResearch = (RESEARCH *)ppResearchList[statID - IDSTAT_START];
-
-			// has research been not been canceled
-			int rindex = psResearch->index;
-			if (IsResearchCancelled(&asPlayerResList[selectedPlayer][rindex]) == 0)
-			{
-				quantity = ((RESEARCH *)ppResearchList[statID - IDSTAT_START])->researchPower;
-			}
-		}
-
-		//update the power bars
-		intSetShadowPower(quantity);
-	}
-	else
-	{
-		intSetShadowPower(0);
-	}
 }
 
 void human_computer_interface::runStats()
@@ -2943,51 +2999,6 @@ void human_computer_interface::removeReticule(void)
 	reticule.hide();
 }
 
-//toggles the Power Bar display on and off
-void human_computer_interface::togglePowerBar()
-{
-	//toggle the flag
-	powerBarUp = !powerBarUp;
-
-	if (powerBarUp)
-	{
-		showPowerBar();
-	}
-	else
-	{
-		hidePowerBar();
-	}
-}
-
-/* Add the power bars to the screen */
-bool human_computer_interface::addPower()
-{
-	W_BARINIT sBarInit;
-
-	/* Add the trough bar */
-	sBarInit.formID = 0;	//IDPOW_FORM;
-	sBarInit.id = IDPOW_POWERBAR_T;
-	//start the power bar off in view (default)
-	sBarInit.style = WBAR_TROUGH;
-	sBarInit.x = (SWORD)POW_X;
-	sBarInit.y = (SWORD)POW_Y;
-	sBarInit.width = POW_BARWIDTH;
-	sBarInit.height = iV_GetImageHeight(IntImages, IMAGE_PBAR_EMPTY);
-	sBarInit.sCol = WZCOL_POWER_BAR;
-	sBarInit.pDisplay = intDisplayPowerBar;
-	sBarInit.iRange = POWERBAR_SCALE;
-
-	sBarInit.pTip = _("Power");
-
-	if (!widgAddBarGraph(psWScreen, &sBarInit))
-	{
-		return false;
-	}
-
-	powerBarUp = true;
-	return true;
-}
-
 /* Add the options widgets to the widget screen */
 bool human_computer_interface::addOptions()
 {
@@ -3670,7 +3681,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 
 	if (objMode == IOBJ_BUILD || objMode == IOBJ_MANUFACTURE || objMode == IOBJ_RESEARCH)
 	{
-		showPowerBar();
+		powerbar.showPowerBar();
 	}
 
 	if (bInTutorial)
@@ -3717,7 +3728,7 @@ void human_computer_interface::removeObject()
 		Form->closeAnimateDelete();
 	}
 
-	hidePowerBar();
+	powerbar.hidePowerBar();
 
 	if (bInTutorial)
 	{
@@ -3732,7 +3743,7 @@ void human_computer_interface::removeObjectNoAnim()
 	widgDelete(psWScreen, IDOBJ_CLOSE);
 	widgDelete(psWScreen, IDOBJ_FORM);
 
-	hidePowerBar();
+	powerbar.hidePowerBar();
 }
 
 
@@ -4668,7 +4679,7 @@ void human_computer_interface::addIntelScreen()
 	widgSetButtonState(psWScreen, IDRET_INTEL_MAP, WBUT_CLICKLOCK);
 
 	//add the power bar - for looks!
-	showPowerBar();
+	powerbar.showPowerBar();
 
 	// Only do this in main game.
 	if ((GetGameMode() == GS_NORMAL) && !bMultiPlayer)
@@ -4734,16 +4745,6 @@ void human_computer_interface::stopReticuleButtonFlash(uint32_t buttonID)
 	{
 		retbutstats[psButton->UserData].flashTime = 0;
 		retbutstats[psButton->UserData].flashing = 0;
-	}
-}
-
-//displays the Power Bar
-void human_computer_interface::showPowerBar()
-{
-	//if its not already on display
-	if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
-	{
-		widgReveal(psWScreen, IDPOW_POWERBAR_T);
 	}
 }
 
@@ -5278,7 +5279,7 @@ bool intIsRefreshing(void)
 
 void intHidePowerBar()
 {
-	default_hci->hidePowerBar();
+	default_hci->powerbar.hidePowerBar();
 }
 
 void intResetScreen(bool NoAnim)
@@ -5387,12 +5388,12 @@ void intRemoveReticule(void)
 
 void togglePowerBar(void)
 {
-	default_hci->togglePowerBar();
+	default_hci->powerbar.togglePowerBar();
 }
 
 bool intAddPower()
 {
-	return default_hci->addPower();
+	return default_hci->powerbar.addPower();
 }
 
 bool intAddOptions(void)
@@ -5442,7 +5443,7 @@ void stopReticuleButtonFlash(UDWORD buttonID)
 
 void intShowPowerBar(void)
 {
-	default_hci->showPowerBar();
+	default_hci->powerbar.showPowerBar();
 }
 
 void forceHidePowerBar(void)

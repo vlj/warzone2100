@@ -814,7 +814,7 @@ struct statistics
 		if (psOwner != nullptr && psOwner->died)
 		{
 			debug(LOG_GUI, "intAddStats: Owner is dead");
-			return;
+			return false;
 		}
 		psStatsScreenOwner = psOwner;
 
@@ -902,30 +902,12 @@ struct statistics
 			if (Stat->ref >= REF_STRUCTURE_START &&
 				Stat->ref < REF_STRUCTURE_START + REF_RANGE)  		// It's a structure.
 			{
-				powerCost = ((STRUCTURE_STATS *)Stat)->powerToBuild;
-				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
-
-				sBarInit.formID = nextButtonId;
-				sBarInit.iRange = GAME_TICKS_PER_SEC;
-				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
-				bar->setBackgroundColour(WZCOL_BLACK);
+				addBar(powerCost, reinterpret_cast<STRUCTURE_STATS *>(Stat), sBarInit, nextButtonId);
 			}
 			else if (Stat->ref >= REF_TEMPLATE_START &&
 				Stat->ref < REF_TEMPLATE_START + REF_RANGE)  	// It's a droid.
 			{
-				powerCost = calcTemplatePower((DROID_TEMPLATE *)Stat);
-				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
-
-				sBarInit.formID = nextButtonId;
-				sBarInit.iRange = GAME_TICKS_PER_SEC;
-				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
-				bar->setBackgroundColour(WZCOL_BLACK);
-
-				// Add a text label for the quantity to produce.
-				sLabInit.formID = nextButtonId;
-				sLabInit.pUserData = Stat;
-				widgAddLabel(psWScreen, &sLabInit);
-				sLabInit.id++;
+				addBar(powerCost, reinterpret_cast<DROID_TEMPLATE *>(Stat), sBarInit, nextButtonId, sLabInit);
 			}
 			else if (Stat->ref >= REF_RESEARCH_START &&
 				Stat->ref < REF_RESEARCH_START + REF_RANGE)				// It's a Research topic.
@@ -1095,6 +1077,34 @@ protected:
 		{
 			abort();
 		}
+	}
+
+	void addBar(unsigned int &powerCost, STRUCTURE_STATS * Stat, W_BARINIT &sBarInit, int nextButtonId)
+	{
+		powerCost = Stat->powerToBuild;
+		sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
+
+		sBarInit.formID = nextButtonId;
+		sBarInit.iRange = GAME_TICKS_PER_SEC;
+		W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
+		bar->setBackgroundColour(WZCOL_BLACK);
+	}
+
+	void addBar(unsigned int &powerCost, DROID_TEMPLATE * Stat, W_BARINIT &sBarInit, int nextButtonId, W_LABINIT &sLabInit)
+	{
+		powerCost = calcTemplatePower(Stat);
+		sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
+
+		sBarInit.formID = nextButtonId;
+		sBarInit.iRange = GAME_TICKS_PER_SEC;
+		W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
+		bar->setBackgroundColour(WZCOL_BLACK);
+
+		// Add a text label for the quantity to produce.
+		sLabInit.formID = nextButtonId;
+		sLabInit.pUserData = Stat;
+		widgAddLabel(psWScreen, &sLabInit);
+		sLabInit.id++;
 	}
 };
 

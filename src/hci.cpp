@@ -212,25 +212,16 @@ const std::array<std::string, 16> apPlayerTip =
 	"Select Player 14",
 	"Select Player 15",
 };
-}
-
-/* The widget screen */
-W_SCREEN		*psWScreen;
-
-// The last widget ID from widgRunScreen
-UDWORD				intLastWidget;
-
-INTMODE intMode;
 
 /* Status of the positioning for the object placement */
-static enum _edit_pos_mode
+ enum _edit_pos_mode
 {
 	IED_NOPOS,
 	IED_POS,
-} editPosMode;
+};
 
-/* Which type of object screen is being displayed. Starting value is where the intMode left off*/
-static enum _obj_mode
+ /* Which type of object screen is being displayed. Starting value is where the intMode left off*/
+enum _obj_mode
 {
 	IOBJ_NONE = INT_MAXMODE,	// Nothing doing.
 	IOBJ_BUILD,			        // The build screen
@@ -241,7 +232,18 @@ static enum _obj_mode
 	IOBJ_COMMAND,		        // the command droid screen
 
 	IOBJ_MAX,			        // maximum object mode
-} objMode;
+};
+}
+
+/* The widget screen */
+W_SCREEN		*psWScreen;
+
+// The last widget ID from widgRunScreen
+UDWORD				intLastWidget;
+
+INTMODE intMode;
+
+
 
 /* The button ID of the objects stat when the stat screen is displayed */
 UDWORD			objStatID;
@@ -261,12 +263,8 @@ COMPONENT_STATS	**apsExtraSysList;
 
 /* Start looking for a structure location */
 static void intStartStructPosition(BASE_STATS *psStats);
-/* Stop looking for a structure location */
-static void intStopStructPosition(void);
 
 /******************Power Bar Stuff!**************/
-
-static void intRunStats(void);
 
 //proximity display stuff
 static void processProximityButtons(UDWORD id);
@@ -488,6 +486,8 @@ protected:
 	/* The current stats list being used by the stats screen */
 	BASE_STATS **ppsStatsList;
 	uint32_t numStatsListEntries;
+	_edit_pos_mode editPosMode;
+	_obj_mode objMode;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -576,6 +576,10 @@ protected:
 	of the required type. If there is more than one, they are all deselected and
 	the first one reselected*/
 	STRUCTURE *checkForStructure(uint32_t structType);
+	// Process stats screen.
+	void runStats();
+	/* Stop looking for a structure location */
+	void stopStructPosition();
 };
 
 human_computer_interface::human_computer_interface()
@@ -888,7 +892,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		intRemoveOptions();
 		break;
 	case INT_EDITSTAT:
-		intStopStructPosition();
+		stopStructPosition();
 		if (NoAnim)
 		{
 			removeStatsNoAnim();
@@ -899,7 +903,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		}
 		break;
 	case INT_OBJECT:
-		intStopStructPosition();
+		stopStructPosition();
 		if (NoAnim)
 		{
 			removeObjectNoAnim();
@@ -1122,7 +1126,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	else if (id == IDSTAT_CLOSE)
 	{
 		removeStats();
-		intStopStructPosition();
+		stopStructPosition();
 		intMode = INT_NORMAL;
 		objMode = IOBJ_NONE;
 	}
@@ -1278,7 +1282,7 @@ INT_RETVAL human_computer_interface::display()
 
 	if (statsUp)
 	{
-		intRunStats();
+		runStats();
 	}
 
 	if (OrderUp)
@@ -1754,9 +1758,7 @@ void human_computer_interface::runPower()
 	}
 }
 
-
-// Process stats screen.
-static void intRunStats(void)
+void human_computer_interface::runStats()
 {
 	BASE_OBJECT			*psOwner;
 	STRUCTURE			*psStruct;
@@ -1788,7 +1790,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	SDWORD			iconNumber, entryIN;
 
 	/* Clear a previous structure pos if there is one */
-	intStopStructPosition();
+	stopStructPosition();
 
 	/* Get the current tab pos */
 	int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
@@ -2481,9 +2483,7 @@ static void intStartStructPosition(BASE_STATS *psStats)
 	init3DBuilding(psStats, NULL, NULL);
 }
 
-
-/* Stop looking for a structure location */
-static void intStopStructPosition(void)
+void human_computer_interface::stopStructPosition()
 {
 	/* Check there is still a struct position running */
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILDSEL)

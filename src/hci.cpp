@@ -428,9 +428,6 @@ struct reticule_widgets
 	//
 	void checkReticule()
 	{
-		STRUCTURE	*psStruct;
-		DROID	*psDroid;
-
 		ReticuleEnabled[RETBUT_CANCEL].Enabled = true;
 		ReticuleEnabled[RETBUT_FACTORY].Enabled = false;
 		ReticuleEnabled[RETBUT_RESEARCH].Enabled = false;
@@ -439,7 +436,7 @@ struct reticule_widgets
 		ReticuleEnabled[RETBUT_INTELMAP].Enabled = true;
 		ReticuleEnabled[RETBUT_COMMAND].Enabled = false;
 
-		for (psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
+		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
 		{
 			if (psStruct->status == SS_BUILT)
 			{
@@ -465,7 +462,7 @@ struct reticule_widgets
 			}
 		}
 
-		for (psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
+		for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
 		{
 			switch (psDroid->droidType)
 			{
@@ -481,30 +478,23 @@ struct reticule_widgets
 			}
 		}
 
-		for (int i = 0; i < NUMRETBUTS; i++)
+		for (const BUTSTATE& button : ReticuleEnabled)
 		{
-			WIDGET *psWidget = widgGetFromID(psWScreen, ReticuleEnabled[i].id);
+			WIDGET *psWidget = widgGetFromID(psWScreen, button.id);
 
-			if (psWidget != NULL)
+			if (psWidget != nullptr)
 			{
 				if (psWidget->type != WIDG_LABEL)
 				{
-					if (ReticuleEnabled[i].Enabled)
-					{
-						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, 0);
-					}
-					else
-					{
-						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, WBUT_DISABLE);
-					}
+					widgSetButtonState(psWScreen, button.id, !button.Enabled ? WBUT_DISABLE : 0);
 
-					if (ReticuleEnabled[i].Hidden)
+					if (button.Hidden)
 					{
-						widgHide(psWScreen, ReticuleEnabled[i].id);
+						widgHide(psWScreen, button.id);
 					}
 					else
 					{
-						widgReveal(psWScreen, ReticuleEnabled[i].id);
+						widgReveal(psWScreen, button.id);
 					}
 				}
 			}

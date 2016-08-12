@@ -715,6 +715,48 @@ protected:
 	bool powerBarUp = false;
 };
 
+struct statistics
+{
+
+	void show()
+	{
+		statsUp = true;
+	}
+
+	void hide()
+	{
+		statsUp = false;
+	}
+
+	// Process stats screen.
+	void runStats(_obj_mode objMode)
+	{
+		if (!statsUp)
+			return;
+		BASE_OBJECT			*psOwner;
+		STRUCTURE			*psStruct;
+		FACTORY				*psFactory;
+
+		if (intMode != INT_EDITSTAT && objMode == IOBJ_MANUFACTURE)
+		{
+			psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+			ASSERT_OR_RETURN(, psOwner->type == OBJ_STRUCTURE, "Invalid object type");
+
+			psStruct = (STRUCTURE *)psOwner;
+			ASSERT_OR_RETURN(, StructIsFactory(psStruct), "Invalid Structure type");
+
+			psFactory = (FACTORY *)psStruct->pFunctionality;
+			//adjust the loop button if necessary
+			if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
+			{
+				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
+			}
+		}
+	}
+protected:
+	bool statsUp = false;
+};
+
 struct human_computer_interface
 {
 	human_computer_interface();
@@ -722,6 +764,7 @@ struct human_computer_interface
 
 	reticule_widgets reticule;
 	powerbar_widgets powerbar;
+	statistics stats;
 
 	void update();
 	void displayWidgets();
@@ -795,7 +838,7 @@ protected:
 	std::vector<Vector2i> asJumpPos;
 	bool refreshPending = false;
 	bool refreshing = false;
-	bool statsUp = false;
+
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
 	/* The previous object for each object bar */
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
@@ -900,8 +943,6 @@ protected:
 	of the required type. If there is more than one, they are all deselected and
 	the first one reselected*/
 	STRUCTURE *checkForStructure(uint32_t structType);
-	// Process stats screen.
-	void runStats();
 	/* Stop looking for a structure location */
 	void stopStructPosition();
 };
@@ -983,7 +1024,7 @@ namespace
 void human_computer_interface::resetPreviousObj()
 {
 	//make sure stats screen doesn't think it should be up
-	statsUp = false;
+	stats.hide();
 	// reset the previous objects
 	memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
 }
@@ -1545,10 +1586,7 @@ INT_RETVAL human_computer_interface::display()
 	/* Extra code for the power bars to deal with the shadow */
 	powerbar.runPower(ppsStatsList, apsStructStatsList, ppResearchList);
 
-	if (statsUp)
-	{
-		runStats();
-	}
+	stats.runStats(objMode);
 
 	if (OrderUp)
 	{
@@ -1973,29 +2011,6 @@ INT_RETVAL human_computer_interface::display()
 		retCode = INT_QUIT;
 	}
 	return retCode;
-}
-
-void human_computer_interface::runStats()
-{
-	BASE_OBJECT			*psOwner;
-	STRUCTURE			*psStruct;
-	FACTORY				*psFactory;
-
-	if (intMode != INT_EDITSTAT && objMode == IOBJ_MANUFACTURE)
-	{
-		psOwner = (BASE_OBJECT *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
-		ASSERT_OR_RETURN(, psOwner->type == OBJ_STRUCTURE, "Invalid object type");
-
-		psStruct = (STRUCTURE *)psOwner;
-		ASSERT_OR_RETURN(, StructIsFactory(psStruct), "Invalid Structure type");
-
-		psFactory = (FACTORY *)psStruct->pFunctionality;
-		//adjust the loop button if necessary
-		if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
-		{
-			widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
-		}
-	}
 }
 
 void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
@@ -3775,7 +3790,7 @@ void human_computer_interface::removeStats()
 		Form->closeAnimateDelete();
 	}
 
-	statsUp = false;
+	stats.hide();
 	psStatsScreenOwner = NULL;
 }
 
@@ -3786,7 +3801,7 @@ void human_computer_interface::removeStatsNoAnim()
 	widgDelete(psWScreen, IDSTAT_TABFORM);
 	widgDelete(psWScreen, IDSTAT_FORM);
 
-	statsUp = false;
+	stats.hide();
 	psStatsScreenOwner = NULL;
 }
 
@@ -4202,7 +4217,7 @@ bool human_computer_interface::addStats(BASE_STATS **ppsStatsList, uint32_t numS
 		sBarInit.id += 1;
 	}
 
-	statsUp = true;
+	stats.show();
 
 	// call the tutorial callbacks if necessary
 	if (bInTutorial)

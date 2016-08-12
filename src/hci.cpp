@@ -5489,3 +5489,8 @@ bool CoordInBuild(int x, int y)
 {
 	return default_hci->coordInBuild(x, y);
 }
+
+void intAlliedResearchChanged()
+{
+	default_hci->alliedResearchChanged();
+}

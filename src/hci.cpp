@@ -369,10 +369,197 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 	retbutstats[psWidget->UserData].downTime = DownTime;
 }
 
+struct reticule_widgets
+{
+	reticule_widgets()
+	{
+		ReticuleEnabled = {
+			BUTSTATE{ IDRET_CANCEL, false, false },
+			BUTSTATE{ IDRET_MANUFACTURE, false, false },
+			BUTSTATE{ IDRET_RESEARCH, false, false },
+			BUTSTATE{ IDRET_BUILD, false, false },
+			BUTSTATE{ IDRET_DESIGN, false, false },
+			BUTSTATE{ IDRET_INTEL_MAP, false, false },
+			BUTSTATE{ IDRET_COMMAND, false, false },
+		};
+	}
+
+	void reset()
+	{
+		if (!ReticuleUp)
+			return;
+		/* Reset the reticule buttons */
+		widgSetButtonState(psWScreen, IDRET_COMMAND, 0);
+		widgSetButtonState(psWScreen, IDRET_BUILD, 0);
+		widgSetButtonState(psWScreen, IDRET_MANUFACTURE, 0);
+		widgSetButtonState(psWScreen, IDRET_INTEL_MAP, 0);
+		widgSetButtonState(psWScreen, IDRET_RESEARCH, 0);
+		widgSetButtonState(psWScreen, IDRET_DESIGN, 0);
+	}
+
+	void show()
+	{
+		if (ReticuleUp)
+			return; // all fine
+		WIDGET *parent = psWScreen->psForm;
+		IntFormAnimated *retForm = new IntFormAnimated(parent, false);
+		retForm->id = IDRET_FORM;
+		retForm->setGeometry(RET_X, RET_Y, RET_FORMWIDTH, RET_FORMHEIGHT);
+		for (int i = 0; i < NUMRETBUTS; i++)
+		{
+			setReticuleBut(i);
+		}
+		ReticuleUp = true;
+	}
+
+	void hide()
+	{
+		if (!ReticuleUp)
+			return;
+		widgDelete(psWScreen, IDRET_FORM);		// remove reticule
+		ReticuleUp = false;
+	}
+
+	// Set the x,y members of a button widget initialiser given a reticule button index.
+	//
+	void setReticuleBut(int ButId)
+	{
+		/* Default button data */
+		W_BUTINIT sButInit;
+		sButInit.formID = IDRET_FORM;
+		sButInit.id = ReticuleEnabled[ButId].id;
+		sButInit.width = RET_BUTWIDTH;
+		sButInit.height = RET_BUTHEIGHT;
+		sButInit.pDisplay = intDisplayReticuleButton;
+		sButInit.x = ReticuleOffsets[ButId].x + RETXOFFSET;
+		sButInit.y = ReticuleOffsets[ButId].y + RETYOFFSET;
+		sButInit.pTip = retbutstats[ButId].tip;
+		sButInit.style = WBUT_SECONDARY;
+		sButInit.UserData = ButId;
+		retbutstats[ButId].downTime = 0;
+		retbutstats[ButId].flashing = 0;
+		retbutstats[ButId].flashTime = 0;
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			debug(LOG_ERROR, "Failed to add reticule button");
+		}
+	}
+
+	// Check that each reticule button has the structure or droid required for it and
+	// enable/disable accordingly.
+	//
+	void checkReticuleButtons()
+	{
+		if (!ReticuleUp)
+			return;
+		STRUCTURE	*psStruct;
+		DROID	*psDroid;
+
+		ReticuleEnabled[RETBUT_CANCEL].Enabled = true;
+		ReticuleEnabled[RETBUT_FACTORY].Enabled = false;
+		ReticuleEnabled[RETBUT_RESEARCH].Enabled = false;
+		ReticuleEnabled[RETBUT_BUILD].Enabled = false;
+		ReticuleEnabled[RETBUT_DESIGN].Enabled = allowDesign;
+		ReticuleEnabled[RETBUT_INTELMAP].Enabled = true;
+		ReticuleEnabled[RETBUT_COMMAND].Enabled = false;
+
+		for (psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
+		{
+			if (psStruct->status == SS_BUILT)
+			{
+				switch (psStruct->pStructureType->type)
+				{
+				case REF_RESEARCH:
+					if (!missionLimboExpand())
+					{
+						ReticuleEnabled[RETBUT_RESEARCH].Enabled = true;
+					}
+					break;
+				case REF_FACTORY:
+				case REF_CYBORG_FACTORY:
+				case REF_VTOL_FACTORY:
+					if (!missionLimboExpand())
+					{
+						ReticuleEnabled[RETBUT_FACTORY].Enabled = true;
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		for (psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
+		{
+			switch (psDroid->droidType)
+			{
+			case DROID_CONSTRUCT:
+			case DROID_CYBORG_CONSTRUCT:
+				ReticuleEnabled[RETBUT_BUILD].Enabled = true;
+				break;
+			case DROID_COMMAND:
+				ReticuleEnabled[RETBUT_COMMAND].Enabled = true;
+				break;
+			default:
+				break;
+			}
+		}
+
+		for (int i = 0; i < NUMRETBUTS; i++)
+		{
+			WIDGET *psWidget = widgGetFromID(psWScreen, ReticuleEnabled[i].id);
+
+			if (psWidget != NULL)
+			{
+				if (psWidget->type != WIDG_LABEL)
+				{
+					if (ReticuleEnabled[i].Enabled)
+					{
+						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, 0);
+					}
+					else
+					{
+						widgSetButtonState(psWScreen, ReticuleEnabled[i].id, WBUT_DISABLE);
+					}
+
+					if (ReticuleEnabled[i].Hidden)
+					{
+						widgHide(psWScreen, ReticuleEnabled[i].id);
+					}
+					else
+					{
+						widgReveal(psWScreen, ReticuleEnabled[i].id);
+					}
+				}
+			}
+		}
+	}
+
+	// see if a reticule button is enabled
+	bool checkReticuleButEnabled(uint32_t id)
+	{
+		for (int i = 0; i < NUMRETBUTS; i++)
+		{
+			if (ReticuleEnabled[i].id == id)
+			{
+				return ReticuleEnabled[i].Enabled;
+			}
+		}
+		return false;
+	}
+
+protected:
+	bool ReticuleUp = false;
+	// Reticule button enable states.
+	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
+};
+
 struct human_computer_interface
 {
 	human_computer_interface();
 	~human_computer_interface();
+
+	reticule_widgets reticule;
 
 	void update();
 	void displayWidgets();
@@ -425,7 +612,6 @@ struct human_computer_interface
 	int getResearchState();
 	void notifyResearchButton(int prevState);
 
-	bool checkReticuleButEnabled(uint32_t id);
 	BASE_OBJECT *getCurrentSelected();
 	void resetPreviousObj();
 	bool isRefreshing();
@@ -455,9 +641,6 @@ protected:
 	bool objectsChanged;
 	/* The jump position for each object on the base bar */
 	std::vector<Vector2i> asJumpPos;
-	bool ReticuleUp = false;
-	// Reticule button enable states.
-	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 	bool refreshPending = false;
 	bool refreshing = false;
 	/* Flags to check whether the power bars are currently on the screen */
@@ -551,13 +734,6 @@ protected:
 	void setStats(uint32_t id, BASE_STATS *psStats);
 	// clean up when an object dies
 	void objectDied(uint32_t objID);
-	// Set the x,y members of a button widget initialiser given a reticule button index.
-	//
-	void setReticuleBut(int ButId);
-	// Check that each reticule button has the structure or droid required for it and
-	// enable/disable accordingly.
-	//
-	void checkReticuleButtons();
 	/* Add the stats widgets to the widget screen */
 	/* If psSelected != NULL it specifies which stat should be hilited
 	psOwner specifies which object is hilighted on the object bar for this stat*/
@@ -584,15 +760,6 @@ protected:
 
 human_computer_interface::human_computer_interface()
 {
-	ReticuleEnabled = {
-		BUTSTATE{ IDRET_CANCEL, false, false },
-		BUTSTATE{ IDRET_MANUFACTURE, false, false },
-		BUTSTATE{ IDRET_RESEARCH, false, false },
-		BUTSTATE{ IDRET_BUILD, false, false },
-		BUTSTATE{ IDRET_DESIGN, false, false },
-		BUTSTATE{ IDRET_INTEL_MAP, false, false },
-		BUTSTATE{ IDRET_COMMAND, false, false },
-	};
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
 	WidgSetAudio(WidgetAudioCallback, ID_SOUND_BUTTON_CLICK_3, ID_SOUND_SELECT, ID_SOUND_BUILD_FAIL);
 
@@ -662,30 +829,6 @@ human_computer_interface::~human_computer_interface()
 namespace
 {
 	std::unique_ptr<human_computer_interface> default_hci;
-}
-
-
-void human_computer_interface::setReticuleBut(int ButId)
-{
-	/* Default button data */
-	W_BUTINIT sButInit;
-	sButInit.formID = IDRET_FORM;
-	sButInit.id = ReticuleEnabled[ButId].id;
-	sButInit.width = RET_BUTWIDTH;
-	sButInit.height = RET_BUTHEIGHT;
-	sButInit.pDisplay = intDisplayReticuleButton;
-	sButInit.x = ReticuleOffsets[ButId].x + RETXOFFSET;
-	sButInit.y = ReticuleOffsets[ButId].y + RETYOFFSET;
-	sButInit.pTip = retbutstats[ButId].tip;
-	sButInit.style = WBUT_SECONDARY;
-	sButInit.UserData = ButId;
-	retbutstats[ButId].downTime = 0;
-	retbutstats[ButId].flashing = 0;
-	retbutstats[ButId].flashTime = 0;
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		debug(LOG_ERROR, "Failed to add reticule button");
-	}
 }
 
 //initialise all the previous obj - particularly useful for when go Off world!
@@ -874,16 +1017,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		NoAnim = true;
 	}
 
-	if (ReticuleUp)
-	{
-		/* Reset the reticule buttons */
-		widgSetButtonState(psWScreen, IDRET_COMMAND, 0);
-		widgSetButtonState(psWScreen, IDRET_BUILD, 0);
-		widgSetButtonState(psWScreen, IDRET_MANUFACTURE, 0);
-		widgSetButtonState(psWScreen, IDRET_INTEL_MAP, 0);
-		widgSetButtonState(psWScreen, IDRET_RESEARCH, 0);
-		widgSetButtonState(psWScreen, IDRET_DESIGN, 0);
-	}
+	reticule.reset();
 
 	/* Remove whatever extra screen was displayed */
 	switch (intMode)
@@ -2498,9 +2632,9 @@ void human_computer_interface::stopStructPosition()
 /* Display the widgets for the in game interface */
 void human_computer_interface::displayWidgets()
 {
-	if (ReticuleUp && !bInTutorial)
+	if (!bInTutorial)
 	{
-		checkReticuleButtons();
+		reticule.checkReticuleButtons();
 	}
 
 	/*draw the background for the design screen and the Intelligence screen*/
@@ -2800,29 +2934,13 @@ void human_computer_interface::alliedResearchChanged()
 /* Add the reticule widgets to the widget screen */
 bool human_computer_interface::addReticule()
 {
-	if (ReticuleUp)
-	{
-		return true; // all fine
-	}
-	WIDGET *parent = psWScreen->psForm;
-	IntFormAnimated *retForm = new IntFormAnimated(parent, false);
-	retForm->id = IDRET_FORM;
-	retForm->setGeometry(RET_X, RET_Y, RET_FORMWIDTH, RET_FORMHEIGHT);
-	for (int i = 0; i < NUMRETBUTS; i++)
-	{
-		setReticuleBut(i);
-	}
-	ReticuleUp = true;
+	reticule.show();
 	return true;
 }
 
 void human_computer_interface::removeReticule(void)
 {
-	if (ReticuleUp == true)
-	{
-		widgDelete(psWScreen, IDRET_FORM);		// remove reticule
-		ReticuleUp = false;
-	}
+	reticule.hide();
 }
 
 //toggles the Power Bar display on and off
@@ -4799,91 +4917,6 @@ static SDWORD intNumSelectedDroids(UDWORD droidType)
 	return num;
 }
 
-void human_computer_interface::checkReticuleButtons()
-{
-	STRUCTURE	*psStruct;
-	DROID	*psDroid;
-
-	ReticuleEnabled[RETBUT_CANCEL].Enabled = true;
-	ReticuleEnabled[RETBUT_FACTORY].Enabled = false;
-	ReticuleEnabled[RETBUT_RESEARCH].Enabled = false;
-	ReticuleEnabled[RETBUT_BUILD].Enabled = false;
-	ReticuleEnabled[RETBUT_DESIGN].Enabled = allowDesign;
-	ReticuleEnabled[RETBUT_INTELMAP].Enabled = true;
-	ReticuleEnabled[RETBUT_COMMAND].Enabled = false;
-
-	for (psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
-	{
-		if (psStruct->status == SS_BUILT)
-		{
-			switch (psStruct->pStructureType->type)
-			{
-			case REF_RESEARCH:
-				if (!missionLimboExpand())
-				{
-					ReticuleEnabled[RETBUT_RESEARCH].Enabled = true;
-				}
-				break;
-			case REF_FACTORY:
-			case REF_CYBORG_FACTORY:
-			case REF_VTOL_FACTORY:
-				if (!missionLimboExpand())
-				{
-					ReticuleEnabled[RETBUT_FACTORY].Enabled = true;
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
-	for (psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
-	{
-		switch (psDroid->droidType)
-		{
-		case DROID_CONSTRUCT:
-		case DROID_CYBORG_CONSTRUCT:
-			ReticuleEnabled[RETBUT_BUILD].Enabled = true;
-			break;
-		case DROID_COMMAND:
-			ReticuleEnabled[RETBUT_COMMAND].Enabled = true;
-			break;
-		default:
-			break;
-		}
-	}
-
-	for (int i = 0; i < NUMRETBUTS; i++)
-	{
-		WIDGET *psWidget = widgGetFromID(psWScreen, ReticuleEnabled[i].id);
-
-		if (psWidget != NULL)
-		{
-			if (psWidget->type != WIDG_LABEL)
-			{
-				if (ReticuleEnabled[i].Enabled)
-				{
-					widgSetButtonState(psWScreen, ReticuleEnabled[i].id, 0);
-				}
-				else
-				{
-					widgSetButtonState(psWScreen, ReticuleEnabled[i].id, WBUT_DISABLE);
-				}
-
-				if (ReticuleEnabled[i].Hidden)
-				{
-					widgHide(psWScreen, ReticuleEnabled[i].id);
-				}
-				else
-				{
-					widgReveal(psWScreen, ReticuleEnabled[i].id);
-				}
-			}
-		}
-	}
-}
-
 /*Checks to see if there are any research topics to do and flashes the button -
 only if research facility is free*/
 int human_computer_interface::getResearchState()
@@ -4937,19 +4970,6 @@ void human_computer_interface::notifyResearchButton(int prevState)
 	{
 		stopReticuleButtonFlash(IDRET_RESEARCH);
 	}
-}
-
-// see if a reticule button is enabled
-bool human_computer_interface::checkReticuleButEnabled(uint32_t id)
-{
-	for (int i = 0; i < NUMRETBUTS; i++)
-	{
-		if (ReticuleEnabled[i].id == id)
-		{
-			return ReticuleEnabled[i].Enabled;
-		}
-	}
-	return false;
 }
 
 // Find any structure. Returns NULL if none found.
@@ -5273,7 +5293,7 @@ void intNotifyResearchButton(int prevState)
 
 bool intCheckReticuleButEnabled(UDWORD id)
 {
-	return default_hci->checkReticuleButEnabled(id);
+	return default_hci->reticule.checkReticuleButEnabled(id);
 }
 
 void hciUpdate()

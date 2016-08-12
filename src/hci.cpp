@@ -869,19 +869,12 @@ struct statistics
 		/* Add the stat buttons */
 		int nextButtonId = IDSTAT_START;
 
-		W_BARINIT sBarInit;
-		sBarInit.id = IDSTAT_TIMEBARSTART;
-		sBarInit.x = STAT_TIMEBARX;
-		sBarInit.width = STAT_PROGBARWIDTH;
-		sBarInit.height = STAT_PROGBARHEIGHT;
-		sBarInit.size = 50;
-		sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
-		sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
+
 
 		statID = 0;
 		for (unsigned i = 0; i < numStats; i++)
 		{
-			sBarInit.y = STAT_TIMEBARY;
+			BASE_STATS *Stat = ppsStatsList[i];
 
 			if (nextButtonId > IDSTAT_END)
 			{
@@ -893,97 +886,31 @@ struct statistics
 			IntStatsButton *button = new IntStatsButton(statList);
 			button->id = nextButtonId;
 			button->style |= WFORM_SECONDARY;
-			button->setStats(ppsStatsList[i]);
+			button->setStats(Stat);
 			statList->addWidgetToLayout(button);
 
-			BASE_STATS *Stat = ppsStatsList[i];
-			QString tipString = getName(ppsStatsList[i]);
+			QString tipString = getName(Stat);
 			unsigned powerCost = 0;
 			if (Stat->ref >= REF_STRUCTURE_START &&
 				Stat->ref < REF_STRUCTURE_START + REF_RANGE)  		// It's a structure.
 			{
-				addBar(powerCost, reinterpret_cast<STRUCTURE_STATS *>(Stat), sBarInit, nextButtonId);
+				addBar(powerCost, reinterpret_cast<STRUCTURE_STATS *>(Stat), i);
 			}
 			else if (Stat->ref >= REF_TEMPLATE_START &&
 				Stat->ref < REF_TEMPLATE_START + REF_RANGE)  	// It's a droid.
 			{
-				addBar(powerCost, reinterpret_cast<DROID_TEMPLATE *>(Stat), sBarInit, nextButtonId, sLabInit);
+				addBar(powerCost, reinterpret_cast<DROID_TEMPLATE *>(Stat), i, sLabInit);
 			}
 			else if (Stat->ref >= REF_RESEARCH_START &&
 				Stat->ref < REF_RESEARCH_START + REF_RANGE)				// It's a Research topic.
 			{
-				W_LABINIT researchLabel;
-				researchLabel.formID = nextButtonId;
-				researchLabel.id = IDSTAT_RESICONSTART + (nextButtonId - IDSTAT_START);
-
-				researchLabel.x = STAT_BUTWIDTH - 16;
-				researchLabel.y = 3;
-
-				researchLabel.width = 12;
-				researchLabel.height = 15;
-				researchLabel.pUserData = Stat;
-				researchLabel.pDisplay = intDisplayResSubGroup;
-				widgAddLabel(psWScreen, &researchLabel);
-
-				//add power bar as well
-				powerCost = ((RESEARCH *)Stat)->researchPower;
-				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
-
-				// if multiplayer, if research topic is being done by another ally then mark as such..
-				if (bMultiPlayer)
-				{
-					std::vector<AllyResearch> const &researches = listAllyResearch(Stat->ref);
-					unsigned numResearches = std::min<unsigned>(researches.size(), 4);  // Only display at most 4 allies, since that's what there's room for.
-					int allyResearchIconCount = 0;
-					for (unsigned ii = 0; ii < numResearches; ++ii)
-					{
-						// add a label.
-						W_LABINIT multiplayerResearchLabel;
-						multiplayerResearchLabel.formID = nextButtonId;
-						multiplayerResearchLabel.id = IDSTAT_ALLYSTART + allyResearchIconCount;
-						multiplayerResearchLabel.width = iV_GetImageWidth(IntImages, IMAGE_ALLY_RESEARCH);
-						multiplayerResearchLabel.height = iV_GetImageHeight(IntImages, IMAGE_ALLY_RESEARCH);
-						multiplayerResearchLabel.x = STAT_BUTWIDTH - (multiplayerResearchLabel.width + 2) * ii - multiplayerResearchLabel.width - 2;
-						multiplayerResearchLabel.y = STAT_BUTHEIGHT - multiplayerResearchLabel.height - 3 - STAT_PROGBARHEIGHT;
-						multiplayerResearchLabel.UserData = PACKDWORD(Stat->ref - REF_RESEARCH_START, ii);
-						multiplayerResearchLabel.pTip = getPlayerName(researches[ii].player);
-						multiplayerResearchLabel.pDisplay = intDisplayAllyIcon;
-						widgAddLabel(psWScreen, &multiplayerResearchLabel);
-
-						++allyResearchIconCount;
-						ASSERT_OR_RETURN(false, allyResearchIconCount < IDSTAT_ALLYEND - IDSTAT_ALLYSTART, " too many research icons? ");
-					}
-
-					if (numResearches > 0)
-					{
-						W_BARINIT progress;
-						progress.formID = nextButtonId;
-						progress.id = IDSTAT_ALLYSTART + allyResearchIconCount;
-						progress.width = STAT_PROGBARWIDTH;
-						progress.height = STAT_PROGBARHEIGHT;
-						progress.x = STAT_TIMEBARX;
-						progress.y = STAT_TIMEBARY;
-						progress.UserData = Stat->ref - REF_RESEARCH_START;
-						progress.pTip = _("Ally progress");
-						progress.pDisplay = intDisplayAllyBar;
-						W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &progress);
-						bar->setBackgroundColour(WZCOL_BLACK);
-
-						++allyResearchIconCount;
-
-						sBarInit.y -= STAT_PROGBARHEIGHT + 2;  // Move cost bar up, to avoid overlap.
-					}
-				}
-
-				sBarInit.formID = nextButtonId;
-				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
-				bar->setBackgroundColour(WZCOL_BLACK);
+				addBar(powerCost, reinterpret_cast<RESEARCH *>(Stat), i);
 			}
 			tipString.append(QString::fromUtf8(_("\nCost: %1")).arg(powerCost));
 			button->setTip(tipString);
 
 			/* If this matches psSelected note the form and button */
-			if (ppsStatsList[i] == psSelected)
+			if (Stat == psSelected)
 			{
 				statID = nextButtonId;
 				button->setState(WBUT_CLICKLOCK);
@@ -992,8 +919,6 @@ struct statistics
 
 			/* Update the init struct for the next button */
 			++nextButtonId;
-
-			sBarInit.id += 1;
 		}
 
 		show();
@@ -1079,32 +1004,132 @@ protected:
 		}
 	}
 
-	void addBar(unsigned int &powerCost, STRUCTURE_STATS * Stat, W_BARINIT &sBarInit, int nextButtonId)
+	void addBar(unsigned int &powerCost, STRUCTURE_STATS * Stat, int i)
 	{
+		W_BARINIT sBarInit;
+		sBarInit.id = IDSTAT_TIMEBARSTART + i;
+		sBarInit.x = STAT_TIMEBARX;
+		sBarInit.width = STAT_PROGBARWIDTH;
+		sBarInit.height = STAT_PROGBARHEIGHT;
+		sBarInit.size = 50;
+		sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
+		sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
+		sBarInit.y = STAT_TIMEBARY;
+
 		powerCost = Stat->powerToBuild;
 		sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
 
-		sBarInit.formID = nextButtonId;
+		sBarInit.formID = IDSTAT_START + i;
 		sBarInit.iRange = GAME_TICKS_PER_SEC;
 		W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
 		bar->setBackgroundColour(WZCOL_BLACK);
 	}
 
-	void addBar(unsigned int &powerCost, DROID_TEMPLATE * Stat, W_BARINIT &sBarInit, int nextButtonId, W_LABINIT &sLabInit)
+	void addBar(unsigned int &powerCost, DROID_TEMPLATE * Stat, int i, W_LABINIT &sLabInit)
 	{
+		W_BARINIT sBarInit;
+		sBarInit.id = IDSTAT_TIMEBARSTART + i;
+		sBarInit.x = STAT_TIMEBARX;
+		sBarInit.width = STAT_PROGBARWIDTH;
+		sBarInit.height = STAT_PROGBARHEIGHT;
+		sBarInit.size = 50;
+		sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
+		sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
+		sBarInit.y = STAT_TIMEBARY;
+
 		powerCost = calcTemplatePower(Stat);
 		sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
 
-		sBarInit.formID = nextButtonId;
+		sBarInit.formID = IDSTAT_START + i;
 		sBarInit.iRange = GAME_TICKS_PER_SEC;
 		W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
 		bar->setBackgroundColour(WZCOL_BLACK);
 
 		// Add a text label for the quantity to produce.
-		sLabInit.formID = nextButtonId;
+		sLabInit.formID = IDSTAT_START + i;
 		sLabInit.pUserData = Stat;
 		widgAddLabel(psWScreen, &sLabInit);
 		sLabInit.id++;
+	}
+
+	bool addBar(unsigned int &powerCost, RESEARCH * Stat, int i)
+	{
+		W_BARINIT sBarInit;
+		sBarInit.id = IDSTAT_TIMEBARSTART + i;
+		sBarInit.x = STAT_TIMEBARX;
+		sBarInit.width = STAT_PROGBARWIDTH;
+		sBarInit.height = STAT_PROGBARHEIGHT;
+		sBarInit.size = 50;
+		sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
+		sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
+		sBarInit.y = STAT_TIMEBARY;
+
+		W_LABINIT researchLabel;
+		researchLabel.formID = IDSTAT_START + i;
+		researchLabel.id = IDSTAT_RESICONSTART +i;
+
+		researchLabel.x = STAT_BUTWIDTH - 16;
+		researchLabel.y = 3;
+
+		researchLabel.width = 12;
+		researchLabel.height = 15;
+		researchLabel.pUserData = Stat;
+		researchLabel.pDisplay = intDisplayResSubGroup;
+		widgAddLabel(psWScreen, &researchLabel);
+
+		//add power bar as well
+		powerCost = Stat->researchPower;
+		sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
+
+		// if multiplayer, if research topic is being done by another ally then mark as such..
+		if (bMultiPlayer)
+		{
+			std::vector<AllyResearch> const &researches = listAllyResearch(Stat->ref);
+			unsigned numResearches = std::min<unsigned>(researches.size(), 4);  // Only display at most 4 allies, since that's what there's room for.
+			int allyResearchIconCount = 0;
+			for (unsigned ii = 0; ii < numResearches; ++ii)
+			{
+				// add a label.
+				W_LABINIT multiplayerResearchLabel;
+				multiplayerResearchLabel.formID = IDSTAT_START + i;
+				multiplayerResearchLabel.id = IDSTAT_ALLYSTART + allyResearchIconCount;
+				multiplayerResearchLabel.width = iV_GetImageWidth(IntImages, IMAGE_ALLY_RESEARCH);
+				multiplayerResearchLabel.height = iV_GetImageHeight(IntImages, IMAGE_ALLY_RESEARCH);
+				multiplayerResearchLabel.x = STAT_BUTWIDTH - (multiplayerResearchLabel.width + 2) * ii - multiplayerResearchLabel.width - 2;
+				multiplayerResearchLabel.y = STAT_BUTHEIGHT - multiplayerResearchLabel.height - 3 - STAT_PROGBARHEIGHT;
+				multiplayerResearchLabel.UserData = PACKDWORD(Stat->ref - REF_RESEARCH_START, ii);
+				multiplayerResearchLabel.pTip = getPlayerName(researches[ii].player);
+				multiplayerResearchLabel.pDisplay = intDisplayAllyIcon;
+				widgAddLabel(psWScreen, &multiplayerResearchLabel);
+
+				++allyResearchIconCount;
+				ASSERT_OR_RETURN(false, allyResearchIconCount < IDSTAT_ALLYEND - IDSTAT_ALLYSTART, " too many research icons? ");
+			}
+
+			if (numResearches > 0)
+			{
+				W_BARINIT progress;
+				progress.formID = IDSTAT_START + i;
+				progress.id = IDSTAT_ALLYSTART + allyResearchIconCount;
+				progress.width = STAT_PROGBARWIDTH;
+				progress.height = STAT_PROGBARHEIGHT;
+				progress.x = STAT_TIMEBARX;
+				progress.y = STAT_TIMEBARY;
+				progress.UserData = Stat->ref - REF_RESEARCH_START;
+				progress.pTip = _("Ally progress");
+				progress.pDisplay = intDisplayAllyBar;
+				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &progress);
+				bar->setBackgroundColour(WZCOL_BLACK);
+
+				++allyResearchIconCount;
+
+				sBarInit.y -= STAT_PROGBARHEIGHT + 2;  // Move cost bar up, to avoid overlap.
+			}
+		}
+
+		sBarInit.formID = IDSTAT_START + i;
+		W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
+		bar->setBackgroundColour(WZCOL_BLACK);
 	}
 };
 

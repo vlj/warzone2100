@@ -214,10 +214,10 @@ const std::array<std::string, 16> apPlayerTip =
 };
 
 /* Status of the positioning for the object placement */
- enum _edit_pos_mode
+ enum class _edit_pos_mode
 {
-	IED_NOPOS,
-	IED_POS,
+	nopos,
+	pos,
 };
 
  /* Which type of object screen is being displayed. Starting value is where the intMode left off*/
@@ -1054,7 +1054,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			objMode = IOBJ_MANUFACTURE;
 			addStats(ppsStatsList, apsTemplateList.size(), NULL, NULL);
 			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
+			editPosMode = _edit_pos_mode::nopos;
 			break;
 		case IDOPT_STRUCT:
 			intRemoveOptions();
@@ -1066,7 +1066,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			objMode = IOBJ_BUILD;
 			addStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
+			editPosMode = _edit_pos_mode::nopos;
 			break;
 		case IDOPT_FEATURE:
 			intRemoveOptions();
@@ -1077,7 +1077,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			ppsStatsList = (BASE_STATS **)apsFeatureList.data();
 			addStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL);
 			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
+			editPosMode = _edit_pos_mode::nopos;
 			break;
 		/* Close window buttons */
 		case IDOPT_CLOSE:
@@ -1121,7 +1121,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 		{
 			intStartStructPosition(psPositionStats);
 		}
-		editPosMode = IED_POS;
+		editPosMode = _edit_pos_mode::pos;
 	}
 	else if (id == IDSTAT_CLOSE)
 	{
@@ -1554,7 +1554,7 @@ INT_RETVAL human_computer_interface::display()
 				resetScreen(false);
 			}
 		}
-		else if (intMode == INT_EDITSTAT && editPosMode == IED_POS)
+		else if (intMode == INT_EDITSTAT && editPosMode == _edit_pos_mode::pos)
 		{
 			/* Directly positioning some type of object */
 			unsigned structX1 = INT32_MAX;
@@ -1683,7 +1683,7 @@ INT_RETVAL human_computer_interface::display()
 					}
 					if (!quickQueueMode)
 					{
-						editPosMode = IED_NOPOS;
+						editPosMode = _edit_pos_mode::nopos;
 					}
 				}
 		}

@@ -726,8 +726,6 @@ struct human_computer_interface
 	void update();
 	void displayWidgets();
 	INT_RETVAL display();
-	bool addReticule();
-	void removeReticule();
 
 	void setMapPos(uint32_t x, uint32_t y);
 	void notifyNewObject(BASE_OBJECT *);
@@ -3014,18 +3012,6 @@ void human_computer_interface::alliedResearchChanged()
 	{
 		refreshScreen();
 	}
-}
-
-/* Add the reticule widgets to the widget screen */
-bool human_computer_interface::addReticule()
-{
-	reticule.show();
-	return true;
-}
-
-void human_computer_interface::removeReticule(void)
-{
-	reticule.hide();
 }
 
 /* Add the options widgets to the widget screen */
@@ -5374,14 +5360,17 @@ void intResearchFinished(STRUCTURE *psBuilding)
 	default_hci->notifyResearchFinished(psBuilding);
 }
 
+
+/* Add the reticule widgets to the widget screen */
 bool intAddReticule()
 {
-	return default_hci->addReticule();
+	default_hci->reticule.show();
+	return true;
 }
 
 void intRemoveReticule(void)
 {
-	default_hci->removeReticule();
+	default_hci->reticule.hide();
 }
 
 void togglePowerBar(void)

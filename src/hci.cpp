@@ -815,60 +815,13 @@ struct statistics
 		statForm->id = IDSTAT_FORM;
 		statForm->setGeometry(STAT_X, STAT_Y, STAT_WIDTH, STAT_HEIGHT);
 
-		W_LABINIT sLabInit;
-
 		// Add the quantity slider ( if it's a factory ).
 		if (objMode == IOBJ_MANUFACTURE && psOwner != nullptr)
 		{
-			STRUCTURE_TYPE factoryType = ((STRUCTURE *)psOwner)->pStructureType->type;
-
-			//add the Factory DP button
-			W_BUTTON *deliveryPointButton = new W_BUTTON(statForm);
-			deliveryPointButton->id = IDSTAT_DP_BUTTON;
-			deliveryPointButton->style |= WBUT_SECONDARY;
-			switch (factoryType)
-			{
-			default:
-			case REF_FACTORY:        deliveryPointButton->setImages(Image(IntImages, IMAGE_FDP_UP), Image(IntImages, IMAGE_FDP_DOWN), Image(IntImages, IMAGE_FDP_HI)); break;
-			case REF_CYBORG_FACTORY: deliveryPointButton->setImages(Image(IntImages, IMAGE_CDP_UP), Image(IntImages, IMAGE_CDP_DOWN), Image(IntImages, IMAGE_CDP_HI)); break;
-			case REF_VTOL_FACTORY:   deliveryPointButton->setImages(Image(IntImages, IMAGE_VDP_UP), Image(IntImages, IMAGE_VDP_DOWN), Image(IntImages, IMAGE_VDP_HI)); break;
-			}
-			deliveryPointButton->move(4, STAT_SLDY);
-			deliveryPointButton->setTip(_("Factory Delivery Point"));
-			deliveryPointButton->pUserData = psOwner;
-
-			//add the Factory Loop button!
-			W_BUTTON *loopButton = new W_BUTTON(statForm);
-			loopButton->id = IDSTAT_LOOP_BUTTON;
-			loopButton->style |= WBUT_SECONDARY;
-			loopButton->setImages(Image(IntImages, IMAGE_LOOP_UP), Image(IntImages, IMAGE_LOOP_DOWN), Image(IntImages, IMAGE_LOOP_HI));
-			loopButton->move(STAT_SLDX + STAT_SLDWIDTH + 2, STAT_SLDY);
-			loopButton->setTip(_("Loop Production"));
-
-			if (psOwner != NULL)
-			{
-				FACTORY *psFactory = (FACTORY *)((STRUCTURE *)psOwner)->pFunctionality;
-				if (psFactory->psSubject != NULL && psFactory->productionLoops != 0)
-				{
-					widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
-				}
-			}
-
-			// create a text label for the loop quantity.
-			sLabInit.formID = IDSTAT_FORM;
-			sLabInit.id = IDSTAT_LOOP_LABEL;
-			sLabInit.style = WIDG_HIDDEN;
-			sLabInit.x = loopButton->x() - 15;
-			sLabInit.y = loopButton->y();
-			sLabInit.width = 12;
-			sLabInit.height = 15;
-			sLabInit.pUserData = psOwner;
-			sLabInit.pCallback = intAddLoopQuantity;
-			if (!widgAddLabel(psWScreen, &sLabInit))
-			{
-				return false;
-			}
+			createLoopAndDeliveryPointButtons(psOwner, statForm);
 		}
+
+		W_LABINIT sLabInit;
 
 		if (objMode == IOBJ_MANUFACTURE)
 		{
@@ -992,18 +945,18 @@ struct statistics
 			else if (Stat->ref >= REF_RESEARCH_START &&
 				Stat->ref < REF_RESEARCH_START + REF_RANGE)				// It's a Research topic.
 			{
-				sLabInit = W_LABINIT();
-				sLabInit.formID = nextButtonId;
-				sLabInit.id = IDSTAT_RESICONSTART + (nextButtonId - IDSTAT_START);
+				W_LABINIT researchLabel;
+				researchLabel.formID = nextButtonId;
+				researchLabel.id = IDSTAT_RESICONSTART + (nextButtonId - IDSTAT_START);
 
-				sLabInit.x = STAT_BUTWIDTH - 16;
-				sLabInit.y = 3;
+				researchLabel.x = STAT_BUTWIDTH - 16;
+				researchLabel.y = 3;
 
-				sLabInit.width = 12;
-				sLabInit.height = 15;
-				sLabInit.pUserData = Stat;
-				sLabInit.pDisplay = intDisplayResSubGroup;
-				widgAddLabel(psWScreen, &sLabInit);
+				researchLabel.width = 12;
+				researchLabel.height = 15;
+				researchLabel.pUserData = Stat;
+				researchLabel.pDisplay = intDisplayResSubGroup;
+				widgAddLabel(psWScreen, &researchLabel);
 
 				//add power bar as well
 				powerCost = ((RESEARCH *)Stat)->researchPower;
@@ -1022,17 +975,17 @@ struct statistics
 					for (unsigned ii = 0; ii < numResearches; ++ii)
 					{
 						// add a label.
-						sLabInit = W_LABINIT();
-						sLabInit.formID = nextButtonId;
-						sLabInit.id = IDSTAT_ALLYSTART + allyResearchIconCount;
-						sLabInit.width = iV_GetImageWidth(IntImages, IMAGE_ALLY_RESEARCH);
-						sLabInit.height = iV_GetImageHeight(IntImages, IMAGE_ALLY_RESEARCH);
-						sLabInit.x = STAT_BUTWIDTH - (sLabInit.width + 2) * ii - sLabInit.width - 2;
-						sLabInit.y = STAT_BUTHEIGHT - sLabInit.height - 3 - STAT_PROGBARHEIGHT;
-						sLabInit.UserData = PACKDWORD(Stat->ref - REF_RESEARCH_START, ii);
-						sLabInit.pTip = getPlayerName(researches[ii].player);
-						sLabInit.pDisplay = intDisplayAllyIcon;
-						widgAddLabel(psWScreen, &sLabInit);
+						W_LABINIT multiplayerResearchLabel;
+						multiplayerResearchLabel.formID = nextButtonId;
+						multiplayerResearchLabel.id = IDSTAT_ALLYSTART + allyResearchIconCount;
+						multiplayerResearchLabel.width = iV_GetImageWidth(IntImages, IMAGE_ALLY_RESEARCH);
+						multiplayerResearchLabel.height = iV_GetImageHeight(IntImages, IMAGE_ALLY_RESEARCH);
+						multiplayerResearchLabel.x = STAT_BUTWIDTH - (multiplayerResearchLabel.width + 2) * ii - multiplayerResearchLabel.width - 2;
+						multiplayerResearchLabel.y = STAT_BUTHEIGHT - multiplayerResearchLabel.height - 3 - STAT_PROGBARHEIGHT;
+						multiplayerResearchLabel.UserData = PACKDWORD(Stat->ref - REF_RESEARCH_START, ii);
+						multiplayerResearchLabel.pTip = getPlayerName(researches[ii].player);
+						multiplayerResearchLabel.pDisplay = intDisplayAllyIcon;
+						widgAddLabel(psWScreen, &multiplayerResearchLabel);
 
 						++allyResearchIconCount;
 						ASSERT_OR_RETURN(false, allyResearchIconCount < IDSTAT_ALLYEND - IDSTAT_ALLYSTART, " too many research icons? ");
@@ -1103,9 +1056,64 @@ struct statistics
 
 		return true;
 	}
+
 protected:
 	bool statsUp = false;
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
+
+
+	void createLoopAndDeliveryPointButtons(BASE_OBJECT * psOwner, IntFormAnimated * statForm)
+	{
+		STRUCTURE_TYPE factoryType = ((STRUCTURE *)psOwner)->pStructureType->type;
+
+		//add the Factory DP button
+		W_BUTTON *deliveryPointButton = new W_BUTTON(statForm);
+		deliveryPointButton->id = IDSTAT_DP_BUTTON;
+		deliveryPointButton->style |= WBUT_SECONDARY;
+		switch (factoryType)
+		{
+		default:
+		case REF_FACTORY:        deliveryPointButton->setImages(Image(IntImages, IMAGE_FDP_UP), Image(IntImages, IMAGE_FDP_DOWN), Image(IntImages, IMAGE_FDP_HI)); break;
+		case REF_CYBORG_FACTORY: deliveryPointButton->setImages(Image(IntImages, IMAGE_CDP_UP), Image(IntImages, IMAGE_CDP_DOWN), Image(IntImages, IMAGE_CDP_HI)); break;
+		case REF_VTOL_FACTORY:   deliveryPointButton->setImages(Image(IntImages, IMAGE_VDP_UP), Image(IntImages, IMAGE_VDP_DOWN), Image(IntImages, IMAGE_VDP_HI)); break;
+		}
+		deliveryPointButton->move(4, STAT_SLDY);
+		deliveryPointButton->setTip(_("Factory Delivery Point"));
+		deliveryPointButton->pUserData = psOwner;
+
+		//add the Factory Loop button!
+		W_BUTTON *loopButton = new W_BUTTON(statForm);
+		loopButton->id = IDSTAT_LOOP_BUTTON;
+		loopButton->style |= WBUT_SECONDARY;
+		loopButton->setImages(Image(IntImages, IMAGE_LOOP_UP), Image(IntImages, IMAGE_LOOP_DOWN), Image(IntImages, IMAGE_LOOP_HI));
+		loopButton->move(STAT_SLDX + STAT_SLDWIDTH + 2, STAT_SLDY);
+		loopButton->setTip(_("Loop Production"));
+
+		if (psOwner != nullptr)
+		{
+			FACTORY *psFactory = (FACTORY *)((STRUCTURE *)psOwner)->pFunctionality;
+			if (psFactory->psSubject != nullptr && psFactory->productionLoops != 0)
+			{
+				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
+			}
+		}
+
+		// create a text label for the loop quantity.
+		W_LABINIT loopLabel;
+		loopLabel.formID = IDSTAT_FORM;
+		loopLabel.id = IDSTAT_LOOP_LABEL;
+		loopLabel.style = WIDG_HIDDEN;
+		loopLabel.x = loopButton->x() - 15;
+		loopLabel.y = loopButton->y();
+		loopLabel.width = 12;
+		loopLabel.height = 15;
+		loopLabel.pUserData = psOwner;
+		loopLabel.pCallback = intAddLoopQuantity;
+		if (!widgAddLabel(psWScreen, &loopLabel))
+		{
+			abort();
+		}
+	}
 };
 
 struct human_computer_interface

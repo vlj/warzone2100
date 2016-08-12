@@ -742,14 +742,9 @@ void human_computer_interface::doScreenRefresh()
 		widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr &&
 		widgGetFromID(psWScreen, IDOBJ_FORM)->visible())
 	{
-		bool StatsWasUp = false;
-		bool OrderWasUp = false;
-
 		// If the stats form is up then remove it, but remember that it was up.
-		if ((intMode == INT_STAT) && widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr)
-		{
-			StatsWasUp = true;
-		}
+		bool StatsWasUp = (intMode == INT_STAT) && widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr;
+
 		uint32_t objMajor = 0, statMajor = 0;
 		// store the current tab position
 		if (widgGetFromID(psWScreen, IDOBJ_TABFORM) != nullptr)
@@ -770,11 +765,8 @@ void human_computer_interface::doScreenRefresh()
 		FLAG_POSITION *psFlag = intFindSelectedDelivPoint();
 
 		// see if the commander order screen is up
-		if ((intMode == INT_CMDORDER) &&
-			(widgGetFromID(psWScreen, IDORDER_FORM) != nullptr))
-		{
-			OrderWasUp = true;
-		}
+		bool OrderWasUp = (intMode == INT_CMDORDER) && (widgGetFromID(psWScreen, IDORDER_FORM) != nullptr);
+
 
 		switch (objMode)
 		{

@@ -753,6 +753,33 @@ struct statistics
 			}
 		}
 	}
+
+	void removeStats()
+	{
+		widgDelete(psWScreen, IDSTAT_CLOSE);
+		widgDelete(psWScreen, IDSTAT_TABFORM);
+
+		// Start the window close animation.
+		IntFormAnimated *Form = (IntFormAnimated *)widgGetFromID(psWScreen, IDSTAT_FORM);
+		if (Form)
+		{
+			Form->closeAnimateDelete();
+		}
+
+		hide();
+		psStatsScreenOwner = NULL;
+	}
+
+	/* Remove the stats widgets from the widget screen */
+	void removeStatsNoAnim()
+	{
+		widgDelete(psWScreen, IDSTAT_CLOSE);
+		widgDelete(psWScreen, IDSTAT_TABFORM);
+		widgDelete(psWScreen, IDSTAT_FORM);
+
+		hide();
+		psStatsScreenOwner = NULL;
+	}
 protected:
 	bool statsUp = false;
 };
@@ -789,8 +816,6 @@ struct human_computer_interface
 	void resetScreen(bool NoAnim);
 	void refreshScreen();
 	bool addOptions();
-	void removeStats();
-	void removeStatsNoAnim();
 	STRUCTURE *interfaceStructList();
 	void addTransporterInterface(DROID *psSelected, bool onMission);
 	void alliedResearchChanged();
@@ -1098,7 +1123,7 @@ void human_computer_interface::doScreenRefresh()
 			// now make sure the stats screen isn't up
 			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 			{
-				removeStatsNoAnim();
+				stats.removeStatsNoAnim();
 			}
 
 			// see if there was a delivery point being positioned
@@ -1204,11 +1229,11 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		stopStructPosition();
 		if (NoAnim)
 		{
-			removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 		}
 		else
 		{
-			removeStats();
+			stats.removeStats();
 		}
 		break;
 	case INT_OBJECT:
@@ -1225,12 +1250,12 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	case INT_STAT:
 		if (NoAnim)
 		{
-			removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 			removeObjectNoAnim();
 		}
 		else
 		{
-			removeStats();
+			stats.removeStats();
 			removeObject();
 		}
 		break;
@@ -1434,7 +1459,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	}
 	else if (id == IDSTAT_CLOSE)
 	{
-		removeStats();
+		stats.removeStats();
 		stopStructPosition();
 		intMode = INT_NORMAL;
 		objMode = IOBJ_NONE;
@@ -2034,7 +2059,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		{
 			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 		}
-		removeStatsNoAnim();
+		stats.removeStatsNoAnim();
 	}
 
 	/* Display the stats window
@@ -2214,7 +2239,7 @@ void human_computer_interface::processObject(uint32_t id)
 			widgSetButtonState(psWScreen, statButID, 0);
 			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
 			{
-				removeStats();
+				stats.removeStats();
 			}
 			if (psObjSelected == psObj)
 			{
@@ -2513,7 +2538,7 @@ void human_computer_interface::processStats(uint32_t id)
 				int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 				// Close the stats box
-				removeStats();
+				stats.removeStats();
 				intMode = INT_OBJECT;
 
 				// Reset the tabs on the object form
@@ -2552,7 +2577,7 @@ void human_computer_interface::processStats(uint32_t id)
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		/* Close the structure box without doing anything */
-		removeStats();
+		stats.removeStats();
 		intMode = INT_OBJECT;
 
 		/* Reset the tabs on the build form */
@@ -2808,7 +2833,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 		// remove the stat screen if necessary
 		if ((intMode == INT_STAT) && statsID == objStatID)
 		{
-			removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 			intMode = INT_OBJECT;
 		}
 	}
@@ -3238,7 +3263,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		// No objects so close the stats window if it's up...
 		if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 		{
-			removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 		}
 		// and return.
 		return false;
@@ -3737,7 +3762,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 			if (psStatsScreenOwner->died != 0)
 			{
 				// remove it.
-				removeStatsNoAnim();
+				stats.removeStatsNoAnim();
 			}
 		}
 	}
@@ -3774,35 +3799,6 @@ void human_computer_interface::removeObjectNoAnim()
 	widgDelete(psWScreen, IDOBJ_FORM);
 
 	powerbar.hidePowerBar();
-}
-
-
-/* Remove the stats widgets from the widget screen */
-void human_computer_interface::removeStats()
-{
-	widgDelete(psWScreen, IDSTAT_CLOSE);
-	widgDelete(psWScreen, IDSTAT_TABFORM);
-
-	// Start the window close animation.
-	IntFormAnimated *Form = (IntFormAnimated *)widgGetFromID(psWScreen, IDSTAT_FORM);
-	if (Form)
-	{
-		Form->closeAnimateDelete();
-	}
-
-	stats.hide();
-	psStatsScreenOwner = NULL;
-}
-
-/* Remove the stats widgets from the widget screen */
-void human_computer_interface::removeStatsNoAnim()
-{
-	widgDelete(psWScreen, IDSTAT_CLOSE);
-	widgDelete(psWScreen, IDSTAT_TABFORM);
-	widgDelete(psWScreen, IDSTAT_FORM);
-
-	stats.hide();
-	psStatsScreenOwner = NULL;
 }
 
 BASE_OBJECT *human_computer_interface::getObject(uint32_t id)
@@ -3923,9 +3919,9 @@ bool human_computer_interface::addStats(BASE_STATS **ppsStatsList, uint32_t numS
 	// should this ever be called with psOwner == NULL?
 
 	// Is the form already up?
-	if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
+	if (widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr)
 	{
-		removeStatsNoAnim();
+		stats.removeStatsNoAnim();
 	}
 
 	// is the order form already up ?
@@ -5405,12 +5401,12 @@ bool intAddOptions(void)
 
 void intRemoveStats(void)
 {
-	default_hci->removeStats();
+	default_hci->stats.removeStats();
 }
 
 void intRemoveStatsNoAnim(void)
 {
-	default_hci->removeStatsNoAnim();
+	default_hci->stats.removeStatsNoAnim();
 }
 
 StateButton *makeObsoleteButton(WIDGET *parent)

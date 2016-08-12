@@ -867,16 +867,12 @@ struct statistics
 		statList->setGeometry((STAT_WIDTH - statListWidth) / 2, STAT_TABFORMY, statListWidth, STAT_HEIGHT - STAT_TABFORMY);
 
 		/* Add the stat buttons */
-		int nextButtonId = IDSTAT_START;
-
-
-
 		statID = 0;
 		for (unsigned i = 0; i < numStats; i++)
 		{
 			BASE_STATS *Stat = ppsStatsList[i];
 
-			if (nextButtonId > IDSTAT_END)
+			if (i + IDSTAT_START > IDSTAT_END)
 			{
 				//can't fit any more on the screen!
 				debug(LOG_WARNING, "This is just a Warning! Max buttons have been allocated");
@@ -884,7 +880,7 @@ struct statistics
 			}
 
 			IntStatsButton *button = new IntStatsButton(statList);
-			button->id = nextButtonId;
+			button->id = IDSTAT_START + i;
 			button->style |= WFORM_SECONDARY;
 			button->setStats(Stat);
 			statList->addWidgetToLayout(button);
@@ -912,13 +908,12 @@ struct statistics
 			/* If this matches psSelected note the form and button */
 			if (Stat == psSelected)
 			{
-				statID = nextButtonId;
+				statID = IDSTAT_START + i;
 				button->setState(WBUT_CLICKLOCK);
 				statList->setCurrentPage(statList->pages() - 1);
 			}
 
 			/* Update the init struct for the next button */
-			++nextButtonId;
 		}
 
 		show();

@@ -702,6 +702,19 @@ struct statistics
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
 
+	statistics()
+	{
+		closeButtonDesc.formID = IDSTAT_FORM;
+		closeButtonDesc.id = IDSTAT_CLOSE;
+		closeButtonDesc.x = STAT_WIDTH - CLOSE_WIDTH;
+		closeButtonDesc.y = 0;
+		closeButtonDesc.width = CLOSE_WIDTH;
+		closeButtonDesc.height = CLOSE_HEIGHT;
+		closeButtonDesc.pTip = _("Close");
+		closeButtonDesc.pDisplay = intDisplayImageHilight;
+		closeButtonDesc.UserData = PACKDWORD_TRI(0, IMAGE_CLOSEHILIGHT, IMAGE_CLOSE);
+	}
+
 	void show()
 	{
 		statsUp = true;
@@ -792,19 +805,16 @@ struct statistics
 		}
 
 		// is the order form already up ?
-		if (widgGetFromID(psWScreen, IDORDER_FORM) != NULL)
+		if (widgGetFromID(psWScreen, IDORDER_FORM) != nullptr)
 		{
 			intRemoveOrderNoAnim();
 		}
 
-		if (psOwner != NULL)
+		// Return if the owner is dead.
+		if (psOwner != nullptr && psOwner->died)
 		{
-			// Return if the owner is dead.
-			if (psOwner->died)
-			{
-				debug(LOG_GUI, "intAddStats: Owner is dead");
-				return false;
-			}
+			debug(LOG_GUI, "intAddStats: Owner is dead");
+			return;
 		}
 		psStatsScreenOwner = psOwner;
 
@@ -846,20 +856,7 @@ struct statistics
 		}
 
 		/* Add the close button */
-		W_BUTINIT sButInit;
-		sButInit.formID = IDSTAT_FORM;
-		sButInit.id = IDSTAT_CLOSE;
-		sButInit.x = STAT_WIDTH - CLOSE_WIDTH;
-		sButInit.y = 0;
-		sButInit.width = CLOSE_WIDTH;
-		sButInit.height = CLOSE_HEIGHT;
-		sButInit.pTip = _("Close");
-		sButInit.pDisplay = intDisplayImageHilight;
-		sButInit.UserData = PACKDWORD_TRI(0, IMAGE_CLOSEHILIGHT, IMAGE_CLOSE);
-		if (!widgAddButton(psWScreen, &sButInit))
-		{
-			return false;
-		}
+		widgAddButton(psWScreen, &closeButtonDesc);
 
 		// Add the tabbed form
 		IntListTabWidget *statList = new IntListTabWidget(statForm);
@@ -902,44 +899,32 @@ struct statistics
 			BASE_STATS *Stat = ppsStatsList[i];
 			QString tipString = getName(ppsStatsList[i]);
 			unsigned powerCost = 0;
-			W_BARGRAPH *bar;
 			if (Stat->ref >= REF_STRUCTURE_START &&
 				Stat->ref < REF_STRUCTURE_START + REF_RANGE)  		// It's a structure.
 			{
 				powerCost = ((STRUCTURE_STATS *)Stat)->powerToBuild;
-				sBarInit.size = powerCost / POWERPOINTS_DROIDDIV;
-				if (sBarInit.size > 100)
-				{
-					sBarInit.size = 100;
-				}
+				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
 
 				sBarInit.formID = nextButtonId;
 				sBarInit.iRange = GAME_TICKS_PER_SEC;
-				bar = widgAddBarGraph(psWScreen, &sBarInit);
+				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
 				bar->setBackgroundColour(WZCOL_BLACK);
 			}
 			else if (Stat->ref >= REF_TEMPLATE_START &&
 				Stat->ref < REF_TEMPLATE_START + REF_RANGE)  	// It's a droid.
 			{
 				powerCost = calcTemplatePower((DROID_TEMPLATE *)Stat);
-				sBarInit.size = powerCost / POWERPOINTS_DROIDDIV;
-				if (sBarInit.size > 100)
-				{
-					sBarInit.size = 100;
-				}
+				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
 
 				sBarInit.formID = nextButtonId;
 				sBarInit.iRange = GAME_TICKS_PER_SEC;
-				bar = widgAddBarGraph(psWScreen, &sBarInit);
+				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
 				bar->setBackgroundColour(WZCOL_BLACK);
 
 				// Add a text label for the quantity to produce.
 				sLabInit.formID = nextButtonId;
 				sLabInit.pUserData = Stat;
-				if (!widgAddLabel(psWScreen, &sLabInit))
-				{
-					return false;
-				}
+				widgAddLabel(psWScreen, &sLabInit);
 				sLabInit.id++;
 			}
 			else if (Stat->ref >= REF_RESEARCH_START &&
@@ -960,11 +945,7 @@ struct statistics
 
 				//add power bar as well
 				powerCost = ((RESEARCH *)Stat)->researchPower;
-				sBarInit.size = powerCost / POWERPOINTS_DROIDDIV;
-				if (sBarInit.size > 100)
-				{
-					sBarInit.size = 100;
-				}
+				sBarInit.size = std::min(powerCost / POWERPOINTS_DROIDDIV, 100u);
 
 				// if multiplayer, if research topic is being done by another ally then mark as such..
 				if (bMultiPlayer)
@@ -1013,7 +994,7 @@ struct statistics
 				}
 
 				sBarInit.formID = nextButtonId;
-				bar = widgAddBarGraph(psWScreen, &sBarInit);
+				W_BARGRAPH *bar = widgAddBarGraph(psWScreen, &sBarInit);
 				bar->setBackgroundColour(WZCOL_BLACK);
 			}
 			tipString.append(QString::fromUtf8(_("\nCost: %1")).arg(powerCost));
@@ -1060,6 +1041,7 @@ struct statistics
 protected:
 	bool statsUp = false;
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
+	W_BUTINIT closeButtonDesc;
 
 
 	void createLoopAndDeliveryPointButtons(BASE_OBJECT * psOwner, IntFormAnimated * statForm)

@@ -1528,6 +1528,8 @@ protected:
 	STRUCTURE *checkForStructure(uint32_t structType);
 	/* Stop looking for a structure location */
 	void stopStructPosition();
+
+	void handleObjectChanges();
 };
 
 human_computer_interface::human_computer_interface()
@@ -2047,43 +2049,7 @@ INT_RETVAL human_computer_interface::display()
 	doScreenRefresh();
 
 	/* if objects in the world have changed, may have to update the interface */
-	if (objectWidgets.objectsChanged)
-	{
-		/* The objects on the object screen have changed */
-		if (intMode == INT_OBJECT)
-		{
-			ASSERT_OR_RETURN(INT_NONE, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "No object form");
-
-			/* Remove the old screen */
-			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-			removeObject();
-
-			/* Add the new screen */
-			switch (objectWidgets.objMode)
-			{
-			case IOBJ_BUILD:
-			case IOBJ_BUILDSEL:
-				addBuild(NULL);
-				break;
-			case IOBJ_MANUFACTURE:
-				addManufacture(NULL);
-				break;
-			case IOBJ_RESEARCH:
-				addResearch(NULL);
-				break;
-			default:
-				break;
-			}
-
-			/* Reset the tabs on the object screen */
-			((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
-		}
-		else if (intMode == INT_STAT)
-		{
-			/* Need to get the stats screen to update as well */
-		}
-	}
-	objectWidgets.objectsChanged = false;
+	handleObjectChanges();
 
 	if (bLoadSaveUp && runLoadSave(true) && strlen(sRequestResult) > 0)
 	{
@@ -2576,6 +2542,47 @@ INT_RETVAL human_computer_interface::display()
 		retCode = INT_QUIT;
 	}
 	return retCode;
+}
+
+void human_computer_interface::handleObjectChanges()
+{
+	if (objectWidgets.objectsChanged)
+	{
+		/* The objects on the object screen have changed */
+		if (intMode == INT_OBJECT)
+		{
+//			ASSERT_OR_RETURN(INT_NONE, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "No object form");
+
+			/* Remove the old screen */
+			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+			removeObject();
+
+			/* Add the new screen */
+			switch (objectWidgets.objMode)
+			{
+			case IOBJ_BUILD:
+			case IOBJ_BUILDSEL:
+				addBuild(NULL);
+				break;
+			case IOBJ_MANUFACTURE:
+				addManufacture(NULL);
+				break;
+			case IOBJ_RESEARCH:
+				addResearch(NULL);
+				break;
+			default:
+				break;
+			}
+
+			/* Reset the tabs on the object screen */
+			((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+		}
+		else if (intMode == INT_STAT)
+		{
+			/* Need to get the stats screen to update as well */
+		}
+	}
+	objectWidgets.objectsChanged = false;
 }
 
 void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)

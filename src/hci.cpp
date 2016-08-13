@@ -1432,6 +1432,30 @@ struct object_widgets
 		std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
 	}
 
+	/*Looks through the players list of structures to see if there is one selected
+	of the required type. If there is more than one, they are all deselected and
+	the first one reselected*/
+	STRUCTURE *checkForStructure(uint32_t structType)
+	{
+		STRUCTURE *psSel = nullptr;
+
+		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != nullptr; psStruct = psStruct->psNext)
+		{
+			if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
+			{
+				if (psSel != nullptr)
+				{
+					clearSelection();
+					psSel->selected = true;
+					break;
+				}
+				psSel = psStruct;
+			}
+		}
+		triggerEventSelected();
+		return psSel;
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1601,10 +1625,6 @@ protected:
 	void removeObjectNoAnim();
 	/* Set the stats for a research facility */
 	bool setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
-	/*Looks through the players list of structures to see if there is one selected
-	of the required type. If there is more than one, they are all deselected and
-	the first one reselected*/
-	STRUCTURE *checkForStructure(uint32_t structType);
 	/* Stop looking for a structure location */
 	void stopStructPosition();
 
@@ -3648,18 +3668,18 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		switch (objectWidgets.objMode)
 		{
 		case IOBJ_RESEARCH:
-			psSelected = (BASE_OBJECT *)checkForStructure(REF_RESEARCH);
+			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_RESEARCH);
 			break;
 		case IOBJ_MANUFACTURE:
-			psSelected = (BASE_OBJECT *)checkForStructure(REF_FACTORY);
+			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_FACTORY);
 			//if haven't got a Factory, check for specific types of factory
 			if (!psSelected)
 			{
-				psSelected = (BASE_OBJECT *)checkForStructure(REF_CYBORG_FACTORY);
+				psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_CYBORG_FACTORY);
 			}
 			if (!psSelected)
 			{
-				psSelected = (BASE_OBJECT *)checkForStructure(REF_VTOL_FACTORY);
+				psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_VTOL_FACTORY);
 			}
 			break;
 		case IOBJ_BUILD:
@@ -4837,30 +4857,6 @@ void processProximityButtons(UDWORD id)
 void human_computer_interface::setKeyButtonMapping(uint32_t val)
 {
 	keyButtonMapping = val;
-}
-
-/*Looks through the players list of structures to see if there is one selected
-of the required type. If there is more than one, they are all deselected and
-the first one reselected*/
-STRUCTURE *human_computer_interface::checkForStructure(uint32_t structType)
-{
-	STRUCTURE	*psStruct, *psSel = NULL;
-
-	for (psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
-	{
-		if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
-		{
-			if (psSel != NULL)
-			{
-				clearSelection();
-				psSel->selected = true;
-				break;
-			}
-			psSel = psStruct;
-		}
-	}
-	triggerEventSelected();
-	return psSel;
 }
 
 /*Looks through the players list of droids to see if there is one selected

@@ -1660,6 +1660,7 @@ protected:
 	void doScreenRefresh();
 	/* Process return codes from the stats screen */
 	void processStats(uint32_t id);
+	void onStatLeftMouseButtonPressed(uint32_t id);
 	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
 	/*Deals with the RMB click for the stats screen */
@@ -3119,11 +3120,6 @@ void human_computer_interface::onObjectLeftMousePressed(uint32_t id)
 
 void human_computer_interface::processStats(uint32_t id)
 {
-	BASE_STATS		*psStats;
-	STRUCTURE		*psStruct;
-	FLAG_POSITION	*psFlag;
-	int compIndex;
-
 	ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "missing form");
 
 	if (id >= IDSTAT_START &&
@@ -3135,155 +3131,14 @@ void human_computer_interface::processStats(uint32_t id)
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
 			statsRMBPressed(id);
+			return;
 		}
 		/* deal with LMB clicks */
-		else
-		{
-			//manufacture works differently!
-			if (objectWidgets.objMode == IOBJ_MANUFACTURE)
-			{
-				compIndex = id - IDSTAT_START;
-				//get the stats
-				ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-				psStats = stats.ppsStatsList[compIndex];
-				ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");
-				ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
-				if (productionPlayer == (SBYTE)selectedPlayer)
-				{
-					STRUCTURE *psStructure = (STRUCTURE *)objectWidgets.psObjSelected;
-					FACTORY  *psFactory = &psStructure->pFunctionality->factory;
-					DROID_TEMPLATE *psNext = (DROID_TEMPLATE *)psStats;
-
-					//increase the production
-					factoryProdAdjust(psStructure, psNext, true);
-
-					//need to check if this was the template that was mid-production
-					if (getProduction(psStructure, FactoryGetTemplate(psFactory)).numRemaining() == 0)
-					{
-						doNextProduction(psStructure, FactoryGetTemplate(psFactory), ModeQueue);
-						psNext = FactoryGetTemplate(psFactory);
-					}
-					else if (!StructureIsManufacturingPending(psStructure))
-					{
-						structSetManufacture(psStructure, psNext, ModeQueue);
-					}
-
-					if (StructureIsOnHoldPending(psStructure))
-					{
-						releaseProduction(psStructure, ModeQueue);
-					}
-
-					// Reset the button on the object form
-					setStats(objStatID, (BASE_STATS *)psNext);
-				}
-			}
-			else
-			{
-				/* See if this was a click on an already selected stat */
-				psStats = objGetStatsFunc(objectWidgets.psObjSelected);
-				// only do the cancel operation if not trying to add to the build list
-				if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
-				{
-					// this needs to be done before the topic is cancelled from the structure
-					/* If Research then need to set topic to be cancelled */
-					if (objectWidgets.objMode == IOBJ_RESEARCH)
-					{
-						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
-						{
-							// TODO This call seems to be redundant, since cancelResearch is called from objSetStatsFunc==setResearchStats.
-							cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
-						}
-					}
-
-					/* Clear the object stats */
-					objSetStatsFunc(objectWidgets.psObjSelected, NULL);
-
-					/* Reset the button on the object form */
-					setStats(objStatID, NULL);
-
-					/* Unlock the button on the stats form */
-					widgSetButtonState(psWScreen, id, 0);
-				}
-				else
-				{
-					//If Research then need to set the topic - if one, to be cancelled
-					if (objectWidgets.objMode == IOBJ_RESEARCH)
-					{
-						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
-							objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
-						{
-							//if there was a topic currently being researched - cancel it
-							if (((RESEARCH_FACILITY *)((STRUCTURE *)objectWidgets.psObjSelected)->
-							     pFunctionality)->psSubject)
-							{
-								cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
-							}
-						}
-					}
-
-					// call the tutorial callback if necessary
-					if (bInTutorial && objectWidgets.objMode == IOBJ_BUILD)
-					{
-
-						eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
-					}
-
-					// Set the object stats
-					compIndex = id - IDSTAT_START;
-					ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-					psStats = stats.ppsStatsList[compIndex];
-
-					// Reset the button on the object form
-					//if this returns false, there's a problem so set the button to NULL
-					if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
-					{
-						setStats(objStatID, NULL);
-					}
-					else
-					{
-						// Reset the button on the object form
-						setStats(objStatID, psStats);
-					}
-				}
-
-				// Get the tabs on the object form
-				int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-
-				// Close the stats box
-				stats.removeStats();
-				intMode = INT_OBJECT;
-
-				// Reset the tabs on the object form
-				((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
-
-				// Close the object box as well if selecting a location to build- no longer hide/reveal
-				// or if selecting a structure to demolish
-				if (objectWidgets.objMode == IOBJ_BUILDSEL || objectWidgets.objMode == IOBJ_DEMOLISHSEL)
-				{
-					if (driveModeActive())
-					{
-						// Make sure weve got a construction droid selected.
-						if (driveGetDriven()->droidType != DROID_CONSTRUCT
-						    && driveGetDriven()->droidType != DROID_CYBORG_CONSTRUCT)
-						{
-							driveDisableControl();
-						}
-						driveDisableTactical();
-						driveStartBuild();
-						removeObject();
-					}
-
-					removeObject();
-					// hack to stop the stats window re-opening in demolish mode
-					if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
-					{
-						refreshPending = false;
-					}
-				}
-			}
-		}
+		onStatLeftMouseButtonPressed(id);
+		return;
 	}
-	else if (id == IDSTAT_CLOSE)
+
+	if (id == IDSTAT_CLOSE)
 	{
 		/* Get the tabs on the object form */
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
@@ -3297,19 +3152,23 @@ void human_computer_interface::processStats(uint32_t id)
 
 		/* Unlock the stats button */
 		widgSetButtonState(psWScreen, objStatID, 0);
+		return;
 	}
-	else if (id == IDSTAT_SLIDER)
+
+	if (id == IDSTAT_SLIDER)
 	{
 		// Process the quantity slider.
+		return;
 	}
-	else if (id >= IDPROX_START && id <= IDPROX_END)
+	if (id >= IDPROX_START && id <= IDPROX_END)
 	{
 		// process the proximity blip buttons.
+		return;
 	}
-	else if (id == IDSTAT_LOOP_BUTTON)
+	if (id == IDSTAT_LOOP_BUTTON)
 	{
 		// Process the loop button.
-		psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
 		if (psStruct)
 		{
 			//LMB pressed
@@ -3333,28 +3192,179 @@ void human_computer_interface::processStats(uint32_t id)
 				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
 			}
 		}
+		return;
 	}
-	else if (id == IDSTAT_DP_BUTTON)
+
+	if (id == IDSTAT_DP_BUTTON)
 	{
 		// Process the DP button
-		psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
+		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
 		if (psStruct)
 		{
 			// make sure that the factory isn't assigned to a commander
 			assignFactoryCommandDroid(psStruct, NULL);
-			psFlag = FindFactoryDelivery(psStruct);
+			FLAG_POSITION *psFlag = FindFactoryDelivery(psStruct);
 			if (psFlag)
 			{
 				startDeliveryPosition(psFlag);
 			}
 		}
+		return;
 	}
-	else if (id == IDSTAT_OBSOLETE_BUTTON)
+
+	if (id == IDSTAT_OBSOLETE_BUTTON)
 	{
 		includeRedundantDesigns = !includeRedundantDesigns;
 		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
 		obsoleteButton->setState(includeRedundantDesigns);
 		refreshScreen();
+		return;
+	}
+}
+
+void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
+{
+	//manufacture works differently!
+	if (objectWidgets.objMode == IOBJ_MANUFACTURE)
+	{
+		int compIndex = id - IDSTAT_START;
+		//get the stats
+		ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
+		BASE_STATS *psStats = stats.ppsStatsList[compIndex];
+		ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");
+		ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
+		if (productionPlayer == (SBYTE)selectedPlayer)
+		{
+			STRUCTURE *psStructure = (STRUCTURE *)objectWidgets.psObjSelected;
+			FACTORY  *psFactory = &psStructure->pFunctionality->factory;
+			DROID_TEMPLATE *psNext = (DROID_TEMPLATE *)psStats;
+
+			//increase the production
+			factoryProdAdjust(psStructure, psNext, true);
+
+			//need to check if this was the template that was mid-production
+			if (getProduction(psStructure, FactoryGetTemplate(psFactory)).numRemaining() == 0)
+			{
+				doNextProduction(psStructure, FactoryGetTemplate(psFactory), ModeQueue);
+				psNext = FactoryGetTemplate(psFactory);
+			}
+			else if (!StructureIsManufacturingPending(psStructure))
+			{
+				structSetManufacture(psStructure, psNext, ModeQueue);
+			}
+
+			if (StructureIsOnHoldPending(psStructure))
+			{
+				releaseProduction(psStructure, ModeQueue);
+			}
+
+			// Reset the button on the object form
+			setStats(objStatID, (BASE_STATS *)psNext);
+		}
+	}
+	else
+	{
+		/* See if this was a click on an already selected stat */
+		BASE_STATS *psStats = objGetStatsFunc(objectWidgets.psObjSelected);
+		// only do the cancel operation if not trying to add to the build list
+		if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
+		{
+			// this needs to be done before the topic is cancelled from the structure
+			/* If Research then need to set topic to be cancelled */
+			if (objectWidgets.objMode == IOBJ_RESEARCH)
+			{
+				if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
+				{
+					// TODO This call seems to be redundant, since cancelResearch is called from objSetStatsFunc==setResearchStats.
+					cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
+				}
+			}
+
+			/* Clear the object stats */
+			objSetStatsFunc(objectWidgets.psObjSelected, NULL);
+
+			/* Reset the button on the object form */
+			setStats(objStatID, NULL);
+
+			/* Unlock the button on the stats form */
+			widgSetButtonState(psWScreen, id, 0);
+		}
+		else
+		{
+			//If Research then need to set the topic - if one, to be cancelled
+			if (objectWidgets.objMode == IOBJ_RESEARCH)
+			{
+				if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
+					objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
+				{
+					//if there was a topic currently being researched - cancel it
+					if (((RESEARCH_FACILITY *)((STRUCTURE *)objectWidgets.psObjSelected)->
+						pFunctionality)->psSubject)
+					{
+						cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
+					}
+				}
+			}
+
+			// call the tutorial callback if necessary
+			if (bInTutorial && objectWidgets.objMode == IOBJ_BUILD)
+			{
+
+				eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
+			}
+
+			// Set the object stats
+			int compIndex = id - IDSTAT_START;
+			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
+			psStats = stats.ppsStatsList[compIndex];
+
+			// Reset the button on the object form
+			//if this returns false, there's a problem so set the button to NULL
+			if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
+			{
+				setStats(objStatID, NULL);
+			}
+			else
+			{
+				// Reset the button on the object form
+				setStats(objStatID, psStats);
+			}
+		}
+
+		// Get the tabs on the object form
+		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+
+		// Close the stats box
+		stats.removeStats();
+		intMode = INT_OBJECT;
+
+		// Reset the tabs on the object form
+		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+
+		// Close the object box as well if selecting a location to build- no longer hide/reveal
+		// or if selecting a structure to demolish
+		if (objectWidgets.objMode == IOBJ_BUILDSEL || objectWidgets.objMode == IOBJ_DEMOLISHSEL)
+		{
+			if (driveModeActive())
+			{
+				// Make sure weve got a construction droid selected.
+				if (driveGetDriven()->droidType != DROID_CONSTRUCT
+					&& driveGetDriven()->droidType != DROID_CYBORG_CONSTRUCT)
+				{
+					driveDisableControl();
+				}
+				driveDisableTactical();
+				driveStartBuild();
+				removeObject();
+			}
+
+			removeObject();
+			// hack to stop the stats window re-opening in demolish mode
+			if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
+			{
+				refreshPending = false;
+			}
+		}
 	}
 }
 

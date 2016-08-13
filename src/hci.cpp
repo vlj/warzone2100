@@ -1318,6 +1318,15 @@ struct object_widgets
 	BASE_OBJECT *psObjSelected;
 	/* The previous object for each object bar */
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
+	/* Whether the objects that are on the object screen have changed this frame */
+	bool objectsChanged;
+
+	object_widgets()
+	{
+		psObjSelected = nullptr;
+		resetPreviousObj();
+		objectsChanged = false;
+	}
 
 	//initialise all the previous obj - particularly useful for when go Off world!
 	void resetPreviousObj()
@@ -1396,9 +1405,6 @@ protected:
 	std::array<UWORD, MAXRESEARCH> pSList;
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
-
-	/* Whether the objects that are on the object screen have changed this frame */
-	bool objectsChanged;
 	/* The jump position for each object on the base bar */
 	std::vector<Vector2i> asJumpPos;
 	bool refreshPending = false;
@@ -1515,8 +1521,6 @@ human_computer_interface::human_computer_interface()
 	/* Create storage for the extra systems list */
 	apsExtraSysList = (COMPONENT_STATS **)malloc(sizeof(COMPONENT_STATS *) * MAXEXTRASYS);
 
-	objectWidgets.psObjSelected = nullptr;
-
 	intInitialiseGraphics();
 
 	psWScreen = new W_SCREEN;
@@ -1532,12 +1536,8 @@ human_computer_interface::human_computer_interface()
 	/* Note the current screen state */
 	intMode = INT_NORMAL;
 
-	objectsChanged = false;
-
 	//make sure stats screen doesn't think it should be up
 	stats.hide();
-	// reset the previous objects
-	objectWidgets.resetPreviousObj();
 
 	/* make demolish stat always available */
 	if (!bInTutorial)
@@ -2024,7 +2024,7 @@ INT_RETVAL human_computer_interface::display()
 	doScreenRefresh();
 
 	/* if objects in the world have changed, may have to update the interface */
-	if (objectsChanged)
+	if (objectWidgets.objectsChanged)
 	{
 		/* The objects on the object screen have changed */
 		if (intMode == INT_OBJECT)
@@ -2060,7 +2060,7 @@ INT_RETVAL human_computer_interface::display()
 			/* Need to get the stats screen to update as well */
 		}
 	}
-	objectsChanged = false;
+	objectWidgets.objectsChanged = false;
 
 	if (bLoadSaveUp && runLoadSave(true) && strlen(sRequestResult) > 0)
 	{
@@ -3316,12 +3316,12 @@ void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 		if ((objMode == IOBJ_BUILD || objMode == IOBJ_BUILDSEL) &&
 		    psObj->type == OBJ_DROID && objSelectFunc(psObj))
 		{
-			objectsChanged = true;
+			objectWidgets.objectsChanged = true;
 		}
 		else if ((objMode == IOBJ_RESEARCH || objMode == IOBJ_MANUFACTURE) &&
 		         psObj->type == OBJ_STRUCTURE && objSelectFunc(psObj))
 		{
-			objectsChanged = true;
+			objectWidgets.objectsChanged = true;
 		}
 	}
 }

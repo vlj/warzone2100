@@ -274,6 +274,15 @@ static SDWORD intNumSelectedDroids(UDWORD droidType);
 
 static void static_reset_windows(BASE_OBJECT *psObj);
 
+static std::vector<uint16_t> friendly_fillResearchList(uint32_t playerID, uint16_t topic, uint16_t limit)
+{
+	std::array<uint16_t, MAXRESEARCH> pList;
+	uint16_t numResearch = fillResearchList(pList.data(), playerID, topic, limit);
+	std::vector<uint16_t> result(numResearch);
+	memcpy(result.data(), pList.data(), numResearch * sizeof(uint16_t));
+	return result;
+}
+
 /***************************GAME CODE ****************************/
 
 struct RETBUTSTATS
@@ -1782,8 +1791,6 @@ protected:
 	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
 	/* Store a list of research pointers for topics that can be performed*/
 	std::array<RESEARCH *, MAXRESEARCH> ppResearchList;
-	/*Store a list of research indices which can be performed*/
-	std::array<UWORD, MAXRESEARCH> pList;
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 	bool refreshPending = false;
@@ -2988,7 +2995,9 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 			index = ((RESEARCH *)psStats)->index;
 		}
 		//recalculate the list
-		numStatsListEntries = fillResearchList(pList.data(), selectedPlayer, (UWORD)index, MAXRESEARCH);
+		/*Store a list of research indices which can be performed*/
+		std::vector<uint16_t> pList = friendly_fillResearchList(selectedPlayer, (UWORD)index, MAXRESEARCH);
+		numStatsListEntries = pList.size();
 
 		//	-- Alex's reordering of the list
 		// NOTE!  Do we even want this anymore, since we can have basically
@@ -2999,24 +3008,23 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		for (uint32_t i = 0; i < RID_MAXRID; i++)
 		{
 			int32_t iconNumber = mapRIDToIcon(i);
-			for (uint32_t j = 0; j < numStatsListEntries; j++)
+			for (uint16_t idx : pList)
 			{
-				int32_t entryIN = asResearch[pList[j]].iconID;
+				int32_t entryIN = asResearch[idx].iconID;
 				if (entryIN == iconNumber)
 				{
-					pSList.push_back(pList[j]);
+					pSList.push_back(idx);
 				}
-
 			}
 		}
 		// Tag on the ones at the end that have no BASTARD icon IDs - why is this?!!?!?!?
 		// NOTE! more pruning [future ref]
-		for (uint32_t j = 0; j < numStatsListEntries; j++)
+		for (uint16_t idx : pList)
 		{
-			int32_t iconNumber = mapIconToRID(asResearch[pList[j]].iconID);
+			int32_t iconNumber = mapIconToRID(asResearch[idx].iconID);
 			if (iconNumber < 0)
 			{
-				pSList.push_back(pList[j]);
+				pSList.push_back(idx);
 			}
 		}
 
@@ -4950,13 +4958,13 @@ int human_computer_interface::getResearchState()
 		//set to value that won't be reached in fillResearchList
 		int index = asResearch.size() + 1;
 		//calculate the list
-		int preCount = fillResearchList(pList.data(), selectedPlayer, index, MAXRESEARCH);
-		count = preCount;
-		for (int n = 0; n < preCount; ++n)
+		std::vector<uint16_t> pList = friendly_fillResearchList(selectedPlayer, index, MAXRESEARCH);
+		count = pList.size();
+		for (uint16_t idx : pList)
 		{
 			for (int player = 0; player < MAX_PLAYERS; ++player)
 			{
-				if (aiCheckAlliances(player, selectedPlayer) && IsResearchStarted(&asPlayerResList[player][pList[n]]))
+				if (aiCheckAlliances(player, selectedPlayer) && IsResearchStarted(&asPlayerResList[player][idx]))
 				{
 					--count;  // An ally is already researching this topic, so don't flash the button because of it.
 					break;

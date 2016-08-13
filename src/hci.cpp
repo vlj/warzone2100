@@ -1566,6 +1566,65 @@ struct object_widgets
 		}
 	}
 
+	/*Deals with the RMB click for the Object Stats buttons */
+	void objStatRMBPressed(uint32_t id)
+	{
+		BASE_OBJECT		*psObj;
+		STRUCTURE		*psStructure;
+
+		ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < apsObjectList.size(), "Invalid stat id");
+
+		/* Find the object that the ID refers to */
+		psObj = getObject(id);
+		if (!psObj)
+		{
+			return;
+		}
+		static_reset_windows(psObj);
+		if (psObj->type == OBJ_STRUCTURE)
+		{
+			psStructure = (STRUCTURE *)psObj;
+			if (StructIsFactory(psStructure))
+			{
+				//check if active
+				if (StructureIsManufacturingPending(psStructure))
+				{
+					//if not curently on hold, set it
+					if (!StructureIsOnHoldPending(psStructure))
+					{
+						holdProduction(psStructure, ModeQueue);
+					}
+					else
+					{
+						//cancel if have RMB-clicked twice
+						cancelProduction(psStructure, ModeQueue);
+						//play audio to indicate cancelled
+						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
+					}
+				}
+			}
+			else if (psStructure->pStructureType->type == REF_RESEARCH)
+			{
+				//check if active
+				if (structureIsResearchingPending(psStructure))
+				{
+					//if not curently on hold, set it
+					if (!StructureIsOnHoldPending(psStructure))
+					{
+						holdResearch(psStructure, ModeQueue);
+					}
+					else
+					{
+						//cancel if have RMB-clicked twice
+						cancelResearch(psStructure, ModeQueue);
+						//play audio to indicate cancelled
+						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
+					}
+				}
+			}
+		}
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1713,8 +1772,6 @@ protected:
 	bool addCommand(DROID *psSelected);
 
 
-	/*Deals with the RMB click for the Object Stats buttons */
-	void objStatRMBPressed(uint32_t id);
 	// Refresh widgets once per game cycle if pending flag is set.
 	//
 	void doScreenRefresh();
@@ -3030,7 +3087,7 @@ void human_computer_interface::processObject(uint32_t id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			objStatRMBPressed(id);
+			objectWidgets.objStatRMBPressed(id);
 			return;
 		}
 		objectWidgets.objStatLMBPressed(id);
@@ -4699,65 +4756,6 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 		}
 	}
 }
-
-void human_computer_interface::objStatRMBPressed(uint32_t id)
-{
-	BASE_OBJECT		*psObj;
-	STRUCTURE		*psStructure;
-
-	ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < objectWidgets.apsObjectList.size(), "Invalid stat id");
-
-	/* Find the object that the ID refers to */
-	psObj = objectWidgets.getObject(id);
-	if (!psObj)
-	{
-		return;
-	}
-	resetWindows(psObj);
-	if (psObj->type == OBJ_STRUCTURE)
-	{
-		psStructure = (STRUCTURE *)psObj;
-		if (StructIsFactory(psStructure))
-		{
-			//check if active
-			if (StructureIsManufacturingPending(psStructure))
-			{
-				//if not curently on hold, set it
-				if (!StructureIsOnHoldPending(psStructure))
-				{
-					holdProduction(psStructure, ModeQueue);
-				}
-				else
-				{
-					//cancel if have RMB-clicked twice
-					cancelProduction(psStructure, ModeQueue);
-					//play audio to indicate cancelled
-					audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-				}
-			}
-		}
-		else if (psStructure->pStructureType->type == REF_RESEARCH)
-		{
-			//check if active
-			if (structureIsResearchingPending(psStructure))
-			{
-				//if not curently on hold, set it
-				if (!StructureIsOnHoldPending(psStructure))
-				{
-					holdResearch(psStructure, ModeQueue);
-				}
-				else
-				{
-					//cancel if have RMB-clicked twice
-					cancelResearch(psStructure, ModeQueue);
-					//play audio to indicate cancelled
-					audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-				}
-			}
-		}
-	}
-}
-
 
 //sets up the Intelligence Screen as far as the interface is concerned
 void human_computer_interface::addIntelScreen()

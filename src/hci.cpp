@@ -269,8 +269,6 @@ static void intStartStructPosition(BASE_STATS *psStats);
 //proximity display stuff
 static void processProximityButtons(UDWORD id);
 
-static DROID *intCheckForDroid(UDWORD droidType);
-
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType);
 
@@ -1453,6 +1451,36 @@ struct object_widgets
 			}
 		}
 		triggerEventSelected();
+		return psSel;
+	}
+
+
+	/*Looks through the players list of droids to see if there is one selected
+	of the required type. If there is more than one, they are all deselected and
+	the first one reselected*/
+	// no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
+	DROID *intCheckForDroid(uint32_t droidType)
+	{
+		DROID *psSel = nullptr;
+
+		for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
+		{
+			if (psDroid->selected && psDroid->droidType == droidType)
+			{
+				if (psSel != nullptr)
+				{
+					if (droidType != DROID_CONSTRUCT
+						&& droidType != DROID_CYBORG_CONSTRUCT)
+					{
+						clearSelection();
+					}
+					SelectDroid(psSel);
+					break;
+				}
+				psSel = psDroid;
+			}
+		}
+
 		return psSel;
 	}
 
@@ -2890,10 +2918,10 @@ void human_computer_interface::processObject(uint32_t id)
 			}
 			if (objectWidgets.psObjSelected == psObj)
 			{
-				objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
+				objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
 				if (!objectWidgets.psObjSelected)
 				{
-					objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+					objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
 				}
 			}
 		}
@@ -3683,14 +3711,14 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 			}
 			break;
 		case IOBJ_BUILD:
-			psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
+			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
 			if (!psSelected)
 			{
-				psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+				psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
 			}
 			break;
 		case IOBJ_COMMAND:
-			psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_COMMAND);
+			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_COMMAND);
 			break;
 		default:
 			break;
@@ -4857,35 +4885,6 @@ void processProximityButtons(UDWORD id)
 void human_computer_interface::setKeyButtonMapping(uint32_t val)
 {
 	keyButtonMapping = val;
-}
-
-/*Looks through the players list of droids to see if there is one selected
-of the required type. If there is more than one, they are all deselected and
-the first one reselected*/
-// no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
-DROID *intCheckForDroid(UDWORD droidType)
-{
-	DROID	*psDroid, *psSel = NULL;
-
-	for (psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
-	{
-		if (psDroid->selected && psDroid->droidType == droidType)
-		{
-			if (psSel != NULL)
-			{
-				if (droidType != DROID_CONSTRUCT
-				    && droidType != DROID_CYBORG_CONSTRUCT)
-				{
-					clearSelection();
-				}
-				SelectDroid(psSel);
-				break;
-			}
-			psSel = psDroid;
-		}
-	}
-
-	return psSel;
 }
 
 

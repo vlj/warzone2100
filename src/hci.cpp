@@ -701,6 +701,8 @@ struct statistics
 {
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
+	/* The current stats list being used by the stats screen */
+	BASE_STATS **ppsStatsList;
 
 	statistics()
 	{
@@ -1225,8 +1227,6 @@ protected:
 	std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc; /* Function type for setting the appropriate stats for an object */
 	/* The stats for the current getStructPos */
 	BASE_STATS *psPositionStats;
-	/* The current stats list being used by the stats screen */
-	BASE_STATS **ppsStatsList;
 	uint32_t numStatsListEntries;
 	_edit_pos_mode editPosMode;
 	_obj_mode objMode;
@@ -1721,9 +1721,9 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsTemplateList.push_back(&*i);
 			}
-			ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+			stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 			objMode = IOBJ_MANUFACTURE;
-			stats.addStats(ppsStatsList, apsTemplateList.size(), NULL, NULL, objMode);
+			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1734,9 +1734,9 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
 			}
-			ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+			stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 			objMode = IOBJ_BUILD;
-			stats.addStats(ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objMode);
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1747,8 +1747,8 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			ppsStatsList = (BASE_STATS **)apsFeatureList.data();
-			stats.addStats(ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objMode);
+			stats.ppsStatsList = (BASE_STATS **)apsFeatureList.data();
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1778,7 +1778,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
 		/* Clicked on a stat button - need to look for a location for it */
-		psPositionStats = ppsStatsList[id - IDSTAT_START];
+		psPositionStats = stats.ppsStatsList[id - IDSTAT_START];
 		if (psPositionStats->ref >= REF_TEMPLATE_START &&
 		    psPositionStats->ref < REF_TEMPLATE_START + REF_RANGE)
 		{
@@ -1949,7 +1949,7 @@ INT_RETVAL human_computer_interface::display()
 	}
 
 	/* Extra code for the power bars to deal with the shadow */
-	powerbar.runPower(ppsStatsList, apsStructStatsList, ppResearchList);
+	powerbar.runPower(stats.ppsStatsList, apsStructStatsList, ppResearchList);
 
 	stats.runStats(objMode);
 
@@ -2418,7 +2418,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 		                                        selectedPlayer, MAXSTRUCTURES - 1);
 
-		ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+		stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 	}
 
 	//have to determine the Template list once the factory has been chosen
@@ -2426,7 +2426,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	{
 		fillTemplateList(apsTemplateList, (STRUCTURE *)psObj);
 		numStatsListEntries = apsTemplateList.size();
-		ppsStatsList = (BASE_STATS **)&apsTemplateList[0];  // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0];  // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 	}
 
 	/*have to calculate the list each time the Topic button is pressed
@@ -2479,7 +2479,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		}
 	}
 
-	stats.addStats(ppsStatsList, numStatsListEntries, psStats, psObj, objMode);
+	stats.addStats(stats.ppsStatsList, numStatsListEntries, psStats, psObj, objMode);
 	secondaryWindowUp = true;
 
 	// get the tab positions for the new stat form
@@ -2774,7 +2774,7 @@ void human_computer_interface::processStats(uint32_t id)
 				compIndex = id - IDSTAT_START;
 				//get the stats
 				ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-				psStats = ppsStatsList[compIndex];
+				psStats = stats.ppsStatsList[compIndex];
 				ASSERT_OR_RETURN(, psObjSelected != NULL, "Invalid structure pointer");
 				ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
 				if (productionPlayer == (SBYTE)selectedPlayer)
@@ -2811,7 +2811,7 @@ void human_computer_interface::processStats(uint32_t id)
 				/* See if this was a click on an already selected stat */
 				psStats = objGetStatsFunc(psObjSelected);
 				// only do the cancel operation if not trying to add to the build list
-				if (psStats == ppsStatsList[id - IDSTAT_START] && objMode != IOBJ_BUILD)
+				if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objMode != IOBJ_BUILD)
 				{
 					// this needs to be done before the topic is cancelled from the structure
 					/* If Research then need to set topic to be cancelled */
@@ -2860,7 +2860,7 @@ void human_computer_interface::processStats(uint32_t id)
 					// Set the object stats
 					compIndex = id - IDSTAT_START;
 					ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-					psStats = ppsStatsList[compIndex];
+					psStats = stats.ppsStatsList[compIndex];
 
 					// Reset the button on the object form
 					//if this returns false, there's a problem so set the button to NULL
@@ -4488,7 +4488,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 bool human_computer_interface::addBuild(DROID *psSelected)
 {
 	/* Store the correct stats list for future reference */
-	ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+	stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
@@ -4508,7 +4508,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Store the correct stats list for future reference */
 	if (!apsTemplateList.empty())
 	{
-		ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 	}
 
 	objSelectFunc = selectManufacture;
@@ -4525,7 +4525,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
-	ppsStatsList = (BASE_STATS **)ppResearchList.data();
+	stats.ppsStatsList = (BASE_STATS **)ppResearchList.data();
 
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
@@ -4541,7 +4541,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 
 bool human_computer_interface::addCommand(DROID *psSelected)
 {
-	ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
+	stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
 
 	objSelectFunc = selectCommand;
 	objGetStatsFunc = getCommandStats;
@@ -4561,7 +4561,7 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 
 	if (objMode == IOBJ_MANUFACTURE)
 	{
-		BASE_STATS *psStats = ppsStatsList[id - IDSTAT_START];
+		BASE_STATS *psStats = stats.ppsStatsList[id - IDSTAT_START];
 
 		//this now causes the production run to be decreased by one
 

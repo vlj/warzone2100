@@ -1047,7 +1047,7 @@ protected:
 		sLabInit.id++;
 	}
 
-	bool addBar(unsigned int &powerCost, RESEARCH * Stat, int i)
+	void addBar(unsigned int &powerCost, RESEARCH * Stat, int i)
 	{
 		W_BARINIT sBarInit;
 		sBarInit.id = IDSTAT_TIMEBARSTART + i;
@@ -1098,7 +1098,7 @@ protected:
 				widgAddLabel(psWScreen, &multiplayerResearchLabel);
 
 				++allyResearchIconCount;
-				ASSERT_OR_RETURN(false, allyResearchIconCount < IDSTAT_ALLYEND - IDSTAT_ALLYSTART, " too many research icons? ");
+				//ASSERT_OR_RETURN(false, allyResearchIconCount < IDSTAT_ALLYEND - IDSTAT_ALLYSTART, " too many research icons? ");
 			}
 
 			if (numResearches > 0)
@@ -2745,17 +2745,12 @@ void human_computer_interface::handleObjectChanges()
 
 void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 {
-	BASE_STATS		*psStats;
-	UWORD               statMajor = 0;
-	UDWORD			i, j, index;
-	UDWORD			count;
-	SDWORD			iconNumber, entryIN;
-
 	/* Clear a previous structure pos if there is one */
 	stopStructPosition();
 
 	/* Get the current tab pos */
 	int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+	uint16_t  statMajor = 0;
 
 	// Store the tab positions.
 	if (intMode == INT_STAT)
@@ -2770,7 +2765,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	/* Display the stats window
 	 *  - restore the tab position if there is no stats selected
 	 */
-	psStats = objGetStatsFunc(psObj);
+	BASE_STATS *psStats = objGetStatsFunc(psObj);
 
 	// note the object for the screen
 	objectWidgets.apsPreviousObj[objectWidgets.objMode] = psObj;
@@ -2799,7 +2794,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	if (objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		//set to value that won't be reached in fillResearchList
-		index = asResearch.size() + 1;
+		uint32_t index = asResearch.size() + 1;
 		if (psStats)
 		{
 			index = ((RESEARCH *)psStats)->index;
@@ -2812,13 +2807,13 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		// unlimted tabs? Future enhancement assign T1/2/3 button on form
 		// so we can pick what level of tech we want to build instead of
 		// Alex picking for us?
-		count = 0;
-		for (i = 0; i < RID_MAXRID; i++)
+		uint32_t count = 0;
+		for (uint32_t i = 0; i < RID_MAXRID; i++)
 		{
-			iconNumber = mapRIDToIcon(i);
-			for (j = 0; j < numStatsListEntries; j++)
+			int32_t iconNumber = mapRIDToIcon(i);
+			for (uint32_t j = 0; j < numStatsListEntries; j++)
 			{
-				entryIN = asResearch[pList[j]].iconID;
+				int32_t entryIN = asResearch[pList[j]].iconID;
 				if (entryIN == iconNumber)
 				{
 					pSList[count++] = pList[j];
@@ -2828,9 +2823,9 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		}
 		// Tag on the ones at the end that have no BASTARD icon IDs - why is this?!!?!?!?
 		// NOTE! more pruning [future ref]
-		for (j = 0; j < numStatsListEntries; j++)
+		for (uint32_t j = 0; j < numStatsListEntries; j++)
 		{
-			iconNumber = mapIconToRID(asResearch[pList[j]].iconID);
+			int32_t iconNumber = mapIconToRID(asResearch[pList[j]].iconID);
 			if (iconNumber < 0)
 			{
 				pSList[count++] = pList[j];
@@ -2838,7 +2833,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		}
 
 		//fill up the list with topics
-		for (i = 0; i < numStatsListEntries; i++)
+		for (uint32_t i = 0; i < numStatsListEntries; i++)
 		{
 			ppResearchList[i] = &asResearch[pSList[i]];	  // note change from pList
 		}

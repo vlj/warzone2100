@@ -3261,109 +3261,108 @@ void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
 			// Reset the button on the object form
 			setStats(objStatID, (BASE_STATS *)psNext);
 		}
+		return;
+	}
+
+	/* See if this was a click on an already selected stat */
+	BASE_STATS *psStats = objGetStatsFunc(objectWidgets.psObjSelected);
+	// only do the cancel operation if not trying to add to the build list
+	if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
+	{
+		// this needs to be done before the topic is cancelled from the structure
+		/* If Research then need to set topic to be cancelled */
+		if (objectWidgets.objMode == IOBJ_RESEARCH)
+		{
+			if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
+			{
+				// TODO This call seems to be redundant, since cancelResearch is called from objSetStatsFunc==setResearchStats.
+				cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
+			}
+		}
+
+		/* Clear the object stats */
+		objSetStatsFunc(objectWidgets.psObjSelected, NULL);
+
+		/* Reset the button on the object form */
+		setStats(objStatID, NULL);
+
+		/* Unlock the button on the stats form */
+		widgSetButtonState(psWScreen, id, 0);
 	}
 	else
 	{
-		/* See if this was a click on an already selected stat */
-		BASE_STATS *psStats = objGetStatsFunc(objectWidgets.psObjSelected);
-		// only do the cancel operation if not trying to add to the build list
-		if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
+		//If Research then need to set the topic - if one, to be cancelled
+		if (objectWidgets.objMode == IOBJ_RESEARCH)
 		{
-			// this needs to be done before the topic is cancelled from the structure
-			/* If Research then need to set topic to be cancelled */
-			if (objectWidgets.objMode == IOBJ_RESEARCH)
+			if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
+				objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
 			{
-				if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
+				//if there was a topic currently being researched - cancel it
+				if (((RESEARCH_FACILITY *)((STRUCTURE *)objectWidgets.psObjSelected)->
+					pFunctionality)->psSubject)
 				{
-					// TODO This call seems to be redundant, since cancelResearch is called from objSetStatsFunc==setResearchStats.
 					cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
 				}
 			}
+		}
 
-			/* Clear the object stats */
-			objSetStatsFunc(objectWidgets.psObjSelected, NULL);
+		// call the tutorial callback if necessary
+		if (bInTutorial && objectWidgets.objMode == IOBJ_BUILD)
+		{
 
-			/* Reset the button on the object form */
+			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
+		}
+
+		// Set the object stats
+		int compIndex = id - IDSTAT_START;
+		ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
+		psStats = stats.ppsStatsList[compIndex];
+
+		// Reset the button on the object form
+		//if this returns false, there's a problem so set the button to NULL
+		if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
+		{
 			setStats(objStatID, NULL);
-
-			/* Unlock the button on the stats form */
-			widgSetButtonState(psWScreen, id, 0);
 		}
 		else
 		{
-			//If Research then need to set the topic - if one, to be cancelled
-			if (objectWidgets.objMode == IOBJ_RESEARCH)
-			{
-				if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
-					objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
-				{
-					//if there was a topic currently being researched - cancel it
-					if (((RESEARCH_FACILITY *)((STRUCTURE *)objectWidgets.psObjSelected)->
-						pFunctionality)->psSubject)
-					{
-						cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
-					}
-				}
-			}
-
-			// call the tutorial callback if necessary
-			if (bInTutorial && objectWidgets.objMode == IOBJ_BUILD)
-			{
-
-				eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
-			}
-
-			// Set the object stats
-			int compIndex = id - IDSTAT_START;
-			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-			psStats = stats.ppsStatsList[compIndex];
-
 			// Reset the button on the object form
-			//if this returns false, there's a problem so set the button to NULL
-			if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
+			setStats(objStatID, psStats);
+		}
+	}
+
+	// Get the tabs on the object form
+	int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+
+	// Close the stats box
+	stats.removeStats();
+	intMode = INT_OBJECT;
+
+	// Reset the tabs on the object form
+	((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+
+	// Close the object box as well if selecting a location to build- no longer hide/reveal
+	// or if selecting a structure to demolish
+	if (objectWidgets.objMode == IOBJ_BUILDSEL || objectWidgets.objMode == IOBJ_DEMOLISHSEL)
+	{
+		if (driveModeActive())
+		{
+			// Make sure weve got a construction droid selected.
+			if (driveGetDriven()->droidType != DROID_CONSTRUCT
+				&& driveGetDriven()->droidType != DROID_CYBORG_CONSTRUCT)
 			{
-				setStats(objStatID, NULL);
+				driveDisableControl();
 			}
-			else
-			{
-				// Reset the button on the object form
-				setStats(objStatID, psStats);
-			}
+			driveDisableTactical();
+			driveStartBuild();
+			removeObject();
 		}
 
-		// Get the tabs on the object form
-		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-
-		// Close the stats box
-		stats.removeStats();
-		intMode = INT_OBJECT;
-
-		// Reset the tabs on the object form
-		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
-
-		// Close the object box as well if selecting a location to build- no longer hide/reveal
-		// or if selecting a structure to demolish
-		if (objectWidgets.objMode == IOBJ_BUILDSEL || objectWidgets.objMode == IOBJ_DEMOLISHSEL)
+		removeObject();
+		// hack to stop the stats window re-opening in demolish mode
+		if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 		{
-			if (driveModeActive())
-			{
-				// Make sure weve got a construction droid selected.
-				if (driveGetDriven()->droidType != DROID_CONSTRUCT
-					&& driveGetDriven()->droidType != DROID_CYBORG_CONSTRUCT)
-				{
-					driveDisableControl();
-				}
-				driveDisableTactical();
-				driveStartBuild();
-				removeObject();
-			}
-
-			removeObject();
-			// hack to stop the stats window re-opening in demolish mode
-			if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
-			{
-				refreshPending = false;
-			}
+			refreshPending = false;
 		}
 	}
 }
@@ -3684,12 +3683,8 @@ void human_computer_interface::alliedResearchChanged()
 
 bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
-	UDWORD                  statID = 0;
-	BASE_OBJECT            *psFirst;
-	BASE_STATS		*psStats;
-	DROID			*Droid;
-	STRUCTURE		*Structure;
-	int				compIndex;
+
+
 
 	// Is the form already up?
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
@@ -3722,7 +3717,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		// and return.
 		return false;
 	}
-	psFirst = objectWidgets.apsObjectList.front();
+	BASE_OBJECT *psFirst = objectWidgets.apsObjectList.front();
 
 	/*if psSelected != NULL then check its in the list of suitable objects for
 	this instance of the interface - this could happen when a structure is upgraded*/
@@ -3903,6 +3898,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	sAllyResearch.y = 10;
 	sAllyResearch.pDisplay = intDisplayAllyIcon;
 
+	uint32_t statID = 0;
 	for (unsigned i = 0; i < objectWidgets.apsObjectList.size(); ++i)
 	{
 		BASE_OBJECT *psObj = objectWidgets.apsObjectList[i];
@@ -3930,14 +3926,15 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		switch (psObj->type)
 		{
 		case OBJ_DROID:
+		{
 			// Get the construction power of a construction droid.. Not convinced this is right.
-			Droid = (DROID *)psObj;
+			DROID *Droid = (DROID *)psObj;
 			if (Droid->droidType == DROID_CONSTRUCT || Droid->droidType == DROID_CYBORG_CONSTRUCT)
 			{
-				compIndex = Droid->asBits[COMP_CONSTRUCT];
+				int compIndex = Droid->asBits[COMP_CONSTRUCT];
 				ASSERT_OR_RETURN(false, Droid->asBits[COMP_CONSTRUCT], "Invalid droid type");
 				ASSERT_OR_RETURN(false, compIndex < numConstructStats, "Invalid range referenced for numConstructStats, %d > %d", compIndex, numConstructStats);
-				psStats = (BASE_STATS *)(asConstructStats + compIndex);
+				BASE_STATS *psStats = (BASE_STATS *)(asConstructStats + compIndex);
 				sBarInit2.size = (UWORD)constructorPoints((CONSTRUCT_STATS *)psStats, Droid->player);
 				if (sBarInit2.size > WBAR_SCALE)
 				{
@@ -3946,10 +3943,11 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 			}
 			objButton->setTip(droidGetName((DROID *)psObj));
 			break;
-
+		}
 		case OBJ_STRUCTURE:
+		{
 			// Get the construction power of a structure
-			Structure = (STRUCTURE *)psObj;
+			STRUCTURE *Structure = (STRUCTURE *)psObj;
 			switch (Structure->pStructureType->type)
 			{
 			case REF_FACTORY:
@@ -3980,7 +3978,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 			}
 			objButton->setTip(getName(((STRUCTURE *)psObj)->pStructureType));
 			break;
-
+		}
 		case OBJ_FEATURE:
 			objButton->setTip(getName(((FEATURE *)psObj)->psStats));
 			break;
@@ -4059,7 +4057,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		}
 
 		/* Now do the stats button */
-		psStats = objGetStatsFunc(psObj);
+		BASE_STATS *psStats = objGetStatsFunc(psObj);
 
 		if (psStats != NULL)
 		{

@@ -1484,6 +1484,32 @@ struct object_widgets
 		return psSel;
 	}
 
+	/*Deals with the RMB click for the Object screen */
+	void objectRMBPressed(uint32_t id)
+	{
+		ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid object id");
+
+		/* Find the object that the ID refers to */
+		BASE_OBJECT *psObj = getObject(id);
+		if (psObj)
+		{
+			//don't jump around when offworld
+			if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
+			{
+				STRUCTURE *psStructure = (STRUCTURE *)psObj;
+				if (psStructure->pStructureType->type == REF_FACTORY ||
+					psStructure->pStructureType->type == REF_CYBORG_FACTORY ||
+					psStructure->pStructureType->type == REF_VTOL_FACTORY)
+				{
+					//centre the view on the delivery point
+					setViewPos(map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.x),
+						map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.y),
+						true);
+				}
+			}
+		}
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1635,8 +1661,6 @@ protected:
 	void processStats(uint32_t id);
 	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
-	/*Deals with the RMB click for the Object screen */
-	void objectRMBPressed(uint32_t id);
 	/*Deals with the RMB click for the stats screen */
 	void statsRMBPressed(uint32_t id);
 	/* Reset the stats button for an object */
@@ -2942,7 +2966,7 @@ void human_computer_interface::processObject(uint32_t id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			objectRMBPressed(id);
+			objectWidgets.objectRMBPressed(id);
 		}
 		/* deal with LMB clicks */
 		else
@@ -4643,34 +4667,6 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 
 			// Reset the button on the object form
 			setStats(objStatID, (BASE_STATS *)psNext);
-		}
-	}
-}
-
-void human_computer_interface::objectRMBPressed(uint32_t id)
-{
-	BASE_OBJECT		*psObj;
-	STRUCTURE		*psStructure;
-
-	ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < objectWidgets.apsObjectList.size(), "Invalid object id");
-
-	/* Find the object that the ID refers to */
-	psObj = objectWidgets.getObject(id);
-	if (psObj)
-	{
-		//don't jump around when offworld
-		if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
-		{
-			psStructure = (STRUCTURE *)psObj;
-			if (psStructure->pStructureType->type == REF_FACTORY ||
-			    psStructure->pStructureType->type == REF_CYBORG_FACTORY ||
-			    psStructure->pStructureType->type == REF_VTOL_FACTORY)
-			{
-				//centre the view on the delivery point
-				setViewPos(map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.x),
-				           map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.y),
-				           true);
-			}
 		}
 	}
 }

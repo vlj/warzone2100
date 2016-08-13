@@ -1318,6 +1318,13 @@ struct object_widgets
 	BASE_OBJECT *psObjSelected;
 	/* The previous object for each object bar */
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
+
+	//initialise all the previous obj - particularly useful for when go Off world!
+	void resetPreviousObj()
+	{
+		// reset the previous objects
+		memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
+	}
 };
 
 struct human_computer_interface
@@ -1370,7 +1377,6 @@ struct human_computer_interface
 	void notifyResearchButton(int prevState);
 
 	BASE_OBJECT *getCurrentSelected();
-	void resetPreviousObj();
 	bool isRefreshing();
 	void demolishCancel();
 
@@ -1528,8 +1534,10 @@ human_computer_interface::human_computer_interface()
 
 	objectsChanged = false;
 
+	//make sure stats screen doesn't think it should be up
+	stats.hide();
 	// reset the previous objects
-	resetPreviousObj();
+	objectWidgets.resetPreviousObj();
 
 	/* make demolish stat always available */
 	if (!bInTutorial)
@@ -1564,15 +1572,6 @@ human_computer_interface::~human_computer_interface()
 namespace
 {
 	std::unique_ptr<human_computer_interface> default_hci;
-}
-
-//initialise all the previous obj - particularly useful for when go Off world!
-void human_computer_interface::resetPreviousObj()
-{
-	//make sure stats screen doesn't think it should be up
-	stats.hide();
-	// reset the previous objects
-	memset(objectWidgets.apsPreviousObj.data(), 0, sizeof(objectWidgets.apsPreviousObj));
 }
 
 // Set widget refresh pending flag.
@@ -5260,7 +5259,9 @@ void interfaceShutDown(void)
 
 void intResetPreviousObj(void)
 {
-	default_hci->resetPreviousObj();
+	//make sure stats screen doesn't think it should be up
+	default_hci->stats.hide();
+	default_hci->objectWidgets.resetPreviousObj();
 }
 
 void intRefreshScreen(void)

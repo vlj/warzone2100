@@ -272,6 +272,7 @@ static void processProximityButtons(UDWORD id);
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType);
 
+static void static_reset_windows(BASE_OBJECT *psObj);
 
 /***************************GAME CODE ****************************/
 
@@ -365,6 +366,24 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 	retbutstats[psWidget->UserData].flashTime = flashTime;
 	retbutstats[psWidget->UserData].flashing = flashing;
 	retbutstats[psWidget->UserData].downTime = DownTime;
+}
+
+
+static void intSelectDroid(BASE_OBJECT *psObj)
+{
+	if (driveModeActive())
+	{
+		clearSel();
+		((DROID *)psObj)->selected = true;
+		driveSelectionChanged();
+		driveDisableControl();
+	}
+	else
+	{
+		clearSelection();
+		((DROID *)psObj)->selected = true;
+	}
+	triggerEventSelected();
 }
 
 struct reticule_widgets
@@ -1510,6 +1529,43 @@ struct object_widgets
 		}
 	}
 
+	void objStatLMBPressed(uint32_t id)
+	{
+		/* Find the object that the stats ID refers to */
+		BASE_OBJECT *psObj = getObject(id);
+		ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
+
+		static_reset_windows(psObj);
+
+		// If a droid button was clicked then clear all other selections and select it.
+		if (psObj->type == OBJ_DROID)
+		{
+			// Select the droid when the stat button (in the object window) is pressed.
+			intSelectDroid(psObj);
+			psObjSelected = psObj;
+		}
+		else if (psObj->type == OBJ_STRUCTURE)
+		{
+			if (StructIsFactory((STRUCTURE *)psObj))
+			{
+				//might need to cancel the hold on production
+				releaseProduction((STRUCTURE *)psObj, ModeQueue);
+			}
+			else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
+			{
+				//might need to cancel the hold on research facilty
+				releaseResearch((STRUCTURE *)psObj, ModeQueue);
+			}
+
+			for (STRUCTURE *psCurr = apsStructLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
+			{
+				psCurr->selected = false;
+			}
+			psObj->selected = true;
+			triggerEventSelected();
+		}
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1589,6 +1645,8 @@ struct human_computer_interface
 	bool isChatUp();
 	bool isSecondaryWindowUp();
 
+	void resetWindows(BASE_OBJECT *psObj);
+
 protected:
 	/* Store a list of stats pointers from the main structure stats */
 	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
@@ -1628,7 +1686,6 @@ protected:
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
 	/* Process return codes from the object screen */
 	void processObject(uint32_t id);
-	void objStatLMBPressed(uint32_t id);
 	void onObjectLeftMousePressed(uint32_t id);
 	/* Add the object screen widgets to the widget screen.
 	* select is a pointer to a function that returns true when the object is
@@ -1655,7 +1712,7 @@ protected:
 	/* If psSelected != NULL it specifies which droid should be hilited */
 	bool addCommand(DROID *psSelected);
 
-	void resetWindows(BASE_OBJECT *psObj);
+
 	/*Deals with the RMB click for the Object Stats buttons */
 	void objStatRMBPressed(uint32_t id);
 	// Refresh widgets once per game cycle if pending flag is set.
@@ -1753,6 +1810,12 @@ human_computer_interface::~human_computer_interface()
 namespace
 {
 	std::unique_ptr<human_computer_interface> default_hci;
+}
+
+// for legacy purpose
+void static_reset_windows(BASE_OBJECT *psObj)
+{
+	default_hci->resetWindows(psObj);
 }
 
 // Set widget refresh pending flag.
@@ -2864,24 +2927,6 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	}
 }
 
-
-static void intSelectDroid(BASE_OBJECT *psObj)
-{
-	if (driveModeActive())
-	{
-		clearSel();
-		((DROID *)psObj)->selected = true;
-		driveSelectionChanged();
-		driveDisableControl();
-	}
-	else
-	{
-		clearSelection();
-		((DROID *)psObj)->selected = true;
-	}
-	triggerEventSelected();
-}
-
 void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 {
 	if (psObj)
@@ -2988,7 +3033,7 @@ void human_computer_interface::processObject(uint32_t id)
 			objStatRMBPressed(id);
 			return;
 		}
-		objStatLMBPressed(id);
+		objectWidgets.objStatLMBPressed(id);
 		return;
 	}
 
@@ -3007,43 +3052,6 @@ void human_computer_interface::processObject(uint32_t id)
 	else  if (id != IDOBJ_TABFORM)
 	{
 		intProcessOrder(id);
-	}
-}
-
-void human_computer_interface::objStatLMBPressed(uint32_t id)
-{
-	/* Find the object that the stats ID refers to */
-	BASE_OBJECT *psObj = objectWidgets.getObject(id);
-	ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
-
-	resetWindows(psObj);
-
-	// If a droid button was clicked then clear all other selections and select it.
-	if (psObj->type == OBJ_DROID)
-	{
-		// Select the droid when the stat button (in the object window) is pressed.
-		intSelectDroid(psObj);
-		objectWidgets.psObjSelected = psObj;
-	}
-	else if (psObj->type == OBJ_STRUCTURE)
-	{
-		if (StructIsFactory((STRUCTURE *)psObj))
-		{
-			//might need to cancel the hold on production
-			releaseProduction((STRUCTURE *)psObj, ModeQueue);
-		}
-		else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
-		{
-			//might need to cancel the hold on research facilty
-			releaseResearch((STRUCTURE *)psObj, ModeQueue);
-		}
-
-		for (STRUCTURE *psCurr = apsStructLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
-		{
-			psCurr->selected = false;
-		}
-		psObj->selected = true;
-		triggerEventSelected();
 	}
 }
 

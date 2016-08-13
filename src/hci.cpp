@@ -2995,8 +2995,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		// unlimted tabs? Future enhancement assign T1/2/3 button on form
 		// so we can pick what level of tech we want to build instead of
 		// Alex picking for us?
-		std::array<UWORD, MAXRESEARCH> pSList;
-		uint32_t count = 0;
+		std::vector<uint16_t> pSList;
 		for (uint32_t i = 0; i < RID_MAXRID; i++)
 		{
 			int32_t iconNumber = mapRIDToIcon(i);
@@ -3005,7 +3004,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 				int32_t entryIN = asResearch[pList[j]].iconID;
 				if (entryIN == iconNumber)
 				{
-					pSList[count++] = pList[j];
+					pSList.push_back(pList[j]);
 				}
 
 			}
@@ -3017,7 +3016,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 			int32_t iconNumber = mapIconToRID(asResearch[pList[j]].iconID);
 			if (iconNumber < 0)
 			{
-				pSList[count++] = pList[j];
+				pSList.push_back(pList[j]);
 			}
 		}
 

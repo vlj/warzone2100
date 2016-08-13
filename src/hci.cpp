@@ -1320,6 +1320,7 @@ struct object_widgets
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 	/* Whether the objects that are on the object screen have changed this frame */
 	bool objectsChanged;
+	_obj_mode objMode;
 
 	object_widgets()
 	{
@@ -1333,6 +1334,33 @@ struct object_widgets
 	{
 		// reset the previous objects
 		memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
+	}
+
+	/* Are we in build select mode*/
+	bool buildSelectMode()
+	{
+		return (objMode == IOBJ_BUILDSEL);
+	}
+
+	/* Are we in demolish select mode*/
+	bool demolishSelectMode()
+	{
+		return (objMode == IOBJ_DEMOLISHSEL);
+	}
+
+	//is the build interface up?
+	bool buildMode()
+	{
+		return (objMode == IOBJ_BUILD);
+	}
+
+	//Written to allow demolish order to be added to the queuing system
+	void demolishCancel()
+	{
+		if (objMode == IOBJ_DEMOLISHSEL)
+		{
+			objMode = IOBJ_NONE;
+		}
 	}
 };
 
@@ -1362,9 +1390,6 @@ struct human_computer_interface
 
 	void objectSelected(BASE_OBJECT *psObj);
 	void constructorSelected(DROID *psDroid);
-	bool buildSelectMode();
-	bool demolishSelectMode();
-	bool buildMode();
 	void commanderSelected(DROID *psDroid);
 	void addIntelScreen();
 	void resetScreen(bool NoAnim);
@@ -1387,7 +1412,6 @@ struct human_computer_interface
 
 	BASE_OBJECT *getCurrentSelected();
 	bool isRefreshing();
-	void demolishCancel();
 
 	StateButton *makeObsoleteButton(WIDGET *parent);  ///< Makes a button to toggle showing obsolete items.
 
@@ -1427,7 +1451,6 @@ protected:
 	BASE_STATS *psPositionStats;
 	uint32_t numStatsListEntries;
 	_edit_pos_mode editPosMode;
-	_obj_mode objMode;
 
 	/* Process return codes from the Options screen */
 	void processOptions(uint32_t id);
@@ -1656,7 +1679,7 @@ void human_computer_interface::doScreenRefresh()
 				OrderWasUp = true;
 			}
 
-			switch (objMode)
+			switch (objectWidgets.objMode)
 			{
 			case IOBJ_MANUFACTURE:	// The manufacture screen (factorys on bottom bar)
 			case IOBJ_RESEARCH:		// The research screen
@@ -1899,8 +1922,8 @@ void human_computer_interface::processOptions(uint32_t id)
 				apsTemplateList.push_back(&*i);
 			}
 			stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
-			objMode = IOBJ_MANUFACTURE;
-			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objMode);
+			objectWidgets.objMode = IOBJ_MANUFACTURE;
+			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1912,8 +1935,8 @@ void human_computer_interface::processOptions(uint32_t id)
 				apsStructStatsList[i] = asStructureStats + i;
 			}
 			stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
-			objMode = IOBJ_BUILD;
-			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objMode);
+			objectWidgets.objMode = IOBJ_BUILD;
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1925,7 +1948,7 @@ void human_computer_interface::processOptions(uint32_t id)
 				apsFeatureList[i] = asFeatureStats + i;
 			}
 			stats.ppsStatsList = (BASE_STATS **)apsFeatureList.data();
-			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objMode);
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -1979,7 +2002,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 		stats.removeStats();
 		stopStructPosition();
 		intMode = INT_NORMAL;
-		objMode = IOBJ_NONE;
+		objectWidgets.objMode = IOBJ_NONE;
 	}
 }
 
@@ -2036,7 +2059,7 @@ INT_RETVAL human_computer_interface::display()
 			removeObject();
 
 			/* Add the new screen */
-			switch (objMode)
+			switch (objectWidgets.objMode)
 			{
 			case IOBJ_BUILD:
 			case IOBJ_BUILDSEL:
@@ -2128,7 +2151,7 @@ INT_RETVAL human_computer_interface::display()
 	/* Extra code for the power bars to deal with the shadow */
 	powerbar.runPower(stats.ppsStatsList, apsStructStatsList, ppResearchList);
 
-	stats.runStats(objMode);
+	stats.runStats(objectWidgets.objMode);
 
 	if (OrderUp)
 	{
@@ -2318,7 +2341,7 @@ INT_RETVAL human_computer_interface::display()
 
 	if (!quitting && retIDs.empty())
 	{
-		if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILDSEL)
+		if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_BUILDSEL)
 		{
 			// See if a position for the structure has been found
 			if (found3DBuildLocTwo(&structX, &structY, &structX2, &structY2))
@@ -2585,12 +2608,12 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	psStats = objGetStatsFunc(psObj);
 
 	// note the object for the screen
-	objectWidgets.apsPreviousObj[objMode] = psObj;
+	objectWidgets.apsPreviousObj[objectWidgets.objMode] = psObj;
 
 	// NOTE! The below functions populate our list (building/units...)
 	// up to MAX____.  We have unlimited potential, but it is capped at 200 now.
 	//determine the Structures that can be built
-	if (objMode == IOBJ_BUILD)
+	if (objectWidgets.objMode == IOBJ_BUILD)
 	{
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 		                                        selectedPlayer, MAXSTRUCTURES - 1);
@@ -2599,7 +2622,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	}
 
 	//have to determine the Template list once the factory has been chosen
-	if (objMode == IOBJ_MANUFACTURE)
+	if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		fillTemplateList(apsTemplateList, (STRUCTURE *)psObj);
 		numStatsListEntries = apsTemplateList.size();
@@ -2608,7 +2631,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 
 	/*have to calculate the list each time the Topic button is pressed
 	  so that only one topic can be researched at a time*/
-	if (objMode == IOBJ_RESEARCH)
+	if (objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		//set to value that won't be reached in fillResearchList
 		index = asResearch.size() + 1;
@@ -2656,7 +2679,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		}
 	}
 
-	stats.addStats(stats.ppsStatsList, numStatsListEntries, psStats, psObj, objMode);
+	stats.addStats(stats.ppsStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
 	secondaryWindowUp = true;
 
 	// get the tab positions for the new stat form
@@ -2703,7 +2726,7 @@ void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 	if (psObj)
 	{
 		// reset the object screen with the new object
-		switch (objMode)
+		switch (objectWidgets.objMode)
 		{
 		case IOBJ_BUILD:
 		case IOBJ_BUILDSEL:
@@ -2736,7 +2759,7 @@ void human_computer_interface::processObject(uint32_t id)
 	ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
 
 	// deal with CRTL clicks
-	if (objMode == IOBJ_BUILD &&	// What..................?
+	if (objectWidgets.objMode == IOBJ_BUILD &&	// What..................?
 	    (keyDown(KEY_LCTRL) || keyDown(KEY_RCTRL) || keyDown(KEY_LSHIFT) || keyDown(KEY_RSHIFT)) &&
 	    ((id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND) ||
 	     (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
@@ -2911,7 +2934,7 @@ void human_computer_interface::processObject(uint32_t id)
 	}
 	else
 	{
-		if (objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
+		if (objectWidgets.objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
 		{
 			/* Not a button on the build form, must be on the stats form */
 			processStats(id);
@@ -2946,7 +2969,7 @@ void human_computer_interface::processStats(uint32_t id)
 		else
 		{
 			//manufacture works differently!
-			if (objMode == IOBJ_MANUFACTURE)
+			if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 			{
 				compIndex = id - IDSTAT_START;
 				//get the stats
@@ -2988,11 +3011,11 @@ void human_computer_interface::processStats(uint32_t id)
 				/* See if this was a click on an already selected stat */
 				psStats = objGetStatsFunc(objectWidgets.psObjSelected);
 				// only do the cancel operation if not trying to add to the build list
-				if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objMode != IOBJ_BUILD)
+				if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
 				{
 					// this needs to be done before the topic is cancelled from the structure
 					/* If Research then need to set topic to be cancelled */
-					if (objMode == IOBJ_RESEARCH)
+					if (objectWidgets.objMode == IOBJ_RESEARCH)
 					{
 						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
 						{
@@ -3013,7 +3036,7 @@ void human_computer_interface::processStats(uint32_t id)
 				else
 				{
 					//If Research then need to set the topic - if one, to be cancelled
-					if (objMode == IOBJ_RESEARCH)
+					if (objectWidgets.objMode == IOBJ_RESEARCH)
 					{
 						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
 							objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
@@ -3028,7 +3051,7 @@ void human_computer_interface::processStats(uint32_t id)
 					}
 
 					// call the tutorial callback if necessary
-					if (bInTutorial && objMode == IOBJ_BUILD)
+					if (bInTutorial && objectWidgets.objMode == IOBJ_BUILD)
 					{
 
 						eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
@@ -3064,7 +3087,7 @@ void human_computer_interface::processStats(uint32_t id)
 
 				// Close the object box as well if selecting a location to build- no longer hide/reveal
 				// or if selecting a structure to demolish
-				if (objMode == IOBJ_BUILDSEL || objMode == IOBJ_DEMOLISHSEL)
+				if (objectWidgets.objMode == IOBJ_BUILDSEL || objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 				{
 					if (driveModeActive())
 					{
@@ -3081,7 +3104,7 @@ void human_computer_interface::processStats(uint32_t id)
 
 					removeObject();
 					// hack to stop the stats window re-opening in demolish mode
-					if (objMode == IOBJ_DEMOLISHSEL)
+					if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 					{
 						refreshPending = false;
 					}
@@ -3206,7 +3229,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 			//don't do anything if structure is only partially built
 			resetScreen(false);
 
-			if (objMode == IOBJ_DEMOLISHSEL)
+			if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 			{
 				/* do nothing here */
 				break;
@@ -3261,10 +3284,10 @@ static void intStartStructPosition(BASE_STATS *psStats)
 void human_computer_interface::stopStructPosition()
 {
 	/* Check there is still a struct position running */
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILDSEL)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_BUILDSEL)
 	{
 		// Reset the stats button
-		objMode = IOBJ_BUILD;
+		objectWidgets.objMode = IOBJ_BUILD;
 	}
 	kill3DBuilding();
 }
@@ -3313,12 +3336,12 @@ void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 {
 	if (intMode == INT_OBJECT || intMode == INT_STAT)
 	{
-		if ((objMode == IOBJ_BUILD || objMode == IOBJ_BUILDSEL) &&
+		if ((objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_BUILDSEL) &&
 		    psObj->type == OBJ_DROID && objSelectFunc(psObj))
 		{
 			objectWidgets.objectsChanged = true;
 		}
-		else if ((objMode == IOBJ_RESEARCH || objMode == IOBJ_MANUFACTURE) &&
+		else if ((objectWidgets.objMode == IOBJ_RESEARCH || objectWidgets.objMode == IOBJ_MANUFACTURE) &&
 		         psObj->type == OBJ_STRUCTURE && objSelectFunc(psObj))
 		{
 			objectWidgets.objectsChanged = true;
@@ -3363,7 +3386,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILD)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_BUILD)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
@@ -3387,7 +3410,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_BUILD)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_BUILD)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
@@ -3404,33 +3427,6 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 				droidID++;
 			}
 		}
-	}
-}
-
-/* Are we in build select mode*/
-bool human_computer_interface::buildSelectMode()
-{
-	return (objMode == IOBJ_BUILDSEL);
-}
-
-/* Are we in demolish select mode*/
-bool human_computer_interface::demolishSelectMode()
-{
-	return (objMode == IOBJ_DEMOLISHSEL);
-}
-
-//is the build interface up?
-bool human_computer_interface::buildMode()
-{
-	return (objMode == IOBJ_BUILD);
-}
-
-//Written to allow demolish order to be added to the queuing system
-void human_computer_interface::demolishCancel()
-{
-	if (objMode == IOBJ_DEMOLISHSEL)
-	{
-		objMode = IOBJ_NONE;
 	}
 }
 
@@ -3523,7 +3519,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_MANUFACTURE)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		/* Find which button the structure is on and clear it's stats */
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
@@ -3544,7 +3540,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_MANUFACTURE)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		/* Find which button the structure is on and update its stats */
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
@@ -3566,7 +3562,7 @@ void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
 
 void human_computer_interface::alliedResearchChanged()
 {
-	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objMode == IOBJ_RESEARCH)
+	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		refreshScreen();
 	}
@@ -3630,7 +3626,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	if (psSelected == NULL)
 	{
 		//first check if there is an object selected of the required type
-		switch (objMode)
+		switch (objectWidgets.objMode)
 		{
 		case IOBJ_RESEARCH:
 			psSelected = (BASE_OBJECT *)checkForStructure(REF_RESEARCH);
@@ -3662,10 +3658,10 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		}
 		if (!psSelected)
 		{
-			if (objectWidgets.apsPreviousObj[objMode]
-			    && objectWidgets.apsPreviousObj[objMode]->player == selectedPlayer)
+			if (objectWidgets.apsPreviousObj[objectWidgets.objMode]
+			    && objectWidgets.apsPreviousObj[objectWidgets.objMode]->player == selectedPlayer)
 			{
-				psSelected = objectWidgets.apsPreviousObj[objMode];
+				psSelected = objectWidgets.apsPreviousObj[objectWidgets.objMode];
 				//it is possible for a structure to change status - building of modules
 				if (psSelected->type == OBJ_STRUCTURE
 				    && ((STRUCTURE *)psSelected)->status != SS_BUILT)
@@ -4049,7 +4045,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		psSelected = NULL;
 	}
 
-	if (psSelected && (objMode != IOBJ_COMMAND))
+	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
 		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
 		{
@@ -4078,7 +4074,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		intMode = INT_OBJECT;
 	}
 
-	if (objMode == IOBJ_BUILD || objMode == IOBJ_MANUFACTURE || objMode == IOBJ_RESEARCH)
+	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
 	}
@@ -4205,7 +4201,7 @@ void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 		statButton->setObject(nullptr);
 
 		/* Reset the stats screen button if necessary */
-		if ((INTMODE)objMode == INT_STAT && stats.statID != 0)
+		if ((INTMODE)objectWidgets.objMode == INT_STAT && stats.statID != 0)
 		{
 			widgSetButtonState(psWScreen, stats.statID, 0);
 		}
@@ -4329,7 +4325,7 @@ bool human_computer_interface::setConstructionStats(BASE_OBJECT *psObj, BASE_STA
 		//check for demolish first
 		if (psStats == structGetDemolishStat())
 		{
-			objMode = IOBJ_DEMOLISHSEL;
+			objectWidgets.objMode = IOBJ_DEMOLISHSEL;
 
 			return true;
 		}
@@ -4338,7 +4334,7 @@ bool human_computer_interface::setConstructionStats(BASE_OBJECT *psObj, BASE_STA
 		psPositionStats = psStats;
 
 		/* Now start looking for a location for the structure */
-		objMode = IOBJ_BUILDSEL;
+		objectWidgets.objMode = IOBJ_BUILDSEL;
 
 		intStartStructPosition(psStats);
 
@@ -4498,7 +4494,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setConstructionStats(psObj, psStats); };
 
 	/* Set the sub mode */
-	objMode = IOBJ_BUILD;
+	objectWidgets.objMode = IOBJ_BUILD;
 
 	/* Create the object screen with the required data */
 
@@ -4519,7 +4515,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	objSetStatsFunc = setManufactureStats;
 
 	/* Set the sub mode */
-	objMode = IOBJ_MANUFACTURE;
+	objectWidgets.objMode = IOBJ_MANUFACTURE;
 
 	/* Create the object screen with the required data */
 	return addObjectWindow((BASE_OBJECT *)interfaceStructList(),
@@ -4535,7 +4531,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setResearchStats(psObj, psStats); };
 
 	/* Set the sub mode */
-	objMode = IOBJ_RESEARCH;
+	objectWidgets.objMode = IOBJ_RESEARCH;
 
 	/* Create the object screen with the required data */
 	return addObjectWindow((BASE_OBJECT *)interfaceStructList(),
@@ -4551,7 +4547,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	objSetStatsFunc = setCommandStats;
 
 	/* Set the sub mode */
-	objMode = IOBJ_COMMAND;
+	objectWidgets.objMode = IOBJ_COMMAND;
 
 	/* Create the object screen with the required data */
 	return addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
@@ -4562,7 +4558,7 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 {
 	ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
 
-	if (objMode == IOBJ_MANUFACTURE)
+	if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		BASE_STATS *psStats = stats.ppsStatsList[id - IDSTAT_START];
 
@@ -5340,22 +5336,22 @@ void intBuildStarted(DROID *psDroid)
 
 bool intBuildSelectMode(void)
 {
-	return default_hci->buildSelectMode();
+	return default_hci->objectWidgets.buildSelectMode();
 }
 
 bool intDemolishSelectMode(void)
 {
-	return default_hci->demolishSelectMode();
+	return default_hci->objectWidgets.demolishSelectMode();
 }
 
 bool intBuildMode(void)
 {
-	return default_hci->buildMode();
+	return default_hci->objectWidgets.buildMode();
 }
 
 void intDemolishCancel(void)
 {
-	default_hci->demolishCancel();
+	default_hci->objectWidgets.demolishCancel();
 }
 
 void intManufactureFinished(STRUCTURE *psBuilding)

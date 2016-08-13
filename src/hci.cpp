@@ -1485,28 +1485,26 @@ struct object_widgets
 	}
 
 	/*Deals with the RMB click for the Object screen */
-	void objectRMBPressed(uint32_t id)
+	void onRightMouseButtonPressed(uint32_t id)
 	{
 		ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid object id");
 
+		//don't jump around when offworld
+		if (offWorldKeepLists)
+			return;
+
 		/* Find the object that the ID refers to */
-		BASE_OBJECT *psObj = getObject(id);
-		if (psObj)
+		STRUCTURE *psStructure = castStructure(getObject(id));
+		if (!psStructure)
+			return;
+		if (psStructure->pStructureType->type == REF_FACTORY ||
+			psStructure->pStructureType->type == REF_CYBORG_FACTORY ||
+			psStructure->pStructureType->type == REF_VTOL_FACTORY)
 		{
-			//don't jump around when offworld
-			if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
-			{
-				STRUCTURE *psStructure = (STRUCTURE *)psObj;
-				if (psStructure->pStructureType->type == REF_FACTORY ||
-					psStructure->pStructureType->type == REF_CYBORG_FACTORY ||
-					psStructure->pStructureType->type == REF_VTOL_FACTORY)
-				{
-					//centre the view on the delivery point
-					setViewPos(map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.x),
-						map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.y),
-						true);
-				}
-			}
+			//centre the view on the delivery point
+			setViewPos(map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.x),
+				map_coord(((FACTORY *)psStructure->pFunctionality)->psAssemblyPoint->coords.y),
+				true);
 		}
 	}
 
@@ -1515,7 +1513,6 @@ protected:
 	{
 		return (a == NULL ? 0 : a->id) < (b == NULL ? 0 : b->id);
 	}
-
 
 	static bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -2966,7 +2963,7 @@ void human_computer_interface::processObject(uint32_t id)
 		/* deal with RMB clicks */
 		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 		{
-			objectWidgets.objectRMBPressed(id);
+			objectWidgets.onRightMouseButtonPressed(id);
 		}
 		/* deal with LMB clicks */
 		else

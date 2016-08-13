@@ -1314,6 +1314,10 @@ struct object_widgets
 {
 	// store the objects that are being used for the object bar
 	std::vector<BASE_OBJECT *> apsObjectList;
+	/* The selected object on the object screen when the stats screen is displayed */
+	BASE_OBJECT *psObjSelected;
+	/* The previous object for each object bar */
+	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 };
 
 struct human_computer_interface
@@ -1387,8 +1391,6 @@ protected:
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 
-	/* The selected object on the object screen when the stats screen is displayed */
-	BASE_OBJECT *psObjSelected;
 	/* Whether the objects that are on the object screen have changed this frame */
 	bool objectsChanged;
 	/* The jump position for each object on the base bar */
@@ -1396,8 +1398,6 @@ protected:
 	bool refreshPending = false;
 	bool refreshing = false;
 
-	/* The previous object for each object bar */
-	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 	// Empty edit window
 	bool secondaryWindowUp = false;
 	// Chat dialog
@@ -1509,7 +1509,7 @@ human_computer_interface::human_computer_interface()
 	/* Create storage for the extra systems list */
 	apsExtraSysList = (COMPONENT_STATS **)malloc(sizeof(COMPONENT_STATS *) * MAXEXTRASYS);
 
-	psObjSelected = nullptr;
+	objectWidgets.psObjSelected = nullptr;
 
 	intInitialiseGraphics();
 
@@ -1555,7 +1555,6 @@ human_computer_interface::~human_computer_interface()
 	apsTemplateList.clear();
 	free(apsComponentList);
 	free(apsExtraSysList);
-	psObjSelected = nullptr;
 
 	psWScreen = NULL;
 	apsComponentList = NULL;
@@ -1573,7 +1572,7 @@ void human_computer_interface::resetPreviousObj()
 	//make sure stats screen doesn't think it should be up
 	stats.hide();
 	// reset the previous objects
-	memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
+	memset(objectWidgets.apsPreviousObj.data(), 0, sizeof(objectWidgets.apsPreviousObj));
 }
 
 // Set widget refresh pending flag.
@@ -1663,7 +1662,7 @@ void human_computer_interface::doScreenRefresh()
 			case IOBJ_MANUFACTURE:	// The manufacture screen (factorys on bottom bar)
 			case IOBJ_RESEARCH:		// The research screen
 				//pass in the currently selected object
-				updateObject((BASE_OBJECT *)interfaceStructList(), psObjSelected, StatsWasUp);
+				updateObject((BASE_OBJECT *)interfaceStructList(), objectWidgets.psObjSelected, StatsWasUp);
 				break;
 
 			case IOBJ_BUILD:
@@ -1671,7 +1670,7 @@ void human_computer_interface::doScreenRefresh()
 			case IOBJ_BUILDSEL:		// Selecting a position for a new structure
 			case IOBJ_DEMOLISHSEL:	// Selecting a structure to demolish
 				//pass in the currently selected object
-				updateObject((BASE_OBJECT *)apsDroidLists[selectedPlayer], psObjSelected, StatsWasUp);
+				updateObject((BASE_OBJECT *)apsDroidLists[selectedPlayer], objectWidgets.psObjSelected, StatsWasUp);
 				break;
 
 			default:
@@ -2004,16 +2003,16 @@ void human_computer_interface::update()
 	// Update the previous object array, prune dead objects.
 	for (int i = 0; i < IOBJ_MAX; ++i)
 	{
-		if (apsPreviousObj[i] && apsPreviousObj[i]->died)
+		if (objectWidgets.apsPreviousObj[i] && objectWidgets.apsPreviousObj[i]->died)
 		{
-			apsPreviousObj[i] = NULL;
+			objectWidgets.apsPreviousObj[i] = NULL;
 		}
 	}
 
-	if (psObjSelected && psObjSelected->died)
+	if (objectWidgets.psObjSelected && objectWidgets.psObjSelected->died)
 	{
 		// refresh when unit dies
-		psObjSelected = nullptr;
+		objectWidgets.psObjSelected = nullptr;
 	}
 }
 
@@ -2338,9 +2337,9 @@ INT_RETVAL human_computer_interface::display()
 					// Set the droid order
 					if (intNumSelectedDroids(DROID_CONSTRUCT) == 0
 					    && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0
-					    && psObjSelected != NULL && isConstructionDroid(psObjSelected))
+					    && objectWidgets.psObjSelected != NULL && isConstructionDroid(objectWidgets.psObjSelected))
 					{
-						orderDroidStatsTwoLocDir((DROID *)psObjSelected, DORDER_LINEBUILD, (STRUCTURE_STATS *)psPositionStats, structX, structY, structX2, structY2, player.r.y, ModeQueue);
+						orderDroidStatsTwoLocDir((DROID *)objectWidgets.psObjSelected, DORDER_LINEBUILD, (STRUCTURE_STATS *)psPositionStats, structX, structY, structX2, structY2, player.r.y, ModeQueue);
 					}
 					else
 					{
@@ -2357,8 +2356,8 @@ INT_RETVAL human_computer_interface::display()
 			else if (found3DBuilding(&structX, &structY))	//found building
 			{
 				//check droid hasn't died
-				if ((psObjSelected == NULL) ||
-				    !psObjSelected->died)
+				if ((objectWidgets.psObjSelected == NULL) ||
+				    !objectWidgets.psObjSelected->died)
 				{
 					bool CanBuild = true;
 
@@ -2379,9 +2378,9 @@ INT_RETVAL human_computer_interface::display()
 						// Set the droid order
 						if (intNumSelectedDroids(DROID_CONSTRUCT) == 0
 						    && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0
-						    && psObjSelected != NULL)
+						    && objectWidgets.psObjSelected != NULL)
 						{
-							orderDroidStatsLocDir((DROID *)psObjSelected, DORDER_BUILD, (STRUCTURE_STATS *)psPositionStats, structX, structY, player.r.y, ModeQueue);
+							orderDroidStatsLocDir((DROID *)objectWidgets.psObjSelected, DORDER_BUILD, (STRUCTURE_STATS *)psPositionStats, structX, structY, player.r.y, ModeQueue);
 						}
 						else
 						{
@@ -2587,7 +2586,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	psStats = objGetStatsFunc(psObj);
 
 	// note the object for the screen
-	apsPreviousObj[objMode] = psObj;
+	objectWidgets.apsPreviousObj[objMode] = psObj;
 
 	// NOTE! The below functions populate our list (building/units...)
 	// up to MAX____.  We have unlimited potential, but it is capped at 200 now.
@@ -2671,7 +2670,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 
 	intMode = INT_STAT;
 	/* Note the object */
-	psObjSelected = psObj;
+	objectWidgets.psObjSelected = psObj;
 	objStatID = id;
 
 	/* Reset the tabs and lock the button */
@@ -2761,20 +2760,20 @@ void human_computer_interface::processObject(uint32_t id)
 			{
 				stats.removeStats();
 			}
-			if (psObjSelected == psObj)
+			if (objectWidgets.psObjSelected == psObj)
 			{
-				psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
-				if (!psObjSelected)
+				objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
+				if (!objectWidgets.psObjSelected)
 				{
-					psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+					objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
 				}
 			}
 		}
 		else if (psObj)
 		{
-			if (psObjSelected)
+			if (objectWidgets.psObjSelected)
 			{
-				psObjSelected->selected = true;
+				objectWidgets.psObjSelected->selected = true;
 			}
 			psObj->selected = true;
 			widgSetButtonState(psWScreen, statButID, WBUT_CLICKLOCK);
@@ -2855,7 +2854,7 @@ void human_computer_interface::processObject(uint32_t id)
 			if (psObj->type == OBJ_DROID)
 			{
 				intSelectDroid(psObj);
-				psObjSelected = psObj;
+				objectWidgets.psObjSelected = psObj;
 
 			}
 		}
@@ -2882,7 +2881,7 @@ void human_computer_interface::processObject(uint32_t id)
 			{
 				// Select the droid when the stat button (in the object window) is pressed.
 				intSelectDroid(psObj);
-				psObjSelected = psObj;
+				objectWidgets.psObjSelected = psObj;
 			}
 			else if (psObj->type == OBJ_STRUCTURE)
 			{
@@ -2954,11 +2953,11 @@ void human_computer_interface::processStats(uint32_t id)
 				//get the stats
 				ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
 				psStats = stats.ppsStatsList[compIndex];
-				ASSERT_OR_RETURN(, psObjSelected != NULL, "Invalid structure pointer");
+				ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");
 				ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
 				if (productionPlayer == (SBYTE)selectedPlayer)
 				{
-					STRUCTURE *psStructure = (STRUCTURE *)psObjSelected;
+					STRUCTURE *psStructure = (STRUCTURE *)objectWidgets.psObjSelected;
 					FACTORY  *psFactory = &psStructure->pFunctionality->factory;
 					DROID_TEMPLATE *psNext = (DROID_TEMPLATE *)psStats;
 
@@ -2988,7 +2987,7 @@ void human_computer_interface::processStats(uint32_t id)
 			else
 			{
 				/* See if this was a click on an already selected stat */
-				psStats = objGetStatsFunc(psObjSelected);
+				psStats = objGetStatsFunc(objectWidgets.psObjSelected);
 				// only do the cancel operation if not trying to add to the build list
 				if (psStats == stats.ppsStatsList[id - IDSTAT_START] && objMode != IOBJ_BUILD)
 				{
@@ -2996,15 +2995,15 @@ void human_computer_interface::processStats(uint32_t id)
 					/* If Research then need to set topic to be cancelled */
 					if (objMode == IOBJ_RESEARCH)
 					{
-						if (psObjSelected->type == OBJ_STRUCTURE)
+						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE)
 						{
 							// TODO This call seems to be redundant, since cancelResearch is called from objSetStatsFunc==setResearchStats.
-							cancelResearch((STRUCTURE *)psObjSelected, ModeQueue);
+							cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
 						}
 					}
 
 					/* Clear the object stats */
-					objSetStatsFunc(psObjSelected, NULL);
+					objSetStatsFunc(objectWidgets.psObjSelected, NULL);
 
 					/* Reset the button on the object form */
 					setStats(objStatID, NULL);
@@ -3017,14 +3016,14 @@ void human_computer_interface::processStats(uint32_t id)
 					//If Research then need to set the topic - if one, to be cancelled
 					if (objMode == IOBJ_RESEARCH)
 					{
-						if (psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
-						        psObjSelected)->pStructureType->type == REF_RESEARCH)
+						if (objectWidgets.psObjSelected->type == OBJ_STRUCTURE && ((STRUCTURE *)
+							objectWidgets.psObjSelected)->pStructureType->type == REF_RESEARCH)
 						{
 							//if there was a topic currently being researched - cancel it
-							if (((RESEARCH_FACILITY *)((STRUCTURE *)psObjSelected)->
+							if (((RESEARCH_FACILITY *)((STRUCTURE *)objectWidgets.psObjSelected)->
 							     pFunctionality)->psSubject)
 							{
-								cancelResearch((STRUCTURE *)psObjSelected, ModeQueue);
+								cancelResearch((STRUCTURE *)objectWidgets.psObjSelected, ModeQueue);
 							}
 						}
 					}
@@ -3043,7 +3042,7 @@ void human_computer_interface::processStats(uint32_t id)
 
 					// Reset the button on the object form
 					//if this returns false, there's a problem so set the button to NULL
-					if (!objSetStatsFunc(psObjSelected, psStats))
+					if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
 					{
 						setStats(objStatID, NULL);
 					}
@@ -3664,10 +3663,10 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		}
 		if (!psSelected)
 		{
-			if (apsPreviousObj[objMode]
-			    && apsPreviousObj[objMode]->player == selectedPlayer)
+			if (objectWidgets.apsPreviousObj[objMode]
+			    && objectWidgets.apsPreviousObj[objMode]->player == selectedPlayer)
 			{
-				psSelected = apsPreviousObj[objMode];
+				psSelected = objectWidgets.apsPreviousObj[objMode];
 				//it is possible for a structure to change status - building of modules
 				if (psSelected->type == OBJ_STRUCTURE
 				    && ((STRUCTURE *)psSelected)->status != SS_BUILT)
@@ -3684,7 +3683,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	}
 
 	/* Reset the current object and store the current list */
-	psObjSelected = NULL;
+	objectWidgets.psObjSelected = NULL;
 
 	WIDGET *parent = psWScreen->psForm;
 
@@ -4068,7 +4067,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	else if (psSelected)
 	{
 		/* Note the object */
-		psObjSelected = psSelected;
+		objectWidgets.psObjSelected = psSelected;
 		objStatID = statID;
 		intAddOrder(psSelected);
 		widgSetButtonState(psWScreen, statID, WBUT_CLICKLOCK);
@@ -4570,11 +4569,11 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 
 		//this now causes the production run to be decreased by one
 
-		ASSERT_OR_RETURN(, psObjSelected != NULL, "Invalid structure pointer");
+		ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");
 		ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
 		if (productionPlayer == (SBYTE)selectedPlayer)
 		{
-			STRUCTURE *psStructure = (STRUCTURE *)psObjSelected;
+			STRUCTURE *psStructure = (STRUCTURE *)objectWidgets.psObjSelected;
 			FACTORY  *psFactory = &psStructure->pFunctionality->factory;
 			DROID_TEMPLATE *psNext = (DROID_TEMPLATE *)psStats;
 
@@ -5157,7 +5156,7 @@ DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE 
 //access function for selected object in the interface
 BASE_OBJECT *human_computer_interface::getCurrentSelected()
 {
-	return psObjSelected;
+	return objectWidgets.psObjSelected;
 }
 
 // Checks if a coordinate is over the build menu

@@ -1784,7 +1784,6 @@ protected:
 	std::array<RESEARCH *, MAXRESEARCH> ppResearchList;
 	/*Store a list of research indices which can be performed*/
 	std::array<UWORD, MAXRESEARCH> pList;
-	std::array<UWORD, MAXRESEARCH> pSList;
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 	bool refreshPending = false;
@@ -2996,6 +2995,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		// unlimted tabs? Future enhancement assign T1/2/3 button on form
 		// so we can pick what level of tech we want to build instead of
 		// Alex picking for us?
+		std::array<UWORD, MAXRESEARCH> pSList;
 		uint32_t count = 0;
 		for (uint32_t i = 0; i < RID_MAXRID; i++)
 		{

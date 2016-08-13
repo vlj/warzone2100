@@ -1625,7 +1625,7 @@ protected:
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
 	/* Process return codes from the object screen */
 	void processObject(uint32_t id);
-	void objStatLMBPressed(BASE_OBJECT * &psObj, uint32_t &id);
+	void objStatLMBPressed(uint32_t id);
 	void onObjectLeftMousePressed(uint32_t id);
 	/* Add the object screen widgets to the widget screen.
 	* select is a pointer to a function that returns true when the object is
@@ -2908,7 +2908,6 @@ void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 
 void human_computer_interface::processObject(uint32_t id)
 {
-	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStruct;
 	SDWORD			butIndex;
 	UDWORD			statButID;
@@ -2922,7 +2921,7 @@ void human_computer_interface::processObject(uint32_t id)
 		(id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
 	{
 		/* Find the object that the ID refers to */
-		psObj = objectWidgets.getObject(id);
+		BASE_OBJECT *psObj = objectWidgets.getObject(id);
 		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
 		{
 			statButID = IDOBJ_STATSTART + id - IDOBJ_OBJSTART;
@@ -2985,7 +2984,7 @@ void human_computer_interface::processObject(uint32_t id)
 			objStatRMBPressed(id);
 			return;
 		}
-		objStatLMBPressed(psObj, id);
+		objStatLMBPressed(id);
 		return;
 	}
 
@@ -3007,11 +3006,10 @@ void human_computer_interface::processObject(uint32_t id)
 	}
 }
 
-void human_computer_interface::objStatLMBPressed(BASE_OBJECT * &psObj, uint32_t &id)
+void human_computer_interface::objStatLMBPressed(uint32_t id)
 {
-
 	/* Find the object that the stats ID refers to */
-	psObj = objectWidgets.getObject(id);
+	BASE_OBJECT *psObj = objectWidgets.getObject(id);
 	ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
 
 	resetWindows(psObj);

@@ -1546,6 +1546,8 @@ struct human_computer_interface
 	void displayWidgets();
 	INT_RETVAL display();
 
+	void dispatchMouseClickEvent(unsigned int retID, bool &quitting);
+
 	void setMapPos(uint32_t x, uint32_t y);
 	void notifyNewObject(BASE_OBJECT *);
 	void notifyBuildFinished(DROID *psDroid);
@@ -2296,163 +2298,7 @@ INT_RETVAL human_computer_interface::display()
 			processProximityButtons(retID);
 			return INT_NONE;
 		}
-
-		switch (retID)
-		{
-		/*****************  Reticule buttons  *****************/
-
-		case IDRET_OPTIONS:
-			resetScreen(false);
-			(void)options.addOptions();
-			intMode = INT_OPTION;
-			break;
-
-		case IDRET_COMMAND:
-			resetScreen(false);
-			widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
-			addCommand(NULL);
-			break;
-
-		case IDRET_BUILD:
-			resetScreen(true);
-			widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
-			addBuild(NULL);
-			break;
-
-		case IDRET_MANUFACTURE:
-			resetScreen(true);
-			widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
-			addManufacture(NULL);
-			break;
-
-		case IDRET_RESEARCH:
-			resetScreen(true);
-			widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
-			(void)addResearch(NULL);
-			break;
-
-		case IDRET_INTEL_MAP:
-			// check if RMB was clicked
-			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-			{
-				//set the current message to be the last non-proximity message added
-				setCurrentMsg();
-				setMessageImmediate(true);
-			}
-			else
-			{
-				psCurrentMsg = NULL;
-			}
-			addIntelScreen();
-			break;
-
-		case IDRET_DESIGN:
-			resetScreen(true);
-			widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
-			/*add the power bar - for looks! */
-			powerbar.showPowerBar();
-			intAddDesign(false);
-			intMode = INT_DESIGN;
-			break;
-
-		case IDRET_CANCEL:
-			resetScreen(false);
-			psCurrentMsg = NULL;
-			break;
-
-		/*Transporter button pressed - OFFWORLD Mission Maps ONLY *********/
-		case IDTRANTIMER_BUTTON:
-			addTransporterInterface(NULL, true);
-			break;
-
-		case IDTRANS_LAUNCH:
-			processLaunchTransporter();
-			break;
-
-		/* Catch the quit button here */
-		case INTINGAMEOP_POPUP_QUIT:
-		case IDMISSIONRES_QUIT:			// mission quit
-		case INTINGAMEOP_QUIT_CONFIRM:			// esc quit confrim
-		case IDOPT_QUIT:						// options screen quit
-			resetScreen(false);
-			quitting = true;
-			break;
-
-		// process our chatbox
-		case CHAT_EDITBOX:
-			{
-				const char *msg2 = widgGetString(psWScreen, CHAT_EDITBOX);
-				int mode = (int) widgGetUserData2(psWScreen, CHAT_EDITBOX);
-				if (strlen(msg2))
-				{
-					sstrcpy(ConsoleMsg, msg2);
-					ConsolePlayer = selectedPlayer;
-					eventFireCallbackTrigger((TRIGGER_TYPE)CALL_CONSOLE);
-					attemptCheatCode(msg2);		// parse the message
-					if (mode == CHAT_TEAM)
-					{
-						sendTeamMessage(msg2);
-					}
-					else
-					{
-						sendTextMessage(msg2, false);
-					}
-				}
-				inputLoseFocus();
-				bAllowOtherKeyPresses = true;
-				widgDelete(psWScreen, CHAT_CONSOLEBOX);
-				ChatDialogUp = false;
-				break;
-			}
-
-		/* Default case passes remaining IDs to appropriate function */
-		default:
-			switch (intMode)
-			{
-			case INT_OPTION:
-				processOptions(retID);
-				break;
-			case INT_EDITSTAT:
-				processEditStats(retID);
-				break;
-			case INT_STAT:
-			case INT_CMDORDER:
-			/* In stat mode ids get passed to processObject
-			* and then through to processStats
-			*/
-			// NO BREAK HERE! THIS IS CORRECT;
-			case INT_OBJECT:
-				processObject(retID);
-				break;
-			case INT_ORDER:
-				intProcessOrder(retID);
-				break;
-			case INT_MISSIONRES:
-				intProcessMissionResult(retID);
-				break;
-			case INT_INGAMEOP:
-				intProcessInGameOptions(retID);
-				break;
-			case INT_MULTIMENU:
-				intProcessMultiMenu(retID);
-				break;
-			case INT_DESIGN:
-				intProcessDesign(retID);
-				break;
-			case INT_INTELMAP:
-				intProcessIntelMap(retID);
-				break;
-			case INT_TRANSPORTER:
-				intProcessTransporter(retID);
-				break;
-			case INT_NORMAL:
-				break;
-			default:
-				ASSERT(false, "intRunWidgets: unknown interface mode");
-				break;
-			}
-			break;
-		}
+		dispatchMouseClickEvent(retID, quitting);
 	}
 
 	if (!quitting && retIDs.empty())
@@ -2692,6 +2538,165 @@ INT_RETVAL human_computer_interface::display()
 		retCode = INT_QUIT;
 	}
 	return retCode;
+}
+
+void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool &quitting)
+{
+	switch (retID)
+	{
+		/*****************  Reticule buttons  *****************/
+	case IDRET_OPTIONS:
+		resetScreen(false);
+		(void)options.addOptions();
+		intMode = INT_OPTION;
+		break;
+
+	case IDRET_COMMAND:
+		resetScreen(false);
+		widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
+		addCommand(NULL);
+		break;
+
+	case IDRET_BUILD:
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
+		addBuild(NULL);
+		break;
+
+	case IDRET_MANUFACTURE:
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
+		addManufacture(NULL);
+		break;
+
+	case IDRET_RESEARCH:
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
+		(void)addResearch(NULL);
+		break;
+
+	case IDRET_INTEL_MAP:
+		// check if RMB was clicked
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			//set the current message to be the last non-proximity message added
+			setCurrentMsg();
+			setMessageImmediate(true);
+		}
+		else
+		{
+			psCurrentMsg = NULL;
+		}
+		addIntelScreen();
+		break;
+
+	case IDRET_DESIGN:
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
+		/*add the power bar - for looks! */
+		powerbar.showPowerBar();
+		intAddDesign(false);
+		intMode = INT_DESIGN;
+		break;
+
+	case IDRET_CANCEL:
+		resetScreen(false);
+		psCurrentMsg = NULL;
+		break;
+
+		/*Transporter button pressed - OFFWORLD Mission Maps ONLY *********/
+	case IDTRANTIMER_BUTTON:
+		addTransporterInterface(NULL, true);
+		break;
+
+	case IDTRANS_LAUNCH:
+		processLaunchTransporter();
+		break;
+
+		/* Catch the quit button here */
+	case INTINGAMEOP_POPUP_QUIT:
+	case IDMISSIONRES_QUIT:			// mission quit
+	case INTINGAMEOP_QUIT_CONFIRM:			// esc quit confrim
+	case IDOPT_QUIT:						// options screen quit
+		resetScreen(false);
+		quitting = true;
+		break;
+
+		// process our chatbox
+	case CHAT_EDITBOX:
+	{
+		const char *msg2 = widgGetString(psWScreen, CHAT_EDITBOX);
+		int mode = (int)widgGetUserData2(psWScreen, CHAT_EDITBOX);
+		if (strlen(msg2))
+		{
+			sstrcpy(ConsoleMsg, msg2);
+			ConsolePlayer = selectedPlayer;
+			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_CONSOLE);
+			attemptCheatCode(msg2);		// parse the message
+			if (mode == CHAT_TEAM)
+			{
+				sendTeamMessage(msg2);
+			}
+			else
+			{
+				sendTextMessage(msg2, false);
+			}
+		}
+		inputLoseFocus();
+		bAllowOtherKeyPresses = true;
+		widgDelete(psWScreen, CHAT_CONSOLEBOX);
+		ChatDialogUp = false;
+		break;
+	}
+
+	/* Default case passes remaining IDs to appropriate function */
+	default:
+		switch (intMode)
+		{
+		case INT_OPTION:
+			processOptions(retID);
+			break;
+		case INT_EDITSTAT:
+			processEditStats(retID);
+			break;
+		case INT_STAT:
+		case INT_CMDORDER:
+			/* In stat mode ids get passed to processObject
+			* and then through to processStats
+			*/
+			// NO BREAK HERE! THIS IS CORRECT;
+		case INT_OBJECT:
+			processObject(retID);
+			break;
+		case INT_ORDER:
+			intProcessOrder(retID);
+			break;
+		case INT_MISSIONRES:
+			intProcessMissionResult(retID);
+			break;
+		case INT_INGAMEOP:
+			intProcessInGameOptions(retID);
+			break;
+		case INT_MULTIMENU:
+			intProcessMultiMenu(retID);
+			break;
+		case INT_DESIGN:
+			intProcessDesign(retID);
+			break;
+		case INT_INTELMAP:
+			intProcessIntelMap(retID);
+			break;
+		case INT_TRANSPORTER:
+			intProcessTransporter(retID);
+			break;
+		case INT_NORMAL:
+			break;
+		default:
+			ASSERT(false, "intRunWidgets: unknown interface mode");
+			break;
+		}
+		break;
+	}
 }
 
 void human_computer_interface::handleObjectChanges()

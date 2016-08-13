@@ -1310,6 +1310,12 @@ struct option_widgets
 	}
 };
 
+struct object_widgets
+{
+	// store the objects that are being used for the object bar
+	std::vector<BASE_OBJECT *> apsObjectList;
+};
+
 struct human_computer_interface
 {
 	human_computer_interface();
@@ -1319,6 +1325,7 @@ struct human_computer_interface
 	powerbar_widgets powerbar;
 	statistics stats;
 	option_widgets options;
+	object_widgets objectWidgets;
 
 	void update();
 	void displayWidgets();
@@ -1379,8 +1386,7 @@ protected:
 	std::array<UWORD, MAXRESEARCH> pSList;
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
-	// store the objects that are being used for the object bar
-	std::vector<BASE_OBJECT *> apsObjectList;
+
 	/* The selected object on the object screen when the stats screen is displayed */
 	BASE_OBJECT *psObjSelected;
 	/* Whether the objects that are on the object screen have changed this frame */
@@ -1549,7 +1555,6 @@ human_computer_interface::~human_computer_interface()
 	apsTemplateList.clear();
 	free(apsComponentList);
 	free(apsExtraSysList);
-	apsObjectList.clear();
 	psObjSelected = nullptr;
 
 	psWScreen = NULL;
@@ -1986,12 +1991,12 @@ void human_computer_interface::update()
 	if (intMode == INT_OBJECT || intMode == INT_STAT || intMode == INT_CMDORDER)
 	{
 		// see if there is a dead object in the list
-		for (unsigned i = 0; i < apsObjectList.size(); ++i)
+		for (unsigned i = 0; i < objectWidgets.apsObjectList.size(); ++i)
 		{
-			if (apsObjectList[i] && apsObjectList[i]->died)
+			if (objectWidgets.apsObjectList[i] && objectWidgets.apsObjectList[i]->died)
 			{
 				objectDied(i + IDOBJ_OBJSTART);
-				apsObjectList[i] = nullptr;
+				objectWidgets.apsObjectList[i] = nullptr;
 			}
 		}
 	}
@@ -3433,7 +3438,7 @@ void human_computer_interface::demolishCancel()
 
 void human_computer_interface::orderResearch()
 {
-	std::reverse(apsObjectList.begin(), apsObjectList.end());  // Why reverse this list, instead of sorting it?
+	std::reverse(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end());  // Why reverse this list, instead of sorting it?
 }
 
 
@@ -3446,7 +3451,7 @@ static inline bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 void human_computer_interface::orderDroids()
 {
 	// bubble sort on the ID - first built will always be first in the list
-	std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
+	std::sort(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
 }
 
 static inline bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
@@ -3467,25 +3472,25 @@ static inline bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 
 void human_computer_interface::orderFactories()
 {
-	std::sort(apsObjectList.begin(), apsObjectList.end(), sortFactoryByTypeFunction);
+	std::sort(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), sortFactoryByTypeFunction);
 }
 
 void human_computer_interface::orderObjectInterface()
 {
-	if (apsObjectList.empty())
+	if (objectWidgets.apsObjectList.empty())
 	{
 		//no objects so nothing to order!
 		return;
 	}
 
-	switch (apsObjectList[0]->type)
+	switch (objectWidgets.apsObjectList[0]->type)
 	{
 	case OBJ_STRUCTURE:
-		if (StructIsFactory((STRUCTURE *)apsObjectList[0]))
+		if (StructIsFactory((STRUCTURE *)objectWidgets.apsObjectList[0]))
 		{
 			orderFactories();
 		}
-		else if (((STRUCTURE *)apsObjectList[0])->pStructureType->type == REF_RESEARCH)
+		else if (((STRUCTURE *)objectWidgets.apsObjectList[0])->pStructureType->type == REF_RESEARCH)
 		{
 			orderResearch();
 		}
@@ -3500,19 +3505,19 @@ void human_computer_interface::orderObjectInterface()
 
 unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
 {
-	apsObjectList.clear();
+	objectWidgets.apsObjectList.clear();
 	for (STRUCTURE *psCurr = interfaceStructList(); psCurr; psCurr = psCurr->psNext)
 	{
 		if (objSelectFunc(psCurr))
 		{
 			// The list is ordered now so we have to get all possible entries and sort it before checking if this is the one!
-			apsObjectList.push_back(psCurr);
+			objectWidgets.apsObjectList.push_back(psCurr);
 		}
 	}
 	// order the list
 	orderFactories();
 	// now look thru the list to see which one corresponds to the factory that has just finished
-	return std::find(apsObjectList.begin(), apsObjectList.end(), psBuilding) - apsObjectList.begin();
+	return std::find(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
 }
 
 /* Tell the interface a factory has completed building ALL droids */
@@ -3524,7 +3529,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 	{
 		/* Find which button the structure is on and clear it's stats */
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
-		if (structureIndex != apsObjectList.size())
+		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			setStats(structureIndex + IDOBJ_STATSTART, NULL);
 			// clear the loop button if interface is up
@@ -3545,7 +3550,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 	{
 		/* Find which button the structure is on and update its stats */
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
-		if (structureIndex != apsObjectList.size())
+		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			setStats(structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject);
 		}
@@ -3590,16 +3595,16 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	}
 
 	/* See how many objects the player has */
-	apsObjectList.clear();
+	objectWidgets.apsObjectList.clear();
 	for (BASE_OBJECT *psObj = psObjects; psObj; psObj = psObj->psNext)
 	{
 		if (objSelectFunc(psObj))
 		{
-			apsObjectList.push_back(psObj);
+			objectWidgets.apsObjectList.push_back(psObj);
 		}
 	}
 
-	if (apsObjectList.empty())
+	if (objectWidgets.apsObjectList.empty())
 	{
 		// No objects so close the stats window if it's up...
 		if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
@@ -3609,12 +3614,12 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 		// and return.
 		return false;
 	}
-	psFirst = apsObjectList.front();
+	psFirst = objectWidgets.apsObjectList.front();
 
 	/*if psSelected != NULL then check its in the list of suitable objects for
 	this instance of the interface - this could happen when a structure is upgraded*/
 	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	if (std::find(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), psSelected) == objectWidgets.apsObjectList.end())
 	{
 		//initialise psSelected so gets set up with an iten in the list
 		psSelected = NULL;
@@ -3790,9 +3795,9 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	sAllyResearch.y = 10;
 	sAllyResearch.pDisplay = intDisplayAllyIcon;
 
-	for (unsigned i = 0; i < apsObjectList.size(); ++i)
+	for (unsigned i = 0; i < objectWidgets.apsObjectList.size(); ++i)
 	{
-		BASE_OBJECT *psObj = apsObjectList[i];
+		BASE_OBJECT *psObj = objectWidgets.apsObjectList[i];
 		if (psObj->died != 0)
 		{
 			continue; // Don't add the button if the objects dead.
@@ -4140,8 +4145,8 @@ BASE_OBJECT *human_computer_interface::getObject(uint32_t id)
 	}
 
 	/* Find the object that the ID refers to */
-	ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid button ID %u", id);
-	psObj = apsObjectList[id - IDOBJ_OBJSTART];
+	ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < objectWidgets.apsObjectList.size(), "Invalid button ID %u", id);
+	psObj = objectWidgets.apsObjectList[id - IDOBJ_OBJSTART];
 
 	return psObj;
 }
@@ -4603,7 +4608,7 @@ void human_computer_interface::objectRMBPressed(uint32_t id)
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
 
-	ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid object id");
+	ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < objectWidgets.apsObjectList.size(), "Invalid object id");
 
 	/* Find the object that the ID refers to */
 	psObj = getObject(id);
@@ -4631,7 +4636,7 @@ void human_computer_interface::objStatRMBPressed(uint32_t id)
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
 
-	ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < apsObjectList.size(), "Invalid stat id");
+	ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < objectWidgets.apsObjectList.size(), "Invalid stat id");
 
 	/* Find the object that the ID refers to */
 	psObj = getObject(id);

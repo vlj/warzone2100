@@ -1382,6 +1382,78 @@ struct object_widgets
 
 		return psObj;
 	}
+
+	/** Order the objects in the bottom bar according to their type. */
+	void orderObjectInterface()
+	{
+
+		if (apsObjectList.empty())
+		{
+			//no objects so nothing to order!
+			return;
+		}
+
+		switch (apsObjectList[0]->type)
+		{
+		case OBJ_STRUCTURE:
+			if (StructIsFactory((STRUCTURE *)apsObjectList[0]))
+			{
+				orderFactories();
+			}
+			else if (((STRUCTURE *)apsObjectList[0])->pStructureType->type == REF_RESEARCH)
+			{
+				orderResearch();
+			}
+			break;
+		case OBJ_DROID:
+			orderDroids();
+		default:
+			//nothing to do as yet!
+			break;
+		}
+	}
+
+	/*puts the selected players factories in order - Standard factories 1-5, then
+	cyborg factories 1-5 and then Vtol factories 1-5*/
+	void orderFactories()
+	{
+		std::sort(apsObjectList.begin(), apsObjectList.end(), sortFactoryByTypeFunction);
+	}
+
+	//reorder the research facilities so that first built is first in the list
+	void orderResearch()
+	{
+		std::reverse(apsObjectList.begin(), apsObjectList.end());  // Why reverse this list, instead of sorting it?
+	}
+	// reorder the commanders
+	void orderDroids()
+	{
+		// bubble sort on the ID - first built will always be first in the list
+		std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
+	}
+
+protected:
+	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
+	{
+		return (a == NULL ? 0 : a->id) < (b == NULL ? 0 : b->id);
+	}
+
+
+	static bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
+	{
+		if (a == NULL || b == NULL)
+		{
+			return (a == NULL) < (b == NULL);
+		}
+		STRUCTURE *s = castStructure(a), *t = castStructure(b);
+		ASSERT_OR_RETURN(false, s != NULL && StructIsFactory(s) && t != NULL && StructIsFactory(t), "object is not a factory");
+		FACTORY *x = (FACTORY *)s->pFunctionality, *y = (FACTORY *)t->pFunctionality;
+		if (x->psAssemblyPoint->factoryType != y->psAssemblyPoint->factoryType)
+		{
+			return x->psAssemblyPoint->factoryType < y->psAssemblyPoint->factoryType;
+		}
+		return x->psAssemblyPoint->factoryInc < y->psAssemblyPoint->factoryInc;
+	}
 };
 
 struct human_computer_interface
@@ -1500,9 +1572,6 @@ protected:
 	/* Add the command droid widgets to the widget screen */
 	/* If psSelected != NULL it specifies which droid should be hilited */
 	bool addCommand(DROID *psSelected);
-	/*puts the selected players factories in order - Standard factories 1-5, then
-	cyborg factories 1-5 and then Vtol factories 1-5*/
-	void orderFactories();
 
 	void resetWindows(BASE_OBJECT *psObj);
 	/*Deals with the RMB click for the Object Stats buttons */
@@ -1512,12 +1581,6 @@ protected:
 	void doScreenRefresh();
 	/* Process return codes from the stats screen */
 	void processStats(uint32_t id);
-	//reorder the research facilities so that first built is first in the list
-	void orderResearch();
-	// reorder the commanders
-	void orderDroids();
-	/** Order the objects in the bottom bar according to their type. */
-	void orderObjectInterface();
 	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
 	/*Deals with the RMB click for the Object screen */
@@ -3453,73 +3516,6 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	}
 }
 
-void human_computer_interface::orderResearch()
-{
-	std::reverse(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end());  // Why reverse this list, instead of sorting it?
-}
-
-
-static inline bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
-{
-	return (a == NULL ? 0 : a->id) < (b == NULL ? 0 : b->id);
-}
-
-// reorder the commanders
-void human_computer_interface::orderDroids()
-{
-	// bubble sort on the ID - first built will always be first in the list
-	std::sort(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
-}
-
-static inline bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
-{
-	if (a == NULL || b == NULL)
-	{
-		return (a == NULL) < (b == NULL);
-	}
-	STRUCTURE *s = castStructure(a), *t = castStructure(b);
-	ASSERT_OR_RETURN(false, s != NULL && StructIsFactory(s) && t != NULL && StructIsFactory(t), "object is not a factory");
-	FACTORY *x = (FACTORY *)s->pFunctionality, *y = (FACTORY *)t->pFunctionality;
-	if (x->psAssemblyPoint->factoryType != y->psAssemblyPoint->factoryType)
-	{
-		return x->psAssemblyPoint->factoryType < y->psAssemblyPoint->factoryType;
-	}
-	return x->psAssemblyPoint->factoryInc < y->psAssemblyPoint->factoryInc;
-}
-
-void human_computer_interface::orderFactories()
-{
-	std::sort(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), sortFactoryByTypeFunction);
-}
-
-void human_computer_interface::orderObjectInterface()
-{
-	if (objectWidgets.apsObjectList.empty())
-	{
-		//no objects so nothing to order!
-		return;
-	}
-
-	switch (objectWidgets.apsObjectList[0]->type)
-	{
-	case OBJ_STRUCTURE:
-		if (StructIsFactory((STRUCTURE *)objectWidgets.apsObjectList[0]))
-		{
-			orderFactories();
-		}
-		else if (((STRUCTURE *)objectWidgets.apsObjectList[0])->pStructureType->type == REF_RESEARCH)
-		{
-			orderResearch();
-		}
-		break;
-	case OBJ_DROID:
-		orderDroids();
-	default:
-		//nothing to do as yet!
-		break;
-	}
-}
-
 unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
 {
 	objectWidgets.apsObjectList.clear();
@@ -3532,7 +3528,7 @@ unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psB
 		}
 	}
 	// order the list
-	orderFactories();
+	objectWidgets.orderFactories();
 	// now look thru the list to see which one corresponds to the factory that has just finished
 	return std::find(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
 }
@@ -3643,7 +3639,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	}
 
 	//order the objects according to what they are
-	orderObjectInterface();
+	objectWidgets.orderObjectInterface();
 
 	// set the selected object if necessary
 	if (psSelected == NULL)

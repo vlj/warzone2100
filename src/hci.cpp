@@ -1302,6 +1302,12 @@ struct option_widgets
 
 		return true;
 	}
+
+	/* Remove the options widgets from the widget screen */
+	void removeOptions()
+	{
+		widgDelete(psWScreen, IDOPT_FORM);
+	}
 };
 
 struct human_computer_interface
@@ -1711,12 +1717,6 @@ void human_computer_interface::doScreenRefresh()
 	refreshPending = false;
 }
 
-/* Remove the options widgets from the widget screen */
-static void intRemoveOptions(void)
-{
-	widgDelete(psWScreen, IDOPT_FORM);
-}
-
 /* Reset the widget screen to just the reticule */
 void human_computer_interface::resetScreen(bool NoAnim)
 {
@@ -1734,7 +1734,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	switch (intMode)
 	{
 	case INT_OPTION:
-		intRemoveOptions();
+		options.removeOptions();
 		break;
 	case INT_EDITSTAT:
 		stopStructPosition();
@@ -1889,7 +1889,7 @@ void human_computer_interface::processOptions(uint32_t id)
 		{
 		/* The add object buttons */
 		case IDOPT_DROID:
-			intRemoveOptions();
+			options.removeOptions();
 			apsTemplateList.clear();
 			for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
 			{
@@ -1903,7 +1903,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			editPosMode = IED_NOPOS;
 			break;
 		case IDOPT_STRUCT:
-			intRemoveOptions();
+			options.removeOptions();
 			for (unsigned i = 0; i < std::min<unsigned>(numStructureStats, MAXSTRUCTURES); ++i)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
@@ -1916,7 +1916,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			editPosMode = IED_NOPOS;
 			break;
 		case IDOPT_FEATURE:
-			intRemoveOptions();
+			options.removeOptions();
 			for (unsigned i = 0; i < std::min<unsigned>(numFeatureStats, MAXFEATURES); ++i)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
@@ -1929,7 +1929,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			break;
 		/* Close window buttons */
 		case IDOPT_CLOSE:
-			intRemoveOptions();
+			options.removeOptions();
 			intMode = INT_NORMAL;
 			break;
 		/* Ignore these */

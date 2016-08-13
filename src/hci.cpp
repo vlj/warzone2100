@@ -1638,6 +1638,8 @@ protected:
 	*/
 	bool addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
 
+	void selectObject(BASE_OBJECT * &psSelected, BASE_OBJECT * psFirst);
+
 	bool updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
 	/* Add the build widgets to the widget screen */
 	/* If psSelected != NULL it specifies which droid should be hilited */
@@ -3683,9 +3685,6 @@ void human_computer_interface::alliedResearchChanged()
 
 bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
-
-
-
 	// Is the form already up?
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
 	{
@@ -3725,69 +3724,21 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	if (std::find(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), psSelected) == objectWidgets.apsObjectList.end())
 	{
 		//initialise psSelected so gets set up with an iten in the list
-		psSelected = NULL;
+		psSelected = nullptr;
 	}
 
 	//order the objects according to what they are
 	objectWidgets.orderObjectInterface();
 
 	// set the selected object if necessary
-	if (psSelected == NULL)
+	if (psSelected == nullptr)
 	{
 		//first check if there is an object selected of the required type
-		switch (objectWidgets.objMode)
-		{
-		case IOBJ_RESEARCH:
-			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_RESEARCH);
-			break;
-		case IOBJ_MANUFACTURE:
-			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_FACTORY);
-			//if haven't got a Factory, check for specific types of factory
-			if (!psSelected)
-			{
-				psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_CYBORG_FACTORY);
-			}
-			if (!psSelected)
-			{
-				psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_VTOL_FACTORY);
-			}
-			break;
-		case IOBJ_BUILD:
-			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
-			if (!psSelected)
-			{
-				psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
-			}
-			break;
-		case IOBJ_COMMAND:
-			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_COMMAND);
-			break;
-		default:
-			break;
-		}
-		if (!psSelected)
-		{
-			if (objectWidgets.apsPreviousObj[objectWidgets.objMode]
-			    && objectWidgets.apsPreviousObj[objectWidgets.objMode]->player == selectedPlayer)
-			{
-				psSelected = objectWidgets.apsPreviousObj[objectWidgets.objMode];
-				//it is possible for a structure to change status - building of modules
-				if (psSelected->type == OBJ_STRUCTURE
-				    && ((STRUCTURE *)psSelected)->status != SS_BUILT)
-				{
-					//structure not complete so just set selected to the first valid object
-					psSelected = psFirst;
-				}
-			}
-			else
-			{
-				psSelected = psFirst;
-			}
-		}
+		selectObject(psSelected, psFirst);
 	}
 
 	/* Reset the current object and store the current list */
-	objectWidgets.psObjSelected = NULL;
+	objectWidgets.psObjSelected = nullptr;
 
 	WIDGET *parent = psWScreen->psForm;
 
@@ -4198,6 +4149,59 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	}
 
 	return true;
+}
+
+void human_computer_interface::selectObject(BASE_OBJECT * &psSelected, BASE_OBJECT * psFirst)
+{
+	switch (objectWidgets.objMode)
+	{
+	case IOBJ_RESEARCH:
+		psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_RESEARCH);
+		break;
+	case IOBJ_MANUFACTURE:
+		psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_FACTORY);
+		//if haven't got a Factory, check for specific types of factory
+		if (!psSelected)
+		{
+			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_CYBORG_FACTORY);
+		}
+		if (!psSelected)
+		{
+			psSelected = (BASE_OBJECT *)objectWidgets.checkForStructure(REF_VTOL_FACTORY);
+		}
+		break;
+	case IOBJ_BUILD:
+		psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
+		if (!psSelected)
+		{
+			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+		}
+		break;
+	case IOBJ_COMMAND:
+		psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_COMMAND);
+		break;
+	default:
+		break;
+	}
+	if (!psSelected)
+	{
+		if (objectWidgets.apsPreviousObj[objectWidgets.objMode]
+			&& objectWidgets.apsPreviousObj[objectWidgets.objMode]->player == selectedPlayer)
+		{
+			psSelected = objectWidgets.apsPreviousObj[objectWidgets.objMode];
+			//it is possible for a structure to change status - building of modules
+			if (psSelected->type == OBJ_STRUCTURE
+				&& ((STRUCTURE *)psSelected)->status != SS_BUILT)
+			{
+				//structure not complete so just set selected to the first valid object
+				psSelected = psFirst;
+			}
+		}
+		else
+		{
+			psSelected = psFirst;
+		}
+	}
 }
 
 

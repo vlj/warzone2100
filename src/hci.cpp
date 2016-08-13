@@ -1338,6 +1338,8 @@ struct object_widgets
 	/* Whether the objects that are on the object screen have changed this frame */
 	bool objectsChanged;
 	_obj_mode objMode;
+	/* The jump position for each object on the base bar */
+	std::vector<Vector2i> asJumpPos;
 
 	statistics stats;
 
@@ -1625,6 +1627,75 @@ struct object_widgets
 		}
 	}
 
+	void onObjectLeftMousePressed(uint32_t id)
+	{
+		/* An object button has been pressed */
+		/* Find the object that the ID refers to */
+		BASE_OBJECT *psObj = getObject(id);
+		if (!psObj)
+		{
+			return;
+		}
+		if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
+		{
+			/* Deselect old buildings */
+			for (STRUCTURE *psStruct = apsStructLists[selectedPlayer]; psStruct; psStruct = psStruct->psNext)
+			{
+				psStruct->selected = false;
+			}
+
+			/* Select new one */
+			((STRUCTURE *)psObj)->selected = true;
+			triggerEventSelected();
+		}
+
+		if (!driveModeActive())
+		{
+			// don't do this if offWorld and a structure object has been selected
+			if (!(psObj->type == OBJ_STRUCTURE && offWorldKeepLists))
+			{
+				// set the map position - either the object position, or the position jumped from
+				int32_t butIndex = id - IDOBJ_OBJSTART;
+				if (butIndex >= 0 && butIndex <= IDOBJ_OBJEND - IDOBJ_OBJSTART)
+				{
+					asJumpPos.resize(IDOBJ_OBJEND - IDOBJ_OBJSTART, Vector2i(0, 0));
+					if (((asJumpPos[butIndex].x == 0) && (asJumpPos[butIndex].y == 0)) ||
+						!DrawnInLastFrame((SDWORD)psObj->sDisplay.frameNumber) ||
+						((psObj->sDisplay.screenX > pie_GetVideoBufferWidth()) ||
+						(psObj->sDisplay.screenY > pie_GetVideoBufferHeight())))
+					{
+						asJumpPos[butIndex] = getPlayerPos();
+						setPlayerPos(psObj->pos.x, psObj->pos.y);
+						if (getWarCamStatus())
+						{
+							camToggleStatus();
+						}
+					}
+					else
+					{
+						setPlayerPos(asJumpPos[butIndex].x, asJumpPos[butIndex].y);
+						if (getWarCamStatus())
+						{
+							camToggleStatus();
+						}
+						asJumpPos[butIndex].x = 0;
+						asJumpPos[butIndex].y = 0;
+					}
+				}
+			}
+		}
+
+		static_reset_windows(psObj);
+
+		// If a construction droid button was clicked then
+		// clear all other selections and select it.
+		if (psObj->type == OBJ_DROID)
+		{
+			intSelectDroid(psObj);
+			psObjSelected = psObj;
+		}
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1716,8 +1787,6 @@ protected:
 	std::array<UWORD, MAXRESEARCH> pSList;
 	/* Store a list of Feature pointers for features to be placed on the map */
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
-	/* The jump position for each object on the base bar */
-	std::vector<Vector2i> asJumpPos;
 	bool refreshPending = false;
 	bool refreshing = false;
 
@@ -1745,7 +1814,6 @@ protected:
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
 	/* Process return codes from the object screen */
 	void processObject(uint32_t id);
-	void onObjectLeftMousePressed(uint32_t id);
 	/* Add the object screen widgets to the widget screen.
 	* select is a pointer to a function that returns true when the object is
 	* to be added to the screen.
@@ -3076,7 +3144,7 @@ void human_computer_interface::processObject(uint32_t id)
 			return;
 		}
 		/* deal with LMB clicks */
-		onObjectLeftMousePressed(id);
+		objectWidgets.onObjectLeftMousePressed(id);
 		return;
 	}
 
@@ -3109,75 +3177,6 @@ void human_computer_interface::processObject(uint32_t id)
 	else  if (id != IDOBJ_TABFORM)
 	{
 		intProcessOrder(id);
-	}
-}
-
-void human_computer_interface::onObjectLeftMousePressed(uint32_t id)
-{
-	/* An object button has been pressed */
-	/* Find the object that the ID refers to */
-	BASE_OBJECT *psObj = objectWidgets.getObject(id);
-	if (!psObj)
-	{
-		return;
-	}
-	if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
-	{
-		/* Deselect old buildings */
-		for (STRUCTURE *psStruct = apsStructLists[selectedPlayer]; psStruct; psStruct = psStruct->psNext)
-		{
-			psStruct->selected = false;
-		}
-
-		/* Select new one */
-		((STRUCTURE *)psObj)->selected = true;
-		triggerEventSelected();
-	}
-
-	if (!driveModeActive())
-	{
-		// don't do this if offWorld and a structure object has been selected
-		if (!(psObj->type == OBJ_STRUCTURE && offWorldKeepLists))
-		{
-			// set the map position - either the object position, or the position jumped from
-			int32_t butIndex = id - IDOBJ_OBJSTART;
-			if (butIndex >= 0 && butIndex <= IDOBJ_OBJEND - IDOBJ_OBJSTART)
-			{
-				asJumpPos.resize(IDOBJ_OBJEND - IDOBJ_OBJSTART, Vector2i(0, 0));
-				if (((asJumpPos[butIndex].x == 0) && (asJumpPos[butIndex].y == 0)) ||
-					!DrawnInLastFrame((SDWORD)psObj->sDisplay.frameNumber) ||
-					((psObj->sDisplay.screenX > pie_GetVideoBufferWidth()) ||
-					(psObj->sDisplay.screenY > pie_GetVideoBufferHeight())))
-				{
-					asJumpPos[butIndex] = getPlayerPos();
-					setPlayerPos(psObj->pos.x, psObj->pos.y);
-					if (getWarCamStatus())
-					{
-						camToggleStatus();
-					}
-				}
-				else
-				{
-					setPlayerPos(asJumpPos[butIndex].x, asJumpPos[butIndex].y);
-					if (getWarCamStatus())
-					{
-						camToggleStatus();
-					}
-					asJumpPos[butIndex].x = 0;
-					asJumpPos[butIndex].y = 0;
-				}
-			}
-		}
-	}
-
-	resetWindows(psObj);
-
-	// If a construction droid button was clicked then
-	// clear all other selections and select it.
-	if (psObj->type == OBJ_DROID)
-	{
-		intSelectDroid(psObj);
-		objectWidgets.psObjSelected = psObj;
 	}
 }
 
@@ -3754,7 +3753,7 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	else
 	{
 		// reset the object position array
-		asJumpPos.clear();
+		objectWidgets.asJumpPos.clear();
 	}
 
 	/* See how many objects the player has */

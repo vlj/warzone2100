@@ -1130,6 +1130,180 @@ protected:
 	}
 };
 
+struct option_widgets
+{
+	/* Add the options widgets to the widget screen */
+	bool addOptions()
+	{
+		/* Add the option form */
+		W_FORMINIT sFormInit;
+		sFormInit.formID = 0;
+		sFormInit.id = IDOPT_FORM;
+		sFormInit.style = WFORM_PLAIN;
+		sFormInit.x = OPT_X;
+		sFormInit.y = OPT_Y;
+		sFormInit.width = OPT_WIDTH;
+		sFormInit.height = OPT_HEIGHT;
+		if (!widgAddForm(psWScreen, &sFormInit))
+		{
+			return false;
+		}
+
+		// set the interface mode
+		intMode = INT_OPTION;
+
+		/* Add the Option screen label */
+		W_LABINIT sLabInit;
+		sLabInit.formID = IDOPT_FORM;
+		sLabInit.id = IDOPT_LABEL;
+		sLabInit.x = OPT_GAP;
+		sLabInit.y = OPT_GAP;
+		sLabInit.width = OPT_BUTWIDTH;
+		sLabInit.height = OPT_BUTHEIGHT;
+		sLabInit.pText = _("Options");
+		if (!widgAddLabel(psWScreen, &sLabInit))
+		{
+			return false;
+		}
+
+		/* Add the close box */
+		W_BUTINIT sButInit;
+		sButInit.formID = IDOPT_FORM;
+		sButInit.id = IDOPT_CLOSE;
+		sButInit.x = OPT_WIDTH - OPT_GAP - CLOSE_SIZE;
+		sButInit.y = OPT_GAP;
+		sButInit.width = CLOSE_SIZE;
+		sButInit.height = CLOSE_SIZE;
+		sButInit.pText = pCloseText.data();
+		sButInit.pTip = _("Close");
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			return false;
+		}
+
+		/* Add the add object buttons */
+		sButInit.id = IDOPT_DROID;
+		sButInit.width = OPT_BUTWIDTH;
+		sButInit.height = OPT_BUTHEIGHT;
+		sButInit.x = OPT_GAP;
+		sButInit.y = OPT_EDITY;
+		sButInit.pText = _("Unit");
+		sButInit.pTip = _("Place Unit on map");
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			return false;
+		}
+
+		sButInit.id = IDOPT_STRUCT;
+		sButInit.x += OPT_GAP + OPT_BUTWIDTH;
+		sButInit.pText = _("Struct");
+		sButInit.pTip = _("Place Structures on map");
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			return false;
+		}
+
+		sButInit.id = IDOPT_FEATURE;
+		sButInit.x += OPT_GAP + OPT_BUTWIDTH;
+		sButInit.pText = _("Feat");
+		sButInit.pTip = _("Place Features on map");
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			return false;
+		}
+		if (NetPlay.bComms)
+		{
+			widgSetButtonState(psWScreen, sButInit.id, WBUT_DISABLE);
+		}
+
+		/* Add the quit button */
+		sButInit.formID = IDOPT_FORM;
+		sButInit.id = IDOPT_QUIT;
+		sButInit.x = OPT_GAP;
+		sButInit.y = OPT_HEIGHT - OPT_GAP - OPT_BUTHEIGHT;
+		sButInit.width = OPT_WIDTH - OPT_GAP * 2;
+		sButInit.height = OPT_BUTHEIGHT;
+		sButInit.pText = _("Quit");
+		sButInit.pTip = _("Exit Game");
+		int quitButtonY = sButInit.y - OPT_GAP;
+		if (!widgAddButton(psWScreen, &sButInit))
+		{
+			return false;
+		}
+
+		/* Add the player form */
+		sFormInit.formID = IDOPT_FORM;
+		sFormInit.id = IDOPT_PLAYERFORM;
+		sFormInit.style = WFORM_PLAIN;
+		sFormInit.x = OPT_GAP;
+		sFormInit.y = OPT_PLAYERY;
+		sFormInit.width = OPT_WIDTH - OPT_GAP * 2;
+		sFormInit.height = (OPT_BUTHEIGHT + OPT_GAP) * (1 + (MAX_PLAYERS + 3) / 4) + OPT_GAP;
+		int nextFormY = sFormInit.y + sFormInit.height + OPT_GAP;
+		if (!widgAddForm(psWScreen, &sFormInit))
+		{
+			return false;
+		}
+
+		/* Add the player label */
+		sLabInit.formID = IDOPT_PLAYERFORM;
+		sLabInit.id = IDOPT_PLAYERLABEL;
+		sLabInit.x = OPT_GAP;
+		sLabInit.y = OPT_GAP;
+		sLabInit.pText = _("Current Player:");
+		if (!widgAddLabel(psWScreen, &sLabInit))
+		{
+			return false;
+		}
+
+		/* Add the player buttons */
+		sButInit.formID = IDOPT_PLAYERFORM;
+		sButInit.id = IDOPT_PLAYERSTART;
+		sButInit.x = OPT_GAP;
+		sButInit.y = OPT_BUTHEIGHT + OPT_GAP * 2;
+		sButInit.width = OPT_BUTWIDTH;
+		sButInit.height = OPT_BUTHEIGHT;
+		for (uint32_t player = 0; player < MAX_PLAYERS; player++)
+		{
+			sButInit.pText = apPlayerText[player].data();
+			sButInit.pTip = apPlayerTip[player].data();
+			if (!widgAddButton(psWScreen, &sButInit))
+			{
+				return false;
+			}
+			if (NetPlay.bComms)
+			{
+				widgSetButtonState(psWScreen, sButInit.id, WBUT_DISABLE);
+			}
+			/* Update the initialisation structure for the next button */
+			sButInit.id += 1;
+			sButInit.x += OPT_BUTWIDTH + OPT_GAP;
+			if (sButInit.x + OPT_BUTWIDTH + OPT_GAP > OPT_WIDTH - OPT_GAP * 2)
+			{
+				sButInit.x = OPT_GAP;
+				sButInit.y += OPT_BUTHEIGHT + OPT_GAP;
+			}
+		}
+
+		/* Add iViS form */
+		sFormInit.formID = IDOPT_FORM;
+		sFormInit.id = IDOPT_IVISFORM;
+		sFormInit.style = WFORM_PLAIN;
+		sFormInit.x = OPT_GAP;
+		sFormInit.y = nextFormY;  //OPT_PLAYERY + OPT_BUTHEIGHT * 3 + OPT_GAP * 5;
+		sFormInit.width = OPT_WIDTH - OPT_GAP * 2;
+		sFormInit.height = quitButtonY - nextFormY;  //OPT_BUTHEIGHT * 3 + OPT_GAP * 4;
+		if (!widgAddForm(psWScreen, &sFormInit))
+		{
+			return false;
+		}
+
+		widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, WBUT_LOCK);
+
+		return true;
+	}
+};
+
 struct human_computer_interface
 {
 	human_computer_interface();
@@ -1138,6 +1312,7 @@ struct human_computer_interface
 	reticule_widgets reticule;
 	powerbar_widgets powerbar;
 	statistics stats;
+	option_widgets options;
 
 	void update();
 	void displayWidgets();
@@ -1161,7 +1336,6 @@ struct human_computer_interface
 	void addIntelScreen();
 	void resetScreen(bool NoAnim);
 	void refreshScreen();
-	bool addOptions();
 	STRUCTURE *interfaceStructList();
 	void addTransporterInterface(DROID *psSelected, bool onMission);
 	void alliedResearchChanged();
@@ -1987,7 +2161,7 @@ INT_RETVAL human_computer_interface::display()
 
 		case IDRET_OPTIONS:
 			resetScreen(false);
-			(void)addOptions();
+			(void)options.addOptions();
 			intMode = INT_OPTION;
 			break;
 
@@ -3393,180 +3567,6 @@ void human_computer_interface::alliedResearchChanged()
 	{
 		refreshScreen();
 	}
-}
-
-/* Add the options widgets to the widget screen */
-bool human_computer_interface::addOptions()
-{
-	W_FORMINIT	sFormInit;
-	W_BUTINIT	sButInit;
-	W_LABINIT	sLabInit;
-	UDWORD		player;
-
-	/* Add the option form */
-
-	sFormInit.formID = 0;
-	sFormInit.id = IDOPT_FORM;
-	sFormInit.style = WFORM_PLAIN;
-	sFormInit.x = OPT_X;
-	sFormInit.y = OPT_Y;
-	sFormInit.width = OPT_WIDTH;
-	sFormInit.height = OPT_HEIGHT;
-	if (!widgAddForm(psWScreen, &sFormInit))
-	{
-		return false;
-	}
-
-	// set the interface mode
-	intMode = INT_OPTION;
-
-	/* Add the Option screen label */
-	sLabInit.formID = IDOPT_FORM;
-	sLabInit.id = IDOPT_LABEL;
-	sLabInit.x = OPT_GAP;
-	sLabInit.y = OPT_GAP;
-	sLabInit.width = OPT_BUTWIDTH;
-	sLabInit.height = OPT_BUTHEIGHT;
-	sLabInit.pText = _("Options");
-	if (!widgAddLabel(psWScreen, &sLabInit))
-	{
-		return false;
-	}
-
-	/* Add the close box */
-	sButInit.formID = IDOPT_FORM;
-	sButInit.id = IDOPT_CLOSE;
-	sButInit.x = OPT_WIDTH - OPT_GAP - CLOSE_SIZE;
-	sButInit.y = OPT_GAP;
-	sButInit.width = CLOSE_SIZE;
-	sButInit.height = CLOSE_SIZE;
-	sButInit.pText = pCloseText.data();
-	sButInit.pTip = _("Close");
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		return false;
-	}
-
-	/* Add the add object buttons */
-	sButInit.id = IDOPT_DROID;
-	sButInit.width = OPT_BUTWIDTH;
-	sButInit.height = OPT_BUTHEIGHT;
-	sButInit.x = OPT_GAP;
-	sButInit.y = OPT_EDITY;
-	sButInit.pText = _("Unit");
-	sButInit.pTip = _("Place Unit on map");
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		return false;
-	}
-
-	sButInit.id = IDOPT_STRUCT;
-	sButInit.x += OPT_GAP + OPT_BUTWIDTH;
-	sButInit.pText = _("Struct");
-	sButInit.pTip = _("Place Structures on map");
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		return false;
-	}
-
-	sButInit.id = IDOPT_FEATURE;
-	sButInit.x += OPT_GAP + OPT_BUTWIDTH;
-	sButInit.pText = _("Feat");
-	sButInit.pTip = _("Place Features on map");
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		return false;
-	}
-	if (NetPlay.bComms)
-	{
-		widgSetButtonState(psWScreen, sButInit.id, WBUT_DISABLE);
-	}
-
-	/* Add the quit button */
-	sButInit.formID = IDOPT_FORM;
-	sButInit.id = IDOPT_QUIT;
-	sButInit.x = OPT_GAP;
-	sButInit.y = OPT_HEIGHT - OPT_GAP - OPT_BUTHEIGHT;
-	sButInit.width = OPT_WIDTH - OPT_GAP * 2;
-	sButInit.height = OPT_BUTHEIGHT;
-	sButInit.pText = _("Quit");
-	sButInit.pTip = _("Exit Game");
-	int quitButtonY = sButInit.y - OPT_GAP;
-	if (!widgAddButton(psWScreen, &sButInit))
-	{
-		return false;
-	}
-
-	/* Add the player form */
-	sFormInit.formID = IDOPT_FORM;
-	sFormInit.id = IDOPT_PLAYERFORM;
-	sFormInit.style = WFORM_PLAIN;
-	sFormInit.x = OPT_GAP;
-	sFormInit.y = OPT_PLAYERY;
-	sFormInit.width = OPT_WIDTH - OPT_GAP * 2;
-	sFormInit.height = (OPT_BUTHEIGHT + OPT_GAP) * (1 + (MAX_PLAYERS + 3) / 4) + OPT_GAP;
-	int nextFormY = sFormInit.y + sFormInit.height + OPT_GAP;
-	if (!widgAddForm(psWScreen, &sFormInit))
-	{
-		return false;
-	}
-
-	/* Add the player label */
-	sLabInit.formID = IDOPT_PLAYERFORM;
-	sLabInit.id = IDOPT_PLAYERLABEL;
-	sLabInit.x = OPT_GAP;
-	sLabInit.y = OPT_GAP;
-	sLabInit.pText = _("Current Player:");
-	if (!widgAddLabel(psWScreen, &sLabInit))
-	{
-		return false;
-	}
-
-	/* Add the player buttons */
-	sButInit.formID = IDOPT_PLAYERFORM;
-	sButInit.id = IDOPT_PLAYERSTART;
-	sButInit.x = OPT_GAP;
-	sButInit.y = OPT_BUTHEIGHT + OPT_GAP * 2;
-	sButInit.width = OPT_BUTWIDTH;
-	sButInit.height = OPT_BUTHEIGHT;
-	for (player = 0; player < MAX_PLAYERS; player++)
-	{
-		sButInit.pText = apPlayerText[player].data();
-		sButInit.pTip = apPlayerTip[player].data();
-		if (!widgAddButton(psWScreen, &sButInit))
-		{
-			return false;
-		}
-		if (NetPlay.bComms)
-		{
-			widgSetButtonState(psWScreen, sButInit.id, WBUT_DISABLE);
-		}
-		/* Update the initialisation structure for the next button */
-		sButInit.id += 1;
-		sButInit.x += OPT_BUTWIDTH + OPT_GAP;
-		if (sButInit.x + OPT_BUTWIDTH + OPT_GAP > OPT_WIDTH - OPT_GAP * 2)
-		{
-			sButInit.x = OPT_GAP;
-			sButInit.y += OPT_BUTHEIGHT + OPT_GAP;
-		}
-	}
-
-	/* Add iViS form */
-	sFormInit.formID = IDOPT_FORM;
-	sFormInit.id = IDOPT_IVISFORM;
-	sFormInit.style = WFORM_PLAIN;
-	sFormInit.x = OPT_GAP;
-	sFormInit.y = nextFormY;  //OPT_PLAYERY + OPT_BUTHEIGHT * 3 + OPT_GAP * 5;
-	sFormInit.width = OPT_WIDTH - OPT_GAP * 2;
-	sFormInit.height = quitButtonY - nextFormY;  //OPT_BUTHEIGHT * 3 + OPT_GAP * 4;
-	if (!widgAddForm(psWScreen, &sFormInit))
-	{
-		return false;
-	}
-
-	widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, WBUT_LOCK);
-
-	return true;
 }
 
 bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
@@ -5393,7 +5393,7 @@ bool intAddPower()
 
 bool intAddOptions(void)
 {
-	return default_hci->addOptions();
+	return default_hci->options.addOptions();
 }
 
 void intRemoveStats(void)

@@ -1362,6 +1362,26 @@ struct object_widgets
 			objMode = IOBJ_NONE;
 		}
 	}
+
+	/**
+	* Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
+	*/
+	BASE_OBJECT *getObject(uint32_t id)
+	{
+		BASE_OBJECT		*psObj;
+
+		/* If this is a stats button, find the object button linked to it */
+		if (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)
+		{
+			id = IDOBJ_OBJSTART + id - IDOBJ_STATSTART;
+		}
+
+		/* Find the object that the ID refers to */
+		ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid button ID %u", id);
+		psObj = apsObjectList[id - IDOBJ_OBJSTART];
+
+		return psObj;
+	}
 };
 
 struct human_computer_interface
@@ -1500,10 +1520,6 @@ protected:
 	void orderObjectInterface();
 	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
-	/**
-	* Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
-	*/
-	BASE_OBJECT *getObject(uint32_t id);
 	/*Deals with the RMB click for the Object screen */
 	void objectRMBPressed(uint32_t id);
 	/*Deals with the RMB click for the stats screen */
@@ -2772,7 +2788,7 @@ void human_computer_interface::processObject(uint32_t id)
 	     (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
 	{
 		/* Find the object that the ID refers to */
-		psObj = getObject(id);
+		psObj = objectWidgets.getObject(id);
 		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
 		{
 			statButID = IDOBJ_STATSTART + id - IDOBJ_OBJSTART;
@@ -2822,7 +2838,7 @@ void human_computer_interface::processObject(uint32_t id)
 		{
 			/* An object button has been pressed */
 			/* Find the object that the ID refers to */
-			psObj = getObject(id);
+			psObj = objectWidgets.getObject(id);
 			if (!psObj)
 			{
 				return;
@@ -2900,7 +2916,7 @@ void human_computer_interface::processObject(uint32_t id)
 		else
 		{
 			/* Find the object that the stats ID refers to */
-			psObj = getObject(id);
+			psObj = objectWidgets.getObject(id);
 			ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
 
 			resetWindows(psObj);
@@ -4135,23 +4151,6 @@ void human_computer_interface::removeObjectNoAnim()
 	powerbar.hidePowerBar();
 }
 
-BASE_OBJECT *human_computer_interface::getObject(uint32_t id)
-{
-	BASE_OBJECT		*psObj;
-
-	/* If this is a stats button, find the object button linked to it */
-	if (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)
-	{
-		id = IDOBJ_OBJSTART + id - IDOBJ_STATSTART;
-	}
-
-	/* Find the object that the ID refers to */
-	ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < objectWidgets.apsObjectList.size(), "Invalid button ID %u", id);
-	psObj = objectWidgets.apsObjectList[id - IDOBJ_OBJSTART];
-
-	return psObj;
-}
-
 void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 {
 	/* Update the button on the object screen */
@@ -4182,7 +4181,7 @@ void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 	sBarInit.iRange = GAME_TICKS_PER_SEC;
 	// Setup widget update callback and object pointer so we can update the progress bar.
 	sBarInit.pCallback = intUpdateProgressBar;
-	sBarInit.pUserData = getObject(id);
+	sBarInit.pUserData = objectWidgets.getObject(id);
 
 	W_LABINIT sLabInit;
 	sLabInit.formID = id;
@@ -4197,7 +4196,7 @@ void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 	if (psStats)
 	{
 		statButton->setTip(getName(psStats));
-		statButton->setObjectAndStats(getObject(id), psStats);
+		statButton->setObjectAndStats(objectWidgets.getObject(id), psStats);
 
 		// Add a text label for the size of the production run.
 		sLabInit.pCallback = intUpdateQuantity;
@@ -4219,7 +4218,7 @@ void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 	widgAddLabel(psWScreen, &sLabInit)->setFontColour(WZCOL_ACTION_PRODUCTION_RUN_TEXT);
 	widgAddBarGraph(psWScreen, &sBarInit)->setBackgroundColour(WZCOL_ACTION_PRODUCTION_RUN_BACKGROUND);
 
-	BASE_OBJECT *psObj = getObject(id);
+	BASE_OBJECT *psObj = objectWidgets.getObject(id);
 	if (psObj && psObj->selected)
 	{
 		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
@@ -4612,7 +4611,7 @@ void human_computer_interface::objectRMBPressed(uint32_t id)
 	ASSERT_OR_RETURN(, id - IDOBJ_OBJSTART < objectWidgets.apsObjectList.size(), "Invalid object id");
 
 	/* Find the object that the ID refers to */
-	psObj = getObject(id);
+	psObj = objectWidgets.getObject(id);
 	if (psObj)
 	{
 		//don't jump around when offworld
@@ -4640,7 +4639,7 @@ void human_computer_interface::objStatRMBPressed(uint32_t id)
 	ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < objectWidgets.apsObjectList.size(), "Invalid stat id");
 
 	/* Find the object that the ID refers to */
-	psObj = getObject(id);
+	psObj = objectWidgets.getObject(id);
 	if (!psObj)
 	{
 		return;

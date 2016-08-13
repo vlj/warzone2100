@@ -1705,6 +1705,34 @@ struct object_widgets
 		}
 	}
 
+	/* Remove the build widgets from the widget screen */
+	void removeObject()
+	{
+		widgDelete(psWScreen, IDOBJ_TABFORM);
+		widgDelete(psWScreen, IDOBJ_CLOSE);
+
+		// Start the window close animation.
+		IntFormAnimated *Form = (IntFormAnimated *)widgGetFromID(psWScreen, IDOBJ_FORM);
+		if (Form)
+		{
+			Form->closeAnimateDelete();
+		}
+
+		if (bInTutorial)
+		{
+			debug(LOG_NEVER, "Go with object close callback!");
+			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_OBJECTCLOSE);
+		}
+	}
+
+	/* Remove the build widgets from the widget screen */
+	void removeObjectNoAnim()
+	{
+		widgDelete(psWScreen, IDOBJ_TABFORM);
+		widgDelete(psWScreen, IDOBJ_CLOSE);
+		widgDelete(psWScreen, IDOBJ_FORM);
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1864,10 +1892,6 @@ protected:
 	void processEditStats(uint32_t id);
 	/* Set the stats for a construction droid */
 	bool setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
-	/* Remove the build widgets from the widget screen */
-	void removeObject();
-	/* Remove the build widgets from the widget screen */
-	void removeObjectNoAnim();
 	/* Set the stats for a research facility */
 	bool setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats);
 	/* Stop looking for a structure location */
@@ -2129,23 +2153,27 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		stopStructPosition();
 		if (NoAnim)
 		{
-			removeObjectNoAnim();
+			objectWidgets.removeObjectNoAnim();
+			powerbar.hidePowerBar();
 		}
 		else
 		{
-			removeObject();
+			objectWidgets.removeObject();
+			powerbar.hidePowerBar();
 		}
 		break;
 	case INT_STAT:
 		if (NoAnim)
 		{
 			objectWidgets.stats.removeStatsNoAnim();
-			removeObjectNoAnim();
+			objectWidgets.removeObjectNoAnim();
+			powerbar.hidePowerBar();
 		}
 		else
 		{
 			objectWidgets.stats.removeStats();
-			removeObject();
+			objectWidgets.removeObject();
+			powerbar.hidePowerBar();
 		}
 		break;
 
@@ -2153,12 +2181,14 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		if (NoAnim)
 		{
 			intRemoveOrderNoAnim();
-			removeObjectNoAnim();
+			objectWidgets.removeObjectNoAnim();
+			powerbar.hidePowerBar();
 		}
 		else
 		{
 			intRemoveOrder();
-			removeObject();
+			objectWidgets.removeObject();
+			powerbar.hidePowerBar();
 		}
 		break;
 	case INT_ORDER:
@@ -2908,7 +2938,8 @@ void human_computer_interface::handleObjectChanges()
 
 			/* Remove the old screen */
 			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-			removeObject();
+			objectWidgets.removeObject();
+			powerbar.hidePowerBar();
 
 			/* Add the new screen */
 			switch (objectWidgets.objMode)
@@ -3424,10 +3455,12 @@ void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
 			}
 			driveDisableTactical();
 			driveStartBuild();
-			removeObject();
+			objectWidgets.removeObject();
+			powerbar.hidePowerBar();
 		}
 
-		removeObject();
+		objectWidgets.removeObject();
+		powerbar.hidePowerBar();
 		// hack to stop the stats window re-opening in demolish mode
 		if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 		{
@@ -3755,7 +3788,8 @@ bool human_computer_interface::addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJE
 	// Is the form already up?
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
 	{
-		removeObjectNoAnim();
+		objectWidgets.removeObjectNoAnim();
+		powerbar.hidePowerBar();
 	}
 	else
 	{
@@ -4278,37 +4312,6 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	objectWidgets.stats.removeIfDied();
 
 	return true;
-}
-
-/* Remove the build widgets from the widget screen */
-void human_computer_interface::removeObject()
-{
-	widgDelete(psWScreen, IDOBJ_TABFORM);
-	widgDelete(psWScreen, IDOBJ_CLOSE);
-
-	// Start the window close animation.
-	IntFormAnimated *Form = (IntFormAnimated *)widgGetFromID(psWScreen, IDOBJ_FORM);
-	if (Form)
-	{
-		Form->closeAnimateDelete();
-	}
-
-	powerbar.hidePowerBar();
-
-	if (bInTutorial)
-	{
-		debug(LOG_NEVER, "Go with object close callback!");
-		eventFireCallbackTrigger((TRIGGER_TYPE)CALL_OBJECTCLOSE);
-	}
-}
-
-void human_computer_interface::removeObjectNoAnim()
-{
-	widgDelete(psWScreen, IDOBJ_TABFORM);
-	widgDelete(psWScreen, IDOBJ_CLOSE);
-	widgDelete(psWScreen, IDOBJ_FORM);
-
-	powerbar.hidePowerBar();
 }
 
 void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)

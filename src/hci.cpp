@@ -581,6 +581,47 @@ struct reticule_widgets
 		}
 	}
 
+	std::function<void(void)> optionClickHandler;
+	std::function<void(void)> commandClickHandler;
+	std::function<void(void)> buildClickHandler;
+	std::function<void(void)> manufactureClickHandler;
+	std::function<void(void)> researchClickHandler;
+	std::function<void(void)> intelClickHandler;
+	std::function<void(void)> designClickHandler;
+	std::function<void(void)> cancelClickHandler;
+
+	void dispatchMouseClickEvent(unsigned int retID)
+	{
+		switch (retID)
+		{
+			/*****************  Reticule buttons  *****************/
+		case IDRET_OPTIONS:
+			optionClickHandler();
+			return;
+		case IDRET_COMMAND:
+			commandClickHandler();
+			return;
+		case IDRET_BUILD:
+			buildClickHandler();
+			return;
+		case IDRET_MANUFACTURE:
+			buildClickHandler();
+			return;
+		case IDRET_RESEARCH:
+			researchClickHandler();
+			return;
+		case IDRET_INTEL_MAP:
+			intelClickHandler();
+			return;
+		case IDRET_DESIGN:
+			designClickHandler();
+			return;
+		case IDRET_CANCEL:
+			cancelClickHandler();
+			return;
+		}
+	}
+
 protected:
 	bool ReticuleUp = false;
 	// Reticule button enable states.
@@ -1946,6 +1987,65 @@ human_computer_interface::human_computer_interface()
 			}
 		}
 	}
+
+	reticule.optionClickHandler = [this]() {
+		resetScreen(false);
+		(void)options.addOptions();
+		intMode = INT_OPTION;
+	};
+
+	reticule.commandClickHandler = [this]() {
+		resetScreen(false);
+		widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
+		addCommand(NULL);
+	};
+
+	reticule.buildClickHandler = [this]() {
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
+		addBuild(NULL);
+	};
+
+	reticule.manufactureClickHandler = [this]() {
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
+		addManufacture(NULL);
+	};
+
+	reticule.researchClickHandler = [this]() {
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
+		(void)addResearch(NULL);
+	};
+
+	reticule.intelClickHandler = [this]() {
+		// check if RMB was clicked
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			//set the current message to be the last non-proximity message added
+			setCurrentMsg();
+			setMessageImmediate(true);
+		}
+		else
+		{
+			psCurrentMsg = NULL;
+		}
+		addIntelScreen();
+	};
+
+	reticule.designClickHandler = [this]() {
+		resetScreen(true);
+		widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
+		/*add the power bar - for looks! */
+		powerbar.showPowerBar();
+		intAddDesign(false);
+		intMode = INT_DESIGN;
+	};
+
+	reticule.cancelClickHandler = [this]() {
+		resetScreen(false);
+		psCurrentMsg = NULL;
+	};
 }
 
 human_computer_interface::~human_computer_interface()
@@ -2768,70 +2868,35 @@ INT_RETVAL human_computer_interface::display()
 	return retCode;
 }
 
+namespace
+{
+	bool isReticule(unsigned retID)
+	{
+		switch (retID)
+		{
+		case IDRET_OPTIONS:
+		case IDRET_COMMAND:
+		case IDRET_BUILD:
+		case IDRET_MANUFACTURE:
+		case IDRET_RESEARCH:
+		case IDRET_INTEL_MAP:
+		case IDRET_DESIGN:
+		case IDRET_CANCEL:
+			return true;
+		}
+		return false;
+	}
+}
+
 void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool &quitting)
 {
+	if (isReticule(retID))
+	{
+		reticule.dispatchMouseClickEvent(retID);
+		return;
+	}
 	switch (retID)
 	{
-		/*****************  Reticule buttons  *****************/
-	case IDRET_OPTIONS:
-		resetScreen(false);
-		(void)options.addOptions();
-		intMode = INT_OPTION;
-		break;
-
-	case IDRET_COMMAND:
-		resetScreen(false);
-		widgSetButtonState(psWScreen, IDRET_COMMAND, WBUT_CLICKLOCK);
-		addCommand(NULL);
-		break;
-
-	case IDRET_BUILD:
-		resetScreen(true);
-		widgSetButtonState(psWScreen, IDRET_BUILD, WBUT_CLICKLOCK);
-		addBuild(NULL);
-		break;
-
-	case IDRET_MANUFACTURE:
-		resetScreen(true);
-		widgSetButtonState(psWScreen, IDRET_MANUFACTURE, WBUT_CLICKLOCK);
-		addManufacture(NULL);
-		break;
-
-	case IDRET_RESEARCH:
-		resetScreen(true);
-		widgSetButtonState(psWScreen, IDRET_RESEARCH, WBUT_CLICKLOCK);
-		(void)addResearch(NULL);
-		break;
-
-	case IDRET_INTEL_MAP:
-		// check if RMB was clicked
-		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-		{
-			//set the current message to be the last non-proximity message added
-			setCurrentMsg();
-			setMessageImmediate(true);
-		}
-		else
-		{
-			psCurrentMsg = NULL;
-		}
-		addIntelScreen();
-		break;
-
-	case IDRET_DESIGN:
-		resetScreen(true);
-		widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
-		/*add the power bar - for looks! */
-		powerbar.showPowerBar();
-		intAddDesign(false);
-		intMode = INT_DESIGN;
-		break;
-
-	case IDRET_CANCEL:
-		resetScreen(false);
-		psCurrentMsg = NULL;
-		break;
-
 		/*Transporter button pressed - OFFWORLD Mission Maps ONLY *********/
 	case IDTRANTIMER_BUTTON:
 		addTransporterInterface(NULL, true);

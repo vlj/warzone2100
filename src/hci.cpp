@@ -1892,7 +1892,8 @@ struct object_widgets
 	bool addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats,
 		std::function<bool(BASE_OBJECT *)> objSelectFunc, /* Function for selecting a base object while building the object screen */
 		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc, /* Function type for getting the appropriate stats for an object */
-		std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc /* Function type for setting the appropriate stats for an object */)
+		std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc, /* Function type for setting the appropriate stats for an object */
+		std::function<void(BASE_OBJECT *, uint32_t)> addObjectStats)
 	{
 		// Is the form already up?
 		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
@@ -2521,8 +2522,6 @@ protected:
 	void processOptions(uint32_t id);
 	/* Add the stats screen for a given object */
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
-
-	void selectObject(BASE_OBJECT * &psSelected, BASE_OBJECT * psFirst);
 
 	bool updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
 	/* Add the build widgets to the widget screen */
@@ -4436,7 +4435,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		powerbar.hidePowerBar();
 	}
-	objectWidgets.addObjectWindow(psObjects, psSelected, bForceStats, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	objectWidgets.addObjectWindow(psObjects, psSelected, bForceStats, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
@@ -4797,14 +4796,13 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	/* Set the sub mode */
 	objectWidgets.objMode = IOBJ_BUILD;
 
-
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
 		powerbar.hidePowerBar();
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
@@ -4833,7 +4831,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
@@ -4858,7 +4856,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
@@ -4883,7 +4881,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();

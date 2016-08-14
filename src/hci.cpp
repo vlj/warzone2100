@@ -1837,10 +1837,6 @@ struct object_widgets
 
 	void dispatchMouseClickEvent(uint32_t id)
 	{
-		STRUCTURE		*psStruct;
-		SDWORD			butIndex;
-		UDWORD			statButID;
-
 		ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
 
 		// deal with CRTL clicks

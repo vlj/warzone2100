@@ -4798,10 +4798,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
-	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
-	{
-		powerbar.showPowerBar();
-	}
+	powerbar.showPowerBar();
 	return b;
 }
 
@@ -4827,10 +4824,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
-	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
-	{
-		powerbar.showPowerBar();
-	}
+	powerbar.showPowerBar();
 	return b;
 }
 
@@ -4852,10 +4846,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
-	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
-	{
-		powerbar.showPowerBar();
-	}
+	powerbar.showPowerBar();
 	return b;
 }
 

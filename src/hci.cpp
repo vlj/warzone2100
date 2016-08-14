@@ -605,7 +605,7 @@ struct reticule_widgets
 			buildClickHandler();
 			return;
 		case IDRET_MANUFACTURE:
-			buildClickHandler();
+			manufactureClickHandler();
 			return;
 		case IDRET_RESEARCH:
 			researchClickHandler();
@@ -1007,6 +1007,62 @@ struct statistics
 		}
 
 		return true;
+	}
+
+	std::function<void(uint32_t)> onClick;
+	std::function<void(void)> onClose;
+	std::function<void(void)> onSlider;
+	std::function<void(void)> onProximityButton;
+	std::function<void(void)> onLoopButton;
+	std::function<void(void)> onDeliveryPointButton;
+	std::function<void(void)> onObsoleteButton;
+
+	void dispatchMouseClickEvent(uint32_t id)
+	{
+		ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "missing form");
+
+		if (id >= IDSTAT_START &&
+			id <= IDSTAT_END)
+		{
+			onClick(id);
+			return;
+		}
+
+		if (id == IDSTAT_CLOSE)
+		{
+			onClose();
+			return;
+		}
+
+		if (id == IDSTAT_SLIDER)
+		{
+			onSlider();
+			return;
+		}
+
+		if (id >= IDPROX_START && id <= IDPROX_END)
+		{
+			onProximityButton();
+			return;
+		}
+
+		if (id == IDSTAT_LOOP_BUTTON)
+		{
+			onLoopButton();
+			return;
+		}
+
+		if (id == IDSTAT_DP_BUTTON)
+		{
+			onDeliveryPointButton();
+			return;
+		}
+
+		if (id == IDSTAT_OBSOLETE_BUTTON)
+		{
+			onObsoleteButton();
+			return;
+		}
 	}
 
 protected:
@@ -1918,8 +1974,6 @@ protected:
 	// Refresh widgets once per game cycle if pending flag is set.
 	//
 	void doScreenRefresh();
-	/* Process return codes from the stats screen */
-	void processStats(uint32_t id);
 	void onStatLeftMouseButtonPressed(uint32_t id);
 	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
@@ -2045,6 +2099,94 @@ human_computer_interface::human_computer_interface()
 	reticule.cancelClickHandler = [this]() {
 		resetScreen(false);
 		psCurrentMsg = NULL;
+	};
+
+	objectWidgets.stats.onClick = [this](uint32_t id)
+	{
+		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid structure stats id");
+
+		/* deal with RMB clicks */
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			statsRMBPressed(id);
+			return;
+		}
+		/* deal with LMB clicks */
+		onStatLeftMouseButtonPressed(id);
+		return;
+	};
+
+	objectWidgets.stats.onClose = [this]()
+	{
+		/* Get the tabs on the object form */
+		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+
+		/* Close the structure box without doing anything */
+		objectWidgets.stats.removeStats();
+		intMode = INT_OBJECT;
+
+		/* Reset the tabs on the build form */
+		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+
+		/* Unlock the stats button */
+		widgSetButtonState(psWScreen, objStatID, 0);
+		return;
+	};
+
+	objectWidgets.stats.onLoopButton = [this]()
+	{
+		// Process the loop button.
+		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+		if (psStruct)
+		{
+			//LMB pressed
+			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_PRIMARY)
+			{
+				factoryLoopAdjust(psStruct, true);
+			}
+			//RMB pressed
+			else if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+			{
+				factoryLoopAdjust(psStruct, false);
+			}
+			if (((FACTORY *)psStruct->pFunctionality)->psSubject != NULL && ((FACTORY *)psStruct->pFunctionality)->productionLoops != 0)
+			{
+				//lock the button
+				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
+			}
+			else
+			{
+				//unlock
+				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
+			}
+		}
+		return;
+	};
+
+	objectWidgets.stats.onDeliveryPointButton = [this]()
+	{
+		// Process the DP button
+		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
+		if (psStruct)
+		{
+			// make sure that the factory isn't assigned to a commander
+			assignFactoryCommandDroid(psStruct, NULL);
+			FLAG_POSITION *psFlag = FindFactoryDelivery(psStruct);
+			if (psFlag)
+			{
+				startDeliveryPosition(psFlag);
+			}
+		}
+		return;
+	};
+
+	objectWidgets.stats.onObsoleteButton = [this]()
+	{
+		includeRedundantDesigns = !includeRedundantDesigns;
+		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
+		obsoleteButton->setState(includeRedundantDesigns);
+		refreshScreen();
+		return;
 	};
 }
 
@@ -3275,115 +3417,11 @@ void human_computer_interface::processObject(uint32_t id)
 	if (objectWidgets.objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
 	{
 		/* Not a button on the build form, must be on the stats form */
-		processStats(id);
+		objectWidgets.stats.dispatchMouseClickEvent(id);
 	}
 	else  if (id != IDOBJ_TABFORM)
 	{
 		intProcessOrder(id);
-	}
-}
-
-void human_computer_interface::processStats(uint32_t id)
-{
-	ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "missing form");
-
-	if (id >= IDSTAT_START &&
-	    id <= IDSTAT_END)
-	{
-		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid structure stats id");
-
-		/* deal with RMB clicks */
-		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-		{
-			statsRMBPressed(id);
-			return;
-		}
-		/* deal with LMB clicks */
-		onStatLeftMouseButtonPressed(id);
-		return;
-	}
-
-	if (id == IDSTAT_CLOSE)
-	{
-		/* Get the tabs on the object form */
-		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-
-		/* Close the structure box without doing anything */
-		objectWidgets.stats.removeStats();
-		intMode = INT_OBJECT;
-
-		/* Reset the tabs on the build form */
-		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
-
-		/* Unlock the stats button */
-		widgSetButtonState(psWScreen, objStatID, 0);
-		return;
-	}
-
-	if (id == IDSTAT_SLIDER)
-	{
-		// Process the quantity slider.
-		return;
-	}
-	if (id >= IDPROX_START && id <= IDPROX_END)
-	{
-		// process the proximity blip buttons.
-		return;
-	}
-	if (id == IDSTAT_LOOP_BUTTON)
-	{
-		// Process the loop button.
-		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
-		if (psStruct)
-		{
-			//LMB pressed
-			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_PRIMARY)
-			{
-				factoryLoopAdjust(psStruct, true);
-			}
-			//RMB pressed
-			else if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-			{
-				factoryLoopAdjust(psStruct, false);
-			}
-			if (((FACTORY *)psStruct->pFunctionality)->psSubject != NULL && ((FACTORY *)psStruct->pFunctionality)->productionLoops != 0)
-			{
-				//lock the button
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
-			}
-			else
-			{
-				//unlock
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
-			}
-		}
-		return;
-	}
-
-	if (id == IDSTAT_DP_BUTTON)
-	{
-		// Process the DP button
-		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
-		if (psStruct)
-		{
-			// make sure that the factory isn't assigned to a commander
-			assignFactoryCommandDroid(psStruct, NULL);
-			FLAG_POSITION *psFlag = FindFactoryDelivery(psStruct);
-			if (psFlag)
-			{
-				startDeliveryPosition(psFlag);
-			}
-		}
-		return;
-	}
-
-	if (id == IDSTAT_OBSOLETE_BUTTON)
-	{
-		includeRedundantDesigns = !includeRedundantDesigns;
-		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
-		obsoleteButton->setState(includeRedundantDesigns);
-		refreshScreen();
-		return;
 	}
 }
 

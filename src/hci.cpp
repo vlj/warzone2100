@@ -1009,6 +1009,80 @@ struct statistics
 		return true;
 	}
 
+	/* Reset the stats button for an object */
+	void setStats(BASE_OBJECT *obj, uint32_t id, BASE_STATS *psStats, _obj_mode objMode)
+	{
+		/* Update the button on the object screen */
+		IntStatusButton *statButton = (IntStatusButton *)widgGetFromID(psWScreen, id);
+		if (statButton == nullptr)
+		{
+			return;
+		}
+		statButton->setTip("");
+		WIDGET::Children children = statButton->children();
+		for (WIDGET::Children::const_iterator i = children.begin(); i != children.end(); ++i)
+		{
+			delete *i;
+		}
+
+		// Action progress bar.
+		W_BARINIT sBarInit;
+		sBarInit.formID = id;
+		sBarInit.id = (id - IDOBJ_STATSTART) + IDOBJ_PROGBARSTART;
+		sBarInit.style = WBAR_TROUGH;
+		sBarInit.x = STAT_PROGBARX;
+		sBarInit.y = STAT_PROGBARY;
+		sBarInit.width = STAT_PROGBARWIDTH;
+		sBarInit.height = STAT_PROGBARHEIGHT;
+		sBarInit.size = 0;
+		sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
+		sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
+		sBarInit.iRange = GAME_TICKS_PER_SEC;
+		// Setup widget update callback and object pointer so we can update the progress bar.
+		sBarInit.pCallback = intUpdateProgressBar;
+		sBarInit.pUserData = obj;
+
+		W_LABINIT sLabInit;
+		sLabInit.formID = id;
+		sLabInit.id = (id - IDOBJ_STATSTART) + IDOBJ_COUNTSTART;
+		sLabInit.style = WIDG_HIDDEN;
+		sLabInit.x = OBJ_TEXTX;
+		sLabInit.y = OBJ_T1TEXTY;
+		sLabInit.width = 16;
+		sLabInit.height = 16;
+		sLabInit.pText = "BUG! (d)";
+
+		if (psStats)
+		{
+			statButton->setTip(getName(psStats));
+			statButton->setObjectAndStats(obj, psStats);
+
+			// Add a text label for the size of the production run.
+			sLabInit.pCallback = intUpdateQuantity;
+			sLabInit.pUserData = sBarInit.pUserData;
+		}
+		else
+		{
+			statButton->setObject(nullptr);
+
+			/* Reset the stats screen button if necessary */
+			if ((INTMODE)objMode == INT_STAT && statID != 0)
+			{
+				widgSetButtonState(psWScreen, statID, 0);
+			}
+		}
+
+		// Set the colour for the production run size text.
+
+		widgAddLabel(psWScreen, &sLabInit)->setFontColour(WZCOL_ACTION_PRODUCTION_RUN_TEXT);
+		widgAddBarGraph(psWScreen, &sBarInit)->setBackgroundColour(WZCOL_ACTION_PRODUCTION_RUN_BACKGROUND);
+
+		BASE_OBJECT *psObj = obj;
+		if (psObj && psObj->selected)
+		{
+			widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
+		}
+	}
 
 	StateButton *makeObsoleteButton(WIDGET *parent)  ///< Makes a button to toggle showing obsolete items.
 	{
@@ -2478,8 +2552,6 @@ protected:
 	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
 	/*Deals with the RMB click for the stats screen */
 	void statsRMBPressed(uint32_t id);
-	/* Reset the stats button for an object */
-	void setStats(uint32_t id, BASE_STATS *psStats);
 	// clean up when an object dies
 	void objectDied(uint32_t objID);
 	/* Process return codes from the object placement stats screen */
@@ -4013,7 +4085,7 @@ void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
 			}
 
 			// Reset the button on the object form
-			setStats(objStatID, (BASE_STATS *)psNext);
+			objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
 		}
 		return;
 	}
@@ -4038,7 +4110,7 @@ void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
 		objSetStatsFunc(objectWidgets.psObjSelected, NULL);
 
 		/* Reset the button on the object form */
-		setStats(objStatID, NULL);
+		objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
 
 		/* Unlock the button on the stats form */
 		widgSetButtonState(psWScreen, id, 0);
@@ -4076,12 +4148,12 @@ void human_computer_interface::onStatLeftMouseButtonPressed(uint32_t id)
 		//if this returns false, there's a problem so set the button to NULL
 		if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
 		{
-			setStats(objStatID, NULL);
+			objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
 		}
 		else
 		{
 			// Reset the button on the object form
-			setStats(objStatID, psStats);
+			objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, psStats, objectWidgets.objMode);
 		}
 	}
 
@@ -4303,7 +4375,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 
 		// clear the stats button
 		statsID = IDOBJ_STATSTART + objID - IDOBJ_OBJSTART;
-		setStats(statsID, NULL);
+		objectWidgets.stats.setStats(objectWidgets.getObject(statsID), statsID, NULL, objectWidgets.objMode);
 		// and disable it
 		widgSetButtonState(psWScreen, statsID, WBUT_DISABLE);
 
@@ -4332,7 +4404,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 			{
 				if (psCurr == psDroid)
 				{
-					setStats(droidID + IDOBJ_STATSTART, NULL);
+					objectWidgets.stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 					break;
 				}
 				droidID++;
@@ -4357,7 +4429,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 				if (psCurr == psDroid)
 				{
 					STRUCTURE *target = castStructure(psCurr->order.psObj);
-					setStats(droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr);
+					objectWidgets.stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr, objectWidgets.objMode);
 					break;
 				}
 				droidID++;
@@ -4394,7 +4466,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
-			setStats(structureIndex + IDOBJ_STATSTART, NULL);
+			objectWidgets.stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 			// clear the loop button if interface is up
 			if (widgGetFromID(psWScreen, IDSTAT_LOOP_BUTTON))
 			{
@@ -4415,7 +4487,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
-			setStats(structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject);
+			objectWidgets.stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject, objectWidgets.objMode);
 		}
 	}
 }
@@ -4451,80 +4523,6 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	objectWidgets.stats.removeIfDied();
 
 	return true;
-}
-
-void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
-{
-	/* Update the button on the object screen */
-	IntStatusButton *statButton = (IntStatusButton *)widgGetFromID(psWScreen, id);
-	if (statButton == nullptr)
-	{
-		return;
-	}
-	statButton->setTip("");
-	WIDGET::Children children = statButton->children();
-	for (WIDGET::Children::const_iterator i = children.begin(); i != children.end(); ++i)
-	{
-		delete *i;
-	}
-
-	// Action progress bar.
-	W_BARINIT sBarInit;
-	sBarInit.formID = id;
-	sBarInit.id = (id - IDOBJ_STATSTART) + IDOBJ_PROGBARSTART;
-	sBarInit.style = WBAR_TROUGH;
-	sBarInit.x = STAT_PROGBARX;
-	sBarInit.y = STAT_PROGBARY;
-	sBarInit.width = STAT_PROGBARWIDTH;
-	sBarInit.height = STAT_PROGBARHEIGHT;
-	sBarInit.size = 0;
-	sBarInit.sCol = WZCOL_ACTION_PROGRESS_BAR_MAJOR;
-	sBarInit.sMinorCol = WZCOL_ACTION_PROGRESS_BAR_MINOR;
-	sBarInit.iRange = GAME_TICKS_PER_SEC;
-	// Setup widget update callback and object pointer so we can update the progress bar.
-	sBarInit.pCallback = intUpdateProgressBar;
-	sBarInit.pUserData = objectWidgets.getObject(id);
-
-	W_LABINIT sLabInit;
-	sLabInit.formID = id;
-	sLabInit.id = (id - IDOBJ_STATSTART) + IDOBJ_COUNTSTART;
-	sLabInit.style = WIDG_HIDDEN;
-	sLabInit.x = OBJ_TEXTX;
-	sLabInit.y = OBJ_T1TEXTY;
-	sLabInit.width = 16;
-	sLabInit.height = 16;
-	sLabInit.pText = "BUG! (d)";
-
-	if (psStats)
-	{
-		statButton->setTip(getName(psStats));
-		statButton->setObjectAndStats(objectWidgets.getObject(id), psStats);
-
-		// Add a text label for the size of the production run.
-		sLabInit.pCallback = intUpdateQuantity;
-		sLabInit.pUserData = sBarInit.pUserData;
-	}
-	else
-	{
-		statButton->setObject(nullptr);
-
-		/* Reset the stats screen button if necessary */
-		if ((INTMODE)objectWidgets.objMode == INT_STAT && objectWidgets.stats.statID != 0)
-		{
-			widgSetButtonState(psWScreen, objectWidgets.stats.statID, 0);
-		}
-	}
-
-	// Set the colour for the production run size text.
-
-	widgAddLabel(psWScreen, &sLabInit)->setFontColour(WZCOL_ACTION_PRODUCTION_RUN_TEXT);
-	widgAddBarGraph(psWScreen, &sBarInit)->setBackgroundColour(WZCOL_ACTION_PRODUCTION_RUN_BACKGROUND);
-
-	BASE_OBJECT *psObj = objectWidgets.getObject(id);
-	if (psObj && psObj->selected)
-	{
-		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
-	}
 }
 
 /* Select a command droid */
@@ -4911,7 +4909,7 @@ void human_computer_interface::statsRMBPressed(uint32_t id)
 			}
 
 			// Reset the button on the object form
-			setStats(objStatID, (BASE_STATS *)psNext);
+			objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
 		}
 	}
 }

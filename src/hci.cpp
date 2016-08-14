@@ -1009,6 +1009,21 @@ struct statistics
 		return true;
 	}
 
+
+	StateButton *makeObsoleteButton(WIDGET *parent)  ///< Makes a button to toggle showing obsolete items.
+	{
+		StateButton *obsoleteButton = new StateButton(parent);
+		obsoleteButton->id = IDSTAT_OBSOLETE_BUTTON;
+		obsoleteButton->style |= WBUT_SECONDARY;
+		obsoleteButton->setState(includeRedundantDesigns);
+		obsoleteButton->setImages(false, StateButton::Images(Image(IntImages, IMAGE_OBSOLETE_HIDE_UP), Image(IntImages, IMAGE_OBSOLETE_HIDE_DOWN), Image(IntImages, IMAGE_OBSOLETE_HIDE_HI)));
+		obsoleteButton->setTip(false, _("Hiding Obsolete Tech"));
+		obsoleteButton->setImages(true, StateButton::Images(Image(IntImages, IMAGE_OBSOLETE_SHOW_UP), Image(IntImages, IMAGE_OBSOLETE_SHOW_DOWN), Image(IntImages, IMAGE_OBSOLETE_SHOW_HI)));
+		obsoleteButton->setTip(true, _("Showing Obsolete Tech"));
+		obsoleteButton->move(4 + Image(IntImages, IMAGE_FDP_UP).width() + 4, STAT_SLDY);
+		return obsoleteButton;
+	}
+
 	std::function<void(uint32_t)> onClick;
 	std::function<void(void)> onClose;
 	std::function<void(void)> onSlider;
@@ -2400,8 +2415,6 @@ struct human_computer_interface
 
 	BASE_OBJECT *getCurrentSelected();
 	bool isRefreshing();
-
-	StateButton *makeObsoleteButton(WIDGET *parent);  ///< Makes a button to toggle showing obsolete items.
 
 	void chatDialog(int mode);
 	bool isChatUp();
@@ -4514,21 +4527,6 @@ void human_computer_interface::setStats(uint32_t id, BASE_STATS *psStats)
 	}
 }
 
-StateButton *human_computer_interface::makeObsoleteButton(WIDGET *parent)
-{
-	StateButton *obsoleteButton = new StateButton(parent);
-	obsoleteButton->id = IDSTAT_OBSOLETE_BUTTON;
-	obsoleteButton->style |= WBUT_SECONDARY;
-	obsoleteButton->setState(includeRedundantDesigns);
-	obsoleteButton->setImages(false, StateButton::Images(Image(IntImages, IMAGE_OBSOLETE_HIDE_UP), Image(IntImages, IMAGE_OBSOLETE_HIDE_DOWN), Image(IntImages, IMAGE_OBSOLETE_HIDE_HI)));
-	obsoleteButton->setTip(false, _("Hiding Obsolete Tech"));
-	obsoleteButton->setImages(true,  StateButton::Images(Image(IntImages, IMAGE_OBSOLETE_SHOW_UP), Image(IntImages, IMAGE_OBSOLETE_SHOW_DOWN), Image(IntImages, IMAGE_OBSOLETE_SHOW_HI)));
-	obsoleteButton->setTip(true, _("Showing Obsolete Tech"));
-	obsoleteButton->move(4 + Image(IntImages, IMAGE_FDP_UP).width() + 4, STAT_SLDY);
-	return obsoleteButton;
-}
-
-
 /* Select a command droid */
 static bool selectCommand(BASE_OBJECT *psObj)
 {
@@ -5590,7 +5588,7 @@ void intRemoveStatsNoAnim(void)
 
 StateButton *makeObsoleteButton(WIDGET *parent)
 {
-	return default_hci->makeObsoleteButton(parent);
+	return default_hci->objectWidgets.stats.makeObsoleteButton(parent);
 }
 
 void addIntelScreen(void)

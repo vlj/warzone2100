@@ -1830,6 +1830,62 @@ struct object_widgets
 		widgDelete(psWScreen, IDOBJ_FORM);
 	}
 
+	std::function<void(uint32_t)> onCTRLClick;
+	std::function<void(uint32_t)> onObjectClick;
+	std::function<void(uint32_t)> onObjectStatClick;
+	std::function<void(void)> onClose;
+
+	void dispatchMouseClickEvent(uint32_t id)
+	{
+		STRUCTURE		*psStruct;
+		SDWORD			butIndex;
+		UDWORD			statButID;
+
+		ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
+
+		// deal with CRTL clicks
+		if (objMode == IOBJ_BUILD &&	// What..................?
+			(keyDown(KEY_LCTRL) || keyDown(KEY_RCTRL) || keyDown(KEY_LSHIFT) || keyDown(KEY_RSHIFT)) &&
+			((id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND) ||
+			(id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
+		{
+			dispatchMouseClickEvent(id);
+			return;
+		}
+
+		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
+		{
+			onObjectClick(id);
+			return;
+		}
+
+		/* A object stat button has been pressed */
+		if (id >= IDOBJ_STATSTART &&
+			id <= IDOBJ_STATEND)
+		{
+			onObjectStatClick(id);
+			return;
+		}
+
+		if (id == IDOBJ_CLOSE)
+		{
+			onClose();
+			return;
+		}
+
+		if (objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
+		{
+			/* Not a button on the build form, must be on the stats form */
+			stats.dispatchMouseClickEvent(id);
+			return;
+		}
+		 if (id != IDOBJ_TABFORM)
+		{
+			intProcessOrder(id);
+			return;
+		}
+	}
+
 protected:
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
 	{
@@ -1943,8 +1999,6 @@ protected:
 	void processOptions(uint32_t id);
 	/* Add the stats screen for a given object */
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
-	/* Process return codes from the object screen */
-	void processObject(uint32_t id);
 	/* Add the object screen widgets to the widget screen.
 	* select is a pointer to a function that returns true when the object is
 	* to be added to the screen.
@@ -2186,6 +2240,82 @@ human_computer_interface::human_computer_interface()
 		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
 		obsoleteButton->setState(includeRedundantDesigns);
 		refreshScreen();
+		return;
+	};
+
+	objectWidgets.onCTRLClick = [this](uint32_t id)
+	{
+		/* Find the object that the ID refers to */
+		BASE_OBJECT *psObj = objectWidgets.getObject(id);
+		uint32_t statButID;
+		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
+		{
+			statButID = IDOBJ_STATSTART + id - IDOBJ_OBJSTART;
+		}
+		else
+		{
+			statButID = id;
+		}
+		if (psObj && psObj->selected)
+		{
+			psObj->selected = false;
+			widgSetButtonState(psWScreen, statButID, 0);
+			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
+			{
+				objectWidgets.stats.removeStats();
+			}
+			if (objectWidgets.psObjSelected == psObj)
+			{
+				objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
+				if (!objectWidgets.psObjSelected)
+				{
+					objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+				}
+			}
+		}
+		else if (psObj)
+		{
+			if (objectWidgets.psObjSelected)
+			{
+				objectWidgets.psObjSelected->selected = true;
+			}
+			psObj->selected = true;
+			widgSetButtonState(psWScreen, statButID, WBUT_CLICKLOCK);
+			addObjectStats(psObj, statButID);
+		}
+		triggerEventSelected();
+		return;
+	};
+
+	objectWidgets.onObjectClick = [this](uint32_t id)
+	{
+		/* deal with RMB clicks */
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			objectWidgets.onRightMouseButtonPressed(id);
+			return;
+		}
+		/* deal with LMB clicks */
+		objectWidgets.onObjectLeftMousePressed(id);
+		return;
+	};
+
+	objectWidgets.onObjectStatClick = [this](uint32_t id)
+	{
+		/* deal with RMB clicks */
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			objectWidgets.objStatRMBPressed(id);
+			return;
+		}
+		objectWidgets.objStatLMBPressed(id);
+		return;
+	};
+
+	objectWidgets.onClose = [this]()
+	{
+		resetScreen(false);
+		intMode = INT_NORMAL;
 		return;
 	};
 }
@@ -3101,7 +3231,7 @@ void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool 
 			*/
 			// NO BREAK HERE! THIS IS CORRECT;
 		case INT_OBJECT:
-			processObject(retID);
+			objectWidgets.dispatchMouseClickEvent(retID);
 			break;
 		case INT_ORDER:
 			intProcessOrder(retID);
@@ -3322,106 +3452,6 @@ void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 		default:
 			break;
 		}
-	}
-}
-
-void human_computer_interface::processObject(uint32_t id)
-{
-	STRUCTURE		*psStruct;
-	SDWORD			butIndex;
-	UDWORD			statButID;
-
-	ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
-
-	// deal with CRTL clicks
-	if (objectWidgets.objMode == IOBJ_BUILD &&	// What..................?
-		(keyDown(KEY_LCTRL) || keyDown(KEY_RCTRL) || keyDown(KEY_LSHIFT) || keyDown(KEY_RSHIFT)) &&
-		((id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND) ||
-		(id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
-	{
-		/* Find the object that the ID refers to */
-		BASE_OBJECT *psObj = objectWidgets.getObject(id);
-		if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
-		{
-			statButID = IDOBJ_STATSTART + id - IDOBJ_OBJSTART;
-		}
-		else
-		{
-			statButID = id;
-		}
-		if (psObj && psObj->selected)
-		{
-			psObj->selected = false;
-			widgSetButtonState(psWScreen, statButID, 0);
-			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
-			{
-				objectWidgets.stats.removeStats();
-			}
-			if (objectWidgets.psObjSelected == psObj)
-			{
-				objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
-				if (!objectWidgets.psObjSelected)
-				{
-					objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
-				}
-			}
-		}
-		else if (psObj)
-		{
-			if (objectWidgets.psObjSelected)
-			{
-				objectWidgets.psObjSelected->selected = true;
-			}
-			psObj->selected = true;
-			widgSetButtonState(psWScreen, statButID, WBUT_CLICKLOCK);
-			addObjectStats(psObj, statButID);
-		}
-		triggerEventSelected();
-		return;
-	}
-
-	if (id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND)
-	{
-		/* deal with RMB clicks */
-		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-		{
-			objectWidgets.onRightMouseButtonPressed(id);
-			return;
-		}
-		/* deal with LMB clicks */
-		objectWidgets.onObjectLeftMousePressed(id);
-		return;
-	}
-
-	/* A object stat button has been pressed */
-	if (id >= IDOBJ_STATSTART &&
-		id <= IDOBJ_STATEND)
-	{
-		/* deal with RMB clicks */
-		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-		{
-			objectWidgets.objStatRMBPressed(id);
-			return;
-		}
-		objectWidgets.objStatLMBPressed(id);
-		return;
-	}
-
-	if (id == IDOBJ_CLOSE)
-	{
-		resetScreen(false);
-		intMode = INT_NORMAL;
-		return;
-	}
-
-	if (objectWidgets.objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
-	{
-		/* Not a button on the build form, must be on the stats form */
-		objectWidgets.stats.dispatchMouseClickEvent(id);
-	}
-	else  if (id != IDOBJ_TABFORM)
-	{
-		intProcessOrder(id);
 	}
 }
 

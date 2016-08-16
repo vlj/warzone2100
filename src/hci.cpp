@@ -1900,8 +1900,7 @@ struct object_widgets
 	bool addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats,
 		std::function<bool(BASE_OBJECT *)> objSelectFunc, /* Function for selecting a base object while building the object screen */
 		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc, /* Function type for getting the appropriate stats for an object */
-		std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc, /* Function type for setting the appropriate stats for an object */
-		std::function<void(BASE_OBJECT *, uint32_t)> addObjectStats)
+		std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc) /* Function type for setting the appropriate stats for an object */
 	{
 		// Is the form already up?
 		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
@@ -2331,7 +2330,6 @@ struct object_widgets
 			if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
 			{
 				objStatID = statID;
-				addObjectStats(psSelected, statID);
 				intMode = INT_STAT;
 			}
 			else
@@ -2528,6 +2526,8 @@ protected:
 	void processOptions(uint32_t id);
 	/* Add the stats screen for a given object */
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
+
+	void addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * psStats);
 
 	bool updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats);
 	/* Add the build widgets to the widget screen */
@@ -3926,13 +3926,38 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	// note the object for the screen
 	objectWidgets.apsPreviousObj[objectWidgets.objMode] = psObj;
 
+	addStatsHelper(psObj, psStats);	secondaryWindowUp = true;
+
+	// get the tab positions for the new stat form
+	// Restore the tab positions.
+	// only restore if we've still got at least that many tabs
+	if (psStats == nullptr && widgGetFromID(psWScreen, IDSTAT_TABFORM) != nullptr)
+	{
+		((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->setCurrentPage(statMajor);
+	}
+
+	intMode = INT_STAT;
+	/* Note the object */
+	objectWidgets.psObjSelected = psObj;
+	objStatID = id;
+
+	/* Reset the tabs and lock the button */
+	((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+	if (id != 0)
+	{
+		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
+	}
+}
+
+void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * psStats)
+{
 	// NOTE! The below functions populate our list (building/units...)
 	// up to MAX____.  We have unlimited potential, but it is capped at 200 now.
 	//determine the Structures that can be built
 	if (objectWidgets.objMode == IOBJ_BUILD)
 	{
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
-		                                        selectedPlayer, MAXSTRUCTURES - 1);
+			selectedPlayer, MAXSTRUCTURES - 1);
 
 		objectWidgets.stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 	}
@@ -3946,7 +3971,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	}
 
 	/*have to calculate the list each time the Topic button is pressed
-	  so that only one topic can be researched at a time*/
+	so that only one topic can be researched at a time*/
 	if (objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		//set to value that won't be reached in fillResearchList
@@ -3997,27 +4022,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	}
 
 	objectWidgets.stats.addStats(objectWidgets.stats.ppsStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
-	secondaryWindowUp = true;
 
-	// get the tab positions for the new stat form
-	// Restore the tab positions.
-	// only restore if we've still got at least that many tabs
-	if (psStats == nullptr && widgGetFromID(psWScreen, IDSTAT_TABFORM) != nullptr)
-	{
-		((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->setCurrentPage(statMajor);
-	}
-
-	intMode = INT_STAT;
-	/* Note the object */
-	objectWidgets.psObjSelected = psObj;
-	objStatID = id;
-
-	/* Reset the tabs and lock the button */
-	((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
-	if (id != 0)
-	{
-		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
-	}
 }
 
 void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
@@ -4515,7 +4520,14 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		powerbar.hidePowerBar();
 	}
-	objectWidgets.addObjectWindow(psObjects, psSelected, bForceStats, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
+	objectWidgets.addObjectWindow(psObjects, psSelected, bForceStats, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
+	{
+		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
+		{
+			addObjectStats(psSelected, objStatID);
+		}
+	}
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
 		powerbar.showPowerBar();
@@ -4793,7 +4805,11 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	{
+		addObjectStats(psSelected, objStatID);
+	}
 	powerbar.showPowerBar();
 	return b;
 }
@@ -4819,7 +4835,11 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	{
+		addObjectStats(psSelected, objStatID);
+	}
 	powerbar.showPowerBar();
 	return b;
 }
@@ -4841,7 +4861,11 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	{
+		addObjectStats(psSelected, objStatID);
+	}
 	powerbar.showPowerBar();
 	return b;
 }
@@ -4863,11 +4887,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc, [this](BASE_OBJECT *obj, uint32_t id) { addObjectStats(obj, id); });
-	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
-	{
-		powerbar.showPowerBar();
-	}
+	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
 	return b;
 }
 

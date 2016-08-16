@@ -1785,15 +1785,6 @@ struct object_widgets
 		}
 		BASE_OBJECT *psFirst = apsObjectList.front();
 
-		/*if psSelected != NULL then check its in the list of suitable objects for
-		this instance of the interface - this could happen when a structure is upgraded*/
-		//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-		if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-		{
-			//initialise psSelected so gets set up with an iten in the list
-			psSelected = nullptr;
-		}
-
 		//order the objects according to what they are
 		orderObjectInterface();
 
@@ -1801,7 +1792,7 @@ struct object_widgets
 		if (psSelected == nullptr)
 		{
 			//first check if there is an object selected of the required type
-			selectObject(psSelected, psFirst);
+			psSelected = selectObject(psFirst);
 		}
 
 		/* Reset the current object and store the current list */
@@ -2268,8 +2259,9 @@ protected:
 		return psSel;
 	}
 
-	void selectObject(BASE_OBJECT * &psSelected, BASE_OBJECT * psFirst)
+	BASE_OBJECT *selectObject(BASE_OBJECT *psFirst)
 	{
+		BASE_OBJECT *psSelected = nullptr;
 		switch (objMode)
 		{
 		case IOBJ_RESEARCH:
@@ -2300,25 +2292,23 @@ protected:
 		default:
 			break;
 		}
-		if (!psSelected)
+		if (psSelected != nullptr)
+			return psSelected;
+
+		if (apsPreviousObj[objMode]
+			&& apsPreviousObj[objMode]->player == selectedPlayer)
 		{
-			if (apsPreviousObj[objMode]
-				&& apsPreviousObj[objMode]->player == selectedPlayer)
+			psSelected = apsPreviousObj[objMode];
+			//it is possible for a structure to change status - building of modules
+			if (psSelected->type == OBJ_STRUCTURE
+				&& ((STRUCTURE *)psSelected)->status != SS_BUILT)
 			{
-				psSelected = apsPreviousObj[objMode];
-				//it is possible for a structure to change status - building of modules
-				if (psSelected->type == OBJ_STRUCTURE
-					&& ((STRUCTURE *)psSelected)->status != SS_BUILT)
-				{
-					//structure not complete so just set selected to the first valid object
-					psSelected = psFirst;
-				}
+				//structure not complete so just set selected to the first valid object
+				return psFirst;
 			}
-			else
-			{
-				psSelected = psFirst;
-			}
+			return psSelected;
 		}
+		return psFirst;
 	}
 
 	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
@@ -4506,6 +4496,14 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 			apsObjectList.push_back(psObj);
 		}
 	}
+	/*if psSelected != NULL then check its in the list of suitable objects for
+	this instance of the interface - this could happen when a structure is upgraded*/
+	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	{
+		//initialise psSelected so gets set up with an iten in the list
+		psSelected = nullptr;
+	}
 	objectWidgets.addObjectWindow(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
@@ -4797,6 +4795,14 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 			apsObjectList.push_back(psObj);
 		}
 	}
+	/*if psSelected != NULL then check its in the list of suitable objects for
+	this instance of the interface - this could happen when a structure is upgraded*/
+	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	{
+		//initialise psSelected so gets set up with an iten in the list
+		psSelected = nullptr;
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4835,6 +4841,14 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 			apsObjectList.push_back(psObj);
 		}
 	}
+	/*if psSelected != NULL then check its in the list of suitable objects for
+	this instance of the interface - this could happen when a structure is upgraded*/
+	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	{
+		//initialise psSelected so gets set up with an iten in the list
+		psSelected = nullptr;
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4869,6 +4883,14 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 			apsObjectList.push_back(psObj);
 		}
 	}
+	/*if psSelected != NULL then check its in the list of suitable objects for
+	this instance of the interface - this could happen when a structure is upgraded*/
+	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	{
+		//initialise psSelected so gets set up with an iten in the list
+		psSelected = nullptr;
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4902,6 +4924,14 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 		{
 			apsObjectList.push_back(psObj);
 		}
+	}
+	/*if psSelected != NULL then check its in the list of suitable objects for
+	this instance of the interface - this could happen when a structure is upgraded*/
+	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
+	{
+		//initialise psSelected so gets set up with an iten in the list
+		psSelected = nullptr;
 	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,

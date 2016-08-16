@@ -1599,36 +1599,6 @@ struct object_widgets
 		return psObj;
 	}
 
-	/** Order the objects in the bottom bar according to their type. */
-	void orderObjectInterface()
-	{
-
-		if (apsObjectList.empty())
-		{
-			//no objects so nothing to order!
-			return;
-		}
-
-		switch (apsObjectList[0]->type)
-		{
-		case OBJ_STRUCTURE:
-			if (StructIsFactory((STRUCTURE *)apsObjectList[0]))
-			{
-				orderFactories();
-			}
-			else if (((STRUCTURE *)apsObjectList[0])->pStructureType->type == REF_RESEARCH)
-			{
-				orderResearch();
-			}
-			break;
-		case OBJ_DROID:
-			orderDroids();
-		default:
-			//nothing to do as yet!
-			break;
-		}
-	}
-
 	/*puts the selected players factories in order - Standard factories 1-5, then
 	cyborg factories 1-5 and then Vtol factories 1-5*/
 	void orderFactories()
@@ -2253,6 +2223,37 @@ struct object_widgets
 	}
 
 protected:
+	/** Order the objects in the bottom bar according to their type. */
+	void orderObjectInterface()
+	{
+
+		if (apsObjectList.empty())
+		{
+			//no objects so nothing to order!
+			return;
+		}
+
+		switch (apsObjectList[0]->type)
+		{
+		case OBJ_STRUCTURE:
+			if (StructIsFactory((STRUCTURE *)apsObjectList[0]))
+			{
+				orderFactories();
+			}
+			else if (((STRUCTURE *)apsObjectList[0])->pStructureType->type == REF_RESEARCH)
+			{
+				orderResearch();
+			}
+			break;
+		case OBJ_DROID:
+			orderDroids();
+		default:
+			//nothing to do as yet!
+			break;
+		}
+	}
+
+
 	/*Looks through the players list of structures to see if there is one selected
 	of the required type. If there is more than one, they are all deselected and
 	the first one reselected*/

@@ -1757,10 +1757,8 @@ struct object_widgets
 	* for the object.
 	* If psSelected != NULL it specifies which object should be hilited.
 	*/
-	bool addObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats,
-		std::function<bool(BASE_OBJECT *)> objSelectFunc, /* Function for selecting a base object while building the object screen */
-		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc, /* Function type for getting the appropriate stats for an object */
-		std::function<bool(BASE_OBJECT *, BASE_STATS *)> objSetStatsFunc) /* Function type for setting the appropriate stats for an object */
+	bool addObjectWindow(const std::vector<BASE_OBJECT *> &objectList, BASE_OBJECT *psSelected, bool bForceStats,
+		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc) /* Function type for getting the appropriate stats for an object */
 	{
 		// Is the form already up?
 		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
@@ -1774,15 +1772,7 @@ struct object_widgets
 		}
 
 		/* See how many objects the player has */
-		apsObjectList.clear();
-		for (BASE_OBJECT *psObj = psObjects; psObj; psObj = psObj->psNext)
-		{
-			if (objSelectFunc(psObj))
-			{
-				apsObjectList.push_back(psObj);
-			}
-		}
-
+		apsObjectList = objectList;
 		if (apsObjectList.empty())
 		{
 			// No objects so close the stats window if it's up...
@@ -4508,7 +4498,15 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		powerbar.hidePowerBar();
 	}
-	objectWidgets.addObjectWindow(psObjects, psSelected, bForceStats, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = psObjects; psObj; psObj = psObj->psNext)
+	{
+		if (objSelectFunc(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
+	objectWidgets.addObjectWindow(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
 		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
@@ -4791,9 +4789,17 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = apsDroidLists[selectedPlayer]; psObj; psObj = psObj->psNext)
+	{
+		if (objSelectFunc(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
@@ -4821,9 +4827,17 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = interfaceStructList(); psObj; psObj = psObj->psNext)
+	{
+		if (objSelectFunc(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
@@ -4847,9 +4861,17 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = interfaceStructList(); psObj; psObj = psObj->psNext)
+	{
+		if (objSelectFunc(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
@@ -4873,9 +4895,17 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = apsDroidLists[selectedPlayer]; psObj; psObj = psObj->psNext)
+	{
+		if (objSelectFunc(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
-	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
+	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	return b;
 }
 

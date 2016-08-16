@@ -4806,7 +4806,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)apsDroidLists[selectedPlayer],
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
-	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}
@@ -4836,7 +4836,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
-	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}
@@ -4862,7 +4862,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow((BASE_OBJECT *)interfaceStructList(),
 	                          (BASE_OBJECT *)psSelected, true, objSelectFunc, objGetStatsFunc, objSetStatsFunc);
-	if (psSelected && widgGetFromID(psWScreen, IDSTAT_FORM))
+	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}

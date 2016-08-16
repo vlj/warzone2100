@@ -274,13 +274,27 @@ static SDWORD intNumSelectedDroids(UDWORD droidType);
 
 static void static_reset_windows(BASE_OBJECT *psObj);
 
-static std::vector<uint16_t> friendly_fillResearchList(uint32_t playerID, uint16_t topic, uint16_t limit)
+namespace
+{
+
+std::vector<uint16_t> friendly_fillResearchList(uint32_t playerID, uint16_t topic, uint16_t limit)
 {
 	std::array<uint16_t, MAXRESEARCH> pList;
 	uint16_t numResearch = fillResearchList(pList.data(), playerID, topic, limit);
 	std::vector<uint16_t> result(numResearch);
 	memcpy(result.data(), pList.data(), numResearch * sizeof(uint16_t));
 	return result;
+}
+
+template<typename T>
+void foreach_legacy(T* start, std::function<void(T &)> f)
+{
+	for (T *psStruct = start; psStruct != nullptr; psStruct = psStruct->psNext)
+	{
+		f(*psStruct);
+	}
+}
+
 }
 
 /***************************GAME CODE ****************************/
@@ -486,11 +500,11 @@ struct reticule_widgets
 		ReticuleEnabled[RETBUT_INTELMAP].Enabled = true;
 		ReticuleEnabled[RETBUT_COMMAND].Enabled = false;
 
-		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
+		foreach_legacy<STRUCTURE>(interfaceStructList(), [this] (STRUCTURE &psStruct)
 		{
-			if (psStruct->status == SS_BUILT)
+			if (psStruct.status == SS_BUILT)
 			{
-				switch (psStruct->pStructureType->type)
+				switch (psStruct.pStructureType->type)
 				{
 				case REF_RESEARCH:
 					if (!missionLimboExpand())
@@ -510,11 +524,11 @@ struct reticule_widgets
 					break;
 				}
 			}
-		}
+		});
 
-		for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != NULL; psDroid = psDroid->psNext)
+		foreach_legacy<DROID>(apsDroidLists[selectedPlayer], [this](DROID &psDroid)
 		{
-			switch (psDroid->droidType)
+			switch (psDroid.droidType)
 			{
 			case DROID_CONSTRUCT:
 			case DROID_CYBORG_CONSTRUCT:
@@ -526,7 +540,7 @@ struct reticule_widgets
 			default:
 				break;
 			}
-		}
+		});
 
 		for (const BUTSTATE &but : ReticuleEnabled)
 		{
@@ -2627,10 +2641,10 @@ human_computer_interface::human_computer_interface()
 		if (psObj->type == OBJ_STRUCTURE && !offWorldKeepLists)
 		{
 			/* Deselect old buildings */
-			for (STRUCTURE *psStruct = apsStructLists[selectedPlayer]; psStruct; psStruct = psStruct->psNext)
+			foreach_legacy<STRUCTURE>(apsStructLists[selectedPlayer], [this] (STRUCTURE &psStruct)
 			{
-				psStruct->selected = false;
-			}
+				psStruct.selected = false;
+			});
 
 			/* Select new one */
 			((STRUCTURE *)psObj)->selected = true;
@@ -2716,10 +2730,10 @@ human_computer_interface::human_computer_interface()
 				releaseResearch((STRUCTURE *)psObj, ModeQueue);
 			}
 
-			for (STRUCTURE *psCurr = apsStructLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
+			foreach_legacy<STRUCTURE>(apsStructLists[selectedPlayer], [this](STRUCTURE &psCurr)
 			{
-				psCurr->selected = false;
-			}
+				psCurr.selected = false;
+			});
 			psObj->selected = true;
 			triggerEventSelected();
 		}
@@ -4310,14 +4324,14 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
 {
 	objectWidgets.apsObjectList.clear();
-	for (STRUCTURE *psCurr = interfaceStructList(); psCurr; psCurr = psCurr->psNext)
+	foreach_legacy<STRUCTURE>(interfaceStructList(), [this](STRUCTURE &psCurr)
 	{
-		if (objSelectFunc(psCurr))
+		if (objSelectFunc(&psCurr))
 		{
 			// The list is ordered now so we have to get all possible entries and sort it before checking if this is the one!
-			objectWidgets.apsObjectList.push_back(psCurr);
+			objectWidgets.apsObjectList.push_back(&psCurr);
 		}
-	}
+	});
 	// order the list
 	objectWidgets.orderFactories();
 	// now look thru the list to see which one corresponds to the factory that has just finished
@@ -4490,13 +4504,13 @@ namespace
 std::vector<BASE_OBJECT*> createSelectedObjectsList(BASE_OBJECT *psObjects,std::function<bool(BASE_OBJECT *)> predicate)
 {
 	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = psObjects; psObj != nullptr; psObj = psObj->psNext)
+	foreach_legacy<BASE_OBJECT>(psObjects, [&](BASE_OBJECT &psObj)
 	{
-		if (predicate(psObj))
+		if (predicate(&psObj))
 		{
-			apsObjectList.push_back(psObj);
+			apsObjectList.push_back(&psObj);
 		}
-	}
+	});
 	return apsObjectList;
 }
 
@@ -5093,13 +5107,13 @@ static SDWORD intNumSelectedDroids(UDWORD droidType)
 	SDWORD	num;
 
 	num = 0;
-	for (psDroid = apsDroidLists[selectedPlayer]; psDroid; psDroid = psDroid->psNext)
+	foreach_legacy<DROID>(apsDroidLists[selectedPlayer], [&](DROID &psDroid)
 	{
-		if (psDroid->selected && psDroid->droidType == droidType)
+		if (psDroid.selected && psDroid.droidType == droidType)
 		{
 			num += 1;
 		}
-	}
+	});
 
 	return num;
 }

@@ -1584,8 +1584,6 @@ struct object_widgets
 	*/
 	BASE_OBJECT *getObject(uint32_t id)
 	{
-		BASE_OBJECT		*psObj;
-
 		/* If this is a stats button, find the object button linked to it */
 		if (id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)
 		{
@@ -1594,9 +1592,7 @@ struct object_widgets
 
 		/* Find the object that the ID refers to */
 		ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid button ID %u", id);
-		psObj = apsObjectList[id - IDOBJ_OBJSTART];
-
-		return psObj;
+		return apsObjectList[id - IDOBJ_OBJSTART];
 	}
 
 	/*puts the selected players factories in order - Standard factories 1-5, then

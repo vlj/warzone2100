@@ -1614,35 +1614,6 @@ struct object_widgets
 		std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
 	}
 
-	/*Looks through the players list of droids to see if there is one selected
-	of the required type. If there is more than one, they are all deselected and
-	the first one reselected*/
-	// no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
-	DROID *intCheckForDroid(uint32_t droidType)
-	{
-		DROID *psSel = nullptr;
-
-		for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
-		{
-			if (psDroid->selected && psDroid->droidType == droidType)
-			{
-				if (psSel != nullptr)
-				{
-					if (droidType != DROID_CONSTRUCT
-						&& droidType != DROID_CYBORG_CONSTRUCT)
-					{
-						clearSelection();
-					}
-					SelectDroid(psSel);
-					break;
-				}
-				psSel = psDroid;
-			}
-		}
-
-		return psSel;
-	}
-
 	/* Remove the build widgets from the widget screen */
 	void removeObject()
 	{
@@ -2195,7 +2166,6 @@ protected:
 	/** Order the objects in the bottom bar according to their type. */
 	void orderObjectInterface()
 	{
-
 		if (apsObjectList.empty())
 		{
 			//no objects so nothing to order!
@@ -2371,6 +2341,7 @@ protected:
 
 	void handleObjectChanges();
 	BASE_OBJECT *selectObject(BASE_OBJECT *psFirst);
+	DROID *intCheckForDroid(uint32_t droidType);
 
 	template <typename T>
 	T* selectionHeuristic(const std::vector<BASE_OBJECT*> &list, T *psSelected)
@@ -2603,10 +2574,10 @@ human_computer_interface::human_computer_interface()
 			}
 			if (objectWidgets.psObjSelected == psObj)
 			{
-				objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
+				objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
 				if (!objectWidgets.psObjSelected)
 				{
-					objectWidgets.psObjSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+					objectWidgets.psObjSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
 				}
 			}
 		}
@@ -4431,6 +4402,36 @@ STRUCTURE *checkForStructure(uint32_t structType)
 	return psSel;
 }
 
+/*Looks through the players list of droids to see if there is one selected
+of the required type. If there is more than one, they are all deselected and
+the first one reselected*/
+// no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
+DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
+{
+	DROID *psSel = nullptr;
+
+	for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
+	{
+		if (psDroid->selected && psDroid->droidType == droidType)
+		{
+			if (psSel != nullptr)
+			{
+				if (droidType != DROID_CONSTRUCT
+					&& droidType != DROID_CYBORG_CONSTRUCT)
+				{
+					clearSelection();
+				}
+				SelectDroid(psSel);
+				break;
+			}
+			psSel = psDroid;
+		}
+	}
+
+	return psSel;
+}
+
+
 BASE_OBJECT *human_computer_interface::selectObject(BASE_OBJECT *psFirst)
 {
 	BASE_OBJECT *psSelected = nullptr;
@@ -4452,14 +4453,14 @@ BASE_OBJECT *human_computer_interface::selectObject(BASE_OBJECT *psFirst)
 		}
 		break;
 	case IOBJ_BUILD:
-		psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CONSTRUCT);
+		psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CONSTRUCT);
 		if (!psSelected)
 		{
-			psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_CYBORG_CONSTRUCT);
+			psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_CYBORG_CONSTRUCT);
 		}
 		break;
 	case IOBJ_COMMAND:
-		psSelected = (BASE_OBJECT *)objectWidgets.intCheckForDroid(DROID_COMMAND);
+		psSelected = (BASE_OBJECT *)intCheckForDroid(DROID_COMMAND);
 		break;
 	default:
 		break;

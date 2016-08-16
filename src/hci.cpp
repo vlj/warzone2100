@@ -1564,8 +1564,6 @@ struct object_widgets
 	/* The jump position for each object on the base bar */
 	std::vector<Vector2i> asJumpPos;
 
-	statistics stats;
-
 	object_widgets()
 	{
 		psObjSelected = nullptr;
@@ -1768,7 +1766,7 @@ struct object_widgets
 
 		/* See how many objects the player has */
 		apsObjectList = objectList;
-		if (apsObjectList.empty())
+/*		if (apsObjectList.empty())
 		{
 			// No objects so close the stats window if it's up...
 			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
@@ -1777,7 +1775,7 @@ struct object_widgets
 			}
 			// and return.
 			return false;
-		}
+		}*/
 
 		//order the objects according to what they are
 		orderObjectInterface();
@@ -2252,6 +2250,8 @@ struct human_computer_interface
 	option_widgets options;
 	object_widgets objectWidgets;
 
+	statistics stats;
+
 	void update();
 	void displayWidgets();
 	INT_RETVAL display();
@@ -2412,7 +2412,7 @@ human_computer_interface::human_computer_interface()
 	intMode = INT_NORMAL;
 
 	//make sure stats screen doesn't think it should be up
-	objectWidgets.stats.hide();
+	stats.hide();
 
 	/* make demolish stat always available */
 	if (!bInTutorial)
@@ -2488,7 +2488,7 @@ human_computer_interface::human_computer_interface()
 		psCurrentMsg = NULL;
 	};
 
-	objectWidgets.stats.onLMBPressed = [this](BASE_STATS *psStats, uint32_t id)
+	stats.onLMBPressed = [this](BASE_STATS *psStats, uint32_t id)
 	{
 		//manufacture works differently!
 		if (objectWidgets.objMode == IOBJ_MANUFACTURE)
@@ -2521,7 +2521,7 @@ human_computer_interface::human_computer_interface()
 				}
 
 				// Reset the button on the object form
-				objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
+				stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
 			}
 			return;
 		}
@@ -2545,7 +2545,7 @@ human_computer_interface::human_computer_interface()
 			objSetStatsFunc(objectWidgets.psObjSelected, NULL);
 
 			/* Reset the button on the object form */
-			objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
+			stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
 
 			/* Unlock the button on the stats form */
 			widgSetButtonState(psWScreen, id, 0);
@@ -2580,12 +2580,12 @@ human_computer_interface::human_computer_interface()
 			//if this returns false, there's a problem so set the button to NULL
 			if (!objSetStatsFunc(objectWidgets.psObjSelected, psStats))
 			{
-				objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
+				stats.setStats(objectWidgets.getObject(objStatID), objStatID, NULL, objectWidgets.objMode);
 			}
 			else
 			{
 				// Reset the button on the object form
-				objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, psStats, objectWidgets.objMode);
+				stats.setStats(objectWidgets.getObject(objStatID), objStatID, psStats, objectWidgets.objMode);
 			}
 		}
 
@@ -2593,7 +2593,7 @@ human_computer_interface::human_computer_interface()
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		// Close the stats box
-		objectWidgets.stats.removeStats();
+		stats.removeStats();
 		intMode = INT_OBJECT;
 
 		// Reset the tabs on the object form
@@ -2627,7 +2627,7 @@ human_computer_interface::human_computer_interface()
 		}
 	};
 
-	objectWidgets.stats.onRMBPressed = [this](BASE_STATS *psStats)
+	stats.onRMBPressed = [this](BASE_STATS *psStats)
 	{
 //		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
 
@@ -2663,19 +2663,19 @@ human_computer_interface::human_computer_interface()
 				}
 
 				// Reset the button on the object form
-				objectWidgets.stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
+				stats.setStats(objectWidgets.getObject(objStatID), objStatID, (BASE_STATS *)psNext, objectWidgets.objMode);
 			}
 		}
 
 	};
 
-	objectWidgets.stats.onClose = [this]()
+	stats.onClose = [this]()
 	{
 		/* Get the tabs on the object form */
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		/* Close the structure box without doing anything */
-		objectWidgets.stats.removeStats();
+		stats.removeStats();
 		intMode = INT_OBJECT;
 
 		/* Reset the tabs on the build form */
@@ -2686,7 +2686,7 @@ human_computer_interface::human_computer_interface()
 		return;
 	};
 
-	objectWidgets.stats.onLoopButton = [this]()
+	stats.onLoopButton = [this]()
 	{
 		// Process the loop button.
 		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
@@ -2716,7 +2716,7 @@ human_computer_interface::human_computer_interface()
 		return;
 	};
 
-	objectWidgets.stats.onDeliveryPointButton = [this]()
+	stats.onDeliveryPointButton = [this]()
 	{
 		// Process the DP button
 		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
@@ -2733,7 +2733,7 @@ human_computer_interface::human_computer_interface()
 		return;
 	};
 
-	objectWidgets.stats.onObsoleteButton = [this]()
+	stats.onObsoleteButton = [this]()
 	{
 		includeRedundantDesigns = !includeRedundantDesigns;
 		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
@@ -2761,7 +2761,7 @@ human_computer_interface::human_computer_interface()
 			widgSetButtonState(psWScreen, statButID, 0);
 			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
 			{
-				objectWidgets.stats.removeStats();
+				stats.removeStats();
 			}
 			if (objectWidgets.psObjSelected == psObj)
 			{
@@ -3062,7 +3062,7 @@ void human_computer_interface::doScreenRefresh()
 			// now make sure the stats screen isn't up
 			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 			{
-				objectWidgets.stats.removeStatsNoAnim();
+				stats.removeStatsNoAnim();
 			}
 
 			// see if there was a delivery point being positioned
@@ -3120,9 +3120,9 @@ void human_computer_interface::doScreenRefresh()
 			    (widgGetFromID(psWScreen, IDORDER_FORM) != NULL))
 			{
 				intRemoveOrderNoAnim();
-				if (objectWidgets.stats.statID)
+				if (stats.statID)
 				{
-					widgSetButtonState(psWScreen, objectWidgets.stats.statID, 0);
+					widgSetButtonState(psWScreen, stats.statID, 0);
 				}
 			}
 		}
@@ -3162,11 +3162,11 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		stopStructPosition();
 		if (NoAnim)
 		{
-			objectWidgets.stats.removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 		}
 		else
 		{
-			objectWidgets.stats.removeStats();
+			stats.removeStats();
 		}
 		break;
 	case INT_OBJECT:
@@ -3185,13 +3185,13 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	case INT_STAT:
 		if (NoAnim)
 		{
-			objectWidgets.stats.removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 			objectWidgets.removeObjectNoAnim();
 			powerbar.hidePowerBar();
 		}
 		else
 		{
-			objectWidgets.stats.removeStats();
+			stats.removeStats();
 			objectWidgets.removeObject();
 			powerbar.hidePowerBar();
 		}
@@ -3323,9 +3323,9 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsTemplateList.push_back(&*i);
 			}
-			objectWidgets.stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+			stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 			objectWidgets.objMode = IOBJ_MANUFACTURE;
-			objectWidgets.stats.addStats(objectWidgets.stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
+			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -3336,9 +3336,9 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
 			}
-			objectWidgets.stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+			stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 			objectWidgets.objMode = IOBJ_BUILD;
-			objectWidgets.stats.addStats(objectWidgets.stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -3349,8 +3349,8 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			objectWidgets.stats.ppsStatsList = (BASE_STATS **)apsFeatureList.data();
-			objectWidgets.stats.addStats(objectWidgets.stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
+			stats.ppsStatsList = (BASE_STATS **)apsFeatureList.data();
+			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -3380,7 +3380,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
 		/* Clicked on a stat button - need to look for a location for it */
-		psPositionStats = objectWidgets.stats.ppsStatsList[id - IDSTAT_START];
+		psPositionStats = stats.ppsStatsList[id - IDSTAT_START];
 		if (psPositionStats->ref >= REF_TEMPLATE_START &&
 		    psPositionStats->ref < REF_TEMPLATE_START + REF_RANGE)
 		{
@@ -3401,7 +3401,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	}
 	else if (id == IDSTAT_CLOSE)
 	{
-		objectWidgets.stats.removeStats();
+		stats.removeStats();
 		stopStructPosition();
 		intMode = INT_NORMAL;
 		objectWidgets.objMode = IOBJ_NONE;
@@ -3515,9 +3515,9 @@ INT_RETVAL human_computer_interface::display()
 	}
 
 	/* Extra code for the power bars to deal with the shadow */
-	powerbar.runPower(objectWidgets.stats.ppsStatsList, apsStructStatsList, ppResearchList);
+	powerbar.runPower(stats.ppsStatsList, apsStructStatsList, ppResearchList);
 
-	objectWidgets.stats.runStats(objectWidgets.objMode);
+	stats.runStats(objectWidgets.objMode);
 
 	if (OrderUp)
 	{
@@ -3970,7 +3970,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		{
 			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 		}
-		objectWidgets.stats.removeStatsNoAnim();
+		stats.removeStatsNoAnim();
 	}
 
 	/* Display the stats window
@@ -4014,7 +4014,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 			selectedPlayer, MAXSTRUCTURES - 1);
 
-		objectWidgets.stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+		stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 	}
 
 	//have to determine the Template list once the factory has been chosen
@@ -4022,7 +4022,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	{
 		fillTemplateList(apsTemplateList, (STRUCTURE *)psObj);
 		numStatsListEntries = apsTemplateList.size();
-		objectWidgets.stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0];  // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0];  // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 	}
 
 	/*have to calculate the list each time the Topic button is pressed
@@ -4076,8 +4076,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 		}
 	}
 
-	objectWidgets.stats.addStats(objectWidgets.stats.ppsStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
-
+	stats.addStats(stats.ppsStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
 }
 
 void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
@@ -4287,14 +4286,14 @@ void human_computer_interface::objectDied(uint32_t objID)
 
 		// clear the stats button
 		statsID = IDOBJ_STATSTART + objID - IDOBJ_OBJSTART;
-		objectWidgets.stats.setStats(objectWidgets.getObject(statsID), statsID, NULL, objectWidgets.objMode);
+		stats.setStats(objectWidgets.getObject(statsID), statsID, NULL, objectWidgets.objMode);
 		// and disable it
 		widgSetButtonState(psWScreen, statsID, WBUT_DISABLE);
 
 		// remove the stat screen if necessary
 		if ((intMode == INT_STAT) && statsID == objStatID)
 		{
-			objectWidgets.stats.removeStatsNoAnim();
+			stats.removeStatsNoAnim();
 			intMode = INT_OBJECT;
 		}
 	}
@@ -4316,7 +4315,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 			{
 				if (psCurr == psDroid)
 				{
-					objectWidgets.stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
+					stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 					break;
 				}
 				droidID++;
@@ -4341,7 +4340,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 				if (psCurr == psDroid)
 				{
 					STRUCTURE *target = castStructure(psCurr->order.psObj);
-					objectWidgets.stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr, objectWidgets.objMode);
+					stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr, objectWidgets.objMode);
 					break;
 				}
 				droidID++;
@@ -4378,7 +4377,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
-			objectWidgets.stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
+			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 			// clear the loop button if interface is up
 			if (widgGetFromID(psWScreen, IDSTAT_LOOP_BUTTON))
 			{
@@ -4399,7 +4398,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
-			objectWidgets.stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject, objectWidgets.objMode);
+			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject, objectWidgets.objMode);
 		}
 	}
 }
@@ -4565,7 +4564,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		powerbar.showPowerBar();
 	}
-	objectWidgets.stats.removeIfDied();
+	stats.removeIfDied();
 
 	return true;
 }
@@ -4823,7 +4822,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 bool human_computer_interface::addBuild(DROID *psSelected)
 {
 	/* Store the correct stats list for future reference */
-	objectWidgets.stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+	stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
 
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
@@ -4854,7 +4853,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Store the correct stats list for future reference */
 	if (!apsTemplateList.empty())
 	{
-		objectWidgets.stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
 	}
 
 	objSelectFunc = selectManufacture;
@@ -4883,7 +4882,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
-	objectWidgets.stats.ppsStatsList = (BASE_STATS **)ppResearchList.data();
+	stats.ppsStatsList = (BASE_STATS **)ppResearchList.data();
 
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
@@ -4911,7 +4910,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 
 bool human_computer_interface::addCommand(DROID *psSelected)
 {
-	objectWidgets.stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
+	stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
 
 	objSelectFunc = selectCommand;
 	objGetStatsFunc = getCommandStats;
@@ -5451,7 +5450,7 @@ void interfaceShutDown(void)
 void intResetPreviousObj(void)
 {
 	//make sure stats screen doesn't think it should be up
-	default_hci->objectWidgets.stats.hide();
+	default_hci->stats.hide();
 	default_hci->objectWidgets.resetPreviousObj();
 }
 
@@ -5594,17 +5593,17 @@ bool intAddOptions(void)
 
 void intRemoveStats(void)
 {
-	default_hci->objectWidgets.stats.removeStats();
+	default_hci->stats.removeStats();
 }
 
 void intRemoveStatsNoAnim(void)
 {
-	default_hci->objectWidgets.stats.removeStatsNoAnim();
+	default_hci->stats.removeStatsNoAnim();
 }
 
 StateButton *makeObsoleteButton(WIDGET *parent)
 {
-	return default_hci->objectWidgets.stats.makeObsoleteButton(parent);
+	return default_hci->stats.makeObsoleteButton(parent);
 }
 
 void addIntelScreen(void)

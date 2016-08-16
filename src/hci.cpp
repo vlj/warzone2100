@@ -1702,102 +1702,6 @@ struct object_widgets
 		return psSel;
 	}
 
-	void objStatLMBPressed(uint32_t id)
-	{
-		/* Find the object that the stats ID refers to */
-		BASE_OBJECT *psObj = getObject(id);
-		ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
-
-		static_reset_windows(psObj);
-
-		// If a droid button was clicked then clear all other selections and select it.
-		if (psObj->type == OBJ_DROID)
-		{
-			// Select the droid when the stat button (in the object window) is pressed.
-			intSelectDroid(psObj);
-			psObjSelected = psObj;
-		}
-		else if (psObj->type == OBJ_STRUCTURE)
-		{
-			if (StructIsFactory((STRUCTURE *)psObj))
-			{
-				//might need to cancel the hold on production
-				releaseProduction((STRUCTURE *)psObj, ModeQueue);
-			}
-			else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
-			{
-				//might need to cancel the hold on research facilty
-				releaseResearch((STRUCTURE *)psObj, ModeQueue);
-			}
-
-			for (STRUCTURE *psCurr = apsStructLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
-			{
-				psCurr->selected = false;
-			}
-			psObj->selected = true;
-			triggerEventSelected();
-		}
-	}
-
-	/*Deals with the RMB click for the Object Stats buttons */
-	void objStatRMBPressed(uint32_t id)
-	{
-		BASE_OBJECT		*psObj;
-		STRUCTURE		*psStructure;
-
-		ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < apsObjectList.size(), "Invalid stat id");
-
-		/* Find the object that the ID refers to */
-		psObj = getObject(id);
-		if (!psObj)
-		{
-			return;
-		}
-		static_reset_windows(psObj);
-		if (psObj->type == OBJ_STRUCTURE)
-		{
-			psStructure = (STRUCTURE *)psObj;
-			if (StructIsFactory(psStructure))
-			{
-				//check if active
-				if (StructureIsManufacturingPending(psStructure))
-				{
-					//if not curently on hold, set it
-					if (!StructureIsOnHoldPending(psStructure))
-					{
-						holdProduction(psStructure, ModeQueue);
-					}
-					else
-					{
-						//cancel if have RMB-clicked twice
-						cancelProduction(psStructure, ModeQueue);
-						//play audio to indicate cancelled
-						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-					}
-				}
-			}
-			else if (psStructure->pStructureType->type == REF_RESEARCH)
-			{
-				//check if active
-				if (structureIsResearchingPending(psStructure))
-				{
-					//if not curently on hold, set it
-					if (!StructureIsOnHoldPending(psStructure))
-					{
-						holdResearch(psStructure, ModeQueue);
-					}
-					else
-					{
-						//cancel if have RMB-clicked twice
-						cancelResearch(psStructure, ModeQueue);
-						//play audio to indicate cancelled
-						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-					}
-				}
-			}
-		}
-	}
-
 	/* Remove the build widgets from the widget screen */
 	void removeObject()
 	{
@@ -1829,7 +1733,8 @@ struct object_widgets
 	std::function<void(uint32_t)> onCTRLClick;
 	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectLeftClick;
 	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectRightClick;
-	std::function<void(uint32_t)> onObjectStatClick;
+	std::function<void(BASE_OBJECT *psObj)> onObjStatRMBPressed;
+	std::function<void(BASE_OBJECT *psObj)> onObjStatLMBPressed;
 	std::function<void(void)> onClose;
 
 	void dispatchMouseClickEvent(uint32_t id)
@@ -1867,7 +1772,17 @@ struct object_widgets
 		if (id >= IDOBJ_STATSTART &&
 			id <= IDOBJ_STATEND)
 		{
-			onObjectStatClick(id);
+			/* Find the object that the stats ID refers to */
+			BASE_OBJECT *psObj = getObject(id);
+			ASSERT_OR_RETURN(, psObj, "Missing referred to object id %u", id);
+			ASSERT_OR_RETURN(, id - IDOBJ_STATSTART < apsObjectList.size(), "Invalid stat id");
+			/* deal with RMB clicks */
+			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+			{
+				onObjStatRMBPressed(psObj);
+				return;
+			}
+			onObjStatLMBPressed(psObj);
 			return;
 		}
 
@@ -2893,23 +2808,96 @@ human_computer_interface::human_computer_interface()
 		}
 	};
 
-	objectWidgets.onObjectStatClick = [this](uint32_t id)
-	{
-		/* deal with RMB clicks */
-		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-		{
-			objectWidgets.objStatRMBPressed(id);
-			return;
-		}
-		objectWidgets.objStatLMBPressed(id);
-		return;
-	};
-
 	objectWidgets.onClose = [this]()
 	{
 		resetScreen(false);
 		intMode = INT_NORMAL;
 		return;
+	};
+
+
+	objectWidgets.onObjStatLMBPressed = [this] (BASE_OBJECT *psObj)
+	{
+		static_reset_windows(psObj);
+
+		// If a droid button was clicked then clear all other selections and select it.
+		if (psObj->type == OBJ_DROID)
+		{
+			// Select the droid when the stat button (in the object window) is pressed.
+			intSelectDroid(psObj);
+			objectWidgets.psObjSelected = psObj;
+		}
+		else if (psObj->type == OBJ_STRUCTURE)
+		{
+			if (StructIsFactory((STRUCTURE *)psObj))
+			{
+				//might need to cancel the hold on production
+				releaseProduction((STRUCTURE *)psObj, ModeQueue);
+			}
+			else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
+			{
+				//might need to cancel the hold on research facilty
+				releaseResearch((STRUCTURE *)psObj, ModeQueue);
+			}
+
+			for (STRUCTURE *psCurr = apsStructLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
+			{
+				psCurr->selected = false;
+			}
+			psObj->selected = true;
+			triggerEventSelected();
+		}
+	};
+
+	objectWidgets.onObjStatRMBPressed = [this](BASE_OBJECT *psObj)
+	{
+		if (!psObj)
+		{
+			return;
+		}
+		static_reset_windows(psObj);
+		if (psObj->type == OBJ_STRUCTURE)
+		{
+			STRUCTURE *psStructure = (STRUCTURE *)psObj;
+			if (StructIsFactory(psStructure))
+			{
+				//check if active
+				if (StructureIsManufacturingPending(psStructure))
+				{
+					//if not curently on hold, set it
+					if (!StructureIsOnHoldPending(psStructure))
+					{
+						holdProduction(psStructure, ModeQueue);
+					}
+					else
+					{
+						//cancel if have RMB-clicked twice
+						cancelProduction(psStructure, ModeQueue);
+						//play audio to indicate cancelled
+						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
+					}
+				}
+			}
+			else if (psStructure->pStructureType->type == REF_RESEARCH)
+			{
+				//check if active
+				if (structureIsResearchingPending(psStructure))
+				{
+					//if not curently on hold, set it
+					if (!StructureIsOnHoldPending(psStructure))
+					{
+						holdResearch(psStructure, ModeQueue);
+					}
+					else
+					{
+						//cancel if have RMB-clicked twice
+						cancelResearch(psStructure, ModeQueue);
+						//play audio to indicate cancelled
+						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
+					}
+				}
+			}
+		}
 	};
 }
 

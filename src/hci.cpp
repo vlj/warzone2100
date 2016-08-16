@@ -1648,31 +1648,6 @@ struct object_widgets
 		std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
 	}
 
-	/*Looks through the players list of structures to see if there is one selected
-	of the required type. If there is more than one, they are all deselected and
-	the first one reselected*/
-	STRUCTURE *checkForStructure(uint32_t structType)
-	{
-		STRUCTURE *psSel = nullptr;
-
-		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != nullptr; psStruct = psStruct->psNext)
-		{
-			if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
-			{
-				if (psSel != nullptr)
-				{
-					clearSelection();
-					psSel->selected = true;
-					break;
-				}
-				psSel = psStruct;
-			}
-		}
-		triggerEventSelected();
-		return psSel;
-	}
-
-
 	/*Looks through the players list of droids to see if there is one selected
 	of the required type. If there is more than one, they are all deselected and
 	the first one reselected*/
@@ -2278,6 +2253,30 @@ struct object_widgets
 	}
 
 protected:
+	/*Looks through the players list of structures to see if there is one selected
+	of the required type. If there is more than one, they are all deselected and
+	the first one reselected*/
+	STRUCTURE *checkForStructure(uint32_t structType)
+	{
+		STRUCTURE *psSel = nullptr;
+
+		for (STRUCTURE *psStruct = interfaceStructList(); psStruct != nullptr; psStruct = psStruct->psNext)
+		{
+			if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
+			{
+				if (psSel != nullptr)
+				{
+					clearSelection();
+					psSel->selected = true;
+					break;
+				}
+				psSel = psStruct;
+			}
+		}
+		triggerEventSelected();
+		return psSel;
+	}
+
 	void selectObject(BASE_OBJECT * &psSelected, BASE_OBJECT * psFirst)
 	{
 		switch (objMode)

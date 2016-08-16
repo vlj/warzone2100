@@ -2375,6 +2375,19 @@ protected:
 
 	void handleObjectChanges();
 	BASE_OBJECT *selectObject(BASE_OBJECT *psFirst);
+
+	template <typename T>
+	T* selectionHeuristic(const std::vector<BASE_OBJECT*> &list, T *psSelected)
+	{
+		/*if psSelected != NULL then check its in the list of suitable objects for
+		this instance of the interface - this could happen when a structure is upgraded*/
+		//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
+		if (std::find(list.begin(), list.end(), psSelected) != list.end())
+			return psSelected;
+		BASE_OBJECT *psFirst = list.empty() ? nullptr : list.front();
+		// check if there is an object selected of the required type
+		return reinterpret_cast<T *>(selectObject(psFirst));
+	}
 };
 
 human_computer_interface::human_computer_interface()
@@ -4474,35 +4487,32 @@ BASE_OBJECT *human_computer_interface::selectObject(BASE_OBJECT *psFirst)
 	return psFirst;
 }
 
+namespace
+{
+
+std::vector<BASE_OBJECT*> createSelectedObjectsList(BASE_OBJECT *psObjects,std::function<bool(BASE_OBJECT *)> predicate)
+{
+	std::vector<BASE_OBJECT*> apsObjectList;
+	for (BASE_OBJECT *psObj = psObjects; psObj != nullptr; psObj = psObj->psNext)
+	{
+		if (predicate(psObj))
+		{
+			apsObjectList.push_back(psObj);
+		}
+	}
+	return apsObjectList;
+}
+
+} // end anonymous namespace
+
 bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
 		powerbar.hidePowerBar();
 	}
-	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = psObjects; psObj; psObj = psObj->psNext)
-	{
-		if (objSelectFunc(psObj))
-		{
-			apsObjectList.push_back(psObj);
-		}
-	}
-	/*if psSelected != NULL then check its in the list of suitable objects for
-	this instance of the interface - this could happen when a structure is upgraded*/
-	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-	{
-		//initialise psSelected so gets set up with an iten in the list
-		psSelected = nullptr;
-	}
-	BASE_OBJECT *psFirst = apsObjectList.front();
-	// set the selected object if necessary
-	if (psSelected == nullptr)
-	{
-		//first check if there is an object selected of the required type
-		psSelected = selectObject(psFirst);
-	}
+	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(psObjects, objSelectFunc);
+	psSelected = selectionHeuristic(apsObjectList, psSelected);
 	objectWidgets.addObjectWindow(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
@@ -4786,30 +4796,8 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
-	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = apsDroidLists[selectedPlayer]; psObj; psObj = psObj->psNext)
-	{
-		if (objSelectFunc(psObj))
-		{
-			apsObjectList.push_back(psObj);
-		}
-	}
-	/*if psSelected != NULL then check its in the list of suitable objects for
-	this instance of the interface - this could happen when a structure is upgraded*/
-	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-	{
-		//initialise psSelected so gets set up with an iten in the list
-		psSelected = nullptr;
-	}
-	BASE_OBJECT *psFirst = apsObjectList.front();
-
-	// set the selected object if necessary
-	if (psSelected == nullptr)
-	{
-		//first check if there is an object selected of the required type
-		psSelected = (DROID *)selectObject(psFirst);
-	}
+	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
+	psSelected = selectionHeuristic(apsObjectList, psSelected);
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4840,30 +4828,8 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
-	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = interfaceStructList(); psObj; psObj = psObj->psNext)
-	{
-		if (objSelectFunc(psObj))
-		{
-			apsObjectList.push_back(psObj);
-		}
-	}
-	/*if psSelected != NULL then check its in the list of suitable objects for
-	this instance of the interface - this could happen when a structure is upgraded*/
-	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-	{
-		//initialise psSelected so gets set up with an iten in the list
-		psSelected = nullptr;
-	}
-	BASE_OBJECT *psFirst = apsObjectList.front();
-
-	// set the selected object if necessary
-	if (psSelected == nullptr)
-	{
-		//first check if there is an object selected of the required type
-		psSelected = (STRUCTURE *)selectObject(psFirst);
-	}
+	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
+	psSelected = selectionHeuristic(apsObjectList, psSelected);
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4890,29 +4856,8 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
-	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = interfaceStructList(); psObj; psObj = psObj->psNext)
-	{
-		if (objSelectFunc(psObj))
-		{
-			apsObjectList.push_back(psObj);
-		}
-	}
-	/*if psSelected != NULL then check its in the list of suitable objects for
-	this instance of the interface - this could happen when a structure is upgraded*/
-	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-	{
-		//initialise psSelected so gets set up with an iten in the list
-		psSelected = nullptr;
-	}
-	BASE_OBJECT *psFirst = apsObjectList.front();
-	// set the selected object if necessary
-	if (psSelected == nullptr)
-	{
-		//first check if there is an object selected of the required type
-		psSelected = (STRUCTURE *)selectObject(psFirst);
-	}
+	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
+	psSelected = selectionHeuristic(apsObjectList, psSelected);
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4939,30 +4884,8 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	{
 		powerbar.hidePowerBar();
 	}
-	std::vector<BASE_OBJECT*> apsObjectList;
-	for (BASE_OBJECT *psObj = apsDroidLists[selectedPlayer]; psObj; psObj = psObj->psNext)
-	{
-		if (objSelectFunc(psObj))
-		{
-			apsObjectList.push_back(psObj);
-		}
-	}
-	/*if psSelected != NULL then check its in the list of suitable objects for
-	this instance of the interface - this could happen when a structure is upgraded*/
-	//if have reached the end of the loop and not quit out, then can't have found the selected object in the list
-	if (std::find(apsObjectList.begin(), apsObjectList.end(), psSelected) == apsObjectList.end())
-	{
-		//initialise psSelected so gets set up with an iten in the list
-		psSelected = nullptr;
-	}
-	BASE_OBJECT *psFirst = apsObjectList.front();
-
-	// set the selected object if necessary
-	if (psSelected == nullptr)
-	{
-		//first check if there is an object selected of the required type
-		psSelected = (DROID *)selectObject(psFirst);
-	}
+	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
+	psSelected = selectionHeuristic(apsObjectList, psSelected);
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);

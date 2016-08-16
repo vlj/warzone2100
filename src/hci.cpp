@@ -1112,8 +1112,8 @@ struct statistics
 		return obsoleteButton;
 	}
 
-	std::function<void(uint32_t)> onLMBPressed;
-	std::function<void(uint32_t)> onRMBPressed;
+	std::function<void(BASE_STATS *, uint32_t)> onLMBPressed;
+	std::function<void(BASE_STATS *)> onRMBPressed;
 	std::function<void(void)> onClose;
 	std::function<void(void)> onSlider;
 	std::function<void(void)> onProximityButton;
@@ -1129,15 +1129,19 @@ struct statistics
 			id <= IDSTAT_END)
 		{
 //			ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid structure stats id");
+			int compIndex = id - IDSTAT_START;
+			//get the stats
+//			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
+			BASE_STATS *psStats = ppsStatsList[compIndex];
 
 			/* deal with RMB clicks */
 			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
 			{
-				onRMBPressed(id);
+				onRMBPressed(psStats);
 				return;
 			}
 			/* deal with LMB clicks */
-			onLMBPressed(id);
+			onLMBPressed(psStats, id);
 			return;
 		}
 
@@ -2484,15 +2488,11 @@ human_computer_interface::human_computer_interface()
 		psCurrentMsg = NULL;
 	};
 
-	objectWidgets.stats.onLMBPressed = [this](uint32_t id)
+	objectWidgets.stats.onLMBPressed = [this](BASE_STATS *psStats, uint32_t id)
 	{
 		//manufacture works differently!
 		if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 		{
-			int compIndex = id - IDSTAT_START;
-			//get the stats
-			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-			BASE_STATS *psStats = objectWidgets.stats.ppsStatsList[compIndex];
 			ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");
 			ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
 			if (productionPlayer == (SBYTE)selectedPlayer)
@@ -2527,9 +2527,8 @@ human_computer_interface::human_computer_interface()
 		}
 
 		/* See if this was a click on an already selected stat */
-		BASE_STATS *psStats = objGetStatsFunc(objectWidgets.psObjSelected);
 		// only do the cancel operation if not trying to add to the build list
-		if (psStats == objectWidgets.stats.ppsStatsList[id - IDSTAT_START] && objectWidgets.objMode != IOBJ_BUILD)
+		if (psStats == objGetStatsFunc(objectWidgets.psObjSelected) && objectWidgets.objMode != IOBJ_BUILD)
 		{
 			// this needs to be done before the topic is cancelled from the structure
 			/* If Research then need to set topic to be cancelled */
@@ -2575,10 +2574,7 @@ human_computer_interface::human_computer_interface()
 				eventFireCallbackTrigger((TRIGGER_TYPE)CALL_BUILDGRID);
 			}
 
-			// Set the object stats
-			int compIndex = id - IDSTAT_START;
-			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-			psStats = objectWidgets.stats.ppsStatsList[compIndex];
+//			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
 
 			// Reset the button on the object form
 			//if this returns false, there's a problem so set the button to NULL
@@ -2631,14 +2627,12 @@ human_computer_interface::human_computer_interface()
 		}
 	};
 
-	objectWidgets.stats.onRMBPressed = [this](uint32_t id)
+	objectWidgets.stats.onRMBPressed = [this](BASE_STATS *psStats)
 	{
-		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
+//		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
 
 		if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 		{
-			BASE_STATS *psStats = objectWidgets.stats.ppsStatsList[id - IDSTAT_START];
-
 			//this now causes the production run to be decreased by one
 
 			ASSERT_OR_RETURN(, objectWidgets.psObjSelected != NULL, "Invalid structure pointer");

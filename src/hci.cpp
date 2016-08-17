@@ -1619,6 +1619,62 @@ struct optionWidget
 	}
 };
 
+namespace
+{
+	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
+	{
+		return (a == NULL ? 0 : a->id) < (b == NULL ? 0 : b->id);
+	}
+
+	bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
+	{
+		if (a == NULL || b == NULL)
+		{
+			return (a == NULL) < (b == NULL);
+		}
+		STRUCTURE *s = castStructure(a), *t = castStructure(b);
+		ASSERT_OR_RETURN(false, s != NULL && StructIsFactory(s) && t != NULL && StructIsFactory(t), "object is not a factory");
+		FACTORY *x = (FACTORY *)s->pFunctionality, *y = (FACTORY *)t->pFunctionality;
+		if (x->psAssemblyPoint->factoryType != y->psAssemblyPoint->factoryType)
+		{
+			return x->psAssemblyPoint->factoryType < y->psAssemblyPoint->factoryType;
+		}
+		return x->psAssemblyPoint->factoryInc < y->psAssemblyPoint->factoryInc;
+	}
+
+	/** Order the objects in the bottom bar according to their type. */
+	void orderObjectList(std::vector<BASE_OBJECT *> &list)
+	{
+		if (list.empty())
+		{
+			//no objects so nothing to order!
+			return;
+		}
+
+		switch (list[0]->type)
+		{
+		case OBJ_STRUCTURE:
+			if (StructIsFactory((STRUCTURE *)list[0]))
+			{
+				/*puts the selected players factories in order - Standard factories 1-5, then
+				cyborg factories 1-5 and then Vtol factories 1-5*/
+				std::sort(list.begin(), list.end(), sortFactoryByTypeFunction);
+			}
+			else if (((STRUCTURE *)list[0])->pStructureType->type == REF_RESEARCH)
+			{
+				std::reverse(list.begin(), list.end());  // Why reverse this list, instead of sorting it?
+			}
+			break;
+		case OBJ_DROID:
+			// bubble sort on the ID - first built will always be first in the list
+			std::sort(list.begin(), list.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
+		default:
+			//nothing to do as yet!
+			break;
+		}
+	}
+}
+
 struct objectWidget
 {
 	// store the objects that are being used for the object bar
@@ -1680,25 +1736,6 @@ struct objectWidget
 		/* Find the object that the ID refers to */
 		ASSERT_OR_RETURN(NULL, id - IDOBJ_OBJSTART < apsObjectList.size(), "Invalid button ID %u", id);
 		return apsObjectList[id - IDOBJ_OBJSTART];
-	}
-
-	/*puts the selected players factories in order - Standard factories 1-5, then
-	cyborg factories 1-5 and then Vtol factories 1-5*/
-	void orderFactories()
-	{
-		std::sort(apsObjectList.begin(), apsObjectList.end(), sortFactoryByTypeFunction);
-	}
-
-	//reorder the research facilities so that first built is first in the list
-	void orderResearch()
-	{
-		std::reverse(apsObjectList.begin(), apsObjectList.end());  // Why reverse this list, instead of sorting it?
-	}
-	// reorder the commanders
-	void orderDroids()
-	{
-		// bubble sort on the ID - first built will always be first in the list
-		std::sort(apsObjectList.begin(), apsObjectList.end(), sortObjectByIdFunction);  // Why sort this list, instead of reversing it?
 	}
 
 	/* Remove the build widgets from the widget screen */
@@ -1818,9 +1855,6 @@ struct objectWidget
 			// and return.
 			return false;
 		}*/
-
-		//order the objects according to what they are
-		orderObjectInterface();
 
 		/* Reset the current object and store the current list */
 		psObjSelected = nullptr;
@@ -2229,57 +2263,6 @@ struct objectWidget
 
 		return true;
 	}
-
-protected:
-	/** Order the objects in the bottom bar according to their type. */
-	void orderObjectInterface()
-	{
-		if (apsObjectList.empty())
-		{
-			//no objects so nothing to order!
-			return;
-		}
-
-		switch (apsObjectList[0]->type)
-		{
-		case OBJ_STRUCTURE:
-			if (StructIsFactory((STRUCTURE *)apsObjectList[0]))
-			{
-				orderFactories();
-			}
-			else if (((STRUCTURE *)apsObjectList[0])->pStructureType->type == REF_RESEARCH)
-			{
-				orderResearch();
-			}
-			break;
-		case OBJ_DROID:
-			orderDroids();
-		default:
-			//nothing to do as yet!
-			break;
-		}
-	}
-
-	static bool sortObjectByIdFunction(BASE_OBJECT *a, BASE_OBJECT *b)
-	{
-		return (a == NULL ? 0 : a->id) < (b == NULL ? 0 : b->id);
-	}
-
-	static bool sortFactoryByTypeFunction(BASE_OBJECT *a, BASE_OBJECT *b)
-	{
-		if (a == NULL || b == NULL)
-		{
-			return (a == NULL) < (b == NULL);
-		}
-		STRUCTURE *s = castStructure(a), *t = castStructure(b);
-		ASSERT_OR_RETURN(false, s != NULL && StructIsFactory(s) && t != NULL && StructIsFactory(t), "object is not a factory");
-		FACTORY *x = (FACTORY *)s->pFunctionality, *y = (FACTORY *)t->pFunctionality;
-		if (x->psAssemblyPoint->factoryType != y->psAssemblyPoint->factoryType)
-		{
-			return x->psAssemblyPoint->factoryType < y->psAssemblyPoint->factoryType;
-		}
-		return x->psAssemblyPoint->factoryInc < y->psAssemblyPoint->factoryInc;
-	}
 };
 
 struct human_computer_interface
@@ -2398,8 +2381,8 @@ protected:
 	// Refresh widgets once per game cycle if pending flag is set.
 	//
 	void doScreenRefresh();
-	// Rebuilds apsObjectList, and returns the index of psBuilding in apsObjectList, or returns apsObjectList.size() if not present (not sure whether that's supposed to be possible).
-	unsigned rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding);
+	// Build factory list
+	std::vector<BASE_OBJECT *> rebuildFactoryList();
 	// clean up when an object dies
 	void objectDied(uint32_t objID);
 	/* Process return codes from the object placement stats screen */
@@ -4416,21 +4399,20 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	}
 }
 
-unsigned human_computer_interface::rebuildFactoryListAndFindIndex(STRUCTURE *psBuilding)
+std::vector<BASE_OBJECT *> human_computer_interface::rebuildFactoryList()
 {
-	objectWidgets.apsObjectList.clear();
-	foreach_legacy<STRUCTURE>(interfaceStructList(), [this](STRUCTURE &psCurr)
+	std::vector<BASE_OBJECT *> result;
+	foreach_legacy<STRUCTURE>(interfaceStructList(), [this, &result](STRUCTURE &psCurr)
 	{
 		if (objSelectFunc(&psCurr))
 		{
 			// The list is ordered now so we have to get all possible entries and sort it before checking if this is the one!
-			objectWidgets.apsObjectList.push_back(&psCurr);
+			result.push_back(&psCurr);
 		}
 	});
 	// order the list
-	objectWidgets.orderFactories();
-	// now look thru the list to see which one corresponds to the factory that has just finished
-	return std::find(objectWidgets.apsObjectList.begin(), objectWidgets.apsObjectList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
+	std::sort(result.begin(), result.end(), sortFactoryByTypeFunction);
+	return result;
 }
 
 /* Tell the interface a factory has completed building ALL droids */
@@ -4441,7 +4423,10 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		/* Find which button the structure is on and clear it's stats */
-		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
+		std::vector<BASE_OBJECT * > factoryList = rebuildFactoryList();
+		objectWidgets.apsObjectList = factoryList;
+		// now look thru the list to see which one corresponds to the factory that has just finished
+		uint32_t structureIndex =  std::find(factoryList.begin(), factoryList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
@@ -4454,7 +4439,6 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 	}
 }
 
-
 void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
@@ -4462,7 +4446,9 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_MANUFACTURE)
 	{
 		/* Find which button the structure is on and update its stats */
-		unsigned structureIndex = rebuildFactoryListAndFindIndex(psBuilding);
+		std::vector<BASE_OBJECT * > factoryList = rebuildFactoryList();
+		objectWidgets.apsObjectList = factoryList;
+		uint32_t structureIndex = std::find(factoryList.begin(), factoryList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject, objectWidgets.objMode);
@@ -4623,6 +4609,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		asJumpPos.clear();
 	}
+	orderObjectList(apsObjectList);
 	objectWidgets.add(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
@@ -4910,6 +4897,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
+	orderObjectList(apsObjectList);
 	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
@@ -4940,6 +4928,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
+	orderObjectList(apsObjectList);
 	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
@@ -4970,6 +4959,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
+	orderObjectList(apsObjectList);
 	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
@@ -5002,6 +4992,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
+	orderObjectList(apsObjectList);
 	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	return b;

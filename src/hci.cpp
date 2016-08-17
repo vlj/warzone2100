@@ -274,8 +274,6 @@ static void processProximityButtons(UDWORD id);
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType);
 
-static void static_reset_windows(BASE_OBJECT *psObj);
-
 namespace
 {
 
@@ -422,9 +420,9 @@ static void intSelectDroid(BASE_OBJECT *psObj)
 	triggerEventSelected();
 }
 
-struct reticule_widgets
+struct reticuleWidget
 {
-	reticule_widgets()
+	reticuleWidget()
 	{
 		ReticuleEnabled = {
 			BUTSTATE{ IDRET_CANCEL, false, false },
@@ -655,7 +653,7 @@ protected:
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
 };
 
-struct powerbar_widgets
+struct powerbarWidget
 {
 	/* Add the power bars to the screen */
 	bool addPower()
@@ -791,7 +789,7 @@ protected:
 	bool powerBarUp = false;
 };
 
-struct statistics
+struct statsWidget
 {
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
@@ -809,7 +807,7 @@ struct statistics
 	std::function<void(void)> onDeliveryPointButton;
 	std::function<void(void)> onObsoleteButton;
 
-	statistics()
+	statsWidget()
 	{
 		closeButtonDesc.formID = IDSTAT_FORM;
 		closeButtonDesc.id = IDSTAT_CLOSE;
@@ -1412,7 +1410,7 @@ protected:
 	}
 };
 
-struct option_widgets
+struct optionWidget
 {
 	/* Add the options widgets to the widget screen */
 	bool add()
@@ -1592,7 +1590,7 @@ struct option_widgets
 	}
 };
 
-struct object_widgets
+struct objectWidget
 {
 	// store the objects that are being used for the object bar
 	std::vector<BASE_OBJECT *> apsObjectList;
@@ -1607,7 +1605,7 @@ struct object_widgets
 	std::function<void(BASE_OBJECT *psObj)> onObjStatLMBPressed;
 	std::function<void(void)> onClose;
 
-	object_widgets()
+	objectWidget()
 	{
 		psObjSelected = nullptr;
 	}
@@ -2260,12 +2258,12 @@ struct human_computer_interface
 	human_computer_interface();
 	~human_computer_interface();
 
-	reticule_widgets reticule;
-	powerbar_widgets powerbar;
-	option_widgets options;
-	object_widgets objectWidgets;
+	reticuleWidget reticule;
+	powerbarWidget powerbar;
+	optionWidget options;
+	objectWidget objectWidgets;
 
-	statistics stats;
+	statsWidget stats;
 
 	void update();
 	void displayWidgets();
@@ -2888,7 +2886,7 @@ human_computer_interface::human_computer_interface()
 			}
 		}
 
-		static_reset_windows(psObj);
+		resetWindows(psObj);
 
 		// If a construction droid button was clicked then
 		// clear all other selections and select it.
@@ -2909,7 +2907,7 @@ human_computer_interface::human_computer_interface()
 
 	objectWidgets.onObjStatLMBPressed = [this] (BASE_OBJECT *psObj)
 	{
-		static_reset_windows(psObj);
+		resetWindows(psObj);
 
 		// If a droid button was clicked then clear all other selections and select it.
 		if (psObj->type == OBJ_DROID)
@@ -2946,7 +2944,7 @@ human_computer_interface::human_computer_interface()
 		{
 			return;
 		}
-		static_reset_windows(psObj);
+		resetWindows(psObj);
 		if (psObj->type == OBJ_STRUCTURE)
 		{
 			STRUCTURE *psStructure = (STRUCTURE *)psObj;
@@ -3009,12 +3007,6 @@ human_computer_interface::~human_computer_interface()
 namespace
 {
 	std::unique_ptr<human_computer_interface> default_hci;
-}
-
-// for legacy purpose
-void static_reset_windows(BASE_OBJECT *psObj)
-{
-	default_hci->resetWindows(psObj);
 }
 
 // Set widget refresh pending flag.

@@ -687,7 +687,7 @@ struct powerbar_widgets
 	}
 
 	//hides the power bar from the display
-	void hidePowerBar()
+	void hides()
 	{
 		//only hides the power bar if the player has requested no power bar
 		if (!powerBarUp)
@@ -700,7 +700,7 @@ struct powerbar_widgets
 	}
 
 	//displays the Power Bar
-	void showPowerBar()
+	void show()
 	{
 		//if its not already on display
 		if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
@@ -710,18 +710,18 @@ struct powerbar_widgets
 	}
 
 	//toggles the Power Bar display on and off
-	void togglePowerBar()
+	void toggle()
 	{
 		//toggle the flag
 		powerBarUp = !powerBarUp;
 
 		if (powerBarUp)
 		{
-			showPowerBar();
+			show();
 		}
 		else
 		{
-			hidePowerBar();
+			hides();
 		}
 	}
 
@@ -778,7 +778,7 @@ struct powerbar_widgets
 	}
 
 	//hides the power bar from the display - regardless of what player requested!
-	void forceHidePowerBar()
+	void forceHide()
 	{
 		if (widgGetFromID(psWScreen, IDPOW_POWERBAR_T))
 		{
@@ -800,6 +800,15 @@ struct statistics
 		std::array<STRUCTURE_STATS *, MAXSTRUCTURES>,
 		std::array<RESEARCH *, MAXRESEARCH> >;
 
+	std::function<void(BASE_STATS *, uint32_t)> onLMBPressed;
+	std::function<void(BASE_STATS *)> onRMBPressed;
+	std::function<void(void)> onClose;
+	std::function<void(void)> onSlider;
+	std::function<void(void)> onProximityButton;
+	std::function<void(void)> onLoopButton;
+	std::function<void(void)> onDeliveryPointButton;
+	std::function<void(void)> onObsoleteButton;
+
 	statistics()
 	{
 		closeButtonDesc.formID = IDSTAT_FORM;
@@ -818,7 +827,7 @@ struct statistics
 		statsUp = true;
 	}
 
-	void hide()
+	void hides()
 	{
 		statsUp = false;
 	}
@@ -844,7 +853,7 @@ struct statistics
 		}
 	}
 
-	void removeStats()
+	void remove()
 	{
 		widgDelete(psWScreen, IDSTAT_CLOSE);
 		widgDelete(psWScreen, IDSTAT_TABFORM);
@@ -856,18 +865,18 @@ struct statistics
 			Form->closeAnimateDelete();
 		}
 
-		hide();
+		hides();
 		psStatsScreenOwner = nullptr;
 	}
 
 	/* Remove the stats widgets from the widget screen */
-	void removeStatsNoAnim()
+	void removeNoAnim()
 	{
 		widgDelete(psWScreen, IDSTAT_CLOSE);
 		widgDelete(psWScreen, IDSTAT_TABFORM);
 		widgDelete(psWScreen, IDSTAT_FORM);
 
-		hide();
+		hides();
 		psStatsScreenOwner = nullptr;
 	}
 
@@ -882,36 +891,10 @@ struct statistics
 				if (psStatsScreenOwner->died != 0)
 				{
 					// remove it.
-					removeStatsNoAnim();
+					removeNoAnim();
 				}
 			}
 		}
-	}
-
-	class base_state_visitor : public boost::static_visitor<BASE_STATS *>
-	{
-		size_t idx;
-	public:
-		base_state_visitor(size_t i) : idx(i) {}
-		BASE_STATS *operator()(const std::vector<DROID_TEMPLATE *> &v) const
-		{
-			return (BASE_STATS*)v[idx];
-		}
-
-		BASE_STATS *operator()(const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &v) const
-		{
-			return (BASE_STATS*)v[idx];
-		}
-
-		BASE_STATS *operator()(const std::array<RESEARCH *, MAXRESEARCH> &v) const
-		{
-			return (BASE_STATS*)v[idx];
-		}
-	};
-
-	BASE_STATS *getBaseStat(typename STAT_LIST_TYPE &ppsStatsList, size_t index)
-	{
-		return boost::apply_visitor(base_state_visitor(index), ppsStatsList);
 	}
 
 	/* Add the stats widgets to the widget screen */
@@ -926,7 +909,7 @@ struct statistics
 		// Is the form already up?
 		if (widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr)
 		{
-			removeStatsNoAnim();
+			removeNoAnim();
 		}
 
 		// is the order form already up ?
@@ -1154,15 +1137,6 @@ struct statistics
 		return obsoleteButton;
 	}
 
-	std::function<void(BASE_STATS *, uint32_t)> onLMBPressed;
-	std::function<void(BASE_STATS *)> onRMBPressed;
-	std::function<void(void)> onClose;
-	std::function<void(void)> onSlider;
-	std::function<void(void)> onProximityButton;
-	std::function<void(void)> onLoopButton;
-	std::function<void(void)> onDeliveryPointButton;
-	std::function<void(void)> onObsoleteButton;
-
 	void dispatchMouseClickEvent(uint32_t id)
 	{
 		ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "missing form");
@@ -1229,6 +1203,32 @@ protected:
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
 	W_BUTINIT closeButtonDesc;
 	typename STAT_LIST_TYPE ppsStatsList;
+
+	class base_state_visitor : public boost::static_visitor<BASE_STATS *>
+	{
+		size_t idx;
+	public:
+		base_state_visitor(size_t i) : idx(i) {}
+		BASE_STATS *operator()(const std::vector<DROID_TEMPLATE *> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+
+		BASE_STATS *operator()(const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+
+		BASE_STATS *operator()(const std::array<RESEARCH *, MAXRESEARCH> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+	};
+
+	static BASE_STATS *getBaseStat(typename STAT_LIST_TYPE &ppsStatsList, size_t index)
+	{
+		return boost::apply_visitor(base_state_visitor(index), ppsStatsList);
+	}
 
 	void createLoopAndDeliveryPointButtons(BASE_OBJECT * psOwner, IntFormAnimated * statForm)
 	{
@@ -1415,7 +1415,7 @@ protected:
 struct option_widgets
 {
 	/* Add the options widgets to the widget screen */
-	bool addOptions()
+	bool add()
 	{
 		/* Add the option form */
 		W_FORMINIT sFormInit;
@@ -1545,10 +1545,10 @@ struct option_widgets
 		sButInit.y = OPT_BUTHEIGHT + OPT_GAP * 2;
 		sButInit.width = OPT_BUTWIDTH;
 		sButInit.height = OPT_BUTHEIGHT;
-		for (uint32_t player = 0; player < MAX_PLAYERS; player++)
+		for (uint32_t playerID = 0; playerID < MAX_PLAYERS; playerID++)
 		{
-			sButInit.pText = apPlayerText[player].data();
-			sButInit.pTip = apPlayerTip[player].data();
+			sButInit.pText = apPlayerText[playerID].data();
+			sButInit.pTip = apPlayerTip[playerID].data();
 			if (!widgAddButton(psWScreen, &sButInit))
 			{
 				return false;
@@ -1586,7 +1586,7 @@ struct option_widgets
 	}
 
 	/* Remove the options widgets from the widget screen */
-	void removeOptions()
+	void remove()
 	{
 		widgDelete(psWScreen, IDOPT_FORM);
 	}
@@ -1599,6 +1599,13 @@ struct object_widgets
 	/* The selected object on the object screen when the stats screen is displayed */
 	BASE_OBJECT *psObjSelected;
 	_obj_mode objMode;
+
+	std::function<void(uint32_t)> onCTRLClick;
+	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectLeftClick;
+	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectRightClick;
+	std::function<void(BASE_OBJECT *psObj)> onObjStatRMBPressed;
+	std::function<void(BASE_OBJECT *psObj)> onObjStatLMBPressed;
+	std::function<void(void)> onClose;
 
 	object_widgets()
 	{
@@ -1668,7 +1675,7 @@ struct object_widgets
 	}
 
 	/* Remove the build widgets from the widget screen */
-	void removeObject()
+	void remove()
 	{
 		widgDelete(psWScreen, IDOBJ_TABFORM);
 		widgDelete(psWScreen, IDOBJ_CLOSE);
@@ -1688,19 +1695,12 @@ struct object_widgets
 	}
 
 	/* Remove the build widgets from the widget screen */
-	void removeObjectNoAnim()
+	void removeNoAnim()
 	{
 		widgDelete(psWScreen, IDOBJ_TABFORM);
 		widgDelete(psWScreen, IDOBJ_CLOSE);
 		widgDelete(psWScreen, IDOBJ_FORM);
 	}
-
-	std::function<void(uint32_t)> onCTRLClick;
-	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectLeftClick;
-	std::function<void(BASE_OBJECT *psObj, uint32_t id)> onObjectRightClick;
-	std::function<void(BASE_OBJECT *psObj)> onObjStatRMBPressed;
-	std::function<void(BASE_OBJECT *psObj)> onObjStatLMBPressed;
-	std::function<void(void)> onClose;
 
 	void dispatchMouseClickEvent(uint32_t id)
 	{
@@ -1770,13 +1770,13 @@ struct object_widgets
 	* for the object.
 	* If psSelected != NULL it specifies which object should be hilited.
 	*/
-	bool addObjectWindow(const std::vector<BASE_OBJECT *> &objectList, BASE_OBJECT *psSelected, bool bForceStats,
+	bool add(const std::vector<BASE_OBJECT *> &objectList, BASE_OBJECT *psSelected, bool bForceStats,
 		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc) /* Function type for getting the appropriate stats for an object */
 	{
 		// Is the form already up?
 		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
 		{
-			removeObjectNoAnim();
+			removeNoAnim();
 		}
 
 		/* See how many objects the player has */
@@ -2436,7 +2436,7 @@ human_computer_interface::human_computer_interface()
 	intMode = INT_NORMAL;
 
 	//make sure stats screen doesn't think it should be up
-	stats.hide();
+	stats.hides();
 
 	/* make demolish stat always available */
 	if (!bInTutorial)
@@ -2455,7 +2455,7 @@ human_computer_interface::human_computer_interface()
 
 	reticule.optionClickHandler = [this]() {
 		resetScreen(false);
-		(void)options.addOptions();
+		(void)options.add();
 		intMode = INT_OPTION;
 	};
 
@@ -2502,7 +2502,7 @@ human_computer_interface::human_computer_interface()
 		resetScreen(true);
 		widgSetButtonState(psWScreen, IDRET_DESIGN, WBUT_CLICKLOCK);
 		/*add the power bar - for looks! */
-		powerbar.showPowerBar();
+		powerbar.show();
 		intAddDesign(false);
 		intMode = INT_DESIGN;
 	};
@@ -2617,7 +2617,7 @@ human_computer_interface::human_computer_interface()
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		// Close the stats box
-		stats.removeStats();
+		stats.remove();
 		intMode = INT_OBJECT;
 
 		// Reset the tabs on the object form
@@ -2637,12 +2637,12 @@ human_computer_interface::human_computer_interface()
 				}
 				driveDisableTactical();
 				driveStartBuild();
-				objectWidgets.removeObject();
-				powerbar.hidePowerBar();
+				objectWidgets.remove();
+				powerbar.hides();
 			}
 
-			objectWidgets.removeObject();
-			powerbar.hidePowerBar();
+			objectWidgets.remove();
+			powerbar.hides();
 			// hack to stop the stats window re-opening in demolish mode
 			if (objectWidgets.objMode == IOBJ_DEMOLISHSEL)
 			{
@@ -2699,7 +2699,7 @@ human_computer_interface::human_computer_interface()
 		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
 
 		/* Close the structure box without doing anything */
-		stats.removeStats();
+		stats.remove();
 		intMode = INT_OBJECT;
 
 		/* Reset the tabs on the build form */
@@ -2785,7 +2785,7 @@ human_computer_interface::human_computer_interface()
 			widgSetButtonState(psWScreen, statButID, 0);
 			if (intNumSelectedDroids(DROID_CONSTRUCT) == 0 && intNumSelectedDroids(DROID_CYBORG_CONSTRUCT) == 0)
 			{
-				stats.removeStats();
+				stats.remove();
 			}
 			if (objectWidgets.psObjSelected == psObj)
 			{
@@ -3032,8 +3032,6 @@ bool human_computer_interface::isRefreshing()
 // see if a delivery point is selected
 static FLAG_POSITION *intFindSelectedDelivPoint(void)
 {
-	FLAG_POSITION *psFlagPos;
-
 	for (FLAG_POSITION &psFlagPos : list_legacy(apsFlagPosLists[selectedPlayer]))
 	{
 		if (psFlagPos.selected && (psFlagPos.type == POS_DELIVERY))
@@ -3041,7 +3039,6 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 			return &psFlagPos;
 		}
 	}
-
 	return nullptr;
 }
 
@@ -3085,7 +3082,7 @@ void human_computer_interface::doScreenRefresh()
 			// now make sure the stats screen isn't up
 			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
 			{
-				stats.removeStatsNoAnim();
+				stats.removeNoAnim();
 			}
 
 			// see if there was a delivery point being positioned
@@ -3179,44 +3176,44 @@ void human_computer_interface::resetScreen(bool NoAnim)
 	switch (intMode)
 	{
 	case INT_OPTION:
-		options.removeOptions();
+		options.remove();
 		break;
 	case INT_EDITSTAT:
 		stopStructPosition();
 		if (NoAnim)
 		{
-			stats.removeStatsNoAnim();
+			stats.removeNoAnim();
 		}
 		else
 		{
-			stats.removeStats();
+			stats.remove();
 		}
 		break;
 	case INT_OBJECT:
 		stopStructPosition();
 		if (NoAnim)
 		{
-			objectWidgets.removeObjectNoAnim();
-			powerbar.hidePowerBar();
+			objectWidgets.removeNoAnim();
+			powerbar.hides();
 		}
 		else
 		{
-			objectWidgets.removeObject();
-			powerbar.hidePowerBar();
+			objectWidgets.remove();
+			powerbar.hides();
 		}
 		break;
 	case INT_STAT:
 		if (NoAnim)
 		{
-			stats.removeStatsNoAnim();
-			objectWidgets.removeObjectNoAnim();
-			powerbar.hidePowerBar();
+			stats.removeNoAnim();
+			objectWidgets.removeNoAnim();
+			powerbar.hides();
 		}
 		else
 		{
-			stats.removeStats();
-			objectWidgets.removeObject();
-			powerbar.hidePowerBar();
+			stats.remove();
+			objectWidgets.remove();
+			powerbar.hides();
 		}
 		break;
 
@@ -3224,14 +3221,14 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		if (NoAnim)
 		{
 			intRemoveOrderNoAnim();
-			objectWidgets.removeObjectNoAnim();
-			powerbar.hidePowerBar();
+			objectWidgets.removeNoAnim();
+			powerbar.hides();
 		}
 		else
 		{
 			intRemoveOrder();
-			objectWidgets.removeObject();
-			powerbar.hidePowerBar();
+			objectWidgets.remove();
+			powerbar.hides();
 		}
 		break;
 	case INT_ORDER:
@@ -3269,7 +3266,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		break;
 	case INT_DESIGN:
 		intRemoveDesign();
-		powerbar.hidePowerBar();
+		powerbar.hides();
 		if (bInTutorial)
 		{
 			eventFireCallbackTrigger((TRIGGER_TYPE)CALL_DESIGN_QUIT);
@@ -3284,7 +3281,7 @@ void human_computer_interface::resetScreen(bool NoAnim)
 		{
 			intRemoveIntelMap();
 		}
-		powerbar.hidePowerBar();
+		powerbar.hides();
 		if (!bMultiPlayer)
 		{
 			gameTimeStart();
@@ -3340,7 +3337,7 @@ void human_computer_interface::processOptions(uint32_t id)
 		{
 		/* The add object buttons */
 		case IDOPT_DROID:
-			options.removeOptions();
+			options.remove();
 			apsTemplateList.clear();
 			for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
 			{
@@ -3356,7 +3353,7 @@ void human_computer_interface::processOptions(uint32_t id)
 		{
 			/* Store a list of stats pointers from the main structure stats */
 			std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
-			options.removeOptions();
+			options.remove();
 			for (unsigned i = 0; i < std::min<unsigned>(numStructureStats, MAXSTRUCTURES); ++i)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
@@ -3370,7 +3367,7 @@ void human_computer_interface::processOptions(uint32_t id)
 		}
 		case IDOPT_FEATURE:
 		{
-			options.removeOptions();
+			options.remove();
 			/* Store a list of Feature pointers for features to be placed on the map */
 			std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 			for (unsigned i = 0; i < std::min<unsigned>(numFeatureStats, MAXFEATURES); ++i)
@@ -3385,7 +3382,7 @@ void human_computer_interface::processOptions(uint32_t id)
 		}
 		/* Close window buttons */
 		case IDOPT_CLOSE:
-			options.removeOptions();
+			options.remove();
 			intMode = INT_NORMAL;
 			break;
 		/* Ignore these */
@@ -3429,7 +3426,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	}
 	else if (id == IDSTAT_CLOSE)
 	{
-		stats.removeStats();
+		stats.remove();
 		stopStructPosition();
 		intMode = INT_NORMAL;
 		objectWidgets.objMode = IOBJ_NONE;
@@ -3962,8 +3959,8 @@ void human_computer_interface::handleObjectChanges()
 
 			/* Remove the old screen */
 			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
-			objectWidgets.removeObject();
-			powerbar.hidePowerBar();
+			objectWidgets.remove();
+			powerbar.hides();
 
 			/* Add the new screen */
 			switch (objectWidgets.objMode)
@@ -4009,7 +4006,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 		{
 			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 		}
-		stats.removeStatsNoAnim();
+		stats.removeNoAnim();
 	}
 
 	/* Display the stats window
@@ -4337,7 +4334,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 		// remove the stat screen if necessary
 		if ((intMode == INT_STAT) && statsID == objStatID)
 		{
-			stats.removeStatsNoAnim();
+			stats.removeNoAnim();
 			intMode = INT_OBJECT;
 		}
 	}
@@ -4592,7 +4589,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 {
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
-		powerbar.hidePowerBar();
+		powerbar.hides();
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(psObjects, objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
@@ -4600,7 +4597,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	{
 		asJumpPos.clear();
 	}
-	objectWidgets.addObjectWindow(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
+	objectWidgets.add(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
 		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
@@ -4610,7 +4607,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	}
 	if (objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_MANUFACTURE || objectWidgets.objMode == IOBJ_RESEARCH)
 	{
-		powerbar.showPowerBar();
+		powerbar.show();
 	}
 	stats.removeIfDied();
 
@@ -4878,7 +4875,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
-		powerbar.hidePowerBar();
+		powerbar.hides();
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
@@ -4887,13 +4884,13 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}
-	powerbar.showPowerBar();
+	powerbar.show();
 	return b;
 }
 
@@ -4908,7 +4905,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
-		powerbar.hidePowerBar();
+		powerbar.hides();
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
@@ -4917,13 +4914,13 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}
-	powerbar.showPowerBar();
+	powerbar.show();
 	return b;
 }
 
@@ -4938,7 +4935,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
-		powerbar.hidePowerBar();
+		powerbar.hides();
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
@@ -4947,13 +4944,13 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	if (psSelected)
 	{
 		addObjectStats(psSelected, objStatID);
 	}
-	powerbar.showPowerBar();
+	powerbar.show();
 	return b;
 }
 
@@ -4970,7 +4967,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 
 	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
 	{
-		powerbar.hidePowerBar();
+		powerbar.hides();
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
@@ -4979,7 +4976,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 		asJumpPos.clear();
 	}
 	/* Create the object screen with the required data */
-	bool b = objectWidgets.addObjectWindow(apsObjectList,
+	bool b = objectWidgets.add(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
 	return b;
 }
@@ -5001,7 +4998,7 @@ void human_computer_interface::addIntelScreen()
 	widgSetButtonState(psWScreen, IDRET_INTEL_MAP, WBUT_CLICKLOCK);
 
 	//add the power bar - for looks!
-	powerbar.showPowerBar();
+	powerbar.show();
 
 	// Only do this in main game.
 	if ((GetGameMode() == GS_NORMAL) && !bMultiPlayer)
@@ -5141,10 +5138,7 @@ void human_computer_interface::setKeyButtonMapping(uint32_t val)
 // count the number of selected droids of a type
 static SDWORD intNumSelectedDroids(UDWORD droidType)
 {
-	DROID	*psDroid;
-	SDWORD	num;
-
-	num = 0;
+	int32_t num = 0;
 	foreach_legacy<DROID>(apsDroidLists[selectedPlayer], [&](DROID &psDroid)
 	{
 		if (psDroid.selected && psDroid.droidType == droidType)
@@ -5183,9 +5177,9 @@ int human_computer_interface::getResearchState()
 		count = pList.size();
 		for (uint16_t idx : pList)
 		{
-			for (int player = 0; player < MAX_PLAYERS; ++player)
+			for (int playerID = 0; playerID < MAX_PLAYERS; ++playerID)
 			{
-				if (aiCheckAlliances(player, selectedPlayer) && IsResearchStarted(&asPlayerResList[player][idx]))
+				if (aiCheckAlliances(playerID, selectedPlayer) && IsResearchStarted(&asPlayerResList[playerID][idx]))
 				{
 					--count;  // An ally is already researching this topic, so don't flash the button because of it.
 					break;
@@ -5503,7 +5497,7 @@ void interfaceShutDown(void)
 void intResetPreviousObj(void)
 {
 	//make sure stats screen doesn't think it should be up
-	default_hci->stats.hide();
+	default_hci->stats.hides();
 	default_hci->resetPreviousObj();
 }
 
@@ -5519,7 +5513,7 @@ bool intIsRefreshing(void)
 
 void intHidePowerBar()
 {
-	default_hci->powerbar.hidePowerBar();
+	default_hci->powerbar.hides();
 }
 
 void intResetScreen(bool NoAnim)
@@ -5631,7 +5625,7 @@ void intRemoveReticule(void)
 
 void togglePowerBar(void)
 {
-	default_hci->powerbar.togglePowerBar();
+	default_hci->powerbar.toggle();
 }
 
 bool intAddPower()
@@ -5641,17 +5635,17 @@ bool intAddPower()
 
 bool intAddOptions(void)
 {
-	return default_hci->options.addOptions();
+	return default_hci->options.add();
 }
 
 void intRemoveStats(void)
 {
-	default_hci->stats.removeStats();
+	default_hci->stats.remove();
 }
 
 void intRemoveStatsNoAnim(void)
 {
-	default_hci->stats.removeStatsNoAnim();
+	default_hci->stats.removeNoAnim();
 }
 
 StateButton *makeObsoleteButton(WIDGET *parent)
@@ -5686,12 +5680,12 @@ void stopReticuleButtonFlash(UDWORD buttonID)
 
 void intShowPowerBar(void)
 {
-	default_hci->powerbar.showPowerBar();
+	default_hci->powerbar.show();
 }
 
 void forceHidePowerBar(void)
 {
-	default_hci->powerbar.forceHidePowerBar();
+	default_hci->powerbar.forceHide();
 }
 
 bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)

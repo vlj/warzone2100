@@ -380,23 +380,6 @@ void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 }
 }
 
-static void intSelectDroid(BASE_OBJECT *psObj)
-{
-	if (driveModeActive())
-	{
-		clearSel();
-		((DROID *)psObj)->selected = true;
-		driveSelectionChanged();
-		driveDisableControl();
-	}
-	else
-	{
-		clearSelection();
-		((DROID *)psObj)->selected = true;
-	}
-	triggerEventSelected();
-}
-
 struct reticuleWidget
 {
 protected:
@@ -2406,6 +2389,27 @@ protected:
 	}
 };
 
+namespace
+{
+	void intSelectDroid(DROID &psObj)
+	{
+		if (driveModeActive())
+		{
+			clearSel();
+			psObj.selected = true;
+			driveSelectionChanged();
+			driveDisableControl();
+		}
+		else
+		{
+			clearSelection();
+			psObj.selected = true;
+		}
+		triggerEventSelected();
+	}
+
+}
+
 human_computer_interface::human_computer_interface()
 {
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
@@ -2894,9 +2898,10 @@ human_computer_interface::human_computer_interface()
 
 		// If a construction droid button was clicked then
 		// clear all other selections and select it.
-		if (psObj->type == OBJ_DROID)
+		DROID *droidObj = castDroid(psObj);
+		if (droidObj)
 		{
-			intSelectDroid(psObj);
+			intSelectDroid(*droidObj);
 			objectWidgets.psObjSelected = psObj;
 		}
 	};
@@ -2914,20 +2919,24 @@ human_computer_interface::human_computer_interface()
 		resetWindows(psObj);
 
 		// If a droid button was clicked then clear all other selections and select it.
-		if (psObj->type == OBJ_DROID)
+		DROID *droidObj = castDroid(psObj);
+		if (droidObj)
 		{
 			// Select the droid when the stat button (in the object window) is pressed.
-			intSelectDroid(psObj);
+			intSelectDroid(*droidObj);
 			objectWidgets.psObjSelected = psObj;
+			return;
 		}
-		else if (psObj->type == OBJ_STRUCTURE)
+
+		STRUCTURE *structureObj = castStructure(psObj);
+		if (structureObj)
 		{
-			if (StructIsFactory((STRUCTURE *)psObj))
+			if (StructIsFactory(structureObj))
 			{
 				//might need to cancel the hold on production
-				releaseProduction((STRUCTURE *)psObj, ModeQueue);
+				releaseProduction(structureObj, ModeQueue);
 			}
-			else if (((STRUCTURE *)psObj)->pStructureType->type == REF_RESEARCH)
+			else if (structureObj->pStructureType->type == REF_RESEARCH)
 			{
 				//might need to cancel the hold on research facilty
 				releaseResearch((STRUCTURE *)psObj, ModeQueue);

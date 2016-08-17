@@ -1598,21 +1598,11 @@ struct object_widgets
 	std::vector<BASE_OBJECT *> apsObjectList;
 	/* The selected object on the object screen when the stats screen is displayed */
 	BASE_OBJECT *psObjSelected;
-	/* The previous object for each object bar */
-	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 	_obj_mode objMode;
 
 	object_widgets()
 	{
 		psObjSelected = nullptr;
-		resetPreviousObj();
-	}
-
-	//initialise all the previous obj - particularly useful for when go Off world!
-	void resetPreviousObj()
-	{
-		// reset the previous objects
-		memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
 	}
 
 	/* Are we in build select mode*/
@@ -2323,6 +2313,13 @@ struct human_computer_interface
 
 	void resetWindows(BASE_OBJECT *psObj);
 
+	//initialise all the previous obj - particularly useful for when go Off world!
+	void resetPreviousObj()
+	{
+		// reset the previous objects
+		memset(apsPreviousObj.data(), 0, sizeof(apsPreviousObj));
+	}
+
 protected:
 	/* Store a list of stats pointers from the main structure stats */
 	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
@@ -2336,6 +2333,8 @@ protected:
 	std::vector<Vector2i> asJumpPos;
 	/* Whether the objects that are on the object screen have changed this frame */
 	bool objectsChanged;
+	/* The previous object for each object bar */
+	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
 
 	// Empty edit window
 	bool secondaryWindowUp = false;
@@ -2429,6 +2428,7 @@ human_computer_interface::human_computer_interface()
 
 	psWScreen = new W_SCREEN;
 	objectsChanged = false;
+	resetPreviousObj();
 
 	if (GetGameMode() == GS_NORMAL)
 	{
@@ -3453,9 +3453,9 @@ void human_computer_interface::update()
 	// Update the previous object array, prune dead objects.
 	for (int i = 0; i < IOBJ_MAX; ++i)
 	{
-		if (objectWidgets.apsPreviousObj[i] && objectWidgets.apsPreviousObj[i]->died)
+		if (apsPreviousObj[i] && apsPreviousObj[i]->died)
 		{
-			objectWidgets.apsPreviousObj[i] = NULL;
+			apsPreviousObj[i] = nullptr;
 		}
 	}
 
@@ -4016,7 +4016,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	BASE_STATS *psStats = objGetStatsFunc(psObj);
 
 	// note the object for the screen
-	objectWidgets.apsPreviousObj[objectWidgets.objMode] = psObj;
+	apsPreviousObj[objectWidgets.objMode] = psObj;
 
 	addStatsHelper(psObj, psStats);
 	secondaryWindowUp = true;
@@ -4549,10 +4549,10 @@ BASE_OBJECT *human_computer_interface::selectObject(BASE_OBJECT *psFirst)
 	if (psSelected != nullptr)
 		return psSelected;
 
-	if (objectWidgets.apsPreviousObj[objectWidgets.objMode]
-		&& objectWidgets.apsPreviousObj[objectWidgets.objMode]->player == selectedPlayer)
+	if (apsPreviousObj[objectWidgets.objMode]
+		&& apsPreviousObj[objectWidgets.objMode]->player == selectedPlayer)
 	{
-		psSelected = objectWidgets.apsPreviousObj[objectWidgets.objMode];
+		psSelected = apsPreviousObj[objectWidgets.objMode];
 		//it is possible for a structure to change status - building of modules
 		if (psSelected->type == OBJ_STRUCTURE
 			&& ((STRUCTURE *)psSelected)->status != SS_BUILT)
@@ -5499,7 +5499,7 @@ void intResetPreviousObj(void)
 {
 	//make sure stats screen doesn't think it should be up
 	default_hci->stats.hide();
-	default_hci->objectWidgets.resetPreviousObj();
+	default_hci->resetPreviousObj();
 }
 
 void intRefreshScreen(void)

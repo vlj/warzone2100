@@ -1778,7 +1778,7 @@ struct objectWidget
 
 	void dispatchMouseClickEvent(uint32_t id)
 	{
-		ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
+		ASSERT_OR_RETURN(, getTabForm() != NULL, "intProcessObject, missing form");
 
 		// deal with CRTL clicks
 		if (objMode == IOBJ_BUILD &&	// What..................?
@@ -1835,6 +1835,11 @@ struct objectWidget
 	bool isFormUp() const
 	{
 		return widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr;
+	}
+
+	IntListTabWidget *getTabForm()
+	{
+		return reinterpret_cast<IntListTabWidget *>(widgGetFromID(psWScreen, IDOBJ_TABFORM));
 	}
 
 	/* Add the object screen widgets to the widget screen.
@@ -2653,14 +2658,14 @@ human_computer_interface::human_computer_interface()
 		}
 
 		// Get the tabs on the object form
-		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+		int objMajor = objectWidgets.getTabForm()->currentPage();
 
 		// Close the stats box
 		stats.remove();
 		intMode = INT_OBJECT;
 
 		// Reset the tabs on the object form
-		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+		objectWidgets.getTabForm()->setCurrentPage(objMajor);
 
 		// Close the object box as well if selecting a location to build- no longer hide/reveal
 		// or if selecting a structure to demolish
@@ -2735,14 +2740,14 @@ human_computer_interface::human_computer_interface()
 	stats.onClose = [this]()
 	{
 		/* Get the tabs on the object form */
-		int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+		int objMajor = objectWidgets.getTabForm()->currentPage();
 
 		/* Close the structure box without doing anything */
 		stats.remove();
 		intMode = INT_OBJECT;
 
 		/* Reset the tabs on the build form */
-		((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+		objectWidgets.getTabForm()->setCurrentPage(objMajor);
 
 		/* Unlock the stats button */
 		widgSetButtonState(psWScreen, objStatID, 0);
@@ -3173,9 +3178,9 @@ void human_computer_interface::doScreenRefresh()
 			}
 
 			// store the current tab position
-			if (widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL)
+			if (objectWidgets.getTabForm() != nullptr)
 			{
-				objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+				objMajor = objectWidgets.getTabForm()->currentPage();
 			}
 			if (StatsWasUp)
 			{
@@ -3220,9 +3225,9 @@ void human_computer_interface::doScreenRefresh()
 			}
 
 			// set the tabs again
-			if (widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL)
+			if (objectWidgets.getTabForm() != nullptr)
 			{
-				((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+				objectWidgets.getTabForm()->setCurrentPage(objMajor);
 			}
 
 			if (stats.getTabForm() != nullptr)
@@ -3977,7 +3982,7 @@ void human_computer_interface::handleObjectChanges()
 //			ASSERT_OR_RETURN(INT_NONE, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "No object form");
 
 			/* Remove the old screen */
-			int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+			int objMajor = objectWidgets.getTabForm()->currentPage();
 			objectWidgets.remove();
 			powerbar.hides();
 
@@ -3999,7 +4004,7 @@ void human_computer_interface::handleObjectChanges()
 			}
 
 			/* Reset the tabs on the object screen */
-			((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+			objectWidgets.getTabForm()->setCurrentPage(objMajor);
 		}
 		else if (intMode == INT_STAT)
 		{
@@ -4015,7 +4020,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	stopStructPosition();
 
 	/* Get the current tab pos */
-	int objMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->currentPage();
+	int objMajor = objectWidgets.getTabForm()->currentPage();
 	uint16_t  statMajor = 0;
 
 	// Store the tab positions.
@@ -4053,7 +4058,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	objStatID = id;
 
 	/* Reset the tabs and lock the button */
-	((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
+	objectWidgets.getTabForm()->setCurrentPage(objMajor);
 	if (id != 0)
 	{
 		widgSetButtonState(psWScreen, id, WBUT_CLICKLOCK);
@@ -4436,7 +4441,7 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 		std::vector<BASE_OBJECT * > factoryList = rebuildFactoryList();
 		objectWidgets.apsObjectList = factoryList;
 		// now look thru the list to see which one corresponds to the factory that has just finished
-		uint32_t structureIndex =  std::find(factoryList.begin(), factoryList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
+		uint32_t structureIndex =  std::find(factoryList.begin(), factoryList.end(), psBuilding) - factoryList.begin();
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
@@ -4458,7 +4463,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 		/* Find which button the structure is on and update its stats */
 		std::vector<BASE_OBJECT * > factoryList = rebuildFactoryList();
 		objectWidgets.apsObjectList = factoryList;
-		uint32_t structureIndex = std::find(factoryList.begin(), factoryList.end(), psBuilding) - objectWidgets.apsObjectList.begin();
+		uint32_t structureIndex = std::find(factoryList.begin(), factoryList.end(), psBuilding) - factoryList.begin();
 		if (structureIndex != objectWidgets.apsObjectList.size())
 		{
 			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, psBuilding->pFunctionality->factory.psSubject, objectWidgets.objMode);

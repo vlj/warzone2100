@@ -1838,7 +1838,7 @@ struct objectWidget
 		std::function<BASE_STATS*(BASE_OBJECT*)> objGetStatsFunc) /* Function type for getting the appropriate stats for an object */
 	{
 		// Is the form already up?
-		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
+		if (isFormUp())
 		{
 			removeNoAnim();
 		}
@@ -3150,7 +3150,7 @@ void human_computer_interface::doScreenRefresh()
 		     intMode == INT_CMDORDER ||
 		     intMode == INT_ORDER ||
 		     intMode == INT_TRANSPORTER) &&
-		    widgGetFromID(psWScreen, IDOBJ_FORM) != NULL &&
+		     objectWidgets.isFormUp() &&
 		    widgGetFromID(psWScreen, IDOBJ_FORM)->visible())
 		{
 			bool StatsWasUp = false;
@@ -4599,7 +4599,7 @@ std::vector<BASE_OBJECT*> createSelectedObjectsList(BASE_OBJECT *psObjects,std::
 
 bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
-	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
+	if (objectWidgets.isFormUp())
 	{
 		powerbar.hides();
 	}
@@ -4886,7 +4886,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	/* Set the sub mode */
 	objectWidgets.objMode = IOBJ_BUILD;
 
-	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
+	if (objectWidgets.isFormUp())
 	{
 		powerbar.hides();
 	}
@@ -4917,7 +4917,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Set the sub mode */
 	objectWidgets.objMode = IOBJ_MANUFACTURE;
 
-	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
+	if (objectWidgets.isFormUp())
 	{
 		powerbar.hides();
 	}
@@ -4948,7 +4948,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	/* Set the sub mode */
 	objectWidgets.objMode = IOBJ_RESEARCH;
 
-	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
+	if (objectWidgets.isFormUp())
 	{
 		powerbar.hides();
 	}
@@ -4981,7 +4981,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	/* Set the sub mode */
 	objectWidgets.objMode = IOBJ_COMMAND;
 
-	if (widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr)
+	if (objectWidgets.isFormUp())
 	{
 		powerbar.hides();
 	}

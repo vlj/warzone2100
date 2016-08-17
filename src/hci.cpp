@@ -788,7 +788,6 @@ struct statistics
 	using STAT_LIST_TYPE = boost::variant<std::vector<DROID_TEMPLATE *>,
 		std::array<STRUCTURE_STATS *, MAXSTRUCTURES>,
 		std::array<RESEARCH *, MAXRESEARCH> >;
-	typename STAT_LIST_TYPE ppsStatsList;
 
 	statistics()
 	{
@@ -1218,7 +1217,7 @@ protected:
 	bool statsUp = false;
 	BASE_OBJECT *psStatsScreenOwner = nullptr;
 	W_BUTINIT closeButtonDesc;
-
+	typename STAT_LIST_TYPE ppsStatsList;
 
 	void createLoopAndDeliveryPointButtons(BASE_OBJECT * psOwner, IntFormAnimated * statForm)
 	{
@@ -4851,9 +4850,6 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 
 bool human_computer_interface::addBuild(DROID *psSelected)
 {
-	/* Store the correct stats list for future reference */
-	stats.ppsStatsList = apsStructStatsList;
-
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
 	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setConstructionStats(psObj, psStats); };
@@ -4880,12 +4876,6 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 
 bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 {
-	/* Store the correct stats list for future reference */
-	if (!apsTemplateList.empty())
-	{
-		stats.ppsStatsList = apsTemplateList;
-	}
-
 	objSelectFunc = selectManufacture;
 	objGetStatsFunc = getManufactureStats;
 	objSetStatsFunc = setManufactureStats;
@@ -4912,8 +4902,6 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
-	stats.ppsStatsList = ppResearchList;
-
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
 	objSetStatsFunc = [this](BASE_OBJECT *psObj, BASE_STATS *psStats) { return setResearchStats(psObj, psStats); };

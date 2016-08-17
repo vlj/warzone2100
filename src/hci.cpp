@@ -790,7 +790,7 @@ struct statsWidget
 	std::function<void(void)> onClose;
 	std::function<void(void)> onSlider;
 	std::function<void(void)> onProximityButton;
-	std::function<void(void)> onLoopButton;
+	std::function<void(STRUCTURE *)> onLoopButton;
 	std::function<void(void)> onDeliveryPointButton;
 	std::function<void(void)> onObsoleteButton;
 
@@ -1191,7 +1191,9 @@ struct statsWidget
 
 		if (id == IDSTAT_LOOP_BUTTON)
 		{
-			onLoopButton();
+			// Process the loop button.
+			STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
+			onLoopButton(psStruct);
 			return;
 		}
 
@@ -2769,32 +2771,29 @@ humanComputerInterface::humanComputerInterface()
 		return;
 	};
 
-	stats.onLoopButton = [this]()
+	stats.onLoopButton = [this](STRUCTURE *psStruct)
 	{
-		// Process the loop button.
-		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_LOOP_LABEL);
-		if (psStruct)
+		if (psStruct == nullptr)
+			return;
+		//LMB pressed
+		if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_PRIMARY)
 		{
-			//LMB pressed
-			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_PRIMARY)
-			{
-				factoryLoopAdjust(psStruct, true);
-			}
-			//RMB pressed
-			else if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
-			{
-				factoryLoopAdjust(psStruct, false);
-			}
-			if (((FACTORY *)psStruct->pFunctionality)->psSubject != NULL && ((FACTORY *)psStruct->pFunctionality)->productionLoops != 0)
-			{
-				//lock the button
-				stats.lockLoopButton();
-			}
-			else
-			{
-				//unlock
-				stats.unlockLoopButton();
-			}
+			factoryLoopAdjust(psStruct, true);
+		}
+		//RMB pressed
+		else if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
+		{
+			factoryLoopAdjust(psStruct, false);
+		}
+		if (((FACTORY *)psStruct->pFunctionality)->psSubject != NULL && ((FACTORY *)psStruct->pFunctionality)->productionLoops != 0)
+		{
+			//lock the button
+			stats.lockLoopButton();
+		}
+		else
+		{
+			//unlock
+			stats.unlockLoopButton();
 		}
 		return;
 	};

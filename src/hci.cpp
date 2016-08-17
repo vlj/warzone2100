@@ -1600,17 +1600,12 @@ struct object_widgets
 	BASE_OBJECT *psObjSelected;
 	/* The previous object for each object bar */
 	std::array<BASE_OBJECT *, IOBJ_MAX> apsPreviousObj;
-	/* Whether the objects that are on the object screen have changed this frame */
-	bool objectsChanged;
 	_obj_mode objMode;
-	/* The jump position for each object on the base bar */
-	std::vector<Vector2i> asJumpPos;
 
 	object_widgets()
 	{
 		psObjSelected = nullptr;
 		resetPreviousObj();
-		objectsChanged = false;
 	}
 
 	//initialise all the previous obj - particularly useful for when go Off world!
@@ -1773,6 +1768,11 @@ struct object_widgets
 		}
 	}
 
+	bool isFormUp() const
+	{
+		return widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr;
+	}
+
 	/* Add the object screen widgets to the widget screen.
 	* select is a pointer to a function that returns true when the object is
 	* to be added to the screen.
@@ -1787,11 +1787,6 @@ struct object_widgets
 		if (widgGetFromID(psWScreen, IDOBJ_FORM) != NULL)
 		{
 			removeObjectNoAnim();
-		}
-		else
-		{
-			// reset the object position array
-			asJumpPos.clear();
 		}
 
 		/* See how many objects the player has */
@@ -2337,6 +2332,10 @@ protected:
 	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 	bool refreshPending = false;
 	bool refreshing = false;
+	/* The jump position for each object on the base bar */
+	std::vector<Vector2i> asJumpPos;
+	/* Whether the objects that are on the object screen have changed this frame */
+	bool objectsChanged;
 
 	// Empty edit window
 	bool secondaryWindowUp = false;
@@ -2429,6 +2428,7 @@ human_computer_interface::human_computer_interface()
 	intInitialiseGraphics();
 
 	psWScreen = new W_SCREEN;
+	objectsChanged = false;
 
 	if (GetGameMode() == GS_NORMAL)
 	{
@@ -2867,13 +2867,13 @@ human_computer_interface::human_computer_interface()
 				int32_t butIndex = id - IDOBJ_OBJSTART;
 				if (butIndex >= 0 && butIndex <= IDOBJ_OBJEND - IDOBJ_OBJSTART)
 				{
-					objectWidgets.asJumpPos.resize(IDOBJ_OBJEND - IDOBJ_OBJSTART, Vector2i(0, 0));
-					if (((objectWidgets.asJumpPos[butIndex].x == 0) && (objectWidgets.asJumpPos[butIndex].y == 0)) ||
+					asJumpPos.resize(IDOBJ_OBJEND - IDOBJ_OBJSTART, Vector2i(0, 0));
+					if (((asJumpPos[butIndex].x == 0) && (asJumpPos[butIndex].y == 0)) ||
 						!DrawnInLastFrame((SDWORD)psObj->sDisplay.frameNumber) ||
 						((psObj->sDisplay.screenX > pie_GetVideoBufferWidth()) ||
 						(psObj->sDisplay.screenY > pie_GetVideoBufferHeight())))
 					{
-						objectWidgets.asJumpPos[butIndex] = getPlayerPos();
+						asJumpPos[butIndex] = getPlayerPos();
 						setPlayerPos(psObj->pos.x, psObj->pos.y);
 						if (getWarCamStatus())
 						{
@@ -2882,13 +2882,13 @@ human_computer_interface::human_computer_interface()
 					}
 					else
 					{
-						setPlayerPos(objectWidgets.asJumpPos[butIndex].x, objectWidgets.asJumpPos[butIndex].y);
+						setPlayerPos(asJumpPos[butIndex].x, asJumpPos[butIndex].y);
 						if (getWarCamStatus())
 						{
 							camToggleStatus();
 						}
-						objectWidgets.asJumpPos[butIndex].x = 0;
-						objectWidgets.asJumpPos[butIndex].y = 0;
+						asJumpPos[butIndex].x = 0;
+						asJumpPos[butIndex].y = 0;
 					}
 				}
 			}
@@ -3951,7 +3951,7 @@ void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool 
 
 void human_computer_interface::handleObjectChanges()
 {
-	if (objectWidgets.objectsChanged)
+	if (objectsChanged)
 	{
 		/* The objects on the object screen have changed */
 		if (intMode == INT_OBJECT)
@@ -3988,7 +3988,7 @@ void human_computer_interface::handleObjectChanges()
 			/* Need to get the stats screen to update as well */
 		}
 	}
-	objectWidgets.objectsChanged = false;
+	objectsChanged = false;
 }
 
 void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
@@ -4297,12 +4297,12 @@ void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 		if ((objectWidgets.objMode == IOBJ_BUILD || objectWidgets.objMode == IOBJ_BUILDSEL) &&
 		    psObj->type == OBJ_DROID && objSelectFunc(psObj))
 		{
-			objectWidgets.objectsChanged = true;
+			objectsChanged = true;
 		}
 		else if ((objectWidgets.objMode == IOBJ_RESEARCH || objectWidgets.objMode == IOBJ_MANUFACTURE) &&
 		         psObj->type == OBJ_STRUCTURE && objSelectFunc(psObj))
 		{
-			objectWidgets.objectsChanged = true;
+			objectsChanged = true;
 		}
 	}
 }
@@ -4591,6 +4591,10 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(psObjects, objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
+	if (!objectWidgets.isFormUp())
+	{
+		asJumpPos.clear();
+	}
 	objectWidgets.addObjectWindow(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
@@ -4873,6 +4877,10 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
+	if (!objectWidgets.isFormUp())
+	{
+		asJumpPos.clear();
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4899,6 +4907,10 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
+	if (!objectWidgets.isFormUp())
+	{
+		asJumpPos.clear();
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4925,6 +4937,10 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(interfaceStructList(), objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
+	if (!objectWidgets.isFormUp())
+	{
+		asJumpPos.clear();
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);
@@ -4953,6 +4969,10 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 	}
 	std::vector<BASE_OBJECT*> apsObjectList = createSelectedObjectsList(apsDroidLists[selectedPlayer], objSelectFunc);
 	psSelected = selectionHeuristic(apsObjectList, psSelected);
+	if (!objectWidgets.isFormUp())
+	{
+		asJumpPos.clear();
+	}
 	/* Create the object screen with the required data */
 	bool b = objectWidgets.addObjectWindow(apsObjectList,
 	                          (BASE_OBJECT *)psSelected, true, objGetStatsFunc);

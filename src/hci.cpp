@@ -1751,6 +1751,11 @@ struct objectWidget
 		}
 	}
 
+	void hide()
+	{
+		widgHide(psWScreen, IDOBJ_FORM);
+	}
+
 	/**
 	* Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
 	*/
@@ -1854,6 +1859,11 @@ struct objectWidget
 	bool isFormUp() const
 	{
 		return widgGetFromID(psWScreen, IDOBJ_FORM) != nullptr;
+	}
+
+	bool isFormVisible() const
+	{
+		return widgGetFromID(psWScreen, IDOBJ_FORM)->visible();
 	}
 
 	IntListTabWidget *getTabForm()
@@ -3175,7 +3185,7 @@ void humanComputerInterface::doScreenRefresh()
 		     intMode == INT_ORDER ||
 		     intMode == INT_TRANSPORTER) &&
 		     objectWidgets.isFormUp() &&
-		    widgGetFromID(psWScreen, IDOBJ_FORM)->visible())
+		     objectWidgets.isFormVisible())
 		{
 			bool StatsWasUp = false;
 			bool OrderWasUp = false;
@@ -3988,8 +3998,6 @@ void humanComputerInterface::handleObjectChanges()
 		/* The objects on the object screen have changed */
 		if (intMode == INT_OBJECT)
 		{
-//			ASSERT_OR_RETURN(INT_NONE, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "No object form");
-
 			/* Remove the old screen */
 			int objMajor = objectWidgets.getTabForm()->currentPage();
 			objectWidgets.remove();
@@ -4257,7 +4265,7 @@ void humanComputerInterface::constructorSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	addBuild(psDroid);
-	widgHide(psWScreen, IDOBJ_FORM);
+	objectWidgets.hide();
 }
 
 // add the construction interface if a constructor droid is selected
@@ -4265,7 +4273,7 @@ void humanComputerInterface::commanderSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	addCommand(psDroid);
-	widgHide(psWScreen, IDOBJ_FORM);
+	objectWidgets.hide();
 }
 
 /* Start looking for a structure location */

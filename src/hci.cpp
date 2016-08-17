@@ -1685,7 +1685,7 @@ struct object_widgets
 			((id >= IDOBJ_OBJSTART && id <= IDOBJ_OBJEND) ||
 			(id >= IDOBJ_STATSTART && id <= IDOBJ_STATEND)))
 		{
-			dispatchMouseClickEvent(id);
+			onCTRLClick(id);
 			return;
 		}
 
@@ -1727,18 +1727,6 @@ struct object_widgets
 		if (id == IDOBJ_CLOSE)
 		{
 			onClose();
-			return;
-		}
-
-		if (objMode != IOBJ_COMMAND && id != IDOBJ_TABFORM)
-		{
-			/* Not a button on the build form, must be on the stats form */
-			stats.dispatchMouseClickEvent(id);
-			return;
-		}
-		 if (id != IDOBJ_TABFORM)
-		{
-			intProcessOrder(id);
 			return;
 		}
 	}
@@ -3880,6 +3868,17 @@ void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool 
 			// NO BREAK HERE! THIS IS CORRECT;
 		case INT_OBJECT:
 			objectWidgets.dispatchMouseClickEvent(retID);
+			if (objectWidgets.objMode != IOBJ_COMMAND && retID != IDOBJ_TABFORM)
+			{
+				/* Not a button on the build form, must be on the stats form */
+				stats.dispatchMouseClickEvent(retID);
+				return;
+			}
+			if (retID != IDOBJ_TABFORM)
+			{
+				intProcessOrder(retID);
+				return;
+			}
 			break;
 		case INT_ORDER:
 			intProcessOrder(retID);

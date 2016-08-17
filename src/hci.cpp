@@ -838,6 +838,11 @@ struct statsWidget
 		}
 	}
 
+	bool isFormUp() const
+	{
+		return widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr;
+	}
+
 	void remove()
 	{
 		widgDelete(psWScreen, IDSTAT_CLOSE);
@@ -892,7 +897,7 @@ struct statsWidget
 		// should this ever be called with psOwner == NULL?
 
 		// Is the form already up?
-		if (widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr)
+		if (isFormUp())
 		{
 			removeNoAnim();
 		}
@@ -3157,7 +3162,7 @@ void human_computer_interface::doScreenRefresh()
 			bool OrderWasUp = false;
 
 			// If the stats form is up then remove it, but remember that it was up.
-			if ((intMode == INT_STAT) && widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
+			if ((intMode == INT_STAT) && stats.isFormUp())
 			{
 				StatsWasUp = true;
 			}
@@ -3172,7 +3177,7 @@ void human_computer_interface::doScreenRefresh()
 				statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 			}
 			// now make sure the stats screen isn't up
-			if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
+			if (stats.isFormUp())
 			{
 				stats.removeNoAnim();
 			}
@@ -4011,7 +4016,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	// Store the tab positions.
 	if (intMode == INT_STAT)
 	{
-		if (widgGetFromID(psWScreen, IDSTAT_FORM) != NULL)
+		if (stats.isFormUp())
 		{
 			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
 		}
@@ -4613,7 +4618,7 @@ bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT 
 	objectWidgets.add(apsObjectList, psSelected, bForceStats, objGetStatsFunc);
 	if (psSelected && (objectWidgets.objMode != IOBJ_COMMAND))
 	{
-		if (bForceStats || widgGetFromID(psWScreen, IDSTAT_FORM))
+		if (bForceStats || stats.isFormUp())
 		{
 			addObjectStats(psSelected, objStatID);
 		}

@@ -298,12 +298,12 @@ void foreach_legacy(T* start, std::function<void(T &)> f)
 }
 
 template<typename T>
-std::list<T *> list_legacy(T *start)
+std::list<std::reference_wrapper<T> > list_legacy(T *start)
 {
-	std::list<T *> result;
+	std::list<std::reference_wrapper<T> > result;
 	for (T *psStruct = start; psStruct != nullptr; psStruct = psStruct->psNext)
 	{
-		result.push_back(psStruct);
+		result.push_back(*psStruct);
 	}
 	return result;
 }
@@ -3040,11 +3040,11 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 {
 	FLAG_POSITION *psFlagPos;
 
-	for (FLAG_POSITION *psFlagPos : list_legacy(apsFlagPosLists[selectedPlayer]))
+	for (FLAG_POSITION &psFlagPos : list_legacy(apsFlagPosLists[selectedPlayer]))
 	{
-		if (psFlagPos->selected && (psFlagPos->type == POS_DELIVERY))
+		if (psFlagPos.selected && (psFlagPos.type == POS_DELIVERY))
 		{
-			return psFlagPos;
+			return &psFlagPos;
 		}
 	}
 
@@ -4348,11 +4348,11 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
-		for (DROID *psCurr : list_legacy(apsDroidLists[selectedPlayer]))
+		for (DROID &psCurr : list_legacy(apsDroidLists[selectedPlayer]))
 		{
-			if (objSelectFunc((BASE_OBJECT *)psCurr))
+			if (objSelectFunc((BASE_OBJECT *)&psCurr))
 			{
-				if (psCurr == psDroid)
+				if (&psCurr == psDroid)
 				{
 					stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 					break;
@@ -4372,13 +4372,13 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
-		for (DROID *psCurr : list_legacy(apsDroidLists[selectedPlayer]))
+		for (DROID &psCurr : list_legacy(apsDroidLists[selectedPlayer]))
 		{
-			if (objSelectFunc(psCurr))
+			if (objSelectFunc(&psCurr))
 			{
-				if (psCurr == psDroid)
+				if (&psCurr == psDroid)
 				{
-					STRUCTURE *target = castStructure(psCurr->order.psObj);
+					STRUCTURE *target = castStructure(psCurr.order.psObj);
 					stats.setStats(objectWidgets.getObject(droidID + IDOBJ_STATSTART), droidID + IDOBJ_STATSTART, target != nullptr? target->pStructureType : nullptr, objectWidgets.objMode);
 					break;
 				}
@@ -4466,9 +4466,9 @@ STRUCTURE *checkForStructure(uint32_t structType)
 {
 	STRUCTURE *psSel = nullptr;
 
-	for (STRUCTURE *psStruct : list_legacy(interfaceStructList()))
+	for (STRUCTURE &psStruct : list_legacy(interfaceStructList()))
 	{
-		if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
+		if (psStruct.selected && psStruct.pStructureType->type == structType && psStruct.status == SS_BUILT)
 		{
 			if (psSel != nullptr)
 			{
@@ -4476,7 +4476,7 @@ STRUCTURE *checkForStructure(uint32_t structType)
 				psSel->selected = true;
 				break;
 			}
-			psSel = psStruct;
+			psSel = &psStruct;
 		}
 	}
 	triggerEventSelected();
@@ -4491,9 +4491,9 @@ DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
 {
 	DROID *psSel = nullptr;
 
-	for (DROID *psDroid : list_legacy(apsDroidLists[selectedPlayer]))
+	for (DROID &psDroid : list_legacy(apsDroidLists[selectedPlayer]))
 	{
-		if (psDroid->selected && psDroid->droidType == droidType)
+		if (psDroid.selected && psDroid.droidType == droidType)
 		{
 			if (psSel != nullptr)
 			{
@@ -4505,7 +4505,7 @@ DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
 				SelectDroid(psSel);
 				break;
 			}
-			psSel = psDroid;
+			psSel = &psDroid;
 		}
 	}
 
@@ -5136,11 +5136,11 @@ only if research facility is free*/
 int human_computer_interface::getResearchState()
 {
 	bool resFree = false;
-	for (STRUCTURE *psStruct : list_legacy(interfaceStructList()))
+	for (STRUCTURE &psStruct : list_legacy(interfaceStructList()))
 	{
-		if (psStruct->pStructureType->type == REF_RESEARCH &&
-		    psStruct->status == SS_BUILT &&
-		    getResearchStats(psStruct) == NULL)
+		if (psStruct.pStructureType->type == REF_RESEARCH &&
+		    psStruct.status == SS_BUILT &&
+		    getResearchStats(&psStruct) == NULL)
 		{
 			resFree = true;
 			break;

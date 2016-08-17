@@ -97,30 +97,6 @@
 #define RETYOFFSET (0)
 #define NUMRETBUTS	7 // Number of reticule buttons.
 
-enum  				  // Reticule button indecies.
-{
-	RETBUT_CANCEL,
-	RETBUT_FACTORY,
-	RETBUT_RESEARCH,
-	RETBUT_BUILD,
-	RETBUT_DESIGN,
-	RETBUT_INTELMAP,
-	RETBUT_COMMAND,
-};
-
-struct BUTSTATE
-{
-	uint32_t id;
-	bool Enabled;
-	bool Hidden;
-};
-
-struct BUTOFFSET
-{
-	int32_t x;
-	int32_t y;
-};
-
 /***************************************************************************************/
 /*                  Widget ID numbers                                                  */
 
@@ -173,18 +149,6 @@ struct BUTOFFSET
 
 namespace
 {
-// Reticule button form relative positions.
-constexpr std::array<BUTOFFSET, NUMRETBUTS> ReticuleOffsets =
-{
-	BUTOFFSET{ 48, 47 },	// RETBUT_CANCEL,
-	BUTOFFSET{ 53, 15 },	// RETBUT_FACTORY,
-	BUTOFFSET{ 87, 33 },	// RETBUT_RESEARCH,
-	BUTOFFSET{ 87, 68 },	// RETBUT_BUILD,
-	BUTOFFSET{ 53, 86 },	// RETBUT_DESIGN,
-	BUTOFFSET{ 19, 68 },	// RETBUT_INTELMAP,
-	BUTOFFSET{ 19, 33 },	// RETBUT_COMMAND,
-};
-
 /* Close strings */
 const std::string pCloseText = "X";
 
@@ -331,7 +295,20 @@ void setReticuleStats(int ButId, QString tip, QString filename, QString filename
 	retbutstats[ButId].flashTime = 0;
 }
 
-static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+namespace
+{
+enum  // Reticule button indecies.
+{
+	RETBUT_CANCEL,
+	RETBUT_FACTORY,
+	RETBUT_RESEARCH,
+	RETBUT_BUILD,
+	RETBUT_DESIGN,
+	RETBUT_INTELMAP,
+	RETBUT_COMMAND,
+};
+
+void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 {
 	int     x = xOffset + psWidget->x();
 	int     y = yOffset + psWidget->y();
@@ -401,7 +378,7 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 	retbutstats[psWidget->UserData].flashing = flashing;
 	retbutstats[psWidget->UserData].downTime = DownTime;
 }
-
+}
 
 static void intSelectDroid(BASE_OBJECT *psObj)
 {
@@ -422,6 +399,21 @@ static void intSelectDroid(BASE_OBJECT *psObj)
 
 struct reticuleWidget
 {
+protected:
+	struct BUTSTATE
+	{
+		uint32_t id;
+		bool Enabled;
+		bool Hidden;
+	};
+
+	struct BUTOFFSET
+	{
+		int32_t x;
+		int32_t y;
+	};
+public:
+
 	reticuleWidget()
 	{
 		ReticuleEnabled = {
@@ -651,6 +643,18 @@ protected:
 	bool ReticuleUp = false;
 	// Reticule button enable states.
 	std::array<BUTSTATE, NUMRETBUTS> ReticuleEnabled;
+
+	// Reticule button form relative positions.
+	const std::array<BUTOFFSET, NUMRETBUTS> ReticuleOffsets =
+	{
+		BUTOFFSET{ 48, 47 },	// RETBUT_CANCEL,
+		BUTOFFSET{ 53, 15 },	// RETBUT_FACTORY,
+		BUTOFFSET{ 87, 33 },	// RETBUT_RESEARCH,
+		BUTOFFSET{ 87, 68 },	// RETBUT_BUILD,
+		BUTOFFSET{ 53, 86 },	// RETBUT_DESIGN,
+		BUTOFFSET{ 19, 68 },	// RETBUT_INTELMAP,
+		BUTOFFSET{ 19, 33 },	// RETBUT_COMMAND,
+	};
 };
 
 struct powerbarWidget

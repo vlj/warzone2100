@@ -2958,47 +2958,46 @@ human_computer_interface::human_computer_interface()
 			return;
 		}
 		resetWindows(psObj);
-		if (psObj->type == OBJ_STRUCTURE)
+		STRUCTURE *structureObj = castStructure(psObj);
+		if (structureObj == nullptr)
+			return;
+
+		if (StructIsFactory(structureObj))
 		{
-			STRUCTURE *psStructure = (STRUCTURE *)psObj;
-			if (StructIsFactory(psStructure))
+			//check if active
+			if (!StructureIsManufacturingPending(structureObj))
+				return;
+			//if not curently on hold, set it
+			if (!StructureIsOnHoldPending(structureObj))
 			{
-				//check if active
-				if (StructureIsManufacturingPending(psStructure))
-				{
-					//if not curently on hold, set it
-					if (!StructureIsOnHoldPending(psStructure))
-					{
-						holdProduction(psStructure, ModeQueue);
-					}
-					else
-					{
-						//cancel if have RMB-clicked twice
-						cancelProduction(psStructure, ModeQueue);
-						//play audio to indicate cancelled
-						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-					}
-				}
+				holdProduction(structureObj, ModeQueue);
+				return;
 			}
-			else if (psStructure->pStructureType->type == REF_RESEARCH)
+
+			//cancel if have RMB-clicked twice
+			cancelProduction(structureObj, ModeQueue);
+			//play audio to indicate cancelled
+			audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
+			return;
+		}
+
+		if (structureObj->pStructureType->type == REF_RESEARCH)
+		{
+			//check if active
+			if (!structureIsResearchingPending(structureObj))
+				return;
+
+			//if not curently on hold, set it
+			if (!StructureIsOnHoldPending(structureObj))
 			{
-				//check if active
-				if (structureIsResearchingPending(psStructure))
-				{
-					//if not curently on hold, set it
-					if (!StructureIsOnHoldPending(psStructure))
-					{
-						holdResearch(psStructure, ModeQueue);
-					}
-					else
-					{
-						//cancel if have RMB-clicked twice
-						cancelResearch(psStructure, ModeQueue);
-						//play audio to indicate cancelled
-						audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
-					}
-				}
+				holdResearch(structureObj, ModeQueue);
+				return;
 			}
+
+			//cancel if have RMB-clicked twice
+			cancelResearch(structureObj, ModeQueue);
+			//play audio to indicate cancelled
+			audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
 		}
 	};
 }

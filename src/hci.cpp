@@ -1399,6 +1399,12 @@ protected:
 
 struct optionWidget
 {
+	std::function<void(uint32_t)> onPlayerClick;
+	std::function<void(void)> onDroidClick;
+	std::function<void(void)> onStructClick;
+	std::function<void(void)> onFeatureClick;
+	std::function<void(void)> onCloseClick;
+
 	/* Add the options widgets to the widget screen */
 	bool add()
 	{
@@ -1574,6 +1580,42 @@ struct optionWidget
 	void remove()
 	{
 		widgDelete(psWScreen, IDOPT_FORM);
+	}
+
+	void dispatchMouseClickEvent(uint32_t id)
+	{
+		if (id >= IDOPT_PLAYERSTART && id <= IDOPT_PLAYEREND)
+		{
+			onPlayerClick(id - IDOPT_PLAYERSTART);
+			return;
+		}
+
+		switch (id)
+		{
+		case IDOPT_DROID:
+			onDroidClick();
+			return;
+		case IDOPT_STRUCT:
+			onStructClick();
+			return;
+		case IDOPT_FEATURE:
+			onFeatureClick();
+			return;
+		case IDOPT_CLOSE:
+			onCloseClick();
+			return;
+			/* Ignore these */
+		case IDOPT_FORM:
+		case IDOPT_LABEL:
+		case IDOPT_PLAYERFORM:
+		case IDOPT_PLAYERLABEL:
+		case IDOPT_IVISFORM:
+		case IDOPT_IVISLABEL:
+			break;
+		default:
+			ASSERT(false, "Unknown return code");
+			break;
+		}
 	}
 };
 
@@ -2333,8 +2375,6 @@ protected:
 	uint32_t numStatsListEntries;
 	_edit_pos_mode editPosMode;
 
-	/* Process return codes from the Options screen */
-	void processOptions(uint32_t id);
 	/* Add the stats screen for a given object */
 	void addObjectStats(BASE_OBJECT *psObj, uint32_t id);
 
@@ -3000,6 +3040,71 @@ human_computer_interface::human_computer_interface()
 			audio_PlayTrack(ID_SOUND_WINDOWCLOSE);
 		}
 	};
+
+	options.onPlayerClick = [this](uint32_t playerID)
+	{
+		int oldSelectedPlayer = selectedPlayer;
+
+		widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, 0);
+		selectedPlayer = playerID;
+		ASSERT_OR_RETURN(, selectedPlayer < MAX_PLAYERS, "Invalid player number");
+		NetPlay.players[selectedPlayer].allocated = !NetPlay.players[selectedPlayer].allocated;
+		NetPlay.players[oldSelectedPlayer].allocated = !NetPlay.players[oldSelectedPlayer].allocated;
+		// Do not change realSelectedPlayer here, so game doesn't pause.
+		widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, WBUT_LOCK);
+	};
+
+	options.onDroidClick = [this]()
+	{
+		options.remove();
+		apsTemplateList.clear();
+		for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
+		{
+			apsTemplateList.push_back(&*i);
+		}
+		objectWidgets.objMode = IOBJ_MANUFACTURE;
+		stats.addStats(apsTemplateList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
+		secondaryWindowUp = true;
+		intMode = INT_EDITSTAT;
+		editPosMode = IED_NOPOS;
+	};
+
+	options.onStructClick = [this]()
+	{
+		/* Store a list of stats pointers from the main structure stats */
+		std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
+		options.remove();
+		for (unsigned i = 0; i < std::min<unsigned>(numStructureStats, MAXSTRUCTURES); ++i)
+		{
+			apsStructStatsList[i] = asStructureStats + i;
+		}
+		objectWidgets.objMode = IOBJ_BUILD;
+		stats.addStats(apsStructStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
+		secondaryWindowUp = true;
+		intMode = INT_EDITSTAT;
+		editPosMode = IED_NOPOS;
+	};
+
+	options.onFeatureClick = [this]()
+	{
+		options.remove();
+		/* Store a list of Feature pointers for features to be placed on the map */
+		std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
+		for (unsigned i = 0; i < std::min<unsigned>(numFeatureStats, MAXFEATURES); ++i)
+		{
+			apsFeatureList[i] = asFeatureStats + i;
+		}
+		//stats.addStats(apsFeatureList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
+		secondaryWindowUp = true;
+		intMode = INT_EDITSTAT;
+		editPosMode = IED_NOPOS;
+	};
+
+	options.onCloseClick = [this]()
+	{
+		options.remove();
+		intMode = INT_NORMAL;
+	};
 }
 
 human_computer_interface::~human_computer_interface()
@@ -3319,89 +3424,6 @@ static void intCalcStructCenter(STRUCTURE_STATS *psStats, UDWORD tilex, UDWORD t
 
 	*pcx = tilex * TILE_UNITS + width / 2;
 	*pcy = tiley * TILE_UNITS + height / 2;
-}
-
-void human_computer_interface::processOptions(uint32_t id)
-{
-	if (id >= IDOPT_PLAYERSTART && id <= IDOPT_PLAYEREND)
-	{
-		int oldSelectedPlayer = selectedPlayer;
-
-		widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, 0);
-		selectedPlayer = id - IDOPT_PLAYERSTART;
-		ASSERT_OR_RETURN(, selectedPlayer < MAX_PLAYERS, "Invalid player number");
-		NetPlay.players[selectedPlayer].allocated = !NetPlay.players[selectedPlayer].allocated;
-		NetPlay.players[oldSelectedPlayer].allocated = !NetPlay.players[oldSelectedPlayer].allocated;
-		// Do not change realSelectedPlayer here, so game doesn't pause.
-		widgSetButtonState(psWScreen, IDOPT_PLAYERSTART + selectedPlayer, WBUT_LOCK);
-	}
-	else
-	{
-		switch (id)
-		{
-		/* The add object buttons */
-		case IDOPT_DROID:
-			options.remove();
-			apsTemplateList.clear();
-			for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
-			{
-				apsTemplateList.push_back(&*i);
-			}
-			objectWidgets.objMode = IOBJ_MANUFACTURE;
-			stats.addStats(apsTemplateList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
-			secondaryWindowUp = true;
-			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
-			break;
-		case IDOPT_STRUCT:
-		{
-			/* Store a list of stats pointers from the main structure stats */
-			std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
-			options.remove();
-			for (unsigned i = 0; i < std::min<unsigned>(numStructureStats, MAXSTRUCTURES); ++i)
-			{
-				apsStructStatsList[i] = asStructureStats + i;
-			}
-			objectWidgets.objMode = IOBJ_BUILD;
-			stats.addStats(apsStructStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
-			secondaryWindowUp = true;
-			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
-			break;
-		}
-		case IDOPT_FEATURE:
-		{
-			options.remove();
-			/* Store a list of Feature pointers for features to be placed on the map */
-			std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
-			for (unsigned i = 0; i < std::min<unsigned>(numFeatureStats, MAXFEATURES); ++i)
-			{
-				apsFeatureList[i] = asFeatureStats + i;
-			}
-			//stats.addStats(apsFeatureList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
-			secondaryWindowUp = true;
-			intMode = INT_EDITSTAT;
-			editPosMode = IED_NOPOS;
-			break;
-		}
-		/* Close window buttons */
-		case IDOPT_CLOSE:
-			options.remove();
-			intMode = INT_NORMAL;
-			break;
-		/* Ignore these */
-		case IDOPT_FORM:
-		case IDOPT_LABEL:
-		case IDOPT_PLAYERFORM:
-		case IDOPT_PLAYERLABEL:
-		case IDOPT_IVISFORM:
-		case IDOPT_IVISLABEL:
-			break;
-		default:
-			ASSERT(false, "Unknown return code");
-			break;
-		}
-	}
 }
 
 void human_computer_interface::processEditStats(uint32_t id)
@@ -3896,7 +3918,7 @@ void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool 
 		switch (intMode)
 		{
 		case INT_OPTION:
-			processOptions(retID);
+			options.dispatchMouseClickEvent(retID);
 			break;
 		case INT_EDITSTAT:
 			processEditStats(retID);

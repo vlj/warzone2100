@@ -843,6 +843,11 @@ struct statsWidget
 		return widgGetFromID(psWScreen, IDSTAT_FORM) != nullptr;
 	}
 
+	IntListTabWidget *getTabForm()
+	{
+		return (IntListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM);
+	}
+
 	void remove()
 	{
 		widgDelete(psWScreen, IDSTAT_CLOSE);
@@ -3174,7 +3179,7 @@ void human_computer_interface::doScreenRefresh()
 			}
 			if (StatsWasUp)
 			{
-				statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
+				statMajor = stats.getTabForm()->currentPage();
 			}
 			// now make sure the stats screen isn't up
 			if (stats.isFormUp())
@@ -3220,9 +3225,9 @@ void human_computer_interface::doScreenRefresh()
 				((ListTabWidget *)widgGetFromID(psWScreen, IDOBJ_TABFORM))->setCurrentPage(objMajor);
 			}
 
-			if (widgGetFromID(psWScreen, IDSTAT_TABFORM) != NULL)
+			if (stats.getTabForm() != nullptr)
 			{
-				((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->setCurrentPage(statMajor);
+				stats.getTabForm()->setCurrentPage(statMajor);
 			}
 
 			if (psFlag != NULL)
@@ -4018,7 +4023,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	{
 		if (stats.isFormUp())
 		{
-			statMajor = ((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->currentPage();
+			statMajor = stats.getTabForm()->currentPage();
 		}
 		stats.removeNoAnim();
 	}
@@ -4037,9 +4042,9 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	// get the tab positions for the new stat form
 	// Restore the tab positions.
 	// only restore if we've still got at least that many tabs
-	if (psStats == nullptr && widgGetFromID(psWScreen, IDSTAT_TABFORM) != nullptr)
+	if (psStats == nullptr && stats.getTabForm() != nullptr)
 	{
-		((ListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM))->setCurrentPage(statMajor);
+		stats.getTabForm()->setCurrentPage(statMajor);
 	}
 
 	intMode = INT_STAT;

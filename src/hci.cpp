@@ -86,6 +86,8 @@
 #include "keybind.h"
 #include "qtscript.h"
 #include "frend.h"
+#include <boost/variant.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 // Is a button widget highlighted, either because the cursor is over it or it is flashing.
 //
@@ -778,12 +780,37 @@ protected:
 	bool powerBarUp = false;
 };
 
+class base_state_visitor : public boost::static_visitor<BASE_STATS *>
+{
+	size_t idx;
+public:
+	base_state_visitor(size_t i) : idx(i) {}
+	BASE_STATS *operator()(const std::vector<DROID_TEMPLATE *> &v) const
+	{
+		return (BASE_STATS*)v[idx];
+	}
+
+	BASE_STATS *operator()(const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &v) const
+	{
+		return (BASE_STATS*)v[idx];
+	}
+
+	BASE_STATS *operator()(const std::array<RESEARCH *, MAXRESEARCH> &v) const
+	{
+		return (BASE_STATS*)v[idx];
+	}
+};
+
+
 struct statistics
 {
 	/* The button ID of an objects stat on the stat screen if it is locked down */
 	uint32_t statID;
 	/* The current stats list being used by the stats screen */
-	BASE_STATS **ppsStatsList;
+	using STAT_LIST_TYPE = boost::variant<std::vector<DROID_TEMPLATE *>,
+		std::array<STRUCTURE_STATS *, MAXSTRUCTURES>,
+		std::array<RESEARCH *, MAXRESEARCH> >;
+	typename STAT_LIST_TYPE ppsStatsList;
 
 	statistics()
 	{
@@ -873,12 +900,20 @@ struct statistics
 		}
 	}
 
+
+	BASE_STATS *getBaseStat(typename STAT_LIST_TYPE &ppsStatsList, size_t index)
+	{
+		boost::apply_visitor(base_state_visitor(index), ppsStatsList);
+		return nullptr;
+	}
+
 	/* Add the stats widgets to the widget screen */
 	/* If psSelected != NULL it specifies which stat should be hilited
 	psOwner specifies which object is hilighted on the object bar for this stat*/
-	bool addStats(BASE_STATS **ppsStatsList, uint32_t numStats,
+	bool addStats(typename STAT_LIST_TYPE ppsStatsList, uint32_t numStats,
 		BASE_STATS *psSelected, BASE_OBJECT *psOwner, _obj_mode objMode)
 	{
+		ppsStatsList = ppsStatsList;
 		// should this ever be called with psOwner == NULL?
 
 		// Is the form already up?
@@ -953,7 +988,7 @@ struct statistics
 		statID = 0;
 		for (unsigned i = 0; i < numStats; i++)
 		{
-			BASE_STATS *Stat = ppsStatsList[i];
+			BASE_STATS *Stat = getBaseStat(ppsStatsList, i);
 
 			if (i + IDSTAT_START > IDSTAT_END)
 			{
@@ -1132,7 +1167,7 @@ struct statistics
 			int compIndex = id - IDSTAT_START;
 			//get the stats
 //			ASSERT_OR_RETURN(, compIndex < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", compIndex, numStatsListEntries);
-			BASE_STATS *psStats = ppsStatsList[compIndex];
+			BASE_STATS *psStats = getBaseStat(ppsStatsList, compIndex);
 
 			/* deal with RMB clicks */
 			if (widgGetButtonKey_DEPRECATED(psWScreen) == WKEY_SECONDARY)
@@ -3311,7 +3346,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsTemplateList.push_back(&*i);
 			}
-			stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+			stats.ppsStatsList = apsTemplateList;
 			objectWidgets.objMode = IOBJ_MANUFACTURE;
 			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
@@ -3324,7 +3359,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
 			}
-			stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+			stats.ppsStatsList = apsStructStatsList;
 			objectWidgets.objMode = IOBJ_BUILD;
 			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
@@ -3337,7 +3372,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			stats.ppsStatsList = (BASE_STATS **)apsFeatureList.data();
+			stats.ppsStatsList = apsFeatureList;
 			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
@@ -3368,7 +3403,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
 		/* Clicked on a stat button - need to look for a location for it */
-		psPositionStats = stats.ppsStatsList[id - IDSTAT_START];
+//		psPositionStats = stats.ppsStatsList[id - IDSTAT_START];
 		if (psPositionStats->ref >= REF_TEMPLATE_START &&
 		    psPositionStats->ref < REF_TEMPLATE_START + REF_RANGE)
 		{
@@ -3503,7 +3538,7 @@ INT_RETVAL human_computer_interface::display()
 	}
 
 	/* Extra code for the power bars to deal with the shadow */
-	powerbar.runPower(stats.ppsStatsList, apsStructStatsList, ppResearchList);
+//	powerbar.runPower(stats.ppsStatsList, apsStructStatsList, ppResearchList);
 
 	stats.runStats(objectWidgets.objMode);
 
@@ -3980,7 +4015,8 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	// note the object for the screen
 	objectWidgets.apsPreviousObj[objectWidgets.objMode] = psObj;
 
-	addStatsHelper(psObj, psStats);	secondaryWindowUp = true;
+	addStatsHelper(psObj, psStats);
+	secondaryWindowUp = true;
 
 	// get the tab positions for the new stat form
 	// Restore the tab positions.
@@ -4013,7 +4049,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 			selectedPlayer, MAXSTRUCTURES - 1);
 
-		stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+		stats.ppsStatsList = apsStructStatsList;
 	}
 
 	//have to determine the Template list once the factory has been chosen
@@ -4021,7 +4057,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	{
 		fillTemplateList(apsTemplateList, (STRUCTURE *)psObj);
 		numStatsListEntries = apsTemplateList.size();
-		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0];  // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = apsTemplateList;
 	}
 
 	/*have to calculate the list each time the Topic button is pressed
@@ -4821,7 +4857,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 bool human_computer_interface::addBuild(DROID *psSelected)
 {
 	/* Store the correct stats list for future reference */
-	stats.ppsStatsList = (BASE_STATS **)apsStructStatsList.data();
+	stats.ppsStatsList = apsStructStatsList;
 
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
@@ -4852,7 +4888,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	/* Store the correct stats list for future reference */
 	if (!apsTemplateList.empty())
 	{
-		stats.ppsStatsList = (BASE_STATS **)&apsTemplateList[0]; // FIXME Ugly cast, and is undefined behaviour (strict-aliasing violation) in C/C++.
+		stats.ppsStatsList = apsTemplateList;
 	}
 
 	objSelectFunc = selectManufacture;
@@ -4881,7 +4917,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 
 bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 {
-	stats.ppsStatsList = (BASE_STATS **)ppResearchList.data();
+	stats.ppsStatsList = ppResearchList;
 
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
@@ -4909,7 +4945,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 
 bool human_computer_interface::addCommand(DROID *psSelected)
 {
-	stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
+//	stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
 
 	objSelectFunc = selectCommand;
 	objGetStatsFunc = getCommandStats;

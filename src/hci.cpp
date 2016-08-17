@@ -848,6 +848,21 @@ struct statsWidget
 		return (IntListTabWidget *)widgGetFromID(psWScreen, IDSTAT_TABFORM);
 	}
 
+	bool isLoopButtonUp()
+	{
+		return widgGetFromID(psWScreen, IDSTAT_LOOP_BUTTON) != nullptr;
+	}
+
+	void lockLoopButton()
+	{
+		widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
+	}
+
+	void unlockLoopButton()
+	{
+		widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
+	}
+
 	void remove()
 	{
 		widgDelete(psWScreen, IDSTAT_CLOSE);
@@ -2280,10 +2295,10 @@ struct objectWidget
 	}
 };
 
-struct human_computer_interface
+struct humanComputerInterface
 {
-	human_computer_interface();
-	~human_computer_interface();
+	humanComputerInterface();
+	~humanComputerInterface();
 
 	reticuleWidget reticule;
 	powerbarWidget powerbar;
@@ -2448,7 +2463,7 @@ namespace
 
 }
 
-human_computer_interface::human_computer_interface()
+humanComputerInterface::humanComputerInterface()
 {
 	widgSetTipColour(WZCOL_TOOLTIP_TEXT);
 	WidgSetAudio(WidgetAudioCallback, ID_SOUND_BUTTON_CLICK_3, ID_SOUND_SELECT, ID_SOUND_BUILD_FAIL);
@@ -2773,12 +2788,12 @@ human_computer_interface::human_computer_interface()
 			if (((FACTORY *)psStruct->pFunctionality)->psSubject != NULL && ((FACTORY *)psStruct->pFunctionality)->productionLoops != 0)
 			{
 				//lock the button
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, WBUT_CLICKLOCK);
+				stats.lockLoopButton();
 			}
 			else
 			{
 				//unlock
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
+				stats.unlockLoopButton();
 			}
 		}
 		return;
@@ -3105,7 +3120,7 @@ human_computer_interface::human_computer_interface()
 	};
 }
 
-human_computer_interface::~human_computer_interface()
+humanComputerInterface::~humanComputerInterface()
 {
 	delete psWScreen;
 	psWScreen = NULL;
@@ -3121,17 +3136,17 @@ human_computer_interface::~human_computer_interface()
 
 namespace
 {
-	std::unique_ptr<human_computer_interface> default_hci;
+	std::unique_ptr<humanComputerInterface> default_hci;
 }
 
 // Set widget refresh pending flag.
 //
-void human_computer_interface::refreshScreen()
+void humanComputerInterface::refreshScreen()
 {
 	refreshPending = true;
 }
 
-bool human_computer_interface::isRefreshing()
+bool humanComputerInterface::isRefreshing()
 {
 	return refreshing;
 }
@@ -3151,7 +3166,7 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 
 // Refresh widgets once per game cycle if pending flag is set.
 //
-void human_computer_interface::doScreenRefresh()
+void humanComputerInterface::doScreenRefresh()
 {
 	UWORD           objMajor = 0, statMajor = 0;
 	FLAG_POSITION	*psFlag;
@@ -3267,7 +3282,7 @@ void human_computer_interface::doScreenRefresh()
 }
 
 /* Reset the widget screen to just the reticule */
-void human_computer_interface::resetScreen(bool NoAnim)
+void humanComputerInterface::resetScreen(bool NoAnim)
 {
 	// Ensure driver mode is turned off.
 	StopDriverMode();
@@ -3424,7 +3439,7 @@ static void intCalcStructCenter(STRUCTURE_STATS *psStats, UDWORD tilex, UDWORD t
 	*pcy = tiley * TILE_UNITS + height / 2;
 }
 
-void human_computer_interface::processEditStats(uint32_t id)
+void humanComputerInterface::processEditStats(uint32_t id)
 {
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
@@ -3457,7 +3472,7 @@ void human_computer_interface::processEditStats(uint32_t id)
 	}
 }
 
-void human_computer_interface::update()
+void humanComputerInterface::update()
 {
 	// Update the object list if necessary, prune dead objects.
 	if (intMode == INT_OBJECT || intMode == INT_STAT || intMode == INT_CMDORDER)
@@ -3490,7 +3505,7 @@ void human_computer_interface::update()
 }
 
 /* Run the widgets for the in game interface */
-INT_RETVAL human_computer_interface::display()
+INT_RETVAL humanComputerInterface::display()
 {
 	bool			quitting = false;
 	UDWORD			structX, structY, structX2, structY2;
@@ -3857,7 +3872,7 @@ namespace
 	}
 }
 
-void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool &quitting)
+void humanComputerInterface::dispatchMouseClickEvent(unsigned int retID, bool &quitting)
 {
 	if (isReticule(retID))
 	{
@@ -3972,7 +3987,7 @@ void human_computer_interface::dispatchMouseClickEvent(unsigned int retID, bool 
 	}
 }
 
-void human_computer_interface::handleObjectChanges()
+void humanComputerInterface::handleObjectChanges()
 {
 	if (objectsChanged)
 	{
@@ -4014,7 +4029,7 @@ void human_computer_interface::handleObjectChanges()
 	objectsChanged = false;
 }
 
-void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
+void humanComputerInterface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 {
 	/* Clear a previous structure pos if there is one */
 	stopStructPosition();
@@ -4065,7 +4080,7 @@ void human_computer_interface::addObjectStats(BASE_OBJECT *psObj, uint32_t id)
 	}
 }
 
-void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * psStats)
+void humanComputerInterface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * psStats)
 {
 	// NOTE! The below functions populate our list (building/units...)
 	// up to MAX____.  We have unlimited potential, but it is capped at 200 now.
@@ -4144,7 +4159,7 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	}
 }
 
-void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
+void humanComputerInterface::resetWindows(BASE_OBJECT *psObj)
 {
 	if (psObj)
 	{
@@ -4173,7 +4188,7 @@ void human_computer_interface::resetWindows(BASE_OBJECT *psObj)
 }
 
 /* Set the map view point to the world coordinates x,y */
-void human_computer_interface::setMapPos(uint32_t x, uint32_t y)
+void humanComputerInterface::setMapPos(uint32_t x, uint32_t y)
 {
 	if (!driveModeActive())
 	{
@@ -4187,7 +4202,7 @@ void human_computer_interface::setMapPos(uint32_t x, uint32_t y)
 //
 // There should be two version of this function, one for left clicking and one got right.
 //
-void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
+void humanComputerInterface::objectSelected(BASE_OBJECT *psObj)
 {
 	if (psObj)
 	{
@@ -4244,7 +4259,7 @@ void human_computer_interface::objectSelected(BASE_OBJECT *psObj)
 }
 
 // add the construction interface if a constructor droid is selected
-void human_computer_interface::constructorSelected(DROID *psDroid)
+void humanComputerInterface::constructorSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	addBuild(psDroid);
@@ -4252,7 +4267,7 @@ void human_computer_interface::constructorSelected(DROID *psDroid)
 }
 
 // add the construction interface if a constructor droid is selected
-void human_computer_interface::commanderSelected(DROID *psDroid)
+void humanComputerInterface::commanderSelected(DROID *psDroid)
 {
 	setWidgetsStatus(true);
 	addCommand(psDroid);
@@ -4265,7 +4280,7 @@ static void intStartStructPosition(BASE_STATS *psStats)
 	init3DBuilding(psStats, NULL, NULL);
 }
 
-void human_computer_interface::stopStructPosition()
+void humanComputerInterface::stopStructPosition()
 {
 	/* Check there is still a struct position running */
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_BUILDSEL)
@@ -4278,7 +4293,7 @@ void human_computer_interface::stopStructPosition()
 
 
 /* Display the widgets for the in game interface */
-void human_computer_interface::displayWidgets()
+void humanComputerInterface::displayWidgets()
 {
 	if (!bInTutorial)
 	{
@@ -4316,7 +4331,7 @@ void intDisplayWidgets(void)
 
 
 /* Tell the interface when an object is created - it may have to be added to a screen */
-void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
+void humanComputerInterface::notifyNewObject(BASE_OBJECT *psObj)
 {
 	if (intMode == INT_OBJECT || intMode == INT_STAT)
 	{
@@ -4333,7 +4348,7 @@ void human_computer_interface::notifyNewObject(BASE_OBJECT *psObj)
 	}
 }
 
-void human_computer_interface::objectDied(uint32_t objID)
+void humanComputerInterface::objectDied(uint32_t objID)
 {
 	UDWORD				statsID, gubbinsID;
 
@@ -4366,7 +4381,7 @@ void human_computer_interface::objectDied(uint32_t objID)
 
 
 /* Tell the interface a construction droid has finished building */
-void human_computer_interface::notifyBuildFinished(DROID *psDroid)
+void humanComputerInterface::notifyBuildFinished(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
@@ -4390,7 +4405,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 }
 
 /* Tell the interface a construction droid has started building*/
-void human_computer_interface::notifyBuildStarted(DROID *psDroid)
+void humanComputerInterface::notifyBuildStarted(DROID *psDroid)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
@@ -4414,7 +4429,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	}
 }
 
-std::vector<BASE_OBJECT *> human_computer_interface::rebuildFactoryList()
+std::vector<BASE_OBJECT *> humanComputerInterface::rebuildFactoryList()
 {
 	std::vector<BASE_OBJECT *> result;
 	foreach_legacy<STRUCTURE>(interfaceStructList(), [this, &result](STRUCTURE &psCurr)
@@ -4431,7 +4446,7 @@ std::vector<BASE_OBJECT *> human_computer_interface::rebuildFactoryList()
 }
 
 /* Tell the interface a factory has completed building ALL droids */
-void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
+void humanComputerInterface::notifyManufactureFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
@@ -4446,15 +4461,15 @@ void human_computer_interface::notifyManufactureFinished(STRUCTURE *psBuilding)
 		{
 			stats.setStats(objectWidgets.getObject(structureIndex + IDOBJ_STATSTART), structureIndex + IDOBJ_STATSTART, NULL, objectWidgets.objMode);
 			// clear the loop button if interface is up
-			if (widgGetFromID(psWScreen, IDSTAT_LOOP_BUTTON))
+			if (stats.isLoopButtonUp())
 			{
-				widgSetButtonState(psWScreen, IDSTAT_LOOP_BUTTON, 0);
+				stats.unlockLoopButton();
 			}
 		}
 	}
 }
 
-void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
+void humanComputerInterface::updateManufacture(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
@@ -4472,7 +4487,7 @@ void human_computer_interface::updateManufacture(STRUCTURE *psBuilding)
 }
 
 /* Tell the interface a research facility has completed a topic */
-void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
+void humanComputerInterface::notifyResearchFinished(STRUCTURE *psBuilding)
 {
 	ASSERT_OR_RETURN(, psBuilding != NULL, "Invalid structure pointer");
 
@@ -4480,7 +4495,7 @@ void human_computer_interface::notifyResearchFinished(STRUCTURE *psBuilding)
 	refreshScreen();
 }
 
-void human_computer_interface::alliedResearchChanged()
+void humanComputerInterface::alliedResearchChanged()
 {
 	if ((intMode == INT_OBJECT || intMode == INT_STAT) && objectWidgets.objMode == IOBJ_RESEARCH)
 	{
@@ -4516,7 +4531,7 @@ STRUCTURE *checkForStructure(uint32_t structType)
 of the required type. If there is more than one, they are all deselected and
 the first one reselected*/
 // no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
-DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
+DROID *humanComputerInterface::intCheckForDroid(uint32_t droidType)
 {
 	DROID *psSel = nullptr;
 
@@ -4542,7 +4557,7 @@ DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
 }
 
 
-BASE_OBJECT *human_computer_interface::selectObject(BASE_OBJECT *psFirst)
+BASE_OBJECT *humanComputerInterface::selectObject(BASE_OBJECT *psFirst)
 {
 	BASE_OBJECT *psSelected = nullptr;
 	switch (objectWidgets.objMode)
@@ -4612,7 +4627,7 @@ std::vector<BASE_OBJECT*> createSelectedObjectsList(BASE_OBJECT *psObjects,std::
 
 } // end anonymous namespace
 
-bool human_computer_interface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
+bool humanComputerInterface::updateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
 	if (objectWidgets.isFormUp())
 	{
@@ -4722,7 +4737,7 @@ static BASE_STATS *getConstructionStats(BASE_OBJECT *psObj)
 	return NULL;
 }
 
-bool human_computer_interface::setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
+bool humanComputerInterface::setConstructionStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 {
 	DROID *psDroid = castDroid(psObj);
 	ASSERT_OR_RETURN(false, psDroid != NULL, "invalid droid pointer");
@@ -4786,7 +4801,7 @@ static BASE_STATS *getResearchStats(BASE_OBJECT *psObj)
 	return psResearchFacility->psSubject;
 }
 
-bool human_computer_interface::setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
+bool humanComputerInterface::setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 {
 	STRUCTURE			*psBuilding;
 	RESEARCH               *pResearch = (RESEARCH *)psStats;
@@ -4892,7 +4907,7 @@ static bool setManufactureStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 	return true;
 }
 
-bool human_computer_interface::addBuild(DROID *psSelected)
+bool humanComputerInterface::addBuild(DROID *psSelected)
 {
 	objSelectFunc = selectConstruction;
 	objGetStatsFunc = getConstructionStats;
@@ -4923,7 +4938,7 @@ bool human_computer_interface::addBuild(DROID *psSelected)
 	return b;
 }
 
-bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
+bool humanComputerInterface::addManufacture(STRUCTURE *psSelected)
 {
 	objSelectFunc = selectManufacture;
 	objGetStatsFunc = getManufactureStats;
@@ -4954,7 +4969,7 @@ bool human_computer_interface::addManufacture(STRUCTURE *psSelected)
 	return b;
 }
 
-bool human_computer_interface::addResearch(STRUCTURE *psSelected)
+bool humanComputerInterface::addResearch(STRUCTURE *psSelected)
 {
 	objSelectFunc = selectResearch;
 	objGetStatsFunc = getResearchStats;
@@ -4985,7 +5000,7 @@ bool human_computer_interface::addResearch(STRUCTURE *psSelected)
 	return b;
 }
 
-bool human_computer_interface::addCommand(DROID *psSelected)
+bool humanComputerInterface::addCommand(DROID *psSelected)
 {
 //	stats.ppsStatsList = NULL;//(BASE_STATS **)ppResearchList;
 
@@ -5014,7 +5029,7 @@ bool human_computer_interface::addCommand(DROID *psSelected)
 }
 
 //sets up the Intelligence Screen as far as the interface is concerned
-void human_computer_interface::addIntelScreen()
+void humanComputerInterface::addIntelScreen()
 {
 	bool	radOnScreen;
 
@@ -5053,7 +5068,7 @@ void human_computer_interface::addIntelScreen()
 }
 
 //sets up the Transporter Screen as far as the interface is concerned
-void human_computer_interface::addTransporterInterface(DROID *psSelected, bool onMission)
+void humanComputerInterface::addTransporterInterface(DROID *psSelected, bool onMission)
 {
 	// if psSelected = NULL add interface but if psSelected != NULL make sure its not flying
 	if (!psSelected || (psSelected && !transporterFlying(psSelected)))
@@ -5065,7 +5080,7 @@ void human_computer_interface::addTransporterInterface(DROID *psSelected, bool o
 }
 
 /*sets which list of structures to use for the interface*/
-STRUCTURE *human_computer_interface::interfaceStructList()
+STRUCTURE *humanComputerInterface::interfaceStructList()
 {
 	if (offWorldKeepLists)
 	{
@@ -5078,7 +5093,7 @@ STRUCTURE *human_computer_interface::interfaceStructList()
 }
 
 /* Add the Proximity message buttons */
-bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
+bool humanComputerInterface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
 {
 	PROXIMITY_DISPLAY	*psProxDisp2;
 	UDWORD				cnt;
@@ -5125,7 +5140,7 @@ bool human_computer_interface::addProximityButton(PROXIMITY_DISPLAY *psProxDisp,
 }
 
 /*Remove a Proximity Button - when the message is deleted*/
-void human_computer_interface::removeProximityButton(PROXIMITY_DISPLAY *psProxDisp)
+void humanComputerInterface::removeProximityButton(PROXIMITY_DISPLAY *psProxDisp)
 {
 	ASSERT_OR_RETURN(, psProxDisp->buttonID >= IDPROX_START && psProxDisp->buttonID <= IDPROX_END, "Invalid proximity ID");
 	widgDelete(psWScreen, psProxDisp->buttonID);
@@ -5161,7 +5176,7 @@ void processProximityButtons(UDWORD id)
 }
 
 /*	Fools the widgets by setting a key value */
-void human_computer_interface::setKeyButtonMapping(uint32_t val)
+void humanComputerInterface::setKeyButtonMapping(uint32_t val)
 {
 	keyButtonMapping = val;
 }
@@ -5184,7 +5199,7 @@ static SDWORD intNumSelectedDroids(UDWORD droidType)
 
 /*Checks to see if there are any research topics to do and flashes the button -
 only if research facility is free*/
-int human_computer_interface::getResearchState()
+int humanComputerInterface::getResearchState()
 {
 	bool resFree = false;
 	for (STRUCTURE &psStruct : list_legacy(interfaceStructList()))
@@ -5223,7 +5238,7 @@ int human_computer_interface::getResearchState()
 	return count;
 }
 
-void human_computer_interface::notifyResearchButton(int prevState)
+void humanComputerInterface::notifyResearchButton(int prevState)
 {
 	int newState = getResearchState();
 	if (newState > prevState)
@@ -5239,7 +5254,7 @@ void human_computer_interface::notifyResearchButton(int prevState)
 
 // Find any structure. Returns NULL if none found.
 //
-STRUCTURE *human_computer_interface::findAStructure()
+STRUCTURE *humanComputerInterface::findAStructure()
 {
 	STRUCTURE *Struct;
 
@@ -5261,7 +5276,7 @@ STRUCTURE *human_computer_interface::findAStructure()
 
 // Look through the players structures and find the next one of type structType.
 //
-STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive)
+STRUCTURE *humanComputerInterface::gotoNextStructureType(uint32_t structType, bool JumpTo, bool CancelDrive)
 {
 	STRUCTURE	*psStruct;
 	bool Found = false;
@@ -5342,7 +5357,7 @@ STRUCTURE *human_computer_interface::gotoNextStructureType(uint32_t structType, 
 // Look through the players droids and find the next one of type droidType.
 // If Current=NULL then start at the beginning overwise start at Current.
 //
-DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
+DROID *humanComputerInterface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup)
 {
 	DROID *psDroid;
 	bool Found = false;
@@ -5422,13 +5437,13 @@ DROID *human_computer_interface::gotoNextDroidType(DROID *CurrDroid, DROID_TYPE 
 }
 
 //access function for selected object in the interface
-BASE_OBJECT *human_computer_interface::getCurrentSelected()
+BASE_OBJECT *humanComputerInterface::getCurrentSelected()
 {
 	return objectWidgets.psObjSelected;
 }
 
 // Checks if a coordinate is over the build menu
-bool human_computer_interface::coordInBuild(int x, int y)
+bool humanComputerInterface::coordInBuild(int x, int y)
 {
 	// This measurement is valid for the menu, so the buildmenu_height
 	// value is used to "nudge" it all upwards from the command menu.
@@ -5449,7 +5464,7 @@ bool human_computer_interface::coordInBuild(int x, int y)
 
 // Our chat dialog for global & team communication
 // \mode sets if global or team communication is wanted
-void human_computer_interface::chatDialog(int mode)
+void humanComputerInterface::chatDialog(int mode)
 {
 	if (!ChatDialogUp)
 	{
@@ -5502,13 +5517,13 @@ void human_computer_interface::chatDialog(int mode)
 }
 
 // If chat dialog is up
-bool human_computer_interface::isChatUp()
+bool humanComputerInterface::isChatUp()
 {
 	return ChatDialogUp;
 }
 
 // Helper call to see if we have builder/research/... window up or not.
-bool human_computer_interface::isSecondaryWindowUp()
+bool humanComputerInterface::isSecondaryWindowUp()
 {
 	return secondaryWindowUp;
 }
@@ -5516,7 +5531,7 @@ bool human_computer_interface::isSecondaryWindowUp()
 /* Initialise the in game interface */
 bool intInitialise(void)
 {
-	default_hci.reset(new human_computer_interface);
+	default_hci.reset(new humanComputerInterface);
 	return true;
 }
 

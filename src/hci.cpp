@@ -907,10 +907,10 @@ struct statistics
 	/* Add the stats widgets to the widget screen */
 	/* If psSelected != NULL it specifies which stat should be hilited
 	psOwner specifies which object is hilighted on the object bar for this stat*/
-	bool addStats(typename STAT_LIST_TYPE ppsStatsList, uint32_t numStats,
+	bool addStats(typename STAT_LIST_TYPE StatsList, uint32_t numStats,
 		BASE_STATS *psSelected, BASE_OBJECT *psOwner, _obj_mode objMode)
 	{
-		ppsStatsList = ppsStatsList;
+		ppsStatsList = StatsList;
 		// should this ever be called with psOwner == NULL?
 
 		// Is the form already up?
@@ -3343,9 +3343,8 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsTemplateList.push_back(&*i);
 			}
-			stats.ppsStatsList = apsTemplateList;
 			objectWidgets.objMode = IOBJ_MANUFACTURE;
-			stats.addStats(stats.ppsStatsList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
+			stats.addStats(apsTemplateList, apsTemplateList.size(), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -3356,9 +3355,8 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsStructStatsList[i] = asStructureStats + i;
 			}
-			stats.ppsStatsList = apsStructStatsList;
 			objectWidgets.objMode = IOBJ_BUILD;
-			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
+			stats.addStats(apsStructStatsList, std::min<unsigned>(numStructureStats, MAXSTRUCTURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -3369,8 +3367,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			//stats.ppsStatsList = apsFeatureList;
-			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
+			//stats.addStats(apsFeatureList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
@@ -4045,8 +4042,8 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	{
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 			selectedPlayer, MAXSTRUCTURES - 1);
-
-		stats.ppsStatsList = apsStructStatsList;
+		stats.addStats(apsStructStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
+		return;
 	}
 
 	//have to determine the Template list once the factory has been chosen
@@ -4054,7 +4051,8 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	{
 		fillTemplateList(apsTemplateList, (STRUCTURE *)psObj);
 		numStatsListEntries = apsTemplateList.size();
-		stats.ppsStatsList = apsTemplateList;
+		stats.addStats(apsTemplateList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
+		return;
 	}
 
 	/*have to calculate the list each time the Topic button is pressed
@@ -4106,9 +4104,9 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 		{
 			ppResearchList[i] = &asResearch[pSList[i]];	  // note change from pList
 		}
+		stats.addStats(ppResearchList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
+		return;
 	}
-
-	stats.addStats(stats.ppsStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
 }
 
 void human_computer_interface::resetWindows(BASE_OBJECT *psObj)

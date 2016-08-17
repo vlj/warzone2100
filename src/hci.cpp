@@ -297,6 +297,17 @@ void foreach_legacy(T* start, std::function<void(T &)> f)
 	}
 }
 
+template<typename T>
+std::list<T *> list_legacy(T *start)
+{
+	std::list<T *> result;
+	for (T *psStruct = start; psStruct != nullptr; psStruct = psStruct->psNext)
+	{
+		result.push_back(psStruct);
+	}
+	return result;
+}
+
 }
 
 /***************************GAME CODE ****************************/
@@ -3029,8 +3040,7 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 {
 	FLAG_POSITION *psFlagPos;
 
-	for (psFlagPos = apsFlagPosLists[selectedPlayer]; psFlagPos;
-	     psFlagPos = psFlagPos->psNext)
+	for (FLAG_POSITION *psFlagPos : list_legacy(apsFlagPosLists[selectedPlayer]))
 	{
 		if (psFlagPos->selected && (psFlagPos->type == POS_DELIVERY))
 		{
@@ -3038,7 +3048,7 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // Refresh widgets once per game cycle if pending flag is set.
@@ -4338,7 +4348,7 @@ void human_computer_interface::notifyBuildFinished(DROID *psDroid)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
-		for (DROID *psCurr = apsDroidLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
+		for (DROID *psCurr : list_legacy(apsDroidLists[selectedPlayer]))
 		{
 			if (objSelectFunc((BASE_OBJECT *)psCurr))
 			{
@@ -4362,7 +4372,7 @@ void human_computer_interface::notifyBuildStarted(DROID *psDroid)
 	{
 		// Find which button the droid is on and clear its stats
 		unsigned droidID = 0;
-		for (DROID *psCurr = apsDroidLists[selectedPlayer]; psCurr; psCurr = psCurr->psNext)
+		for (DROID *psCurr : list_legacy(apsDroidLists[selectedPlayer]))
 		{
 			if (objSelectFunc(psCurr))
 			{
@@ -4456,7 +4466,7 @@ STRUCTURE *checkForStructure(uint32_t structType)
 {
 	STRUCTURE *psSel = nullptr;
 
-	for (STRUCTURE *psStruct = interfaceStructList(); psStruct != nullptr; psStruct = psStruct->psNext)
+	for (STRUCTURE *psStruct : list_legacy(interfaceStructList()))
 	{
 		if (psStruct->selected && psStruct->pStructureType->type == structType && psStruct->status == SS_BUILT)
 		{
@@ -4481,7 +4491,7 @@ DROID *human_computer_interface::intCheckForDroid(uint32_t droidType)
 {
 	DROID *psSel = nullptr;
 
-	for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
+	for (DROID *psDroid : list_legacy(apsDroidLists[selectedPlayer]))
 	{
 		if (psDroid->selected && psDroid->droidType == droidType)
 		{
@@ -5126,7 +5136,7 @@ only if research facility is free*/
 int human_computer_interface::getResearchState()
 {
 	bool resFree = false;
-	for (STRUCTURE *psStruct = interfaceStructList(); psStruct != NULL; psStruct = psStruct->psNext)
+	for (STRUCTURE *psStruct : list_legacy(interfaceStructList()))
 	{
 		if (psStruct->pStructureType->type == REF_RESEARCH &&
 		    psStruct->status == SS_BUILT &&

@@ -2321,12 +2321,6 @@ struct human_computer_interface
 	}
 
 protected:
-	/* Store a list of stats pointers from the main structure stats */
-	std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
-	/* Store a list of research pointers for topics that can be performed*/
-	std::array<RESEARCH *, MAXRESEARCH> ppResearchList;
-	/* Store a list of Feature pointers for features to be placed on the map */
-	std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 	bool refreshPending = false;
 	bool refreshing = false;
 	/* The jump position for each object on the base bar */
@@ -3359,6 +3353,9 @@ void human_computer_interface::processOptions(uint32_t id)
 			editPosMode = IED_NOPOS;
 			break;
 		case IDOPT_STRUCT:
+		{
+			/* Store a list of stats pointers from the main structure stats */
+			std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
 			options.removeOptions();
 			for (unsigned i = 0; i < std::min<unsigned>(numStructureStats, MAXSTRUCTURES); ++i)
 			{
@@ -3370,8 +3367,12 @@ void human_computer_interface::processOptions(uint32_t id)
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
 			break;
+		}
 		case IDOPT_FEATURE:
+		{
 			options.removeOptions();
+			/* Store a list of Feature pointers for features to be placed on the map */
+			std::array<FEATURE_STATS *, MAXFEATURES> apsFeatureList;
 			for (unsigned i = 0; i < std::min<unsigned>(numFeatureStats, MAXFEATURES); ++i)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
@@ -3381,6 +3382,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			intMode = INT_EDITSTAT;
 			editPosMode = IED_NOPOS;
 			break;
+		}
 		/* Close window buttons */
 		case IDOPT_CLOSE:
 			options.removeOptions();
@@ -4049,6 +4051,8 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 	//determine the Structures that can be built
 	if (objectWidgets.objMode == IOBJ_BUILD)
 	{
+		/* Store a list of stats pointers from the main structure stats */
+		std::array<STRUCTURE_STATS *, MAXSTRUCTURES> apsStructStatsList;
 		numStatsListEntries = fillStructureList(apsStructStatsList.data(),
 			selectedPlayer, MAXSTRUCTURES - 1);
 		stats.addStats(apsStructStatsList, numStatsListEntries, psStats, psObj, objectWidgets.objMode);
@@ -4107,7 +4111,8 @@ void human_computer_interface::addStatsHelper(BASE_OBJECT * psObj, BASE_STATS * 
 				pSList.push_back(idx);
 			}
 		}
-
+		/* Store a list of research pointers for topics that can be performed*/
+		std::array<RESEARCH *, MAXRESEARCH> ppResearchList;
 		//fill up the list with topics
 		for (uint32_t i = 0; i < numStatsListEntries; i++)
 		{

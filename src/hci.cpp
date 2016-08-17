@@ -780,28 +780,6 @@ protected:
 	bool powerBarUp = false;
 };
 
-class base_state_visitor : public boost::static_visitor<BASE_STATS *>
-{
-	size_t idx;
-public:
-	base_state_visitor(size_t i) : idx(i) {}
-	BASE_STATS *operator()(const std::vector<DROID_TEMPLATE *> &v) const
-	{
-		return (BASE_STATS*)v[idx];
-	}
-
-	BASE_STATS *operator()(const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &v) const
-	{
-		return (BASE_STATS*)v[idx];
-	}
-
-	BASE_STATS *operator()(const std::array<RESEARCH *, MAXRESEARCH> &v) const
-	{
-		return (BASE_STATS*)v[idx];
-	}
-};
-
-
 struct statistics
 {
 	/* The button ID of an objects stat on the stat screen if it is locked down */
@@ -900,11 +878,30 @@ struct statistics
 		}
 	}
 
+	class base_state_visitor : public boost::static_visitor<BASE_STATS *>
+	{
+		size_t idx;
+	public:
+		base_state_visitor(size_t i) : idx(i) {}
+		BASE_STATS *operator()(const std::vector<DROID_TEMPLATE *> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+
+		BASE_STATS *operator()(const std::array<STRUCTURE_STATS *, MAXSTRUCTURES> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+
+		BASE_STATS *operator()(const std::array<RESEARCH *, MAXRESEARCH> &v) const
+		{
+			return (BASE_STATS*)v[idx];
+		}
+	};
 
 	BASE_STATS *getBaseStat(typename STAT_LIST_TYPE &ppsStatsList, size_t index)
 	{
-		boost::apply_visitor(base_state_visitor(index), ppsStatsList);
-		return nullptr;
+		return boost::apply_visitor(base_state_visitor(index), ppsStatsList);
 	}
 
 	/* Add the stats widgets to the widget screen */
@@ -3372,7 +3369,7 @@ void human_computer_interface::processOptions(uint32_t id)
 			{
 				apsFeatureList[i] = asFeatureStats + i;
 			}
-			stats.ppsStatsList = apsFeatureList;
+			//stats.ppsStatsList = apsFeatureList;
 			stats.addStats(stats.ppsStatsList, std::min<unsigned>(numFeatureStats, MAXFEATURES), NULL, NULL, objectWidgets.objMode);
 			secondaryWindowUp = true;
 			intMode = INT_EDITSTAT;

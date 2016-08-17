@@ -791,8 +791,8 @@ struct statsWidget
 	std::function<void(void)> onSlider;
 	std::function<void(void)> onProximityButton;
 	std::function<void(STRUCTURE *)> onLoopButton;
-	std::function<void(void)> onDeliveryPointButton;
-	std::function<void(void)> onObsoleteButton;
+	std::function<void(STRUCTURE *)> onDeliveryPointButton;
+	std::function<void(StateButton *)> onObsoleteButton;
 
 	statsWidget()
 	{
@@ -1199,13 +1199,15 @@ struct statsWidget
 
 		if (id == IDSTAT_DP_BUTTON)
 		{
-			onDeliveryPointButton();
+			// Process the DP button
+			STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
+			onDeliveryPointButton(psStruct);
 			return;
 		}
 
 		if (id == IDSTAT_OBSOLETE_BUTTON)
 		{
-			onObsoleteButton();
+			onObsoleteButton((StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON));
 			return;
 		}
 	}
@@ -2714,8 +2716,6 @@ humanComputerInterface::humanComputerInterface()
 
 	stats.onRMBPressed = [this](BASE_STATS *psStats)
 	{
-//		ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
-
 		if (objectWidgets.objMode == IOBJ_MANUFACTURE)
 		{
 			//this now causes the production run to be decreased by one
@@ -2798,27 +2798,22 @@ humanComputerInterface::humanComputerInterface()
 		return;
 	};
 
-	stats.onDeliveryPointButton = [this]()
+	stats.onDeliveryPointButton = [this](STRUCTURE *psStruct)
 	{
-		// Process the DP button
-		STRUCTURE *psStruct = (STRUCTURE *)widgGetUserData(psWScreen, IDSTAT_DP_BUTTON);
-		if (psStruct)
+		if (psStruct == nullptr)
+			return;
+		// make sure that the factory isn't assigned to a commander
+		assignFactoryCommandDroid(psStruct, NULL);
+		FLAG_POSITION *psFlag = FindFactoryDelivery(psStruct);
+		if (psFlag)
 		{
-			// make sure that the factory isn't assigned to a commander
-			assignFactoryCommandDroid(psStruct, NULL);
-			FLAG_POSITION *psFlag = FindFactoryDelivery(psStruct);
-			if (psFlag)
-			{
-				startDeliveryPosition(psFlag);
-			}
+			startDeliveryPosition(psFlag);
 		}
-		return;
 	};
 
-	stats.onObsoleteButton = [this]()
+	stats.onObsoleteButton = [this](StateButton *obsoleteButton)
 	{
 		includeRedundantDesigns = !includeRedundantDesigns;
-		StateButton *obsoleteButton = (StateButton *)widgGetFromID(psWScreen, IDSTAT_OBSOLETE_BUTTON);
 		obsoleteButton->setState(includeRedundantDesigns);
 		refreshScreen();
 		return;

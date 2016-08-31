@@ -1031,7 +1031,9 @@ static iIMDShape *iV_ProcessIMD(const QString &filename, const char **ppFileData
 			return NULL;
 		}
 		pFileData += cnt;
+
 		objanimpie[nlevels] = modelGet(animpie);
+		//shader = pie_LoadShader(pFileName, vertex, fragment, { "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle", "ModelViewProjectionMatrix" });
 
 		/* Try -yet again- to read in LEVELS directive */
 		if (sscanf(pFileData, "%255s %d%n", buffer, &nlevels, &cnt) != 2)

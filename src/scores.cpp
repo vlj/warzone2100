@@ -316,10 +316,10 @@ void scoreDataToScreen(WIDGET *psWidget)
 			iV_Box(x, y, x + width, y + height, WZCOL_BLACK);
 
 			/* Draw the background border box */
-			pie_BoxFill(x - 1, y - 1, x + width + 1, y + height + 1, WZCOL_MENU_BACKGROUND);
+			pie_BoxFill(x - 1, y - 1, x + width + 1, y + height + 1, WZCOL_MENU_BACKGROUND, REND_OPAQUE);
 
 			/* Draw the interior grey */
-			pie_BoxFill(x, y, x + width, y + height, WZCOL_MENU_SCORES_INTERIOR);
+			pie_BoxFill(x, y, x + width, y + height, WZCOL_MENU_SCORES_INTERIOR, REND_OPAQUE);
 
 			if (((realTime - dispST) > infoBars[index].queTime))
 			{
@@ -334,10 +334,10 @@ void scoreDataToScreen(WIDGET *psWidget)
 				{
 
 					/* Black shadow */
-					pie_BoxFill(x + 1, y + 3, x + length - 1, y + height - 1, WZCOL_MENU_SHADOW);
+					pie_BoxFill(x + 1, y + 3, x + length - 1, y + height - 1, WZCOL_MENU_SHADOW, REND_OPAQUE);
 
 					/* Solid coloured bit */
-					pie_BoxFill(x + 1, y + 2, x + length - 4, y + height - 4, getColour(index));
+					pie_BoxFill(x + 1, y + 2, x + length - 4, y + height - 4, getColour(index), REND_OPAQUE);
 				}
 			}
 			/* Now render the text by the bar */

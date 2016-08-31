@@ -259,12 +259,12 @@ static void displayKeyMap(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 	if (psMapping == selectedKeyMap)
 	{
-		pie_BoxFill(x, y, x + w, y + h, WZCOL_KEYMAP_ACTIVE);
+		pie_BoxFill(x, y, x + w, y + h, WZCOL_KEYMAP_ACTIVE, REND_OPAQUE);
 	}
 	else if (psMapping->status == KEYMAP_ALWAYS || psMapping->status == KEYMAP_ALWAYS_PROCESS)
 	{
 		// when user can't edit something...
-		pie_BoxFill(x, y , x + w, y + h, WZCOL_KEYMAP_FIXED);
+		pie_BoxFill(x, y , x + w, y + h, WZCOL_KEYMAP_FIXED, REND_OPAQUE);
 	}
 	else
 	{

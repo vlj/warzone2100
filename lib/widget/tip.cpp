@@ -177,7 +177,7 @@ void tipDisplay()
 		break;
 	case TIP_ACTIVE:
 		/* Draw the tool tip */
-		pie_BoxFill(tx, ty, tx + tw, ty + th, WZCOL_FORM_TIP_BACKGROUND);
+		pie_BoxFill(tx, ty, tx + tw, ty + th, WZCOL_FORM_TIP_BACKGROUND, REND_OPAQUE);
 		iV_Line(tx + 1,  ty + th - 2, tx + 1,      ty + 1,  WZCOL_FORM_DARK);
 		iV_Line(tx + 2,  ty + 1,      tx + tw - 2, ty + 1,  WZCOL_FORM_DARK);
 		iV_Line(tx,      ty + th,     tx + tw,     ty + th, WZCOL_FORM_DARK);

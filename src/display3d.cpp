@@ -2480,8 +2480,8 @@ static void drawWeaponReloadBar(BASE_OBJECT *psObj, WEAPON *psWeap, int weapon_s
 		{
 			firingStage = (2 * scrR);
 		}
-		pie_BoxFill(scrX - scrR - 1, 3 + scrY + 0 + (weapon_slot * 2), scrX - scrR + (2 * scrR) + 1,    3 + scrY + 3 + (weapon_slot * 2), WZCOL_RELOAD_BACKGROUND);
-		pie_BoxFill(scrX - scrR,   3 + scrY + 1 + (weapon_slot * 2), scrX - scrR + firingStage, 3 + scrY + 2 + (weapon_slot * 2), WZCOL_HEALTH_RESISTANCE);
+		pie_BoxFill(scrX - scrR - 1, 3 + scrY + 0 + (weapon_slot * 2), scrX - scrR + (2 * scrR) + 1,    3 + scrY + 3 + (weapon_slot * 2), WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+		pie_BoxFill(scrX - scrR,   3 + scrY + 1 + (weapon_slot * 2), scrX - scrR + firingStage, 3 + scrY + 2 + (weapon_slot * 2), WZCOL_HEALTH_RESISTANCE, REND_OPAQUE);
 		return;
 	}
 
@@ -2512,8 +2512,8 @@ static void drawWeaponReloadBar(BASE_OBJECT *psObj, WEAPON *psWeap, int weapon_s
 			firingStage = (2 * scrR);
 		}
 		/* Power bars */
-		pie_BoxFill(scrX - scrR - 1, 3 + scrY + 0 + (weapon_slot * 2), scrX - scrR + (2 * scrR) + 1,  3 + scrY + 3 + (weapon_slot * 2), WZCOL_RELOAD_BACKGROUND);
-		pie_BoxFill(scrX - scrR,   3 + scrY + 1 + (weapon_slot * 2), scrX - scrR + firingStage, 3 + scrY + 2 + (weapon_slot * 2), WZCOL_RELOAD_BAR);
+		pie_BoxFill(scrX - scrR - 1, 3 + scrY + 0 + (weapon_slot * 2), scrX - scrR + (2 * scrR) + 1,  3 + scrY + 3 + (weapon_slot * 2), WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+		pie_BoxFill(scrX - scrR,   3 + scrY + 1 + (weapon_slot * 2), scrX - scrR + firingStage, 3 + scrY + 2 + (weapon_slot * 2), WZCOL_RELOAD_BAR, REND_OPAQUE);
 	}
 }
 
@@ -2618,9 +2618,9 @@ static void drawStructureHealth(STRUCTURE *psStruct)
 	}
 	health = (((width * 10000) / 100) * health) / 10000;
 	health *= 2;
-	pie_BoxFill(scrX - scrR - 1, scrY - 1, scrX - scrR + 2 * width + 1, scrY + 3, WZCOL_RELOAD_BACKGROUND);
-	pie_BoxFill(scrX - scrR, scrY, scrX - scrR + health, scrY + 1, powerCol);
-	pie_BoxFill(scrX - scrR, scrY + 1, scrX - scrR + health, scrY + 2, powerColShadow);
+	pie_BoxFill(scrX - scrR - 1, scrY - 1, scrX - scrR + 2 * width + 1, scrY + 3, WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+	pie_BoxFill(scrX - scrR, scrY, scrX - scrR + health, scrY + 1, powerCol, REND_OPAQUE);
+	pie_BoxFill(scrX - scrR, scrY + 1, scrX - scrR + health, scrY + 2, powerColShadow, REND_OPAQUE);
 }
 
 /// draw the construction bar for the specified structure
@@ -2638,9 +2638,9 @@ static void drawStructureBuildProgress(STRUCTURE *psStruct)
 	health =  PERCENT(psStruct->currentBuildPts , psStruct->pStructureType->buildPoints);
 	health = (((width * 10000) / 100) * health) / 10000;
 	health *= 2;
-	pie_BoxFill(scrX - scrR - 1, scrY - 1 + 5, scrX + scrR + 1, scrY + 3 + 5, WZCOL_RELOAD_BACKGROUND);
-	pie_BoxFill(scrX - scrR, scrY + 5, scrX - scrR + health, scrY + 1 + 5, WZCOL_HEALTH_MEDIUM_SHADOW);
-	pie_BoxFill(scrX - scrR, scrY + 1 + 5, scrX - scrR + health, scrY + 2 + 5, WZCOL_HEALTH_MEDIUM);
+	pie_BoxFill(scrX - scrR - 1, scrY - 1 + 5, scrX + scrR + 1, scrY + 3 + 5, WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+	pie_BoxFill(scrX - scrR, scrY + 5, scrX - scrR + health, scrY + 1 + 5, WZCOL_HEALTH_MEDIUM_SHADOW, REND_OPAQUE);
+	pie_BoxFill(scrX - scrR, scrY + 1 + 5, scrX - scrR + health, scrY + 2 + 5, WZCOL_HEALTH_MEDIUM, REND_OPAQUE);
 }
 
 /// Draw the health of structures and show enemy structures being targetted
@@ -2861,16 +2861,16 @@ static void	drawDroidSelections(void)
 
 			if (psDroid->selected)
 			{
-				pie_BoxFill(scrX - scrR, scrY + scrR - 7, scrX - scrR + 1, scrY + scrR, boxCol);
-				pie_BoxFill(scrX - scrR, scrY + scrR, scrX - scrR + 7, scrY + scrR + 1, boxCol);
-				pie_BoxFill(scrX + scrR - 7, scrY + scrR, scrX + scrR, scrY + scrR + 1, boxCol);
-				pie_BoxFill(scrX + scrR, scrY + scrR - 7, scrX + scrR + 1, scrY + scrR + 1, boxCol);
+				pie_BoxFill(scrX - scrR, scrY + scrR - 7, scrX - scrR + 1, scrY + scrR, boxCol, REND_OPAQUE);
+				pie_BoxFill(scrX - scrR, scrY + scrR, scrX - scrR + 7, scrY + scrR + 1, boxCol, REND_OPAQUE);
+				pie_BoxFill(scrX + scrR - 7, scrY + scrR, scrX + scrR, scrY + scrR + 1, boxCol, REND_OPAQUE);
+				pie_BoxFill(scrX + scrR, scrY + scrR - 7, scrX + scrR + 1, scrY + scrR + 1, boxCol, REND_OPAQUE);
 			}
 
 			/* Power bars */
-			pie_BoxFill(scrX - scrR - 1, scrY + scrR + 2, scrX + scrR + 1, scrY + scrR + 6, WZCOL_RELOAD_BACKGROUND);
-			pie_BoxFill(scrX - scrR, scrY + scrR + 3, scrX - scrR + damage, scrY + scrR + 4, powerCol);
-			pie_BoxFill(scrX - scrR, scrY + scrR + 4, scrX - scrR + damage, scrY + scrR + 5, powerColShadow);
+			pie_BoxFill(scrX - scrR - 1, scrY + scrR + 2, scrX + scrR + 1, scrY + scrR + 6, WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+			pie_BoxFill(scrX - scrR, scrY + scrR + 3, scrX - scrR + damage, scrY + scrR + 4, powerCol, REND_OPAQUE);
+			pie_BoxFill(scrX - scrR, scrY + scrR + 4, scrX - scrR + damage, scrY + scrR + 5, powerColShadow, REND_OPAQUE);
 
 			/* Write the droid rank out */
 			if ((scrX + scrR) > 0
@@ -2967,9 +2967,9 @@ static void	drawDroidSelections(void)
 					boxCol = WZCOL_WHITE;
 
 					/* Power bars */
-					pie_BoxFill(scrX - scrR - 1, scrY + scrR + 2, scrX + scrR + 1, scrY + scrR + 6, WZCOL_RELOAD_BACKGROUND);
-					pie_BoxFill(scrX - scrR, scrY + scrR + 3, scrX - scrR + damage, scrY + scrR + 4, powerCol);
-					pie_BoxFill(scrX - scrR, scrY + scrR + 4, scrX - scrR + damage, scrY + scrR + 5, powerColShadow);
+					pie_BoxFill(scrX - scrR - 1, scrY + scrR + 2, scrX + scrR + 1, scrY + scrR + 6, WZCOL_RELOAD_BACKGROUND, REND_OPAQUE);
+					pie_BoxFill(scrX - scrR, scrY + scrR + 3, scrX - scrR + damage, scrY + scrR + 4, powerCol, REND_OPAQUE);
+					pie_BoxFill(scrX - scrR, scrY + scrR + 4, scrX - scrR + damage, scrY + scrR + 5, powerColShadow, REND_OPAQUE);
 				}
 			}
 		}
@@ -3399,10 +3399,10 @@ static void	processDestinationTarget(void)
 			x1 = (SWORD)(x + offset);
 			y1 = (SWORD)(y + offset);
 
-			pie_BoxFill(x0, y0, x0 + 2, y0 + 2, WZCOL_WHITE);
-			pie_BoxFill(x1 - 2, y0 - 2, x1, y0, WZCOL_WHITE);
-			pie_BoxFill(x1 - 2, y1 - 2, x1, y1, WZCOL_WHITE);
-			pie_BoxFill(x0, y1, x0 + 2, y1 + 2, WZCOL_WHITE);
+			pie_BoxFill(x0, y0, x0 + 2, y0 + 2, WZCOL_WHITE, REND_OPAQUE);
+			pie_BoxFill(x1 - 2, y0 - 2, x1, y0, WZCOL_WHITE, REND_OPAQUE);
+			pie_BoxFill(x1 - 2, y1 - 2, x1, y1, WZCOL_WHITE, REND_OPAQUE);
+			pie_BoxFill(x0, y1, x0 + 2, y1 + 2, WZCOL_WHITE, REND_OPAQUE);
 		}
 		else
 		{

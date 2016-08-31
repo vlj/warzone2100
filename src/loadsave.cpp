@@ -644,8 +644,8 @@ static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		col = WZCOL_MENU_LOAD_BORDER;
 	}
 
-	pie_BoxFill(x, y, x + psWidget->width(), y + psWidget->height(), col);
-	pie_BoxFill(x + 2, y + 2, x + psWidget->width() - 2, y + psWidget->height() - 2, WZCOL_MENU_BACKGROUND);
+	pie_BoxFill(x, y, x + psWidget->width(), y + psWidget->height(), col, REND_OPAQUE);
+	pie_BoxFill(x + 2, y + 2, x + psWidget->width() - 2, y + psWidget->height() - 2, WZCOL_MENU_BACKGROUND, REND_OPAQUE);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -676,6 +676,6 @@ static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 void drawBlueBox(UDWORD x, UDWORD y, UDWORD w, UDWORD h)
 {
-	pie_BoxFill(x - 1, y - 1, x + w + 1, y + h + 1, WZCOL_MENU_BORDER);
-	pie_BoxFill(x, y , x + w, y + h, WZCOL_MENU_BACKGROUND);
+	pie_BoxFill(x - 1, y - 1, x + w + 1, y + h + 1, WZCOL_MENU_BORDER, REND_OPAQUE);
+	pie_BoxFill(x, y , x + w, y + h, WZCOL_MENU_BACKGROUND, REND_OPAQUE);
 }

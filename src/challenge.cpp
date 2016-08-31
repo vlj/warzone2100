@@ -86,8 +86,8 @@ static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	UDWORD	x = xOffset + psWidget->x();
 	UDWORD	y = yOffset + psWidget->y();
 
-	pie_BoxFill(x, y, x + psWidget->width(), y + psWidget->height(), col);
-	pie_BoxFill(x + 2, y + 2, x + psWidget->width() - 2, y + psWidget->height() - 2, WZCOL_MENU_BACKGROUND);
+	pie_BoxFill(x, y, x + psWidget->width(), y + psWidget->height(), col, REND_OPAQUE);
+	pie_BoxFill(x + 2, y + 2, x + psWidget->width() - 2, y + psWidget->height() - 2, WZCOL_MENU_BACKGROUND, REND_OPAQUE);
 }
 
 // quite the hack, game name is stored in global sRequestResult

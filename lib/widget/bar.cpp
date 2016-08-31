@@ -353,7 +353,7 @@ void barGraphDisplayTrough(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	/* Now draw the graph */
 	if (showBar)
 	{
-		pie_BoxFill(x0, y0, x1, y1, psBGraph->majorCol);
+		pie_BoxFill(x0, y0, x1, y1, psBGraph->majorCol, REND_OPAQUE);
 	}
 	if (showTrough)
 	{

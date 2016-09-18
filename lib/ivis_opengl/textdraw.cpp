@@ -692,9 +692,6 @@ void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotati
 		glDisable(GL_CULL_FACE);
 		iV_DrawImage(textureID, Vector2i(XPos, YPos), Vector2i(xoffset, yoffset), Vector2i(width, height), rotation, REND_TEXT, color);
 	}
-
-	// Reset the current model view matrix
-	glLoadIdentity();
 }
 
 static void iV_DrawTextRotatedFv(float x, float y, float rotation, const char *format, va_list ap)

@@ -151,8 +151,13 @@ void GFX::buffers(int vertices, const GLvoid *vertBuf, const GLvoid *auxBuf)
 #define VERTEX_COORDS_ATTRIB_INDEX 1
 #define VERTEX_COLOR_ATTRIB_INDEX 2
 
+GLuint vao = 0;
+
 void GFX::draw(const glm::mat4 &modelViewProjectionMatrix)
 {
+	if (vao == 0)
+		glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 	if (mType == GFX_TEXTURE)
 	{
 		pie_SetTexturePage(TEXPAGE_EXTERN);

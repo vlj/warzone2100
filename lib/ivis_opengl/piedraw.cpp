@@ -545,7 +545,6 @@ static void pie_DrawShadows(void)
 void pie_RemainingPasses(void)
 {
 	GL_DEBUG("Remaining passes - shadows");
-	glEnable(GL_LIGHT0);
 	// Draw shadows
 	if (shadows)
 	{
@@ -568,7 +567,6 @@ void pie_RemainingPasses(void)
 		pie_Draw3DShape2(shape.shape, shape.frame, shape.colour, shape.teamcolour, shape.flag, shape.flag_data, shape.matrix);
 	}
 	pie_SetShaderStretchDepth(0);
-	glDisable(GL_LIGHT0);
 	pie_DeactivateShader();
 	tshapes.clear();
 	shapes.clear();

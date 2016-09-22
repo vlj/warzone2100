@@ -330,9 +330,6 @@ static void pie_DrawImage(IMAGEFILE *imageFile, int id, Vector2i size, const PIE
 	float su = size.x * invTextureSize;
 	float sv = size.y * invTextureSize;
 
-	float width = pie_GetVideoBufferWidth();
-	float height = pie_GetVideoBufferHeight();
-
 	glm::mat4 mvp = modelViewProjection *
 		glm::translate(static_cast<float>(dest->x), static_cast<float>(dest->y), 0.f);
 

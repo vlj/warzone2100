@@ -353,14 +353,14 @@ bool pie_LoadShaders()
 
 	// TCMask shader for buttons with flat lighting
 	debug(LOG_3D, "Loading shader: SHADER_BUTTON");
-	result = pie_LoadShader("Button program", "shaders/button.vert", "shaders/button.frag",
+	result = pie_LoadShader("Button program", "shaders/tcmask.vert", "shaders/button.frag",
 		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle",
 		"ModelViewMatrix", "ModelViewProjectionMatrix", "NormalMatrix" });
 	ASSERT_OR_RETURN(false, result, "Failed to load button shader");
 
 	// Plain shader for no lighting
 	debug(LOG_3D, "Loading shader: SHADER_NOLIGHT");
-	result = pie_LoadShader("Plain program", "shaders/nolight.vert", "shaders/nolight.frag",
+	result = pie_LoadShader("Plain program", "shaders/tcmask.vert", "shaders/nolight.frag",
 		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle",
 		"ModelViewMatrix", "ModelViewProjectionMatrix", "NormalMatrix" });
 	ASSERT_OR_RETURN(false, result, "Failed to load no-lighting shader");

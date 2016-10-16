@@ -31,9 +31,6 @@
 #include "lib/gamelib/gtime.h"
 
 #include "widget.h"
-#if defined(WZ_CC_MSVC)
-#include "widgbase_moc.h"		// this is generated on the pre-build event.
-#endif
 #include "widgint.h"
 
 #include "form.h"

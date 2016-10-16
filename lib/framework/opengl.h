@@ -32,7 +32,7 @@
  */
 #include "lib/framework/wzglobal.h"
 #ifndef GLEW_STATIC
-#define GLEW_STATIC
+//#define GLEW_STATIC
 #endif //GLEW_STATIC
 #include <GL/glew.h>
 

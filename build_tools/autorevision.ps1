@@ -24,4 +24,4 @@ $VCS_WC_MODIFIED=($status.length -eq 0)
 
 #define VCS_WC_MODIFIED		${VCS_WC_MODIFIED}
 #endif
-"@ > ..\src\autorevision.h
+"@ > ..\autorevision.h

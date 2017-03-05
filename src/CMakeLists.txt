@@ -8,8 +8,9 @@ qt5_wrap_cpp(MOCFILES multiint.h qtscriptdebug.h)
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/autorevision.h"
-    COMMAND "powershell.exe -exec bypass ${CMAKE_CURRENT_SOURCE_DIR}/build_tools/autorevision.ps1"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build_tools)
+    COMMAND "powershell.exe"
+    ARGS "-exec" "bypass" "${CMAKE_SOURCE_DIR}/build_tools/autorevision.ps1"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/autorevision.h"

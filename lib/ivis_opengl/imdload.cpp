@@ -40,6 +40,8 @@
 #include "imd.h" // for imd structures
 #include "tex.h" // texture page loading
 
+#include <algorithm>
+
 // Scale animation numbers from int to float
 #define INT_SCALE       1000
 
@@ -70,50 +72,43 @@ iIMDShape::iIMDShape()
 	objanimcycles = 0;
 }
 
-static void iV_IMDRelease(iIMDShape *s)
+iIMDShape::~iIMDShape()
 {
-	unsigned int i;
-	iIMDShape *d;
-
-	if (s)
+	if (points)
 	{
-		if (s->points)
-		{
-			free(s->points);
-		}
-		if (s->connectors)
-		{
-			free(s->connectors);
-		}
-		if (s->polys)
-		{
-			for (i = 0; i < s->npolys; i++)
-			{
-				if (s->polys[i].texCoord)
-				{
-					free(s->polys[i].texCoord);
-				}
-			}
-			free(s->polys);
-		}
-		if (s->shadowEdgeList)
-		{
-			free(s->shadowEdgeList);
-			s->shadowEdgeList = NULL;
-		}
-		glDeleteBuffers(VBO_COUNT, s->buffers);
-		// shader deleted later, if any
-		d = s->next;
-		delete s;
-		iV_IMDRelease(d);
+		free(points);
 	}
+	if (connectors)
+	{
+		free(connectors);
+	}
+	if (polys)
+	{
+		for (unsigned i = 0; i < npolys; i++)
+		{
+			if (polys[i].texCoord)
+			{
+				free(polys[i].texCoord);
+			}
+		}
+		free(polys);
+	}
+	if (shadowEdgeList)
+	{
+		free(shadowEdgeList);
+		shadowEdgeList = NULL;
+	}
+	glDeleteBuffers(VBO_COUNT, buffers);
+	// shader deleted later, if any
+	iIMDShape *d = next;
+	delete d;
 }
 
 void modelShutdown()
 {
 	for (MODELMAP::iterator i = models.begin(); i != models.end(); i = models.erase(i))
 	{
-		iV_IMDRelease(i.value());
+		delete i.value();
 	}
 	models.clear();
 }
@@ -379,183 +374,135 @@ static bool ReadPoints(const char **ppFileData, iIMDShape *s)
 	return true;
 }
 
-void _imd_calc_bounds(iIMDShape *s, Vector3f *p, int size)
+static auto get_maximally_separated_pair(const Vector3f *p, const int& size)
 {
-	int32_t xmax, ymax, zmax, count;
-	double dx, dy, dz, rad_sq, rad, old_to_p_sq, old_to_p, old_to_new;
-	double xspan, yspan, zspan, maxspan;
-	Vector3f dia1, dia2, cen;
-	Vector3f vxmin(0, 0, 0), vymin(0, 0, 0), vzmin(0, 0, 0),
-	         vxmax(0, 0, 0), vymax(0, 0, 0), vzmax(0, 0, 0);
+    // Get extrema points in x, y, z direction
+    const auto& vxmin_vymin_vzmin_vxmax_vymax_vzmax =
+        std::accumulate(p, p + size,
+            std::make_tuple(
+                Vector3f{ FP12_MULTIPLIER, 0, 0 }, Vector3f{ 0, FP12_MULTIPLIER, 0 }, Vector3f{ 0, 0, FP12_MULTIPLIER },
+                Vector3f{ -FP12_MULTIPLIER, 0, 0 }, Vector3f{ 0, -FP12_MULTIPLIER, 0 }, Vector3f{ 0, 0, -FP12_MULTIPLIER }
+            ),
+            [](auto&& current_vmins_vmaxs, const auto& current_vector)
+            {
+                auto&& vxmin = std::get<0>(current_vmins_vmaxs);
+                auto&& vymin = std::get<1>(current_vmins_vmaxs);
+                auto&& vzmin = std::get<2>(current_vmins_vmaxs);
+                auto&& vxmax = std::get<3>(current_vmins_vmaxs);
+                auto&& vymax = std::get<4>(current_vmins_vmaxs);
+                auto&& vzmax = std::get<5>(current_vmins_vmaxs);
 
-	s->max.x = s->max.y = s->max.z = -FP12_MULTIPLIER;
-	s->min.x = s->min.y = s->min.z = FP12_MULTIPLIER;
+                if (current_vector.x < vxmin.x) vxmin = current_vector;
+                if (current_vector.x > vxmax.x) vxmax = current_vector;
+                if (current_vector.y < vymin.y) vymin = current_vector;
+                if (current_vector.y > vymax.y) vymax = current_vector;
+                if (current_vector.z < vzmin.z) vzmin = current_vector;
+                if (current_vector.z > vzmax.z) vzmax = current_vector;
+                return std::make_tuple(
+                    vxmin, vymin, vzmin,
+                    vxmax, vymax, vzmax
+                );
+            }
+        );
 
-	vxmax.x = vymax.y = vzmax.z = -FP12_MULTIPLIER;
-	vxmin.x = vymin.y = vzmin.z = FP12_MULTIPLIER;
+    const auto& vxmin = std::get<0>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
+    const auto& vymin = std::get<1>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
+    const auto& vzmin = std::get<2>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
+    const auto& vxmax = std::get<3>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
+    const auto& vymax = std::get<4>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
+    const auto& vzmax = std::get<5>(vxmin_vymin_vzmin_vxmax_vymax_vzmax);
 
-	// set up bounding data for minimum number of vertices
-	for (count = 0; count < size; p++, count++)
-	{
-		if (p->x > s->max.x)
-		{
-			s->max.x = p->x;
-		}
-		if (p->x < s->min.x)
-		{
-			s->min.x = p->x;
-		}
+    // set xspan = distance between 2 points xmin & xmax (squared)
+    const auto& xspan = pow(double{ glm::distance(vxmin, vxmax) }, 2);
+    // same for yspan
+    const auto& yspan = pow(double{ glm::distance(vymin, vzmax) }, 2);
+    // and ofcourse zspan
+    const auto& zspan = pow(double{ glm::distance(vzmin, vzmax) }, 2);
 
-		if (p->y > s->max.y)
-		{
-			s->max.y = p->y;
-		}
-		if (p->y < s->min.y)
-		{
-			s->min.y = p->y;
-		}
+    Vector3f dia1, dia2;
+    dia1 = vxmin;
+    dia2 = vxmax;
+    // assume xspan biggest
+    double maxspan = xspan;
 
-		if (p->z > s->max.z)
-		{
-			s->max.z = p->z;
-		}
-		if (p->z < s->min.z)
-		{
-			s->min.z = p->z;
-		}
+    if (yspan > maxspan)
+    {
+        maxspan = yspan;
+        dia1 = vymin;
+        dia2 = vymax;
+    }
 
-		// for tight sphere calculations
-		if (p->x < vxmin.x)
-		{
-			vxmin.x = p->x;
-			vxmin.y = p->y;
-			vxmin.z = p->z;
-		}
+    if (zspan > maxspan)
+    {
+        dia1 = vzmin;
+        dia2 = vzmax;
+    }
+    return std::make_tuple(dia1, dia2);
+}
 
-		if (p->x > vxmax.x)
-		{
-			vxmax.x = p->x;
-			vxmax.y = p->y;
-			vxmax.z = p->z;
-		}
-
-		if (p->y < vymin.y)
-		{
-			vymin.x = p->x;
-			vymin.y = p->y;
-			vymin.z = p->z;
-		}
-
-		if (p->y > vymax.y)
-		{
-			vymax.x = p->x;
-			vymax.y = p->y;
-			vymax.z = p->z;
-		}
-
-		if (p->z < vzmin.z)
-		{
-			vzmin.x = p->x;
-			vzmin.y = p->y;
-			vzmin.z = p->z;
-		}
-
-		if (p->z > vzmax.z)
-		{
-			vzmax.x = p->x;
-			vzmax.y = p->y;
-			vzmax.z = p->z;
-		}
-	}
-
-	// no need to scale an IMD shape (only FSD)
-	xmax = MAX(s->max.x, -s->min.x);
-	ymax = MAX(s->max.y, -s->min.y);
-	zmax = MAX(s->max.z, -s->min.z);
-
-	s->radius = MAX(xmax, MAX(ymax, zmax));
-	s->sradius = sqrtf(xmax * xmax + ymax * ymax + zmax * zmax);
-
-// START: tight bounding sphere
-
-	// set xspan = distance between 2 points xmin & xmax (squared)
-	dx = vxmax.x - vxmin.x;
-	dy = vxmax.y - vxmin.y;
-	dz = vxmax.z - vxmin.z;
-	xspan = dx * dx + dy * dy + dz * dz;
-
-	// same for yspan
-	dx = vymax.x - vymin.x;
-	dy = vymax.y - vymin.y;
-	dz = vymax.z - vymin.z;
-	yspan = dx * dx + dy * dy + dz * dz;
-
-	// and ofcourse zspan
-	dx = vzmax.x - vzmin.x;
-	dy = vzmax.y - vzmin.y;
-	dz = vzmax.z - vzmin.z;
-	zspan = dx * dx + dy * dy + dz * dz;
-
+static auto get_tight_bounding_sphere(const Vector3f *p, const int& size)
+{
 	// set points dia1 & dia2 to maximally seperated pair
-	// assume xspan biggest
-	dia1 = vxmin;
-	dia2 = vxmax;
-	maxspan = xspan;
-
-	if (yspan > maxspan)
-	{
-		maxspan = yspan;
-		dia1 = vymin;
-		dia2 = vymax;
-	}
-
-	if (zspan > maxspan)
-	{
-		dia1 = vzmin;
-		dia2 = vzmax;
-	}
+    const auto& maximally_separated_pair = get_maximally_separated_pair(p, size);
+	const auto& dia1 = std::get<0>(maximally_separated_pair);
+	const auto& dia2 = std::get<1>(maximally_separated_pair);
 
 	// dia1, dia2 diameter of initial sphere
-	cen.x = (dia1.x + dia2.x) / 2.;
-	cen.y = (dia1.y + dia2.y) / 2.;
-	cen.z = (dia1.z + dia2.z) / 2.;
-
+	const auto& initial_center = (dia1 + dia2) / 2.f;
 	// calc initial radius
-	dx = dia2.x - cen.x;
-	dy = dia2.y - cen.y;
-	dz = dia2.z - cen.z;
+	const auto& initial_radius = glm::distance(dia2, initial_center);
 
-	rad_sq = dx * dx + dy * dy + dz * dz;
-	rad = sqrt((double)rad_sq);
-
-	// second pass (find tight sphere)
-	for (p = s->points; p < s->points + s->npoints; p++)
-	{
-		dx = p->x - cen.x;
-		dy = p->y - cen.y;
-		dz = p->z - cen.z;
-		old_to_p_sq = dx * dx + dy * dy + dz * dz;
-
-		// do r**2 first
-		if (old_to_p_sq > rad_sq)
+	const auto& cen_radius = std::accumulate(
+		p, p + size,
+		std::make_tuple(initial_center, initial_radius),
+		[](const auto& current_cen_radius, const auto& current_vector)
 		{
+			const auto& cen = std::get<0>(current_cen_radius);
+			const auto& radius = std::get<1>(current_cen_radius);
+			//	 rad_sq, rad, old_to_p_sq, old_to_p, old_to_new;
+			const auto& old_to_p = glm::distance(current_vector, cen);
+
+			if (old_to_p <= radius)
+				return current_cen_radius;
+
 			// this point outside current sphere
-			old_to_p = sqrt((double)old_to_p_sq);
 			// radius of new sphere
-			rad = (rad + old_to_p) / 2.;
-			// rad**2 for next compare
-			rad_sq = rad * rad;
-			old_to_new = old_to_p - rad;
+			const auto& new_radius = (radius + old_to_p) / 2.f;
+			const auto& old_to_new = old_to_p - new_radius;
 			// centre of new sphere
-			cen.x = (rad * cen.x + old_to_new * p->x) / old_to_p;
-			cen.y = (rad * cen.y + old_to_new * p->y) / old_to_p;
-			cen.z = (rad * cen.z + old_to_new * p->z) / old_to_p;
+			const auto& new_cen = (new_radius * cen + old_to_new * current_vector) / old_to_p;
+			return std::make_tuple(new_cen, new_radius);
 		}
-	}
+	);
+    return std::get<0>(cen_radius);
+}
 
-	s->ocen = cen;
+void _imd_calc_bounds(iIMDShape *s, Vector3f *p, int size)
+{
+	// set up bounding data for minimum number of vertices
+	std::tie (s->min, s->max) =
+		std::accumulate(p, p + size,
+			std::make_tuple(
+				Vector3i{ FP12_MULTIPLIER, FP12_MULTIPLIER, FP12_MULTIPLIER },
+				Vector3i{ -FP12_MULTIPLIER, -FP12_MULTIPLIER, -FP12_MULTIPLIER }
+			),
+			[](const auto& current_min_max, const auto& current_vector)
+			{
+				return std::make_tuple(
+					glm::min(std::get<0>(current_min_max), Vector3i{ current_vector }),
+					glm::max(std::get<1>(current_min_max), Vector3i{ current_vector })
+				);
+			}
+		);
 
-// END: tight bounding sphere
+	// no need to scale an IMD shape (only FSD)
+	const auto& xmax = std::max(s->max.x, -s->min.x);
+	const auto& ymax = std::max(s->max.y, -s->min.y);
+	const auto& zmax = std::max(s->max.z, -s->min.z);
+
+	s->radius = std::max(xmax, std::max(ymax, zmax));
+	s->sradius = sqrtf(xmax * xmax + ymax * ymax + zmax * zmax);
+    s->ocen = get_tight_bounding_sphere(p, size);
 }
 
 static bool _imd_load_points(const char **ppFileData, iIMDShape *s)
@@ -616,9 +563,9 @@ bool _imd_load_connectors(const char **ppFileData, iIMDShape *s)
 }
 
 // performance hack
-static QVector<GLfloat> vertices;
-static QVector<GLfloat> normals;
-static QVector<GLfloat> texcoords;
+static QVector<Vector3f> vertices;
+static QVector<Vector3f> normals;
+static QVector<Vector2f> texcoords;
 static QVector<GLfloat> tangents;
 static QVector<uint16_t> indices; // size is npolys * 3 * numFrames
 static int vertexCount;
@@ -632,27 +579,17 @@ static inline int addVertex(iIMDShape *s, int i, const iIMDPoly *p, int frameidx
 	// See if we already have this defined, if so, return reference to it.
 	for (int j = 0; j < vertexCount; j++)
 	{
-		if (texcoords[j * 2 + 0] == p->texCoord[frame * 3 + i].x
-		    && texcoords[j * 2 + 1] == p->texCoord[frame * 3 + i].y
-		    && vertices[j * 3 + 0] == s->points[p->pindex[i]].x
-		    && vertices[j * 3 + 1] == s->points[p->pindex[i]].y
-		    && vertices[j * 3 + 2] == s->points[p->pindex[i]].z
-		    && normals[j * 3 + 0] == p->normal.x
-		    && normals[j * 3 + 1] == p->normal.y
-		    && normals[j * 3 + 2] == p->normal.z)
+		if (texcoords[j] == p->texCoord[frame * 3 + i]
+		    && vertices[j] == s->points[p->pindex[i]]
+		    && normals[j] == p->normal)
 		{
 			return j;
 		}
 	}
 	// We don't have it, add it.
-	normals.append(p->normal.x);
-	normals.append(p->normal.y);
-	normals.append(p->normal.z);
-	texcoords.append(p->texCoord[frame * 3 + i].x);
-	texcoords.append(p->texCoord[frame * 3 + i].y);
-	vertices.append(s->points[p->pindex[i]].x);
-	vertices.append(s->points[p->pindex[i]].y);
-	vertices.append(s->points[p->pindex[i]].z);
+	normals.append(p->normal);
+	texcoords.append(p->texCoord[frame * 3 + i]);
+	vertices.append(s->points[p->pindex[i]]);
 	vertexCount++;
 	return vertexCount - 1;
 }
@@ -809,13 +746,13 @@ static iIMDShape *_imd_load_level(const QString &filename, const char **ppFileDa
 		}
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, s->buffers[VBO_VERTEX]);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.constData(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vector3f), vertices.constData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, s->buffers[VBO_NORMAL]);
-	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), normals.constData(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(Vector3f), normals.constData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->buffers[VBO_INDEX]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint16_t), indices.constData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, s->buffers[VBO_TEXCOORD]);
-	glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(GLfloat), texcoords.constData(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(Vector2f), texcoords.constData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
 
 	indices.resize(0);

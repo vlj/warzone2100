@@ -109,6 +109,7 @@ enum ANIMATION_EVENTS
 struct iIMDShape
 {
 	iIMDShape();
+	~iIMDShape();
 
 	unsigned int flags;
 	int texpage;

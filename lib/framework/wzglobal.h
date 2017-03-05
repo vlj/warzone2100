@@ -538,7 +538,7 @@
 /* ---- Platform specific setup ---- */
 #if defined __cplusplus
 // This check is required for the embed .c files (miniupnp) so we don't get conflicts.
-#include <QString>
+//#include <QString>
 // **NOTE: Qt headers _must_ be before platform specific headers so we don't get conflicts.
 #endif
 
@@ -588,7 +588,7 @@
 
 #    define strcasecmp _stricmp
 #    define strncasecmp _strnicmp
-#    define inline __inline
+//#    define inline __inline
 #    define alloca _alloca
 #    define fileno _fileno
 

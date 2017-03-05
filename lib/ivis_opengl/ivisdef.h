@@ -29,12 +29,11 @@
 #ifndef _ivisdef_h
 #define _ivisdef_h
 
-#include "lib/framework/frame.h"
+/*#include "lib/framework/frame.h"*/
 #include "lib/framework/opengl.h"
 #include "pietypes.h"
 
 #include <vector>
-#include <QtCore/QVector>
 #include <string>
 
 

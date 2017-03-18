@@ -20,7 +20,7 @@
 /** @file
  *  \brief Cursor definitions (32x32)
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/tex.h"

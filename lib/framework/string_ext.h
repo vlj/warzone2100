@@ -22,9 +22,10 @@
 
 #define FRAME_LIB_INCLUDE
 #include "debug.h"
-#include <string.h>
-#include <stddef.h>
-#include <assert.h>
+#include <cstring>
+#include <cstddef>
+#include <cassert>
+#include <string>
 
 
 /*!

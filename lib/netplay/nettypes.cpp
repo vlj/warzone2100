@@ -23,6 +23,7 @@
  * low-level primitives and higher-level types.
  */
 
+#include <QString>
 #include "lib/framework/wzglobal.h"
 #include "lib/framework/string_ext.h"
 #include <string.h>

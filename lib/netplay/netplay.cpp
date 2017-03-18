@@ -23,6 +23,7 @@
  * Basic netcode.
  */
 
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/wzapp.h"
 #include "lib/framework/string_ext.h"

@@ -28,13 +28,8 @@
 #include "file.h"
 #include "wzapp.h"
 
-#include <physfs.h>
-
 #include "frameresource.h"
 #include "input.h"
-#include "physfs_ext.h"
-
-#include "cursors.h"
 
 /************************************************************************************
  *

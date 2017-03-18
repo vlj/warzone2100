@@ -22,6 +22,7 @@
 #include "lib/netplay/netsocket.h"  // For htonl
 #include <openssl/sha.h>
 
+#include <algorithm>
 #include <functional>
 
 #if defined(OPENSSL_NO_EC2M) || defined(OPENSSL_NO_ECDSA)

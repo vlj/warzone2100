@@ -55,6 +55,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/opengl.h"
 #include "sequence.h"

@@ -23,6 +23,7 @@
  * Save the state of the event system.
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/wzconfig.h"
 #include <string.h>

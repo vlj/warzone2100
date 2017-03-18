@@ -44,7 +44,6 @@ endif()
 
 OPTION(ENABLE_NLS "Native Language Support" ON)
 OPTION(WZ_PORTABLE "Portable" ON)
-OPTION(ENABLE_TEST "Enable tests" ON)
 SET(STDC_HEADERS ON)
 SET(HAVE_CFPREFERENCESCOPYAPPVALUE OFF)
 SET(_MINIX OFF)
@@ -88,7 +87,3 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
 add_subdirectory(3rdparty/miniupnpc)
 add_subdirectory(lib)
 add_subdirectory(src)
-if(${ENABLE_TEST})
-add_subdirectory(tests)
-endif()
-

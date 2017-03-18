@@ -32,9 +32,8 @@
 
 
 #include "fixedpoint.h"
-//#include "frame.h"
+#include "frame.h"
 #include "math_ext.h"
-#include "trig.h"
 
 using Vector3i = glm::ivec3;
 using Vector2i = glm::ivec2;

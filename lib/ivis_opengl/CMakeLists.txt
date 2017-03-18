@@ -11,7 +11,6 @@ else()
   set(HARFBUZZ_LIBRARIES ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/harfbuzz.lib)
 endif()
 
-add_library(ivis-opengl STATIC ${HEADERS} ${SRC})
-#target_compile_options(ivis-opengl PUBLIC "/std:c++latest")
+add_library(ivis-opengl ${HEADERS} ${SRC})
 target_include_directories(ivis-opengl PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
 target_link_libraries(ivis-opengl Qt5::Core ${HARFBUZZ_LIBRARIES})

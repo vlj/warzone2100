@@ -23,7 +23,7 @@
  */
 #include <QString>
 #include "lib/framework/wzapp.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "lib/sound/audio.h"
 #include "lib/netplay/netplay.h"
 #include "qtscriptfuncs.h"

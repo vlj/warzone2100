@@ -23,7 +23,7 @@
 #ifndef __INCLUDED_SRC_STATS_H__
 #define __INCLUDED_SRC_STATS_H__
 
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 
 #include <utility>
 

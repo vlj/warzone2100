@@ -26,7 +26,7 @@
  */
 #include <QString>
 #include "lib/framework/wzapp.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 
 #include <time.h>
 

@@ -29,7 +29,7 @@
 // Get platform defines before checking for them.
 // Qt headers MUST come before platform specific stuff!
 #include "wzconfig.h"
-#include "file.h"
+#include "lib/framework/file.h"
 
 WzConfig::~WzConfig()
 {

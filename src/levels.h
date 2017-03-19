@@ -24,6 +24,7 @@
 #ifndef __INCLUDED_SRC_LEVELS_H__
 #define __INCLUDED_SRC_LEVELS_H__
 
+#include <list>
 #include "lib/framework/crc.h"
 #include "init.h"
 #include "game.h"

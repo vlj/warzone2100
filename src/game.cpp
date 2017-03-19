@@ -27,7 +27,7 @@
 
 /* Warzone src and library headers */
 #include "lib/framework/endian_hack.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "lib/framework/file.h"
 #include "lib/framework/physfs_ext.h"
 #include "lib/framework/strres.h"

@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_QTSCRIPTDEBUG_H__
 #define __INCLUDED_QTSCRIPTDEBUG_H__
 
+#include <QString>
 #include "lib/framework/frame.h"
 #include "basedef.h"
 #include "droiddef.h"

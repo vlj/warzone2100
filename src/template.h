@@ -1,7 +1,7 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "droiddef.h"
 
 //storage

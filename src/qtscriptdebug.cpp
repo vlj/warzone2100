@@ -41,7 +41,7 @@
 #include <QtGui/QStandardItemModel>
 
 #include "lib/framework/wzapp.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 
 #include "qtscript.h"
 #include "qtscriptfuncs.h"

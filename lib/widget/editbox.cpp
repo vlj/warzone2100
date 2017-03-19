@@ -223,6 +223,7 @@ void W_EDITBOX::fitStringStart()
 	printWidth = 0;
 }
 
+extern QString wzGetSelection();
 
 /* Calculate how much of the end of a string can fit into the edit box */
 void W_EDITBOX::fitStringEnd()

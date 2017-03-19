@@ -25,7 +25,7 @@
  */
 #include <QString>
 #include "lib/framework/frame.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "lib/framework/math_ext.h"
 #include "lib/framework/strres.h"
 #include "lib/netplay/netplay.h"

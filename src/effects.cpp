@@ -37,7 +37,7 @@
 */
 #include <QString>
 #include "lib/framework/wzapp.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "lib/framework/frameresource.h"
 #include "lib/framework/input.h"
 #include "lib/framework/math_ext.h"

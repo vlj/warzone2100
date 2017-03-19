@@ -20,6 +20,7 @@
 #ifndef _imd_
 #define _imd_
 
+#include <QString>
 #include "ivisdef.h"
 
 #define PIE_NAME				"PIE"  // Pumpkin image export data file

@@ -33,7 +33,7 @@
 #include "lib/framework/geometry.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/frameresource.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "objects.h"
 #include "ai.h"
 #include "map.h"

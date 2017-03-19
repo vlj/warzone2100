@@ -55,7 +55,7 @@ WZ_DECL_NONNULL(1) void wzFatalDialog(const char *text);	///< Throw up a modal w
 std::vector<screeninfo> wzAvailableResolutions();
 void wzSetSwapInterval(int swap);
 int wzGetSwapInterval();
-//QString wzGetSelection();
+
 //QString wzGetCurrentText();
 unsigned int wzGetCurrentKey();
 void wzDelay(unsigned int delay);	//delay in ms

@@ -20,8 +20,7 @@
 #ifndef __INCLUDED_BITIMAGE__
 #define __INCLUDED_BITIMAGE__
 
-#include "ivisdef.h"
-#include "piedef.h"
+#include "imageFile.h"
 
 static inline WZ_DECL_PURE unsigned short iV_GetImageWidth(const IMAGEFILE *ImageFile, const unsigned short ID)
 {

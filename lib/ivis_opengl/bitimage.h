@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_BITIMAGE__
 #define __INCLUDED_BITIMAGE__
 
+#include <QString>
 #include "ivisdef.h"
 #include "piedef.h"
 

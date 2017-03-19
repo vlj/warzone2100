@@ -23,7 +23,7 @@
  *
  * Load IMD (.pie) files
  */
-
+#include <QVector>
 #include <QtCore/QMap>
 #include <QtCore/QString>
 

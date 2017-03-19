@@ -29,6 +29,7 @@
 #include "piematrix.h"
 #include "lib/ivis_opengl/piemode.h"
 
+#include <algorithm>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

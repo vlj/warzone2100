@@ -20,6 +20,7 @@
 #ifndef _tex_
 #define _tex_
 
+#include <QString>
 #include "lib/framework/opengl.h"
 #include "png_util.h"
 

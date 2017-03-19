@@ -20,7 +20,7 @@
 /** \file
  *  Render routines for 3D coloured and shaded transparency rendering.
  */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

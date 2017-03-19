@@ -20,7 +20,7 @@
 /** \file
  *  Extended render routines for 3D rendering.
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/opengl.h"
 

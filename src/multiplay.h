@@ -26,7 +26,6 @@
 
 #include "featuredef.h"
 #include "group.h"
-#include "featuredef.h"
 #include "droid.h"  // For INITIAL_DROID_ORDERS.
 #include "levels.h"  // For LevelHashSize.
 

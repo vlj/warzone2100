@@ -34,7 +34,6 @@
 #include "pietypes.h"
 
 #include <vector>
-#include <QtCore/QVector>
 #include <string>
 
 

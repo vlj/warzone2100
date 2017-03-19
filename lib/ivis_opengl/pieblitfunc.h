@@ -54,50 +54,6 @@
  */
 /***************************************************************************/
 
-enum GFXTYPE
-{
-	GFX_TEXTURE,
-	GFX_COLOUR,
-	GFX_COUNT
-};
-
-/// Generic graphics using VBOs drawing class
-class GFX
-{
-public:
-	/// Initialize class and allocate GPU resources
-	GFX(GFXTYPE type, GLenum drawType = GL_TRIANGLES, int coordsPerVertex = 3);
-
-	/// Destroy GPU held resources
-	~GFX();
-
-	/// Load texture data from file, allocate space for it, and put it on the GPU
-	void loadTexture(const char *filename, GLenum filter = GL_LINEAR);
-
-	/// Allocate space on the GPU for texture of given parameters. If image is non-NULL,
-	/// then that memory buffer is uploaded to the GPU.
-	void makeTexture(int width, int height, GLenum filter = GL_LINEAR, GLenum format = GL_RGBA, const GLvoid *image = NULL);
-
-	/// Upload given memory buffer to already allocated texture space on the GPU
-	void updateTexture(const GLvoid *image, int width = -1, int height = -1);
-
-	/// Upload vertex and texture buffer data to the GPU
-	void buffers(int vertices, const GLvoid *vertBuf, const GLvoid *texBuf);
-
-	/// Draw everything
-	void draw();
-
-private:
-	GFXTYPE mType;
-	GLenum mFormat;
-	int mWidth;
-	int mHeight;
-	GLenum mdrawType;
-	int mCoordsPerVertex;
-	GLuint mBuffers[VBO_COUNT];
-	GLuint mTexture;
-	int mSize;
-};
 
 /***************************************************************************/
 /*
@@ -114,7 +70,7 @@ static inline void iV_Box(int x0, int y0, int x1, int y1, PIELIGHT first)
 extern void pie_BoxFill(int x0, int y0, int x1, int y1, PIELIGHT colour, REND_MODE rendermode = REND_OPAQUE);
 extern void iV_DrawImage(GLuint TextureID, Vector2i position, Vector2i size, REND_MODE mode, PIELIGHT colour);
 extern void iV_DrawImage(IMAGEFILE *ImageFile, UWORD ID, int x, int y);
-void iV_DrawImage2(const QString &filename, float x, float y, float width = -0.0f, float height = -0.0f);
+void iV_DrawImage2(const ImageDef &ImageFile, float x, float y, float width = -0.0f, float height = -0.0f);
 void iV_DrawImageTc(Image image, Image imageTc, int x, int y, PIELIGHT colour);
 void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width);
 void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Height);

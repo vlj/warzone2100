@@ -23,7 +23,7 @@
  * Basic double buffered display using OpenGL.
  *
  */
-
+#include <QString>
 #include <QtCore/QFile>
 
 #include "lib/framework/frame.h"
@@ -40,6 +40,7 @@
 #include "lib/ivis_opengl/piefunc.h"
 #include "lib/ivis_opengl/piemode.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
+#include "GFX.h"
 
 #include "screen.h"
 #include "src/console.h"

@@ -20,7 +20,7 @@
 /** \file
  *  Extended render routines for 3D rendering.
  */
-#include <QString>
+
 #include "lib/framework/frame.h"
 #include "lib/framework/opengl.h"
 
@@ -34,6 +34,7 @@
 #include "lib/ivis_opengl/pieclip.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
+#include "GFX.h"
 
 static GFX *skyboxGfx = NULL;
 static GFX *radarViewGfx[2] = { NULL, NULL };

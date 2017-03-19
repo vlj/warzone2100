@@ -20,7 +20,6 @@
 #ifndef __INCLUDED_BITIMAGE__
 #define __INCLUDED_BITIMAGE__
 
-#include <QString>
 #include "ivisdef.h"
 #include "piedef.h"
 
@@ -51,7 +50,7 @@ static inline WZ_DECL_PURE short iV_GetImageYOffset(const IMAGEFILE *ImageFile, 
 	return Image(ImageFile, ID).yOffset();
 }
 
-ImageDef *iV_GetImage(const QString &filename);
+ImageDef *iV_GetImage(const struct QString &filename);
 IMAGEFILE *iV_LoadImageFile(const char *FileData);
 void iV_FreeImageFile(IMAGEFILE *ImageFile);
 

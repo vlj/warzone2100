@@ -453,7 +453,7 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 		}
 		else
 		{
-			iV_DrawImage2(retbutstats[psWidget->UserData].filenameDown, x, y);
+			iV_DrawImage2(*iV_GetImage(retbutstats[psWidget->UserData].filenameDown), x, y);
 		}
 		DownTime++;
 		flashing = false;	// stop the reticule from flashing if it was
@@ -464,18 +464,18 @@ static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yO
 		{
 			if (((realTime / 250) % 2) != 0)
 			{
-				iV_DrawImage2(retbutstats[psWidget->UserData].filenameDown, x, y);
+				iV_DrawImage2(*iV_GetImage(retbutstats[psWidget->UserData].filenameDown), x, y);
 				flashTime = 0;
 			}
 			else
 			{
-				iV_DrawImage2(retbutstats[psWidget->UserData].filename, x, y);
+				iV_DrawImage2(*iV_GetImage(retbutstats[psWidget->UserData].filename), x, y);
 			}
 			flashTime++;
 		}
 		else
 		{
-			iV_DrawImage2(retbutstats[psWidget->UserData].filename, x, y);
+			iV_DrawImage2(*iV_GetImage(retbutstats[psWidget->UserData].filename), x, y);
 			DownTime = 0;
 		}
 	}

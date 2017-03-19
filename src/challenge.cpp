@@ -35,7 +35,7 @@
 #include <QtCore/QTime>
 #include "lib/framework/frame.h"
 #include "lib/framework/input.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 #include "lib/netplay/netplay.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/pieblitfunc.h"

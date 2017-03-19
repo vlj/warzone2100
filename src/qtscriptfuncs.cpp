@@ -4212,7 +4212,8 @@ static QScriptValue js_replaceTexture(QScriptContext *context, QScriptEngine *)
 {
 	QString oldfile = context->argument(0).toString();
 	QString newfile = context->argument(1).toString();
-	replaceTexture(oldfile, newfile);
+	abort();
+	//replaceTexture(oldfile, newfile);
 	return QScriptValue();
 }
 

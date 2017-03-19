@@ -20,11 +20,9 @@
 #ifndef _tex_
 #define _tex_
 
-#include <QString>
 #include "lib/framework/opengl.h"
 #include "png_util.h"
 
-#define iV_TEX_INVALID 0
 #define iV_TEXNAME_MAX 64
 
 #define iV_TEXNAME_TCSUFFIX "_tcmask"
@@ -41,7 +39,7 @@ extern int iV_GetTexture(const char *filename, bool compression = true);
 extern void iV_unloadImage(iV_Image *image);
 extern unsigned int iV_getPixelFormat(const iV_Image *image);
 
-bool replaceTexture(const QString &oldfile, const QString &newfile);
+//bool replaceTexture(const QString &oldfile, const QString &newfile);
 extern int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page = -1);
 extern void pie_TexInit(void);
 

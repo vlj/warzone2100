@@ -29,7 +29,6 @@
 #ifndef _pieTypes_h
 #define _pieTypes_h
 
-#include "lib/framework/frame.h"
 #include "lib/framework/vector.h"
 
 /***************************************************************************/
@@ -55,6 +54,8 @@
 #define pie_PREMULTIPLIED       0x200
 
 #define pie_RAISE_SCALE			256
+
+#define iV_TEX_INVALID 0
 
 enum LIGHTING_TYPE
 {
@@ -86,6 +87,16 @@ enum TEXPAGE_TYPE
 {
 	TEXPAGE_NONE = -1,
 	TEXPAGE_EXTERN = -2
+};
+
+enum VBO_TYPE
+{
+	VBO_VERTEX,
+	VBO_TEXCOORD,
+	VBO_MINIMAL,
+	VBO_NORMAL = VBO_MINIMAL,
+	VBO_INDEX,
+	VBO_COUNT
 };
 
 enum SHADER_MODE

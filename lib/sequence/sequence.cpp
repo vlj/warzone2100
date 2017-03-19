@@ -67,6 +67,7 @@
 #include "lib/sound/audio.h"
 #include "lib/sound/openal_error.h"
 #include "lib/sound/mixer.h"
+#include "lib/ivis_opengl/GFX.h"
 
 #include <theora/theora.h>
 #include <physfs.h>

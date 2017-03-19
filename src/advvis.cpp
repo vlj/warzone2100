@@ -22,7 +22,7 @@
  *
  * Makes smooth transitions for terrain visibility.
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "advvis.h"

@@ -23,7 +23,7 @@
  * All the C functions callable from the script code
  *
  */
-
+#include <QString>
 #include "lib/framework/wzapp.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/stdio_ext.h"

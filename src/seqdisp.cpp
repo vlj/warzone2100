@@ -23,7 +23,7 @@
  * Functions for the display of the Escape Sequences (FMV).
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include <string.h>

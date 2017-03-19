@@ -23,7 +23,7 @@
  * Functions for setting the orders of a droid or group of droids.
  *
  */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

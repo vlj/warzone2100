@@ -24,7 +24,7 @@
  * Functions to display and handle the multiplayer interface screens,
  * along with connection and game options.
  */
-
+#include <QString>
 #include "lib/framework/wzapp.h"
 #include "lib/framework/wzconfig.h"
 

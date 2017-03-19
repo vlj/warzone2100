@@ -20,7 +20,7 @@
 /** @file
  *  The main file that launches the game and starts up everything.
  */
-
+#include <QString>
 // Get platform defines before checking for them!
 #include "lib/framework/wzapp.h"
 #include <QtCore/QTextCodec>

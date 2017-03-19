@@ -22,6 +22,7 @@
  *
  * Code to deal with loading/unloading, interface and flight of transporters.
  */
+#include <QString>
 #include <string.h>
 #include <sys/stat.h>
 

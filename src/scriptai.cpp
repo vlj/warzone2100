@@ -23,7 +23,7 @@
  * Script functions to support the AI system
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "objects.h"
 #include "group.h"

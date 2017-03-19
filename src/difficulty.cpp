@@ -27,7 +27,7 @@
 /*
 	Changed to allow seperate modifiers for enemy and player damage.
 */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "difficulty.h"
 #include "src/multiplay.h"

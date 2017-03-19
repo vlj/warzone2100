@@ -23,7 +23,7 @@
  * Game world mechanics.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "basedef.h"

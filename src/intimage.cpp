@@ -23,7 +23,7 @@
  * Image definitions and related functions.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/frameresource.h"
 #include "lib/ivis_opengl/bitimage.h"

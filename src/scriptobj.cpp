@@ -23,6 +23,7 @@
  * Object access functions for the script library
  *
  */
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/wzapp.h"

@@ -24,6 +24,7 @@
  * The objects are stored in the quad-tree.
  *
  */
+#include <QString>
 #include "lib/framework/types.h"
 #include "objects.h"
 #include "map.h"

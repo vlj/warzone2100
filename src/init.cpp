@@ -23,6 +23,7 @@
  * Game initialisation routines.
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include <string.h>

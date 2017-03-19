@@ -20,7 +20,7 @@
 /** @file
  *  Object information printing routines
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "objects.h"
 #include "projectile.h"

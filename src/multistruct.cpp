@@ -24,7 +24,7 @@
  *
  * files to cope with multiplayer structure related stuff..
  */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

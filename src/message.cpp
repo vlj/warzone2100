@@ -23,7 +23,7 @@
  * Functions for the messages shown in the Intelligence Map
  *
  */
-
+#include <QString>
 #include <QtCore/QMap>
 #include "lib/framework/frame.h"
 #include "lib/framework/wzconfig.h"

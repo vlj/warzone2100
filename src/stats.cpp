@@ -23,6 +23,7 @@
  * Store common stats for weapons, components, brains, etc.
  *
  */
+#include <QString>
 #include <string.h>
 #include <algorithm>
 #include <QtCore/QHash>

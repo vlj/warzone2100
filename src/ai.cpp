@@ -23,7 +23,7 @@
  * AI update functions for the different object types.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "action.h"

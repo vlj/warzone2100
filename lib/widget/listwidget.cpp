@@ -20,7 +20,7 @@
 /** @file
  *  Implementation of a list widget. Useful for displaying lists of buttons and stuff.
  */
-
+#include <QString>
 #include "listwidget.h"
 #include "button.h"
 #include <QtCore/QSignalMapper>

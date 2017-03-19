@@ -23,7 +23,7 @@
  * Code for command droids
  *
  */
-
+#include <QString>
 #include <string.h>
 #include "lib/framework/frame.h"
 #include "objects.h"

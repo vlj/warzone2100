@@ -23,6 +23,7 @@
  * Functions for the display of the Intelligence Map
  *
  */
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

@@ -22,7 +22,7 @@
  * gifts one player can give to another..
  * Also home to Deathmatch hardcoded RULES.
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/widget/widget.h"

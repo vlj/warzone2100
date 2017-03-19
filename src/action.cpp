@@ -23,7 +23,7 @@
  * Functions for setting the action of a droid.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/script/script.h"
 #include "lib/sound/audio.h"

@@ -23,7 +23,7 @@
  * front end title and options screens.
  * Alex Lee. Pumpkin Studios. Eidos PLC 98,
  */
-
+#include <QString>
 #include "lib/framework/wzapp.h"
 
 #if defined(WZ_OS_WIN)

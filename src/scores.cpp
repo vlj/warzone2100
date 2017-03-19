@@ -23,7 +23,7 @@
  * Deals with all the mission results gubbins.
  * Alex W. McLean
 */
-
+#include <QString>
 #include <string.h>
 
 // --------------------------------------------------------------------

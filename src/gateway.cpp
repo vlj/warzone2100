@@ -23,7 +23,7 @@
  * Routing gateway code.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "map.h"

@@ -23,7 +23,7 @@
  * Control the data loading for game levels
  *
  */
-
+#include <QString>
 #include <ctype.h>
 #include <string.h>
 

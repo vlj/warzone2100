@@ -22,6 +22,7 @@
  *
  * All the stuff relevant to a mission.
  */
+#include <QString>
 #include <time.h>
 
 #include "mission.h"

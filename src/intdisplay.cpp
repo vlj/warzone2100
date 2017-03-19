@@ -23,6 +23,7 @@
  * Callback and display functions for interface.
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/math_ext.h"

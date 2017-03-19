@@ -23,6 +23,7 @@
  * Object memory management functions.
  *
  */
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

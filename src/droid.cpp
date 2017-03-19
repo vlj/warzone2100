@@ -23,6 +23,7 @@
  * Droid method functions.
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/math_ext.h"
 #include "lib/framework/geometry.h"

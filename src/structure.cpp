@@ -25,6 +25,7 @@
  * By the picking of these code-bombs, something wicked this way comes. This
  * file is almost as evil as hci.c
  */
+#include <QString>
 #include <string.h>
 #include <algorithm>
 

@@ -23,6 +23,7 @@
  * Alex Lee , 97/98 Pumpkin Studios, Bath
  * Multiplay stuff relevant to droids only.
  */
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "droid.h"						// for droid sending and ordering.

@@ -22,6 +22,7 @@
  *
  * interface for setting limits to the game, bots, structlimits etc...
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/frameresource.h"
 #include "lib/framework/strres.h"

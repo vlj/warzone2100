@@ -24,7 +24,7 @@
  *
  */
 
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "objects.h"
 

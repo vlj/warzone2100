@@ -23,6 +23,7 @@
  * Routines for moving units about the map
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "lib/framework/trig.h"

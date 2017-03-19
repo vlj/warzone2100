@@ -22,7 +22,7 @@
  *
  * String management functions.
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/strres.h"
 #include "text.h"

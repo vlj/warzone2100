@@ -26,7 +26,7 @@
 
 	Handles the assignment of functions to keys.
 */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

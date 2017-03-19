@@ -26,7 +26,7 @@
  * Obviously HCI should mean "Hellish Code Incoming" -- Toksyuryel.
  *
  */
-
+#include <QString>
 #include <string.h>
 #include <algorithm>
 

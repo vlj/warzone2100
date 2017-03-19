@@ -23,6 +23,7 @@
  *
  */
 /***************************************************************************/
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

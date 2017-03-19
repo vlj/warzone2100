@@ -28,7 +28,7 @@
 	get it working the way it used to, should anything get broken.
 	I really hope that no further changes are needed here...:-(
 	Alex M. */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/trig.h"
 #include "lib/framework/input.h"

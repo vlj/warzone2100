@@ -21,7 +21,7 @@
 /** \file
 	Functions for the in-game console.
 */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/input.h"
 #include "lib/framework/wzapp.h"

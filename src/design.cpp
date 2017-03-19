@@ -23,6 +23,7 @@
  * Functions for design screen.
  *
  */
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

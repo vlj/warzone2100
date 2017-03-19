@@ -21,7 +21,7 @@
  *
  * New scripting system - debug GUI
  */
-
+#include <QString>
 #include "qtscriptdebug.h"
 
 #include <QtCore/QHash>

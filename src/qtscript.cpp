@@ -21,7 +21,7 @@
  *
  * New scripting system
  */
-
+#include <QString>
 #include "qtscript.h"
 
 #include <QtCore/QTextStream>

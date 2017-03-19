@@ -22,6 +22,7 @@
  *  Handles the In Game MultiPlayer Screen, alliances etc...
  *  Also the selection of disk files..
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/wzapp.h"
 #include "lib/framework/strres.h"

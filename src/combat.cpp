@@ -23,7 +23,7 @@
  * Combat mechanics routines.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/netplay/netplay.h"
 

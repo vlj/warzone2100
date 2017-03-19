@@ -22,7 +22,7 @@
  * Handles cheat codes for Warzone.
  */
 /* Alex M 19th - Jan. 1999 */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/exceptionhandler/dumpinfo.h"
 #include "lib/netplay/netplay.h"

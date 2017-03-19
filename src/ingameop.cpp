@@ -22,7 +22,7 @@
  * Ingame options screen.
  * Pumpkin Studios. 98
  */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

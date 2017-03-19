@@ -23,7 +23,7 @@
  * Interface to the routing functions.
  *
  */
-
+#include <QString>
 #include <future>
 #include <unordered_map>
 

@@ -22,7 +22,7 @@ Edit3D.c - to ultimately contain the map editing functions -
 they are presently scattered in various files .
 Alex McLean, Pumpkin Studios, EIDOS Interactive, 1997
 */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "map.h"
 #include "edit3d.h"

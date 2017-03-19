@@ -23,7 +23,7 @@
  * Data loading functions used by the framework resource module.
  *
  */
-
+#include <QString>
 #include <physfs.h>
 
 #include "lib/framework/frame.h"

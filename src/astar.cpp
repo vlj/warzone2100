@@ -39,7 +39,7 @@
  *  tains the  priority-heap-sorted  nodes which are to be explored.  The path back  is
  *  stored in the PathExploredTile 2D array of tiles.
  */
-
+#include <QString>
 #ifndef WZ_TESTING
 #include "lib/framework/frame.h"
 

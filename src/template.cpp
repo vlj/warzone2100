@@ -23,6 +23,7 @@
  * Droid template functions.
  *
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/wzconfig.h"
 #include "lib/framework/math_ext.h"

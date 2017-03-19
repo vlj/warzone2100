@@ -20,7 +20,7 @@
 /** @file
  *  Functions for the edit box widget.
  */
-
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

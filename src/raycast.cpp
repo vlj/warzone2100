@@ -23,7 +23,7 @@
  * Raycasting routine that gives intersection points with map tiles.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 
 #include "raycast.h"

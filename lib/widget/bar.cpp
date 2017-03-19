@@ -20,7 +20,7 @@
 /** @file
  *  Functions for the bar graph widget
  */
-
+#include <QString>
 #include "widget.h"
 #include "widgint.h"
 #include "tip.h"

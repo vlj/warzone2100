@@ -24,7 +24,7 @@
  * these don't actually do any loading or saving, but just
  * return a filename to use for the ops.
  */
-
+#include <QString>
 #include <ctype.h>
 #include <physfs.h>
 #include <time.h>

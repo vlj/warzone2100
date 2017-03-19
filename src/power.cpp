@@ -23,6 +23,7 @@
  * Store PlayerPower and other power related stuff!
  *
  */
+#include <QString>
 #include <string.h>
 #include "objectdef.h"
 #include "power.h"

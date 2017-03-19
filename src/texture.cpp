@@ -22,7 +22,7 @@
  * @file texture.c
  * This is where we do texture atlas generation.
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/opengl.h"
 

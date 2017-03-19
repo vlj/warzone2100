@@ -23,7 +23,7 @@
  * Form droids and structures into clusters
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/script/script.h"
 

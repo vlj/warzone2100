@@ -26,7 +26,7 @@
 	it's neater as a separate file, as the intelligence map has special requirements
 	and overlays and needs to render to a specified buffer for later use.
 */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/ivis_opengl/piematrix.h"
 

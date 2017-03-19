@@ -24,6 +24,7 @@
  *
  * Contains the day to day networking stuff, and received message handler.
  */
+#include <QString>
 #include <string.h>
 
 #include "lib/framework/frame.h"

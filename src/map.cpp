@@ -23,6 +23,7 @@
  * Utility functions for the map data structure.
  *
  */
+#include <QString>
 #include <time.h>
 
 #include "lib/framework/frame.h"

@@ -24,7 +24,7 @@
  *
  * Stuff to handle the comings and goings of players.
  */
-
+#include <QString>
 #include <physfs.h>
 
 #include "lib/framework/frame.h"

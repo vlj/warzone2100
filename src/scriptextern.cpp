@@ -23,7 +23,7 @@
  * All game variable access functions for the scripts
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "map.h"
 

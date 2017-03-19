@@ -23,6 +23,7 @@
  * Research tree and functions!
  *
  */
+#include <QString>
 #include <string.h>
 #include <map>
 #include <QtCore/QJsonArray>

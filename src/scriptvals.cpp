@@ -23,7 +23,7 @@
  * Script data value functions
  *
  */
-
+#include <QString>
 #include <string.h>
 #include <list>
 

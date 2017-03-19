@@ -23,7 +23,7 @@
  * Link droids together into a group for AI etc.
  *
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/netplay/netplay.h"
 

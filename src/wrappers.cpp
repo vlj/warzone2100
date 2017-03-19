@@ -22,7 +22,7 @@
  * Frontend loop & also loading screen & game over screen.
  * AlexL. Pumpkin Studios, EIDOS Interactive, 1997
  */
-
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/frameresource.h"
 // FIXME Direct iVis implementation include!

@@ -22,6 +22,7 @@
  *
  * Load feature stats
  */
+#include <QString>
 #include "lib/framework/frame.h"
 #include "lib/framework/frameresource.h"
 #include "lib/framework/strres.h"

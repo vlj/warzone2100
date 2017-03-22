@@ -34,6 +34,7 @@
 #include "lib/gamelib/gtime.h"
 #include <map>
 #include <string>
+#include <regex>
 #include "src/warzoneconfig.h"	// for checking FS or not
 
 #ifdef WZ_OS_LINUX
@@ -407,25 +408,19 @@ const char *debugLastError()
 	}
 }
 
-void _debug(int line, code_part part, const char *function, const char *str, ...)
+void Logger::registerMsg(int line, code_part part, const char *function, const std::string& msg) const
 {
-	va_list ap;
-	static char outputBuffer[MAX_LEN_LOG_LINE];
 	static unsigned int repeated = 0; /* times current message repeated */
 	static unsigned int next = 2;     /* next total to print update */
 	static unsigned int prev = 0;     /* total on last update */
 
-	va_start(ap, str);
-	vssprintf(outputBuffer, str, ap);
-	va_end(ap);
-
 	if (part == LOG_WARNING)
 	{
 		std::pair<std::map<std::string, int>::iterator, bool> ret;
-		ret = warning_list.insert(std::pair<std::string, int>(std::string(function) + "-" + std::string(outputBuffer), line));
+		ret = warning_list.insert(std::pair<std::string, int>(std::string(function) + "-" + msg, line));
 		if (ret.second)
 		{
-			ssprintf(inputBuffer[useInputBuffer1 ? 1 : 0], "[%s:%d] %s (**Further warnings of this type are suppressed.)", function, line, outputBuffer);
+			ssprintf(inputBuffer[useInputBuffer1 ? 1 : 0], "[%s:%d] %s (**Further warnings of this type are suppressed.)", function, line, msg.c_str());
 		}
 		else
 		{
@@ -434,7 +429,7 @@ void _debug(int line, code_part part, const char *function, const char *str, ...
 	}
 	else
 	{
-		ssprintf(inputBuffer[useInputBuffer1 ? 1 : 0], "[%s:%d] %s", function, line, outputBuffer);
+		ssprintf(inputBuffer[useInputBuffer1 ? 1 : 0], "[%s:%d] %s", function, line, msg.c_str());
 	}
 
 	if (sstrcmp(inputBuffer[0], inputBuffer[1]) == 0)
@@ -445,13 +440,13 @@ void _debug(int line, code_part part, const char *function, const char *str, ...
 		{
 			if (repeated > 2)
 			{
-				ssprintf(outputBuffer, "last message repeated %u times (total %u repeats)", repeated - prev, repeated);
+				//ssprintf(outputBuffer, "last message repeated %u times (total %u repeats)", repeated - prev, repeated);
 			}
 			else
 			{
-				ssprintf(outputBuffer, "last message repeated %u times", repeated - prev);
+				//ssprintf(outputBuffer, "last message repeated %u times", repeated - prev);
 			}
-			printToDebugCallbacks(outputBuffer);
+			printToDebugCallbacks(msg.c_str());
 			prev = repeated;
 			next *= 2;
 		}
@@ -464,13 +459,13 @@ void _debug(int line, code_part part, const char *function, const char *str, ...
 			/* just repeat the previous message when only one repeat occurred */
 			if (repeated > 2)
 			{
-				ssprintf(outputBuffer, "last message repeated %u times (total %u repeats)", repeated - prev, repeated);
+				//ssprintf(outputBuffer, "last message repeated %u times (total %u repeats)", repeated - prev, repeated);
 			}
 			else
 			{
-				ssprintf(outputBuffer, "last message repeated %u times", repeated - prev);
+				//ssprintf(outputBuffer, "last message repeated %u times", repeated - prev);
 			}
-			printToDebugCallbacks(outputBuffer);
+			printToDebugCallbacks(msg.c_str());
 		}
 		repeated = 0;
 		next = 2;
@@ -488,9 +483,9 @@ void _debug(int line, code_part part, const char *function, const char *str, ...
 		strftime(ourtime, 15, "%I:%M:%S", timeinfo);
 
 		// Assemble the outputBuffer:
-		ssprintf(outputBuffer, "%-8s|%s: %s", code_part_names[part], ourtime, useInputBuffer1 ? inputBuffer[1] : inputBuffer[0]);
+		//ssprintf(outputBuffer, "%-8s|%s: %s", code_part_names[part], ourtime, useInputBuffer1 ? inputBuffer[1] : inputBuffer[0]);
 
-		printToDebugCallbacks(outputBuffer);
+		printToDebugCallbacks(msg.c_str());
 
 		if (part == LOG_ERROR)
 		{
@@ -581,4 +576,11 @@ bool debugPartEnabled(code_part codePart)
 void debugDisableAssert()
 {
 	assertEnabled = false;
+}
+
+std::string Logger::transformFormat(const char * txt)
+{
+	// matches %d %s
+	static const auto& argFormatPattern = std::regex(R"(%[sd])");
+	return std::regex_replace({ txt }, argFormatPattern, "{}");
 }

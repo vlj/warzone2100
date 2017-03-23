@@ -40,6 +40,7 @@
 #include "macros.h"
 #include "types.h"
 #include <string>
+#include <array>
 #include <fmt/format.h>
 
 /****************************************************************************************
@@ -141,7 +142,7 @@ template<> class StaticAssert<true> {};
 	(void)STATIC_ASSERT_EXPR(expr)
 
 #ifndef WZ_CXX11
-#define static_assert(expr, str) STATIC_ASSERT(expr)
+#define STATIC_ASSERT(expr) static_assert(expr, #expr)
 #endif
 
 
@@ -190,8 +191,6 @@ enum code_part
 	LOG_LAST /**< _must_ be last! */
 };
 
-extern bool enabled_debug[LOG_LAST];
-
 typedef void (*debug_callback_fn)(void **, const char *);
 typedef bool (*debug_callback_init)(void **);
 typedef void (*debug_callback_exit)(void **);
@@ -212,8 +211,10 @@ struct Logger
 	template<typename...T>
 	void _debug(int line, code_part part, const char *function, const char *str, const T&... args) const
 	{
-		//const auto& formatedMsg = fmt::format(transformFormat(str), args...);
-		//registerMsg(line, part, function, formatedMsg);
+		if (!enabled_debug[part])
+			return;
+		const auto& formatedMsg = fmt::format(transformFormat(str), castPtr(args)...);
+		registerMsg(line, part, function, formatedMsg);
 	}
 
 private:
@@ -221,6 +222,19 @@ private:
 	~Logger();
 	static std::string transformFormat(const char* txt);
 	void registerMsg(int line, code_part part, const char *function, const std::string& msg) const;
+	template <typename T, typename = std::enable_if<!std::is_pointer<T>::value>::type>
+	static auto castPtr(const T& in)
+	{
+		return in;
+	}
+
+	template <typename T>
+	static auto castPtr(const T* in)
+	{
+		return static_cast<const void*>(in);
+	}
+
+	std::array<bool, LOG_LAST> enabled_debug;
 };
 
 /**
@@ -272,15 +286,15 @@ void debug_callback_win32debug(void **data, const char *outputBuffer);
  */
 bool debug_enable_switch(const char *str);
 // macro for always outputting informational responses on both debug & release builds
-#define info(...) do { Logger::get()._debug(__LINE__, LOG_INFO, __FUNCTION__, __VA_ARGS__); } while(0)
+#define info(...) Logger::get()._debug(__LINE__, LOG_INFO, __FUNCTION__, __VA_ARGS__)
 /**
  * Output printf style format str with additional arguments.
  *
  * Only outputs if debugging of part was formerly enabled with debug_enable_switch.
  */
-#define debug(part, ...) do { if (enabled_debug[part]) Logger::get()._debug(__LINE__, part, __FUNCTION__, __VA_ARGS__); } while(0)
+#define debug(part, ...) Logger::get()._debug(__LINE__, part, __FUNCTION__, __VA_ARGS__)
 
-#define debugBacktrace(part, ...) do { if (enabled_debug[part]) { Logger::get()._debug(__LINE__, part, __FUNCTION__, __VA_ARGS__); _debugBacktrace(part); }} while(0)
+#define debugBacktrace(part, ...) Logger::get()._debug(__LINE__, part, __FUNCTION__, __VA_ARGS__)
 void _debugBacktrace(code_part part);
 
 /** Global to keep track of which game object to trace. */

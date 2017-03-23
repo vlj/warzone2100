@@ -263,51 +263,12 @@ void debug_MEMSTATS()
 
 void debug_init()
 {
-	/*** Initialize the debug subsystem ***/
-#if defined(WZ_CC_MSVC) && defined(DEBUG)
-	int tmpDbgFlag;
-	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);   // Output CRT info to debugger
-
-	tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);   // Grab current flags
-# if defined(DEBUG_MEMORY)
-	tmpDbgFlag |= _CRTDBG_CHECK_ALWAYS_DF; // Check every (de)allocation
-# endif // DEBUG_MEMORY
-	tmpDbgFlag |= _CRTDBG_ALLOC_MEM_DF; // Check allocations
-	tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF; // Check for memleaks
-	_CrtSetDbgFlag(tmpDbgFlag);
-#endif // WZ_CC_MSVC && DEBUG
-
-	STATIC_ASSERT(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST); // enums start at 0
-
-	memset(enabled_debug, false, sizeof(enabled_debug));
-	enabled_debug[LOG_ERROR] = true;
-	enabled_debug[LOG_INFO] = true;
-	enabled_debug[LOG_FATAL] = true;
-	enabled_debug[LOG_POPUP] = true;
-	inputBuffer[0][0] = '\0';
-	inputBuffer[1][0] = '\0';
-#ifdef DEBUG
-	enabled_debug[LOG_WARNING] = true;
-#endif
+	(void)Logger::get();
 }
 
 
 void debug_exit()
 {
-	debug_callback *curCallback = callbackRegistry, * tmpCallback = NULL;
-
-	while (curCallback)
-	{
-		if (curCallback->exit)
-		{
-			curCallback->exit(&curCallback->data);
-		}
-		tmpCallback = curCallback->next;
-		free(curCallback);
-		curCallback = tmpCallback;
-	}
-	warning_list.clear();
-	callbackRegistry = NULL;
 }
 
 
@@ -576,6 +537,59 @@ bool debugPartEnabled(code_part codePart)
 void debugDisableAssert()
 {
 	assertEnabled = false;
+}
+
+Logger::Logger() : enabled_debug({})
+{
+	/*** Initialize the debug subsystem ***/
+#if defined(WZ_CC_MSVC) && defined(DEBUG)
+	int tmpDbgFlag;
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);   // Output CRT info to debugger
+
+	tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);   // Grab current flags
+# if defined(DEBUG_MEMORY)
+	tmpDbgFlag |= _CRTDBG_CHECK_ALWAYS_DF; // Check every (de)allocation
+# endif // DEBUG_MEMORY
+	tmpDbgFlag |= _CRTDBG_ALLOC_MEM_DF; // Check allocations
+	tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF; // Check for memleaks
+	_CrtSetDbgFlag(tmpDbgFlag);
+#endif // WZ_CC_MSVC && DEBUG
+
+	STATIC_ASSERT(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST); // enums start at 0
+
+	enabled_debug[LOG_ERROR] = true;
+	enabled_debug[LOG_INFO] = true;
+	enabled_debug[LOG_FATAL] = true;
+	enabled_debug[LOG_POPUP] = true;
+	inputBuffer[0][0] = '\0';
+	inputBuffer[1][0] = '\0';
+#ifdef DEBUG
+	enabled_debug[LOG_WARNING] = true;
+#endif
+}
+
+Logger::~Logger()
+{
+	debug_callback *curCallback = callbackRegistry, *tmpCallback = NULL;
+
+	while (curCallback)
+	{
+		if (curCallback->exit)
+		{
+			curCallback->exit(&curCallback->data);
+		}
+		tmpCallback = curCallback->next;
+		free(curCallback);
+		curCallback = tmpCallback;
+	}
+	warning_list.clear();
+	callbackRegistry = NULL;
+}
+
+Logger& Logger::get()
+{
+	static Logger singleton;
+	return singleton;
 }
 
 std::string Logger::transformFormat(const char * txt)

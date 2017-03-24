@@ -63,6 +63,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
         "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/vorbis.lib"
         "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/vorbisfile.lib"
         "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/theora.lib"
+        "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/fmt.lib"
         "ws2_32.lib"
         "iphlpapi.lib")
 endif()

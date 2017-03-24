@@ -42,17 +42,16 @@
 	strdup2(s,__FILE__,__LINE__)
 static inline char *strdup2(const char *s, char *fileName, int line)
 {
-	char *result;
-
 	(void)debug_MEMCHKOFF();
-	result = (char *)malloc(strlen(s) + 1);
+	char *result = (char *)malloc(strlen(s) + 1);
 	(void)debug_MEMCHKON();
 
-	if (result == (char *)0)
+	if (result == nullptr)
 	{
-		return (char *)0;
+		return nullptr;
 	}
-	strcpy(result, s);
+	memcpy(result, s, strlen(s));
+	result[strlen(s)] = '\0';
 	return result;
 }
 #	else	// for release builds
@@ -114,7 +113,7 @@ static inline size_t strlcpy(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RE
 
 	if (size > 0)
 	{
-		strncpy(dest, src, size - 1);
+		memcpy(dest, src, size - 1);
 		// Guarantee to nul-terminate
 		dest[size - 1] = '\0';
 	}

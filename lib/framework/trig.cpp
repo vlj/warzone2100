@@ -51,12 +51,12 @@ bool trigInitialise(void)
 	uint32_t i;
 
 	// Generate tables.
-	STATIC_ASSERT(sizeof(trigSinTable) / sizeof(*trigSinTable) == 0x4001);
+	static_assert(sizeof(trigSinTable) / sizeof(*trigSinTable) == 0x4001, "Wrong sin table size");
 	for (i = 0; i != 0x4001; ++i)
 	{
 		trigSinTable[i] = (int)(0x10000 * sin(i * (M_PI / 0x8000)) + 0.5) - !!i; // -!!i = subtract 1, unless i == 0.
 	}
-	STATIC_ASSERT(sizeof(trigAtanTable) / sizeof(*trigAtanTable) == 0x2001);
+	static_assert(sizeof(trigAtanTable) / sizeof(*trigAtanTable) == 0x2001, "Wrong atan table size");
 	for (i = 0; i != 0x2001; ++i)
 	{
 		trigAtanTable[i] = (int)(0x8000 / M_PI * atan((double)i / 0x2000) + 0.5);

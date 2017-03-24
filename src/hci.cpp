@@ -2945,7 +2945,7 @@ bool intAddOptions(void)
 	sButInit.height = OPT_BUTHEIGHT;
 	for (player = 0; player < MAX_PLAYERS; player++)
 	{
-		STATIC_ASSERT(MAX_PLAYERS <= ARRAY_SIZE(apPlayerText) && MAX_PLAYERS <= ARRAY_SIZE(apPlayerTip));
+		static_assert(MAX_PLAYERS <= ARRAY_SIZE(apPlayerText) && MAX_PLAYERS <= ARRAY_SIZE(apPlayerTip), "Wrong MAX_PLAYERS");
 		sButInit.pText = apPlayerText[player];
 		sButInit.pTip = apPlayerTip[player];
 		if (!widgAddButton(psWScreen, &sButInit))

@@ -131,19 +131,8 @@ extern bool assertEnabled;
  */
 template<bool> class StaticAssert;
 template<> class StaticAssert<true> {};
-#define STATIC_ASSERT_EXPR(expr) \
+#define static_assert_EXPR(expr) \
 	(0*sizeof(StaticAssert<(expr)>))
-/**
- * Compile time assert
- * Not to be used in global context!
- * \param expr Expression to evaluate
- */
-#define STATIC_ASSERT( expr ) \
-	(void)STATIC_ASSERT_EXPR(expr)
-
-#ifndef WZ_CXX11
-#define STATIC_ASSERT(expr) static_assert(expr, #expr)
-#endif
 
 
 /***

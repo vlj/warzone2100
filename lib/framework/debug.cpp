@@ -555,7 +555,7 @@ Logger::Logger() : enabled_debug({})
 	_CrtSetDbgFlag(tmpDbgFlag);
 #endif // WZ_CC_MSVC && DEBUG
 
-	STATIC_ASSERT(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST); // enums start at 0
+	static_assert(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST, "Wrong code part names count"); // enums start at 0
 
 	enabled_debug[LOG_ERROR] = true;
 	enabled_debug[LOG_INFO] = true;

@@ -491,7 +491,7 @@ void addMultiRequest(const char *searchDir, const char *fileExtension, UDWORD mo
 		sButInit.pDisplay	= displayNumPlayersBut;
 		widgAddButton(psRScreen, &sButInit);
 
-		STATIC_ASSERT(MAX_PLAYERS_IN_GUI <= ARRAY_SIZE(M_REQUEST_NP) + 1);
+		static_assert(MAX_PLAYERS_IN_GUI <= ARRAY_SIZE(M_REQUEST_NP) + 1, "Wrong MAX_PLAYERS_IN_GUI");
 		for (unsigned numPlayers = 2; numPlayers <= MAX_PLAYERS_IN_GUI; ++numPlayers)
 		{
 			static char ttip[MAX_PLAYERS_IN_GUI + 1][20];

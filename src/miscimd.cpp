@@ -164,8 +164,8 @@ bool	initMiscImds(void)
 	{
 		unsigned n = i + 1;
 
-		STATIC_ASSERT(MAX_FACTORY <= MAX_FACTORY_FLAG_IMDS);
-		STATIC_ASSERT(MAX_FACTORY_FLAG_IMDS <= 32);  // Need to add more assembly point graphics, if increasing MAX_FACTORY_FLAG_IMDS.
+		static_assert(MAX_FACTORY <= MAX_FACTORY_FLAG_IMDS, "Wrong MAX_FACTORY");
+		static_assert(MAX_FACTORY_FLAG_IMDS <= 32, "Wrong MAX_FACTORY_FLAG_IMDS");  // Need to add more assembly point graphics, if increasing MAX_FACTORY_FLAG_IMDS.
 		if (!initMiscImd(i, n, "minum%u.pie",  FACTORY_FLAG) ||
 		    !initMiscImd(i, n, "micnum%u.pie", CYBORG_FLAG) ||
 		    !initMiscImd(i, n, "mivnum%u.pie", VTOL_FLAG) ||

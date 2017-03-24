@@ -342,53 +342,6 @@
 /* ---- Declaration attributes ---- */
 
 
-/*!
- * \def WZ_DECL_DEPRECATED
- *
- * The WZ_DECL_DEPRECATED macro can be used to trigger compile-time warnings
- * with newer compilers when deprecated functions are used.
- *
- * For non-inline functions, the macro gets inserted at front of the
- * function declaration, right before the return type:
- *
- * \code
- * WZ_DECL_DEPRECATED void deprecatedFunctionA();
- * WZ_DECL_DEPRECATED int deprecatedFunctionB() const;
- * \endcode
- *
- * For functions which are implemented inline,
- * the WZ_DECL_DEPRECATED macro is inserted at the front, right before the return
- * type, but after "static", "inline" or "virtual":
- *
- * \code
- * WZ_DECL_DEPRECATED void deprecatedInlineFunctionA() { .. }
- * virtual WZ_DECL_DEPRECATED int deprecatedInlineFunctionB() { .. }
- * static WZ_DECL_DEPRECATED bool deprecatedInlineFunctionC() { .. }
- * inline WZ_DECL_DEPRECATED bool deprecatedInlineFunctionD() { .. }
- * \endcode
- *
- * You can also mark whole structs or classes as deprecated, by inserting the
- * WZ_DECL_DEPRECATED macro after the struct/class keyword, but before the
- * name of the struct/class:
- *
- * \code
- * class WZ_DECL_DEPRECATED DeprecatedClass { };
- * struct WZ_DECL_DEPRECATED DeprecatedStruct { };
- * \endcode
- *
- * \note
- * Description copied from KDE4, code copied from Qt4.
- *
- */
-#if WZ_CC_GNU_PREREQ(3,2) || WZ_CC_INTEL_PREREQ(10,0)
-#  define WZ_DECL_DEPRECATED __attribute__((__deprecated__))
-#elif defined(WZ_CC_MSVC)
-#  define WZ_DECL_DEPRECATED __declspec(deprecated)
-#else
-#  define WZ_DECL_DEPRECATED
-#endif
-
-
 /*! \def WZ_DECL_FORMAT
  * GCC: "The format attribute specifies that a function takes printf, scanf, strftime or strfmon
  *       style arguments which should be type-checked against a format string."
@@ -409,21 +362,6 @@
 #  define WZ_DECL_NONNULL(...)
 #  define WZ_DECL_RETURNS_NONNULL
 #endif
-
-/*!
- * \def WZ_DECL_NORETURN
- * "A few standard library functions, such as abort and exit, cannot return. GCC knows this
- *  automatically. Some programs define their own functions that never return.
- *  You can declare them noreturn to tell the compiler this fact."
- */
-#if WZ_CC_GNU_PREREQ(2,5) && !defined(WZ_CC_INTEL)
-#  define WZ_DECL_NORETURN __attribute__((__noreturn__))
-#elif defined(WZ_CC_MSVC)
-#  define WZ_DECL_NORETURN __declspec(noreturn)
-#else
-#  define WZ_DECL_NORETURN
-#endif
-
 
 /*!
  * \def WZ_DECL_CONST
@@ -586,7 +524,7 @@
 #    define alloca _alloca
 #    define fileno _fileno
 
-#    define isnan _isnan
+//#    define isnan _isnan
 #    define isfinite _finite
 
 #    define PATH_MAX MAX_PATH
@@ -655,9 +593,9 @@ static inline char *_WZ_ASSERT_STATIC_STRING_FUNCTION(char *&)
 {
 	return NULL;    // Eeek, it's a pointer!
 }
-#  define WZ_ASSERT_STATIC_STRING(_var) STATIC_ASSERT(sizeof(_WZ_ASSERT_STATIC_STRING_FUNCTION(_var)) == sizeof(char))
+#  define WZ_ASSERT_STATIC_STRING(_var) static_assert(sizeof(_WZ_ASSERT_STATIC_STRING_FUNCTION(_var)) == sizeof(char))
 #elif defined(WZ_CC_GNU) || defined(WZ_CC_INTEL)
-#  define WZ_ASSERT_STATIC_STRING(_var) STATIC_ASSERT(__builtin_types_compatible_p(typeof(_var), char[]))
+#  define WZ_ASSERT_STATIC_STRING(_var) static_assert(__builtin_types_compatible_p(typeof(_var), char[]))
 #else
 #  define WZ_ASSERT_STATIC_STRING(_var) (void)(_var)
 #endif
@@ -680,10 +618,10 @@ static inline char *_WZ_ASSERT_ARRAY_EXPR_FUNCTION(T *&)
 {
 	return NULL;    // Eeek, it's a pointer!
 }
-#  define WZ_ASSERT_ARRAY_EXPR(_var) STATIC_ASSERT_EXPR(sizeof(_WZ_ASSERT_ARRAY_EXPR_FUNCTION(_var)) == sizeof(char))
+#  define WZ_ASSERT_ARRAY_EXPR(_var) static_assert_EXPR(sizeof(_WZ_ASSERT_ARRAY_EXPR_FUNCTION(_var)) == sizeof(char))
 #elif defined(WZ_CC_GNU) || defined(WZ_CC_INTEL)
 /* &a[0] degrades to a pointer: a different type from an array */
-#  define WZ_ASSERT_ARRAY_EXPR(a) STATIC_ASSERT_EXPR(!__builtin_types_compatible_p(typeof(a), typeof(&(a)[0])))
+#  define WZ_ASSERT_ARRAY_EXPR(a) static_assert_EXPR(!__builtin_types_compatible_p(typeof(a), typeof(&(a)[0])))
 #else
 #  define WZ_ASSERT_ARRAY_EXPR(a) 0
 #endif

@@ -1802,7 +1802,7 @@ STRUCTURE *buildBlueprint(STRUCTURE_STATS const *psStats, Vector2i xy, uint16_t 
 	blueprint = new STRUCTURE(0, selectedPlayer);
 	// construct the fake structure
 	blueprint->pStructureType = const_cast<STRUCTURE_STATS *>(psStats);  // Couldn't be bothered to fix const correctness everywhere.
-	blueprint->visible[selectedPlayer] = uint8_t_MAX;
+	blueprint->visible[selectedPlayer] = std::numeric_limits<uint8_t>::max();
 	blueprint->sDisplay.imd = (*pIMD)[std::min<int>(moduleNumber, pIMD->size() - 1)];
 	blueprint->pos = pos;
 	blueprint->rot = rot;
@@ -6036,7 +6036,7 @@ void hqReward(uint8_t losingPlayer, uint8_t rewardPlayer)
 		{
 			if (psDroid->visible[losingPlayer] || psDroid->player == losingPlayer)
 			{
-				psDroid->visible[rewardPlayer] = uint8_t_MAX;
+				psDroid->visible[rewardPlayer] = std::numeric_limits<uint8_t>::max();
 			}
 		}
 	}
@@ -6741,8 +6741,8 @@ STRUCTURE *findNearestReArmPad(DROID *psDroid, STRUCTURE *psTarget, bool bClear)
 		cx = (int32_t)psDroid->pos.x;
 		cy = (int32_t)psDroid->pos.y;
 	}
-	mindist = int32_t_MAX;
-	totallyDist = int32_t_MAX;
+	mindist = std::numeric_limits<int32_t>::max();
+	totallyDist = std::numeric_limits<int32_t>::max();
 	psNearest = NULL;
 	psTotallyClear = NULL;
 	for (psStruct = apsStructLists[psDroid->player]; psStruct; psStruct = psStruct->psNext)
@@ -7017,7 +7017,7 @@ STRUCTURE *giftSingleStructure(STRUCTURE *psStructure, uint8_t attackPlayer, boo
 
 				}
 				//make sure this structure is visible to selectedPlayer if the structure used to be selectedPlayers'
-				psNewStruct->visible[selectedPlayer] = uint8_t_MAX;
+				psNewStruct->visible[selectedPlayer] = std::numeric_limits<uint8_t>::max();
 			}
 		}
 	}

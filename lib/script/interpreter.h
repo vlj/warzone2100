@@ -156,7 +156,7 @@ enum OPCODE
 
 // maximum sizes for arrays
 #define VAR_MAX_DIMENSIONS		4
-#define VAR_MAX_ELEMENTS		uint8_t_MAX
+#define VAR_MAX_ELEMENTS		std::numeric_limits<uint8_t>::max()
 
 /* The mask for the number of array elements stored in the data part of an opcode */
 #define ARRAY_BASE_MASK			0x000fffff

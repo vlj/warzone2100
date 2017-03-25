@@ -870,7 +870,7 @@ void displayComponentObject(DROID *psDroid)
 		addEffect(&position, EFFECT_EXPLOSION, EXPLOSION_TYPE_PLASMA, false, NULL, 0);
 	}
 
-	if (psDroid->visible[selectedPlayer] == uint8_t_MAX)
+	if (psDroid->visible[selectedPlayer] == std::numeric_limits<uint8_t>::max())
 	{
 		//ingame not button object
 		//should render 3 mounted weapons now

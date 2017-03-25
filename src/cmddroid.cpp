@@ -88,13 +88,13 @@ void cmdDroidAddDroid(DROID *psCommander, DROID *psDroid)
 	{
 		psGroup = grpCreate();
 		psGroup->add(psCommander);
-		psDroid->group = uint8_t_MAX;
+		psDroid->group = std::numeric_limits<uint8_t>::max();
 	}
 
 	if (psCommander->psGroup->getNumMembers() < cmdDroidMaxGroup(psCommander))
 	{
 		psCommander->psGroup->add(psDroid);
-		psDroid->group = uint8_t_MAX;
+		psDroid->group = std::numeric_limits<uint8_t>::max();
 
 		// set the secondary states for the unit
 		secondarySetState(psDroid, DSO_REPAIR_LEVEL, (SECONDARY_STATE)(psCommander->secondaryOrder & DSS_REPLEV_MASK), ModeImmediate);

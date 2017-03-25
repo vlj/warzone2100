@@ -575,7 +575,7 @@ int aiBestNearestTarget(DROID *psDroid, BASE_OBJECT **ppsObj, int weapon_slot, i
 			targetInQuestion = NULL;
 
 			/* Can we see what it is doing? */
-			if (friendlyObj->visible[psDroid->player] == uint8_t_MAX)
+			if (friendlyObj->visible[psDroid->player] == std::numeric_limits<uint8_t>::max())
 			{
 				if (friendlyObj->type == OBJ_DROID)
 				{
@@ -610,7 +610,7 @@ int aiBestNearestTarget(DROID *psDroid, BASE_OBJECT **ppsObj, int weapon_slot, i
 		if (targetInQuestion != NULL
 		    && targetInQuestion != psDroid  // in case friendly unit had me as target
 		    && (targetInQuestion->type == OBJ_DROID || targetInQuestion->type == OBJ_STRUCTURE || targetInQuestion->type == OBJ_FEATURE)
-		    && targetInQuestion->visible[psDroid->player] == uint8_t_MAX
+		    && targetInQuestion->visible[psDroid->player] == std::numeric_limits<uint8_t>::max()
 		    && !aiCheckAlliances(targetInQuestion->player, psDroid->player)
 		    && validTarget(psDroid, targetInQuestion, weapon_slot)
 		    && objPosDiffSq(psDroid, targetInQuestion) < droidRange * droidRange)
@@ -907,7 +907,7 @@ bool aiChooseTarget(BASE_OBJECT *psObj, BASE_OBJECT **ppsTarget, int weapon_slot
 				/* Check that it is a valid target */
 				if (psCurr->type != OBJ_FEATURE && !psCurr->died
 				    && !aiCheckAlliances(psCurr->player, psObj->player)
-				    && validTarget(psObj, psCurr, weapon_slot) && psCurr->visible[psObj->player] == uint8_t_MAX
+				    && validTarget(psObj, psCurr, weapon_slot) && psCurr->visible[psObj->player] == std::numeric_limits<uint8_t>::max()
 				    && aiStructHasRange((STRUCTURE *)psObj, psCurr, weapon_slot))
 				{
 					int newTargetValue = targetAttackWeight(psCurr, psObj, weapon_slot);
@@ -980,7 +980,7 @@ bool aiChooseSensorTarget(BASE_OBJECT *psObj, BASE_OBJECT **ppsTarget)
 	else	// structure
 	{
 		BASE_OBJECT    *psTemp = NULL;
-		int		tarDist = int32_t_MAX;
+		int		tarDist = std::numeric_limits<int32_t>::max();
 
 		static GridList gridList;  // static to avoid allocations.
 		gridList = gridStartIterate(psObj->pos.x, psObj->pos.y, objSensorRange(psObj));
@@ -997,7 +997,7 @@ bool aiChooseSensorTarget(BASE_OBJECT *psObj, BASE_OBJECT **ppsTarget)
 					const int ydiff = psCurr->pos.y - psObj->pos.y;
 					const unsigned int distSq = xdiff * xdiff + ydiff * ydiff;
 
-					if (distSq < radSquared && psCurr->visible[psObj->player] == uint8_t_MAX && distSq < tarDist)
+					if (distSq < radSquared && psCurr->visible[psObj->player] == std::numeric_limits<uint8_t>::max() && distSq < tarDist)
 					{
 						psTemp = psCurr;
 						tarDist = distSq;

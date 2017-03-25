@@ -136,7 +136,7 @@ uint32_t addSpotter(int x, int y, int player, int radius, bool radar, uint32_t e
 		MAPTILE *psTile = mapTile(mapX, mapY);
 		psTile->tileExploredBits |= alliancebits[player];
 		uint8_t *visionType = (!radar) ? psTile->watchers : psTile->sensors;
-		if (visionType[player] < uint8_t_MAX)
+		if (visionType[player] < std::numeric_limits<uint8_t>::max())
 		{
 			TILEPOS tilePos = {uint8_t(mapX), uint8_t(mapY), uint8_t(radar)};
 			visionType[player]++;          // we observe this tile
@@ -192,7 +192,7 @@ static void updateSpotters()
 			BASE_OBJECT *psObj = *gi;
 
 			// Tell system that this side can see this object
-			setSeenBy(psObj, psSpot->player, uint8_t_MAX);
+			setSeenBy(psObj, psSpot->player, std::numeric_limits<uint8_t>::max());
 		}
 	}
 }
@@ -224,7 +224,7 @@ static inline void visMarkTile(const BASE_OBJECT *psObj, int mapX, int mapY, MAP
 	const bool inRange = (distSq < 16);
 	uint8_t *visionType = inRange ? psTile->watchers : psTile->sensors;
 
-	if (visionType[rayPlayer] < uint8_t_MAX && *lastRecordTilePos < MAX_SEEN_TILES)
+	if (visionType[rayPlayer] < std::numeric_limits<uint8_t>::max() && *lastRecordTilePos < MAX_SEEN_TILES)
 	{
 		TILEPOS tilePos = {uint8_t(mapX), uint8_t(mapY), uint8_t(inRange)};
 
@@ -443,7 +443,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 			if (psDroid->order.psObj == psTarget && cbSensorDroid(psDroid))
 			{
 				// if it is targetted by a counter battery sensor, it is seen
-				return uint8_t_MAX;
+				return std::numeric_limits<uint8_t>::max();
 			}
 			break;
 		}
@@ -474,7 +474,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 			{
 				// if a unit is targetted by a counter battery sensor
 				// it is automatically seen
-				return uint8_t_MAX;
+				return std::numeric_limits<uint8_t>::max();
 			}
 			break;
 		}
@@ -488,7 +488,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 	int dist = iHypot((psTarget->pos - psViewer->pos).xy);
 	if (dist == 0)
 	{
-		return uint8_t_MAX;	// Should never be on top of each other, but ...
+		return std::numeric_limits<uint8_t>::max();	// Should never be on top of each other, but ...
 	}
 
 	MAPTILE *psTile = mapTile(map_coord(psTarget->pos.x), map_coord(psTarget->pos.y));
@@ -499,22 +499,22 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 	     || (psViewer->type == OBJ_DROID && isVtolDroid((DROID *)psViewer)))
 	    && dist < range)
 	{
-		return uint8_t_MAX;
+		return std::numeric_limits<uint8_t>::max();
 	}
 	// Show objects hidden by ECM jamming with radar blips
 	else if (psTile->watchers[psViewer->player] == 0 && psTile->sensors[psViewer->player] > 0 && jammed)
 	{
-		return uint8_t_MAX / 2;
+		return std::numeric_limits<uint8_t>::max() / 2;
 	}
 	// Show objects that are seen directly or with unjammed sensors
 	else if (psTile->watchers[psViewer->player] > 0 || (psTile->sensors[psViewer->player] > 0 && !jammed))
 	{
-		return uint8_t_MAX;
+		return std::numeric_limits<uint8_t>::max();
 	}
 	// Show detected sensors as radar blips
 	else if (objRadarDetector(psViewer) && objActiveRadar(psTarget) && dist < range * 10)
 	{
-		return uint8_t_MAX / 2;
+		return std::numeric_limits<uint8_t>::max() / 2;
 	}
 	// else not seen
 	return 0;
@@ -565,7 +565,7 @@ bool hasSharedVision(unsigned viewer, unsigned ally)
 	return viewer == ally || (bMultiPlayer && alliancesSharedVision(game.alliance) && aiCheckAlliances(viewer, ally));
 }
 
-static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= uint8_t_MAX*/)
+static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= std::numeric_limits<uint8_t>::max()*/)
 {
 	//forward out vision to our allies
 	int ally;
@@ -578,7 +578,7 @@ static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= uint8_t_M
 	}
 }
 
-static void setSeenByInstantly(BASE_OBJECT *psObj, unsigned viewer, int val /*= uint8_t_MAX*/)
+static void setSeenByInstantly(BASE_OBJECT *psObj, unsigned viewer, int val /*= std::numeric_limits<uint8_t>::max()*/)
 {
 	//forward out vision to our allies
 	int ally;
@@ -598,7 +598,7 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	if (psObj->type != OBJ_FEATURE && objSensorRange(psObj) > 0)
 	{
 		// one can trivially see oneself
-		setSeenBy(psObj, psObj->player, uint8_t_MAX);
+		setSeenBy(psObj, psObj->player, std::numeric_limits<uint8_t>::max());
 	}
 
 	// if a player has a SAT_UPLINK structure, or has godMode enabled,
@@ -607,7 +607,7 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	{
 		if (getSatUplinkExists(viewer) || (viewer == selectedPlayer && godMode))
 		{
-			setSeenBy(psObj, viewer, uint8_t_MAX);
+			setSeenBy(psObj, viewer, std::numeric_limits<uint8_t>::max());
 		}
 	}
 
@@ -620,14 +620,14 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	// You have been warned!!
 	if (psStruct != NULL && (structCBSensor(psStruct) || structVTOLCBSensor(psStruct)) && psStruct->psTarget[0] != NULL)
 	{
-		setSeenByInstantly(psStruct->psTarget[0], psObj->player, uint8_t_MAX);
+		setSeenByInstantly(psStruct->psTarget[0], psObj->player, std::numeric_limits<uint8_t>::max());
 	}
 	DROID *psDroid = castDroid(psObj);
 	if (psDroid != NULL && psDroid->action == DACTION_OBSERVE && cbSensorDroid(psDroid))
 	{
 		// Anyone commenting this out will get a knee capping from John.
 		// You have been warned!!
-		setSeenByInstantly(psDroid->psActionTarget[0], psObj->player, uint8_t_MAX);
+		setSeenByInstantly(psDroid->psActionTarget[0], psObj->player, std::numeric_limits<uint8_t>::max());
 	}
 }
 
@@ -681,7 +681,7 @@ static void processVisibilityLevel(BASE_OBJECT *psObj)
 		if (player == psObj->player)
 		{
 			// owner can always see it fully
-			psObj->visible[player] = uint8_t_MAX;
+			psObj->visible[player] = std::numeric_limits<uint8_t>::max();
 			continue;
 		}
 
@@ -779,11 +779,11 @@ void processVisibility()
 		{
 			for (BASE_OBJECT *psTarget = apsSensorList[0]; psTarget != NULL; psTarget = psTarget->psNextFunc)
 			{
-				if (psObj != psTarget && psTarget->visible[psObj->player] < uint8_t_MAX / 2
+				if (psObj != psTarget && psTarget->visible[psObj->player] < std::numeric_limits<uint8_t>::max() / 2
 				    && objActiveRadar(psTarget)
 				    && iHypot((psTarget->pos - psObj->pos).xy) < objSensorRange(psObj) * 10)
 				{
-					psTarget->visible[psObj->player] = uint8_t_MAX / 2;
+					psTarget->visible[psObj->player] = std::numeric_limits<uint8_t>::max() / 2;
 				}
 			}
 		}

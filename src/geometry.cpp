@@ -53,7 +53,7 @@ DROID	*getNearestDroid(uint32_t x, uint32_t y, bool bSelected)
 	uint32_t	bestSoFar;
 
 	/* Go thru' all the droids  - how often have we seen this - a MACRO maybe? */
-	for (psDroid = apsDroidLists[selectedPlayer], psBestUnit = NULL, bestSoFar = uint32_t_MAX;
+	for (psDroid = apsDroidLists[selectedPlayer], psBestUnit = NULL, bestSoFar = std::numeric_limits<uint32_t>::max();
 	     psDroid; psDroid = psDroid->psNext)
 	{
 		if (!isVtolDroid(psDroid))

@@ -102,7 +102,7 @@ bool combFire(WEAPON *psWeap, BASE_OBJECT *psAttacker, BASE_OBJECT *psTarget, in
 		return false;
 	}
 
-	if (psTarget->visible[psAttacker->player] != uint8_t_MAX)
+	if (psTarget->visible[psAttacker->player] != std::numeric_limits<uint8_t>::max())
 	{
 		// Can't see it - can't hit it
 		objTrace(psAttacker->id, "combFire(%u[%s]->%u): Object has no indirect sight of target", psAttacker->id, getName(psStats), psTarget->id);

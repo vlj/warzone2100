@@ -62,7 +62,7 @@ void clustInitialise(void)
 	STRUCTURE	*psStruct;
 	int32_t		player;
 
-	ASSERT(CLUSTER_MAX <= uint8_t_MAX,
+	ASSERT(CLUSTER_MAX <= std::numeric_limits<uint8_t>::max(),
 	       "clustInitialse: invalid CLUSTER_MAX, this is a BUILD error");
 
 	memset(aClusterMap, 0, sizeof(uint8_t) * CLUSTER_MAX);

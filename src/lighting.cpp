@@ -358,7 +358,7 @@ void	calcDroidIllumination(DROID *psDroid)
 	/* Are we at the edge, or even on the map */
 	if (!tileOnMap(tileX, tileY))
 	{
-		psDroid->illumination = uint8_t_MAX;
+		psDroid->illumination = std::numeric_limits<uint8_t>::max();
 		return;
 	}
 	else if (tileX <= 1 || tileX >= mapWidth - 2 || tileY <= 1 || tileY >= mapHeight - 2)

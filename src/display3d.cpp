@@ -2006,7 +2006,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 			pie_TRANSLATE(0, 0, recoilValue);
 
 			pie_Draw3DShape(weaponImd[i], 0, colour, buildingBrightness, pieFlag, pieFlagData);
-			if (psStructure->status == SS_BUILT && psStructure->visible[selectedPlayer] > (uint8_t_MAX / 2))
+			if (psStructure->status == SS_BUILT && psStructure->visible[selectedPlayer] > (std::numeric_limits<uint8_t>::max() / 2))
 			{
 				if (psStructure->pStructureType->type == REF_REPAIR_FACILITY)
 				{
@@ -2074,7 +2074,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 					}
 					pie_MatRotX(rot.pitch);
 					// draw the muzzle flash?
-					if (psStructure->visible[selectedPlayer] > uint8_t_MAX / 2)
+					if (psStructure->visible[selectedPlayer] > std::numeric_limits<uint8_t>::max() / 2)
 					{
 						// animate for the duration of the flash only
 						// assume no clan colours for muzzle effects
@@ -2135,7 +2135,7 @@ void renderStructure(STRUCTURE *psStructure)
 		return;
 	}
 	// If the structure is not truly visible, but we know there is something there, we will instead draw a blip
-	if (psStructure->visible[selectedPlayer] < uint8_t_MAX && psStructure->visible[selectedPlayer] > 0)
+	if (psStructure->visible[selectedPlayer] < std::numeric_limits<uint8_t>::max() && psStructure->visible[selectedPlayer] > 0)
 	{
 		pie_MatBegin(true);
 		pie_TRANSLATE(dv);
@@ -2984,7 +2984,7 @@ static void	drawDroidSelections(void)
 			if (i != selectedPlayer && !psDroid->died && psDroid->sDisplay.frameNumber == currentGameFrame)
 			{
 				/* If it's selected */
-				if ((psDroid->flags & BASEFLAG_TARGETED) && psDroid->visible[selectedPlayer] == uint8_t_MAX)
+				if ((psDroid->flags & BASEFLAG_TARGETED) && psDroid->visible[selectedPlayer] == std::numeric_limits<uint8_t>::max())
 				{
 					scrX = psDroid->sDisplay.screenX;
 					scrY = psDroid->sDisplay.screenY;
@@ -3017,7 +3017,7 @@ static void	drawDroidSelections(void)
 /// Draw the number of the group the droid is in next to the droid
 static void	drawDroidGroupNumber(DROID *psDroid)
 {
-	uint16_t id = uint16_t_MAX;
+	uint16_t id = std::numeric_limits<uint16_t>::max();
 
 	switch (psDroid->group)
 	{
@@ -3055,7 +3055,7 @@ static void	drawDroidGroupNumber(DROID *psDroid)
 		break;
 	}
 
-	if (id != uint16_t_MAX)
+	if (id != std::numeric_limits<uint16_t>::max())
 	{
 		int xShift = psDroid->sDisplay.screenR + GN_X_OFFSET;
 		int yShift = psDroid->sDisplay.screenR;
@@ -3074,10 +3074,10 @@ static void	drawDroidCmndNo(DROID *psDroid)
 	uint16_t	id;
 	bool	bDraw = true;
 
-	id = uint16_t_MAX;
+	id = std::numeric_limits<uint16_t>::max();
 
 	id2 = IMAGE_GN_STAR;
-	index = int32_t_MAX;
+	index = std::numeric_limits<int32_t>::max();
 	if (psDroid->droidType == DROID_COMMAND)
 	{
 		index = cmdDroidGetIndex(psDroid);
@@ -3673,7 +3673,7 @@ uint32_t  getDroidRankGraphic(DROID *psDroid)
 {
 	uint32_t gfxId;
 	/* Not found yet */
-	gfxId = uint32_t_MAX;
+	gfxId = std::numeric_limits<uint32_t>::max();
 
 	/* Establish the numerical value of the droid's rank */
 	switch (getDroidLevel(psDroid))
@@ -3720,7 +3720,7 @@ static void	drawDroidRank(DROID *psDroid)
 	uint32_t	gfxId = getDroidRankGraphic(psDroid);
 
 	/* Did we get one? - We should have... */
-	if (gfxId != uint32_t_MAX)
+	if (gfxId != std::numeric_limits<uint32_t>::max())
 	{
 		/* Render the rank graphic at the correct location */ // remove hardcoded numbers?!
 		iV_DrawImage(IntImages, (uint16_t)gfxId,
@@ -3753,7 +3753,7 @@ static	void	doConstructionLines(void)
 		for (psDroid = apsDroidLists[i]; psDroid; psDroid = psDroid->psNext)
 		{
 			if (clipXY(psDroid->pos.x, psDroid->pos.y)
-			    && psDroid->visible[selectedPlayer] == uint8_t_MAX
+			    && psDroid->visible[selectedPlayer] == std::numeric_limits<uint8_t>::max()
 			    && psDroid->sMove.Status != MOVESHUFFLE)
 			{
 				if (psDroid->action == DACTION_BUILD)

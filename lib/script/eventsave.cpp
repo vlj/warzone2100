@@ -65,7 +65,7 @@ static bool eventSaveContext(WzConfig &ini)
 			{
 				INTERP_VAL *psVal = psCVals->asVals + i;
 
-				ASSERT(psVal->type < int16_t_MAX, "Variable type number %d too big", (int)psVal->type);
+				ASSERT(psVal->type < std::numeric_limits<int16_t>::max(), "Variable type number %d too big", (int)psVal->type);
 
 				ini.beginGroup(QString::number(countVar));
 				ini.setValue("type", QVariant(psVal->type));

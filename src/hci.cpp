@@ -5041,7 +5041,7 @@ DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGr
 	{
 		if ((psDroid->droidType == droidType
 		     || (droidType == DROID_ANY && !isTransporter(psDroid)))
-		    && (psDroid->group == uint8_t_MAX || AllowGroup))
+		    && (psDroid->group == std::numeric_limits<uint8_t>::max() || AllowGroup))
 		{
 			if (psDroid != CurrentDroid)
 			{
@@ -5061,7 +5061,7 @@ DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGr
 		{
 			if ((psDroid->droidType == droidType ||
 			     ((droidType == DROID_ANY) && !isTransporter(psDroid))) &&
-			    ((psDroid->group == uint8_t_MAX) || AllowGroup))
+			    ((psDroid->group == std::numeric_limits<uint8_t>::max()) || AllowGroup))
 			{
 				if (psDroid != CurrentDroid)
 				{

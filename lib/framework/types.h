@@ -34,22 +34,7 @@
 typedef SSIZE_T ssize_t;
 #endif
 
-#ifndef INT8_MAX
-#error inttypes.h and stdint.h defines missing! Make sure that __STDC_FORMAT_MACROS and __STDC_LIMIT_MACROS are defined when compiling C++ files.
-#endif
-
 #include <limits.h>
 #include <ctype.h>
-
-/* Numeric size defines */
-#define uint8_t_MAX	UINT8_MAX
-#define int8_t_MIN	INT8_MIN
-#define int8_t_MAX	INT8_MAX
-#define uint16_t_MAX	UINT16_MAX
-#define int16_t_MIN	INT16_MIN
-#define int16_t_MAX	INT16_MAX
-#define uint32_t_MAX	UINT32_MAX
-#define int32_t_MIN	INT32_MIN
-#define int32_t_MAX	INT32_MAX
 
 #endif // __INCLUDED_LIB_FRAMEWORK_TYPES_H__

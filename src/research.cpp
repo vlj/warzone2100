@@ -219,12 +219,12 @@ bool loadResearch(QString filename)
 
 		//set the researchPoints
 		unsigned int resPoints = ini.value("researchPoints", 0).toUInt();
-		ASSERT_OR_RETURN(false, resPoints <= uint16_t_MAX, "Research Points too high for research topic - '%s' ", getName(&research));
+		ASSERT_OR_RETURN(false, resPoints <= std::numeric_limits<uint16_t>::max(), "Research Points too high for research topic - '%s' ", getName(&research));
 		research.researchPoints = resPoints;
 
 		//set the research power
 		unsigned int resPower = ini.value("researchPower", 0).toUInt();
-		ASSERT_OR_RETURN(false, resPower <= uint16_t_MAX, "Research Power too high for research topic - '%s' ", getName(&research));
+		ASSERT_OR_RETURN(false, resPower <= std::numeric_limits<uint16_t>::max(), "Research Power too high for research topic - '%s' ", getName(&research));
 		research.researchPower = resPower;
 
 		//rememeber research pre-requisites for futher checking

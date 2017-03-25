@@ -1481,7 +1481,7 @@ bool scrBuildDroid(void)
 	ASSERT_OR_RETURN(false, psFactory != NULL, "NULL factory object");
 	ASSERT_OR_RETURN(false, psTemplate != NULL, "NULL template object sent to %s", objInfo((BASE_OBJECT *)psFactory));
 	ASSERT_OR_RETURN(false, player < MAX_PLAYERS, "Invalid player number");
-	ASSERT_OR_RETURN(false, productionRun <= uint8_t_MAX, "Production run too high");
+	ASSERT_OR_RETURN(false, productionRun <= std::numeric_limits<uint8_t>::max(), "Production run too high");
 	ASSERT_OR_RETURN(false, (psFactory->pStructureType->type == REF_FACTORY ||
 	                         psFactory->pStructureType->type == REF_CYBORG_FACTORY ||
 	                         psFactory->pStructureType->type == REF_VTOL_FACTORY),
@@ -4164,9 +4164,9 @@ bool scrSetLandingZone(void)
 		return false;
 	}
 	//check won't overflow!
-	if (x1 > uint8_t_MAX || y1 > uint8_t_MAX || x2 > uint8_t_MAX || y2 > uint8_t_MAX)
+	if (x1 > std::numeric_limits<uint8_t>::max() || y1 > std::numeric_limits<uint8_t>::max() || x2 > std::numeric_limits<uint8_t>::max() || y2 > std::numeric_limits<uint8_t>::max())
 	{
-		ASSERT(false, "one coord is greater than %d", uint8_t_MAX);
+		ASSERT(false, "one coord is greater than %d", std::numeric_limits<uint8_t>::max());
 		return false;
 	}
 
@@ -4208,9 +4208,9 @@ bool scrSetLimboLanding(void)
 		return false;
 	}
 	//check won't overflow!
-	if (x1 > uint8_t_MAX || y1 > uint8_t_MAX || x2 > uint8_t_MAX || y2 > uint8_t_MAX)
+	if (x1 > std::numeric_limits<uint8_t>::max() || y1 > std::numeric_limits<uint8_t>::max() || x2 > std::numeric_limits<uint8_t>::max() || y2 > std::numeric_limits<uint8_t>::max())
 	{
-		ASSERT(false, "one coord is greater than %d", uint8_t_MAX);
+		ASSERT(false, "one coord is greater than %d", std::numeric_limits<uint8_t>::max());
 		return false;
 	}
 
@@ -4271,9 +4271,9 @@ bool scrSetNoGoArea(void)
 		return false;
 	}
 	//check won't overflow!
-	if (x1 > uint8_t_MAX || y1 > uint8_t_MAX || x2 > uint8_t_MAX || y2 > uint8_t_MAX)
+	if (x1 > std::numeric_limits<uint8_t>::max() || y1 > std::numeric_limits<uint8_t>::max() || x2 > std::numeric_limits<uint8_t>::max() || y2 > std::numeric_limits<uint8_t>::max())
 	{
-		ASSERT(false, "one coord is greater than %d", uint8_t_MAX);
+		ASSERT(false, "one coord is greater than %d", std::numeric_limits<uint8_t>::max());
 		return false;
 	}
 
@@ -4701,7 +4701,7 @@ bool scrGetNearestGateway(void)
 		return (false);
 	}
 
-	nearestSoFar = uint32_t_MAX;
+	nearestSoFar = std::numeric_limits<uint32_t>::max();
 	retX = retY = -1;
 	success = false;
 	for (auto psGateway : gwGetGateways())

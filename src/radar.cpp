@@ -624,16 +624,16 @@ static void setViewingWindow()
 	case 1:
 	case 2:
 		// white
-		colour.byte.r = uint8_t_MAX;
-		colour.byte.g = uint8_t_MAX;
-		colour.byte.b = uint8_t_MAX;
+		colour.byte.r = std::numeric_limits<uint8_t>::max();
+		colour.byte.g = std::numeric_limits<uint8_t>::max();
+		colour.byte.b = std::numeric_limits<uint8_t>::max();
 		colour.byte.a = 0x3f;
 		break;
 	case 3:
 		// greenish
 		colour.byte.r = 0x3f;
 		colour.byte.a = 0x3f;
-		colour.byte.g = uint8_t_MAX;
+		colour.byte.g = std::numeric_limits<uint8_t>::max();
 		colour.byte.b = 0x3f;
 	default:
 		// black

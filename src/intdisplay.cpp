@@ -2036,7 +2036,7 @@ void IntTransportButton::display(int xOffset, int yOffset)
 	{
 		// Add the experience level for each droid
 		unsigned gfxId = getDroidRankGraphic(psDroid);
-		if (gfxId != uint32_t_MAX)
+		if (gfxId != std::numeric_limits<uint32_t>::max())
 		{
 			/* Render the rank graphic at the correct location */
 			iV_DrawImage(IntImages, gfxId, xOffset + x() + 50, yOffset + y() + 30);

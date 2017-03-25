@@ -3076,7 +3076,7 @@ static void processMultiopWidgets(uint32_t id)
 
 		disableMultiButs();
 
-		addPlayerBox(!ingame.bHostSetup || bHosted);	//to make sure host can't skip player selection menu (sets game.skdiff to uint8_t_MAX for humans)
+		addPlayerBox(!ingame.bHostSetup || bHosted);	//to make sure host can't skip player selection menu (sets game.skdiff to std::numeric_limits<uint8_t>::max() for humans)
 		break;
 
 	case MULTIOP_CHATEDIT:
@@ -4305,7 +4305,7 @@ void displayPlayer(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 				}
 			}
 		}
-		game.skDiff[j] = uint8_t_MAX;	// set AI difficulty to 0xFF (i.e. not an AI)
+		game.skDiff[j] = std::numeric_limits<uint8_t>::max();	// set AI difficulty to 0xFF (i.e. not an AI)
 	}
 	else	// AI
 	{

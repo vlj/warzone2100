@@ -334,7 +334,7 @@ DROID::DROID(uint32_t id, unsigned player)
 	listSize = 0;
 	listPendingBegin = 0;
 	iAudioID = NO_SOUND;
-	group = uint8_t_MAX;
+	group = std::numeric_limits<uint8_t>::max();
 	psBaseStruct = NULL;
 	sDisplay.frameNumber = 0;	// it was never drawn before
 	for (unsigned vPlayer = 0; vPlayer < MAX_PLAYERS; ++vPlayer)
@@ -348,7 +348,7 @@ DROID::DROID(uint32_t id, unsigned player)
 	sDisplay.screenY = OFF_SCREEN;
 	sDisplay.screenR = 0;
 	sDisplay.imd = NULL;
-	illumination = uint8_t_MAX;
+	illumination = std::numeric_limits<uint8_t>::max();
 	resistance = ACTION_START_TIME;	// init the resistance to indicate no EW performed on this droid
 	lastFrustratedTime = 0;		// make sure we do not start the game frustrated
 }
@@ -400,7 +400,7 @@ void recycleDroid(DROID *psDroid)
 
 	// store the droids kills
 	numKills = psDroid->experience / 65536;
-	minKills = uint16_t_MAX;
+	minKills = std::numeric_limits<uint16_t>::max();
 	storeIndex = 0;
 	for (i = 0; i < MAX_RECYCLED_DROIDS; i++)
 	{
@@ -1836,7 +1836,7 @@ void assignDroidsToGroup(uint32_t	playerNumber, uint32_t groupNumber)
 	bool	bAtLeastOne = false;
 	FLAG_POSITION	*psFlagPos;
 
-	if (groupNumber < uint8_t_MAX)
+	if (groupNumber < std::numeric_limits<uint8_t>::max())
 	{
 		/* Run through all the droids */
 		for (psDroid = apsDroidLists[playerNumber]; psDroid != NULL; psDroid = psDroid->psNext)
@@ -1844,7 +1844,7 @@ void assignDroidsToGroup(uint32_t	playerNumber, uint32_t groupNumber)
 			/* Clear out the old ones */
 			if (psDroid->group == groupNumber)
 			{
-				psDroid->group = uint8_t_MAX;
+				psDroid->group = std::numeric_limits<uint8_t>::max();
 			}
 
 			/* Only assign the currently selected ones */
@@ -1876,7 +1876,7 @@ bool activateGroupAndMove(uint32_t playerNumber, uint32_t groupNumber)
 	bool selected = false;
 	FLAG_POSITION	*psFlagPos;
 
-	if (groupNumber < uint8_t_MAX)
+	if (groupNumber < std::numeric_limits<uint8_t>::max())
 	{
 		for (psDroid = apsDroidLists[playerNumber]; psDroid != NULL; psDroid = psDroid->psNext)
 		{
@@ -1932,7 +1932,7 @@ bool activateGroup(uint32_t playerNumber, uint32_t groupNumber)
 	bool selected = false;
 	FLAG_POSITION	*psFlagPos;
 
-	if (groupNumber < uint8_t_MAX)
+	if (groupNumber < std::numeric_limits<uint8_t>::max())
 	{
 		for (psDroid = apsDroidLists[playerNumber]; psDroid; psDroid = psDroid->psNext)
 		{
@@ -2908,7 +2908,7 @@ void updateVtolAttackRun(DROID *psDroid , int weapon_slot)
 					psDroid->asWeaps[weapon_slot].ammo = 0;
 				}
 				//quick check doesn't go over limit
-				ASSERT(psDroid->asWeaps[weapon_slot].usedAmmo < uint16_t_MAX, "too many attack runs");
+				ASSERT(psDroid->asWeaps[weapon_slot].usedAmmo < std::numeric_limits<uint16_t>::max(), "too many attack runs");
 			}
 		}
 	}

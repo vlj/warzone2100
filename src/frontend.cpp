@@ -284,7 +284,7 @@ bool runTutorialMenu(void)
 	{
 	case FRONTEND_TUTORIAL:
 		NetPlay.players[0].allocated = true;
-		game.skDiff[0] = uint8_t_MAX;
+		game.skDiff[0] = std::numeric_limits<uint8_t>::max();
 		sstrcpy(aLevelName, TUTORIAL_LEVEL);
 		changeTitleMode(STARTGAME);
 		break;
@@ -292,7 +292,7 @@ bool runTutorialMenu(void)
 	case FRONTEND_FASTPLAY:
 		NETinit(true);
 		NetPlay.players[0].allocated = true;
-		game.skDiff[0] = uint8_t_MAX;
+		game.skDiff[0] = std::numeric_limits<uint8_t>::max();
 		sstrcpy(aLevelName, "FASTPLAY");
 		changeTitleMode(STARTGAME);
 		break;
@@ -446,7 +446,7 @@ void SPinit()
 	NET_InitPlayers();
 	NetPlay.players[0].allocated = true;
 	NetPlay.players[0].autoGame = false;
-	game.skDiff[0] = uint8_t_MAX;
+	game.skDiff[0] = std::numeric_limits<uint8_t>::max();
 	game.maxPlayers = MAX_PLAYERS -1;	// Currently, 0 - 10 for a total of MAX_PLAYERS
 	// make sure we have a valid color choice for our SP game. Valid values are 0, 4-7
 	playercolor = war_GetSPcolor();

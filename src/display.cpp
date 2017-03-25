@@ -2504,7 +2504,7 @@ static uint8_t DroidSelectionWeights[NUM_DROID_WEIGHTS] =
 static SELECTION_TYPE	establishSelection(uint32_t selectedPlayer)
 {
 	DROID *psDominant = NULL;
-	uint8_t CurrWeight = uint8_t_MAX;
+	uint8_t CurrWeight = std::numeric_limits<uint8_t>::max();
 	SELECTION_TYPE selectionClass = SC_INVALID;
 
 	for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid; psDroid = psDroid->psNext)

@@ -99,7 +99,7 @@ BASE_OBJECT::BASE_OBJECT(OBJECT_TYPE type, uint32_t id, unsigned player)
 	, numWatchedTiles(0)
 	, lastEmission(0)
 	, lastHitWeapon(WSC_NUM_WEAPON_SUBCLASSES)  // No such weapon.
-	, timeLastHit(uint32_t_MAX)
+	, timeLastHit(std::numeric_limits<uint32_t>::max())
 	, body(0)
 	, periodicalDamageStart(0)
 	, periodicalDamage(0)

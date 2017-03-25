@@ -28,7 +28,7 @@
 #include "structuredef.h"
 
 // maximum number of clusters in a game
-#define CLUSTER_MAX		uint8_t_MAX
+#define CLUSTER_MAX		std::numeric_limits<uint8_t>::max()
 
 // cluster information flags
 #define CLUSTER_PLAYER_MASK		0x07

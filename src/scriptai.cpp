@@ -1623,9 +1623,9 @@ bool scrSkDifficultyModifier(void)
 	}
 
 	/* Skip cheats if difficulty modifier slider is set to minimum or this is a true multiplayer game.
-	 * (0 - player disabled, 20 - max value, uint8_t_MAX - autogame)
+	 * (0 - player disabled, 20 - max value, std::numeric_limits<uint8_t>::max() - autogame)
 	 */
-	if (game.skDiff[player] <= 1 || game.skDiff[player] == uint8_t_MAX || NetPlay.bComms)
+	if (game.skDiff[player] <= 1 || game.skDiff[player] == std::numeric_limits<uint8_t>::max() || NetPlay.bComms)
 	{
 		return true;
 	}
@@ -1707,7 +1707,7 @@ static bool defenseLocation(bool variantB)
 	y = map_coord(*pY);
 
 	// go down the gateways, find the nearest gateway with >1 empty tiles
-	nearestSoFar = uint32_t_MAX;
+	nearestSoFar = std::numeric_limits<uint32_t>::max();
 	psChosenGate = NULL;
 	for (auto psGate : gwGetGateways())
 	{

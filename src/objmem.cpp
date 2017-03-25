@@ -963,7 +963,7 @@ uint32_t getRepairIdFromFlag(FLAG_POSITION *psFlag)
 	}
 	ASSERT(!"unable to find repair id for FLAG_POSITION", "getRepairIdFromFlag() failed");
 
-	return uint32_t_MAX;
+	return std::numeric_limits<uint32_t>::max();
 }
 
 

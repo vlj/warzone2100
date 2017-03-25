@@ -1087,7 +1087,7 @@ bool loadPropulsionTypes(const char *pFileName)
 
 		//don't care about this anymore! AB FRIDAY 13/11/98
 		//want it back again! AB 27/11/98
-		if (multiplier > uint16_t_MAX)
+		if (multiplier > std::numeric_limits<uint16_t>::max())
 		{
 			ASSERT(false, "loadPropulsionTypes: power Ratio multiplier too high");
 			//set to a default value since not life threatening!

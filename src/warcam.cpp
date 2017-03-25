@@ -180,7 +180,7 @@ static void processLeaderSelection(void)
 	}
 
 	bSuccess = false;
-	bestSoFar = uint32_t_MAX;
+	bestSoFar = std::numeric_limits<uint32_t>::max();
 
 	switch (leaderClass)
 	{

@@ -1221,7 +1221,7 @@ static void orderCmdGroupBase(DROID_GROUP *psGroup, DROID_ORDER_DATA *psData)
 	{
 		// picking up an artifact - only need to send one unit
 		psChosen = NULL;
-		mindist = int32_t_MAX;
+		mindist = std::numeric_limits<int32_t>::max();
 		for (psCurr = psGroup->psList; psCurr; psCurr = psCurr->psGrpNext)
 		{
 			currdist = objPosDiffSq(psCurr->pos, psData->psObj->pos);
@@ -3142,7 +3142,7 @@ void secondaryCheckDamageLevel(DROID *psDroid)
 	{
 		if (!isVtolDroid(psDroid))
 		{
-			psDroid->group = uint8_t_MAX;
+			psDroid->group = std::numeric_limits<uint8_t>::max();
 		}
 
 		/* set return to repair if not on hold */
@@ -3417,7 +3417,7 @@ bool secondarySetState(DROID *psDroid, SECONDARY_ORDER sec, SECONDARY_STATE Stat
 			}
 			CurrState &= ~(DSS_RTL_MASK | DSS_RECYCLE_MASK);
 			CurrState |= DSS_RECYCLE_SET;
-			psDroid->group = uint8_t_MAX;
+			psDroid->group = std::numeric_limits<uint8_t>::max();
 			if (psDroid->psGroup != NULL)
 			{
 				if (psDroid->droidType == DROID_COMMAND)

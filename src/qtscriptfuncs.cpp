@@ -1272,7 +1272,7 @@ static QScriptValue js_enumBlips(QScriptContext *context, QScriptEngine *engine)
 	SCRIPT_ASSERT_PLAYER(context, player);
 	for (BASE_OBJECT *psSensor = apsSensorList[0]; psSensor; psSensor = psSensor->psNextFunc)
 	{
-		if (psSensor->visible[player] > 0 && psSensor->visible[player] < uint8_t_MAX)
+		if (psSensor->visible[player] > 0 && psSensor->visible[player] < std::numeric_limits<uint8_t>::max())
 		{
 			matches.push_back(psSensor->pos);
 		}

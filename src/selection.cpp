@@ -304,7 +304,7 @@ void selNextUnassignedUnit()
 	for (DROID *psCurr = apsDroidLists[selectedPlayer]; psCurr && !psResult; psCurr = psCurr->psNext)
 	{
 		/* Only look at unselected ones */
-		if (psCurr->group == uint8_t_MAX)
+		if (psCurr->group == std::numeric_limits<uint8_t>::max())
 		{
 			/* Keep a record of first one */
 			if (!psFirst)

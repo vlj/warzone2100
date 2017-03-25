@@ -134,12 +134,12 @@ extern PIELIGHT		pal_GetTeamColour(int team);
 
 static inline PIELIGHT WZ_DECL_PURE pal_Colour(uint8_t r, uint8_t g, uint8_t b)
 {
-	return { r, g, b, uint8_t_MAX };
+	return { r, g, b, std::numeric_limits<uint8_t>::max() };
 }
 
 static inline PIELIGHT WZ_DECL_PURE pal_SetBrightness(uint8_t brightness)
 {
-	return { brightness, brightness, brightness, uint8_t_MAX };
+	return { brightness, brightness, brightness, std::numeric_limits<uint8_t>::max() };
 }
 
 static inline PIELIGHT WZ_DECL_PURE pal_RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a)

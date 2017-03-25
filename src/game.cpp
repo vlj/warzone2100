@@ -94,7 +94,7 @@
 #define MAX_SAVE_NAME_SIZE_V19	40
 #define MAX_SAVE_NAME_SIZE	60
 
-static const uint32_t NULL_ID = uint32_t_MAX;
+static const uint32_t NULL_ID = std::numeric_limits<uint32_t>::max();
 #define SAVEKEY_ONMISSION	0x100
 
 static uint32_t RemapPlayerNumber(uint32_t OldNumber);
@@ -1999,7 +1999,7 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 				NetPlay.players[i].ai = saveGameData.sNetPlay.players[i].ai;
 				NetPlay.players[i].difficulty = saveGameData.sNetPlay.players[i].difficulty;
 				sstrcpy(NetPlay.players[i].name, saveGameData.sNetPlay.players[i].name);
-				if (saveGameData.sGame.skDiff[i] == uint8_t_MAX || (game.type == CAMPAIGN && i == 0))
+				if (saveGameData.sGame.skDiff[i] == std::numeric_limits<uint8_t>::max() || (game.type == CAMPAIGN && i == 0))
 				{
 					NetPlay.players[i].allocated = true;
 				}
@@ -3765,7 +3765,7 @@ bool gameLoadV(PHYSFS_file *fileHandle, unsigned int version)
 			NetPlay.players[player].ai = saveGameData.sNetPlay.players[player].ai;
 			NetPlay.players[player].difficulty = saveGameData.sNetPlay.players[player].difficulty;
 			sstrcpy(NetPlay.players[player].name, saveGameData.sNetPlay.players[player].name);
-			if ((saveGameData.sGame.skDiff[player] == uint8_t_MAX || game.type == CAMPAIGN) && player == 0)
+			if ((saveGameData.sGame.skDiff[player] == std::numeric_limits<uint8_t>::max() || game.type == CAMPAIGN) && player == 0)
 			{
 				NetPlay.players[player].allocated = true;
 			}
@@ -4032,7 +4032,7 @@ static bool writeGameFile(const char *fileName, int32_t saveType)
 		// player 0 is always a human in campaign games
 		for (int i = 1; i < MAX_PLAYERS; i++)
 		{
-			if (saveGame.sGame.skDiff[i] == uint8_t_MAX)
+			if (saveGame.sGame.skDiff[i] == std::numeric_limits<uint8_t>::max())
 			{
 				ASSERT(!"savegame corruption!", "savegame corruption!");
 				debug(LOG_ERROR, "Savegame corruption detected, trying to salvage.  Please Report this issue @ wz2100.net");
@@ -4329,7 +4329,7 @@ static void loadSaveObject(WzConfig &ini, BASE_OBJECT *psObj)
 	psObj->periodicalDamageStart = ini.value("periodicalDamageStart", 0).toInt();
 	psObj->timeAnimationStarted = ini.value("timeAnimationStarted", 0).toInt();
 	psObj->animationEvent = ini.value("animationEvent", 0).toInt();
-	psObj->timeLastHit = ini.value("timeLastHit", uint32_t_MAX).toInt();
+	psObj->timeLastHit = ini.value("timeLastHit", std::numeric_limits<uint32_t>::max()).toInt();
 	psObj->lastEmission = ini.value("lastEmission", 0).toInt();
 	psObj->selected = ini.value("selected", false).toBool();
 	psObj->born = ini.value("born", 2).toInt();
@@ -4368,7 +4368,7 @@ static void writeSaveObject(WzConfig &ini, BASE_OBJECT *psObj)
 	{
 		ini.setValue("died", psObj->died);
 	}
-	if (psObj->timeLastHit != uint32_t_MAX)
+	if (psObj->timeLastHit != std::numeric_limits<uint32_t>::max())
 	{
 		ini.setValue("timeLastHit", psObj->timeLastHit);
 	}
@@ -4506,7 +4506,7 @@ static bool loadSaveDroid(const char *pFileName, DROID **ppsCurrentDroidLists)
 			}
 		}
 
-		psDroid->group = ini.value("group", uint8_t_MAX).toInt();
+		psDroid->group = ini.value("group", std::numeric_limits<uint8_t>::max()).toInt();
 		int aigroup = ini.value("aigroup", -1).toInt();
 		if (aigroup >= 0)
 		{
@@ -4638,7 +4638,7 @@ static bool writeDroid(WzConfig &ini, DROID *psCurr, bool onMission, int &counte
 	{
 		setIniDroidOrder(ini, "orderList/" + QString::number(i), psCurr->asOrderList[i]);
 	}
-	if (psCurr->timeLastHit != uint32_t_MAX)
+	if (psCurr->timeLastHit != std::numeric_limits<uint32_t>::max())
 	{
 		ini.setValue("timeLastHit", psCurr->timeLastHit);
 	}

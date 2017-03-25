@@ -21,7 +21,7 @@
 #ifndef __INCLUDED_LIB_EXCEPTIONHANDLER_DUMPINFO_H__
 #define __INCLUDED_LIB_EXCEPTIONHANDLER_DUMPINFO_H__
 
-#include "lib/framework/frame.h"
+#include "lib/framework/wzglobal.h"
 
 #if defined(WZ_OS_WIN)
 typedef HANDLE DumpFileHandle;

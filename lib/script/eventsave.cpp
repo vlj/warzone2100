@@ -38,7 +38,7 @@
 static bool eventSaveContext(WzConfig &ini)
 {
 	int numVars, numContext = 0;
-	UDWORD hashedName;
+	uint32_t hashedName;
 
 	// go through the context list
 	for (SCRIPT_CONTEXT *psCCont = psContList; psCCont != NULL; psCCont = psCCont->psNext)
@@ -65,7 +65,7 @@ static bool eventSaveContext(WzConfig &ini)
 			{
 				INTERP_VAL *psVal = psCVals->asVals + i;
 
-				ASSERT(psVal->type < SWORD_MAX, "Variable type number %d too big", (int)psVal->type);
+				ASSERT(psVal->type < int16_t_MAX, "Variable type number %d too big", (int)psVal->type);
 
 				ini.beginGroup(QString::number(countVar));
 				ini.setValue("type", QVariant(psVal->type));
@@ -132,10 +132,10 @@ static bool eventSaveContext(WzConfig &ini)
 // load the context information for the script system
 static bool eventLoadContext(WzConfig &ini)
 {
-	SDWORD				numVars, numContext;
+	int32_t				numVars, numContext;
 	SCRIPT_CONTEXT		*psCCont;
 	SCR_VAL_LOAD		loadFunc;
-	UDWORD				hashedName;
+	uint32_t				hashedName;
 	SCRIPT_CODE			*psCode;
 	CONTEXT_RELEASE			release;
 	INTERP_VAL			*psVal, data;
@@ -252,7 +252,7 @@ static bool eventLoadContext(WzConfig &ini)
 }
 
 // return the index of a context
-static bool eventGetContextIndex(SCRIPT_CONTEXT *psContext, SDWORD *pIndex)
+static bool eventGetContextIndex(SCRIPT_CONTEXT *psContext, int32_t *pIndex)
 {
 	int index = 0;
 
@@ -269,7 +269,7 @@ static bool eventGetContextIndex(SCRIPT_CONTEXT *psContext, SDWORD *pIndex)
 }
 
 // find a context from it's id number
-static bool eventFindContext(SDWORD id, SCRIPT_CONTEXT **ppsContext)
+static bool eventFindContext(int32_t id, SCRIPT_CONTEXT **ppsContext)
 {
 	for (SCRIPT_CONTEXT *psCurr = psContList; psCurr != NULL; psCurr = psCurr->psNext)
 	{
@@ -311,7 +311,7 @@ static bool eventSaveTriggerList(ACTIVE_TRIGGER *psList, QString tname, WzConfig
 // load a list of triggers
 static bool eventLoadTriggerList(WzConfig &ini, QString tname)
 {
-	UDWORD			event, offset, time;
+	uint32_t			event, offset, time;
 	int			numTriggers, context, type, trigger;
 	SCRIPT_CONTEXT		*psContext;
 

@@ -52,14 +52,14 @@ static bool		leftFirst;
 
 // Colour Lookups
 // use col = MAX_PLAYERS for anycolour (see multiint.c)
-bool setPlayerColour(UDWORD player, UDWORD col)
+bool setPlayerColour(uint32_t player, uint32_t col)
 {
 	ASSERT_OR_RETURN(false, player < MAX_PLAYERS && col < MAX_PLAYERS, "Bad colour setting");
 	NetPlay.players[player].colour = col;
 	return true;
 }
 
-UBYTE getPlayerColour(UDWORD pl)
+uint8_t getPlayerColour(uint32_t pl)
 {
 	if (pl == MAX_PLAYERS)
 	{
@@ -88,23 +88,23 @@ static void unsetMatrix(void)
 }
 
 
-UDWORD getComponentDroidRadius(DROID *)
+uint32_t getComponentDroidRadius(DROID *)
 {
 	return 100;
 }
 
 
-UDWORD getComponentDroidTemplateRadius(DROID_TEMPLATE *)
+uint32_t getComponentDroidTemplateRadius(DROID_TEMPLATE *)
 {
 	return 100;
 }
 
 
-UDWORD getComponentRadius(BASE_STATS *psComponent)
+uint32_t getComponentRadius(BASE_STATS *psComponent)
 {
 	iIMDShape *ComponentIMD = NULL;
 	iIMDShape *MountIMD = NULL;
-	SDWORD compID;
+	int32_t compID;
 
 	compID = StatIsComponent(psComponent);
 	if (compID >= 0)
@@ -128,7 +128,7 @@ UDWORD getComponentRadius(BASE_STATS *psComponent)
 }
 
 
-UDWORD getResearchRadius(BASE_STATS *Stat)
+uint32_t getResearchRadius(BASE_STATS *Stat)
 {
 	iIMDShape *ResearchIMD = ((RESEARCH *)Stat)->pIMD;
 
@@ -143,19 +143,19 @@ UDWORD getResearchRadius(BASE_STATS *Stat)
 }
 
 
-UDWORD getStructureSizeMax(STRUCTURE *psStructure)
+uint32_t getStructureSizeMax(STRUCTURE *psStructure)
 {
 	//radius based on base plate size
 	return MAX(psStructure->pStructureType->baseWidth, psStructure->pStructureType->baseBreadth);
 }
 
-UDWORD getStructureStatSizeMax(STRUCTURE_STATS *Stats)
+uint32_t getStructureStatSizeMax(STRUCTURE_STATS *Stats)
 {
 	//radius based on base plate size
 	return MAX(Stats->baseWidth, Stats->baseBreadth);
 }
 
-UDWORD getStructureStatHeight(STRUCTURE_STATS *psStat)
+uint32_t getStructureStatHeight(STRUCTURE_STATS *psStat)
 {
 	if (psStat->pIMD[0])
 	{
@@ -355,7 +355,7 @@ static inline iIMDShape *getRightPropulsionIMD(DROID *psDroid)
 	return asBodyStats[bodyStat].ppIMDList[propStat * NUM_PROP_SIDES + RIGHT_PROP];
 }
 
-void drawMuzzleFlash(WEAPON sWeap, iIMDShape *weaponImd, iIMDShape *flashImd, PIELIGHT buildingBrightness, int pieFlag, int iPieData, UBYTE colour)
+void drawMuzzleFlash(WEAPON sWeap, iIMDShape *weaponImd, iIMDShape *flashImd, PIELIGHT buildingBrightness, int pieFlag, int iPieData, uint8_t colour)
 {
 	if (!weaponImd || !flashImd || !weaponImd->nconnectors || graphicsTime < sWeap.lastFired)
 	{
@@ -402,12 +402,12 @@ void drawMuzzleFlash(WEAPON sWeap, iIMDShape *weaponImd, iIMDShape *flashImd, PI
 static void displayCompObj(DROID *psDroid, bool bButton)
 {
 	iIMDShape *psMoveAnim, *psStillAnim;
-	SDWORD				iConnector;
+	int32_t				iConnector;
 	PROPULSION_STATS	*psPropStats;
-	SDWORD				pieFlag, iPieData;
+	int32_t				pieFlag, iPieData;
 	PIELIGHT			brightness;
-	UDWORD				colour;
-	UBYTE	i;
+	uint32_t				colour;
+	uint8_t	i;
 
 	if (graphicsTime - psDroid->timeLastHit < GAME_TICKS_PER_SEC / 4 && psDroid->lastHitWeapon == WSC_ELECTRONIC && !gamePaused())
 	{
@@ -801,7 +801,7 @@ void displayComponentButtonTemplate(DROID_TEMPLATE *psTemplate, const Vector3i *
 //
 void displayComponentButtonObject(DROID *psDroid, const Vector3i *Rotation, const Vector3i *Position, int scale)
 {
-	SDWORD		difference;
+	int32_t		difference;
 
 	setMatrix(Position, Rotation, scale);
 
@@ -870,7 +870,7 @@ void displayComponentObject(DROID *psDroid)
 		addEffect(&position, EFFECT_EXPLOSION, EXPLOSION_TYPE_PLASMA, false, NULL, 0);
 	}
 
-	if (psDroid->visible[selectedPlayer] == UBYTE_MAX)
+	if (psDroid->visible[selectedPlayer] == uint8_t_MAX)
 	{
 		//ingame not button object
 		//should render 3 mounted weapons now
@@ -956,7 +956,7 @@ void	compPersonToBits(DROID *psDroid)
 {
 	Vector3i position;	//,rotation,velocity;
 	iIMDShape	*headImd, *legsImd, *armImd, *bodyImd;
-	UDWORD		col;
+	uint32_t		col;
 
 	if (!psDroid->visible[selectedPlayer])
 	{
@@ -995,9 +995,9 @@ void	compPersonToBits(DROID *psDroid)
 }
 
 
-SDWORD	rescaleButtonObject(SDWORD radius, SDWORD baseScale, SDWORD baseRadius)
+int32_t	rescaleButtonObject(int32_t radius, int32_t baseScale, int32_t baseRadius)
 {
-	SDWORD newScale;
+	int32_t newScale;
 	newScale = 100 * baseRadius;
 	newScale /= radius;
 	if (baseScale > 0)

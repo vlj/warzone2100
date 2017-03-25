@@ -89,13 +89,13 @@
 #define TEST_SCALED(x)			(x->control & EFFECT_SCALED)
 #define TEST_LIT(x)				(x->control & EFFECT_LIT)
 
-#define	SET_FLIPPED_X(x)		((x->control) = (UBYTE)(x->control | EFFECT_X_FLIP))
-#define	SET_FLIPPED_Y(x)		((x->control) = (UBYTE)(x->control | EFFECT_Y_FLIP))
-#define SET_ESSENTIAL(x)		((x->control) = (UBYTE)(x->control | EFFECT_ESSENTIAL))
-#define SET_FACING(x)			((x->control) = (UBYTE)(x->control | EFFECT_FACING))
-#define SET_CYCLIC(x)			((x->control) = (UBYTE)(x->control | EFFECT_CYCLIC))
-#define SET_SCALED(x)			((x->control) = (UBYTE)(x->control | EFFECT_SCALED))
-#define SET_LIT(x)				((x->control) = (UBYTE)(x->control | EFFECT_LIT))
+#define	SET_FLIPPED_X(x)		((x->control) = (uint8_t)(x->control | EFFECT_X_FLIP))
+#define	SET_FLIPPED_Y(x)		((x->control) = (uint8_t)(x->control | EFFECT_Y_FLIP))
+#define SET_ESSENTIAL(x)		((x->control) = (uint8_t)(x->control | EFFECT_ESSENTIAL))
+#define SET_FACING(x)			((x->control) = (uint8_t)(x->control | EFFECT_FACING))
+#define SET_CYCLIC(x)			((x->control) = (uint8_t)(x->control | EFFECT_CYCLIC))
+#define SET_SCALED(x)			((x->control) = (uint8_t)(x->control | EFFECT_SCALED))
+#define SET_LIT(x)				((x->control) = (uint8_t)(x->control | EFFECT_LIT))
 
 #define	NORMAL_SMOKE_LIFESPAN		(6000 + rand()%3000)
 #define SMALL_SMOKE_LIFESPAN		(3000 + rand()%3000)
@@ -155,12 +155,12 @@
 static std::list<EFFECT *> activeList;
 
 /* Tick counts for updates on a particular interval */
-static	UDWORD	lastUpdateStructures[EFFECT_STRUCTURE_DIVISION];
+static	uint32_t	lastUpdateStructures[EFFECT_STRUCTURE_DIVISION];
 
-static	UDWORD	auxVar; // dirty filthy hack - don't look for what this does.... //FIXME
-static	UDWORD	auxVarSec; // dirty filthy hack - don't look for what this does.... //FIXME
-static	UDWORD	specifiedSize;
-static	UDWORD	ellSpec;
+static	uint32_t	auxVar; // dirty filthy hack - don't look for what this does.... //FIXME
+static	uint32_t	auxVarSec; // dirty filthy hack - don't look for what this does.... //FIXME
+static	uint32_t	specifiedSize;
+static	uint32_t	ellSpec;
 static	uint8_t	EffectForPlayer = 0;
 // ----------------------------------------------------------------------------------------
 /* PROTOTYPES */
@@ -208,7 +208,7 @@ static void effectSetupFirework(EFFECT *psEffect);
 
 static void effectStructureUpdates();
 
-static UDWORD effectGetNumFrames(EFFECT *psEffect);
+static uint32_t effectGetNumFrames(EFFECT *psEffect);
 
 void shutdownEffectsSystem()
 {
@@ -248,7 +248,7 @@ void effectSetLandLightSpec(LAND_LIGHT_SPEC spec)
 	ellSpec = spec;
 }
 
-void effectSetSize(UDWORD size)
+void effectSetSize(uint32_t size)
 {
 	specifiedSize = size;
 }
@@ -516,11 +516,11 @@ static bool updateWaypoint(EFFECT *psEffect)
 
 static bool updateFirework(EFFECT *psEffect)
 {
-	UDWORD	height;
-	UDWORD	xDif, yDif, radius, val;
+	uint32_t	height;
+	uint32_t	xDif, yDif, radius, val;
 	Vector3i dv;
-	SDWORD	dif;
-	UDWORD	drop;
+	int32_t	dif;
+	uint32_t	drop;
 
 	/* Move it */
 	psEffect->position.x += graphicsTimeAdjustedIncrement(psEffect->velocity.x);
@@ -548,7 +548,7 @@ static bool updateFirework(EFFECT *psEffect)
 				{
 					drop = dif - psEffect->radius;
 				}
-				radius = (UDWORD)sqrtf(psEffect->radius * psEffect->radius - drop * drop);
+				radius = (uint32_t)sqrtf(psEffect->radius * psEffect->radius - drop * drop);
 				//val = getStaticTimeValueRange(720,360);	// grab an angle - 4 seconds cyclic
 				for (val = 0; val <= 180; val += 20)
 				{
@@ -628,12 +628,12 @@ static bool updateFirework(EFFECT *psEffect)
 static bool updateSatLaser(EFFECT *psEffect)
 {
 	Vector3i dv;
-	UDWORD	val;
-	UDWORD	radius;
-	UDWORD	xDif, yDif;
-	UDWORD	i;
-	UDWORD	startHeight, endHeight;
-	UDWORD	xPos, yPos;
+	uint32_t	val;
+	uint32_t	radius;
+	uint32_t	xDif, yDif;
+	uint32_t	i;
+	uint32_t	startHeight, endHeight;
+	uint32_t	xPos, yPos;
 	LIGHT	light;
 
 	// Do these here cause there used by the lighting code below this if.
@@ -718,7 +718,7 @@ static bool updateExplosion(EFFECT *psEffect)
 {
 	if (TEST_LIT(psEffect))
 	{
-		UDWORD percent;
+		uint32_t percent;
 		LIGHT light;
 
 		if (psEffect->lifeSpan)
@@ -738,7 +738,7 @@ static bool updateExplosion(EFFECT *psEffect)
 			percent = 100;
 		}
 
-		UDWORD range = percent;
+		uint32_t range = percent;
 		light.position.x = psEffect->position.x;
 		light.position.y = psEffect->position.y;
 		light.position.z = psEffect->position.z;
@@ -1009,14 +1009,14 @@ static bool updateGraviton(EFFECT *psEffect)
 static bool updateDestruction(EFFECT *psEffect)
 {
 	Vector3i pos;
-	UDWORD	effectType;
-	UDWORD	widthScatter = 0, breadthScatter = 0, heightScatter = 0;
-	SDWORD	iX, iY;
+	uint32_t	effectType;
+	uint32_t	widthScatter = 0, breadthScatter = 0, heightScatter = 0;
+	int32_t	iX, iY;
 	LIGHT	light;
 	int     percent;
-	UDWORD	range;
+	uint32_t	range;
 	float	div;
-	UDWORD	height;
+	uint32_t	height;
 
 	percent = PERCENT(graphicsTime - psEffect->birthTime, psEffect->lifeSpan);
 	if (percent > 100)
@@ -1233,7 +1233,7 @@ static bool updateFire(EFFECT *psEffect)
 {
 	Vector3i pos;
 	LIGHT	light;
-	UDWORD	percent;
+	uint32_t	percent;
 
 	percent = PERCENT(graphicsTime - psEffect->birthTime, std::max<unsigned>(psEffect->lifeSpan, 1));
 	if (percent > 100)
@@ -1414,7 +1414,7 @@ static void renderBloodEffect(const EFFECT *psEffect)
 static void renderDestructionEffect(const EFFECT *psEffect)
 {
 	float	div;
-	SDWORD	percent;
+	int32_t	percent;
 
 	if (psEffect->type != DESTRUCTION_TYPE_SKYSCRAPER)
 	{
@@ -1430,7 +1430,7 @@ static void renderDestructionEffect(const EFFECT *psEffect)
 	}
 	{
 		div = 1.0 - div;
-		percent = (SDWORD)(div * pie_RAISE_SCALE);
+		percent = (int32_t)(div * pie_RAISE_SCALE);
 	}
 
 	if (!gamePaused())
@@ -1762,25 +1762,25 @@ void	effectSetupSmoke(EFFECT *psEffect)
 	{
 	case SMOKE_TYPE_DRIFTING:
 		psEffect->imd = getImdFromIndex(MI_SMALL_SMOKE);
-		psEffect->lifeSpan = (UWORD)NORMAL_SMOKE_LIFESPAN;
+		psEffect->lifeSpan = (uint16_t)NORMAL_SMOKE_LIFESPAN;
 		psEffect->velocity.y = (float)(35 + rand() % 30);
 		psEffect->baseScale = 40;
 		break;
 	case SMOKE_TYPE_DRIFTING_HIGH:
 		psEffect->imd = getImdFromIndex(MI_SMALL_SMOKE);
-		psEffect->lifeSpan = (UWORD)NORMAL_SMOKE_LIFESPAN;
+		psEffect->lifeSpan = (uint16_t)NORMAL_SMOKE_LIFESPAN;
 		psEffect->velocity.y = (float)(40 + rand() % 45);
 		psEffect->baseScale = 25;
 		break;
 	case SMOKE_TYPE_DRIFTING_SMALL:
 		psEffect->imd = getImdFromIndex(MI_SMALL_SMOKE);
-		psEffect->lifeSpan = (UWORD)SMALL_SMOKE_LIFESPAN;
+		psEffect->lifeSpan = (uint16_t)SMALL_SMOKE_LIFESPAN;
 		psEffect->velocity.y = (float)(25 + rand() % 35);
 		psEffect->baseScale = 17;
 		break;
 	case SMOKE_TYPE_BILLOW:
 		psEffect->imd = getImdFromIndex(MI_SMALL_SMOKE);
-		psEffect->lifeSpan = (UWORD)SMALL_SMOKE_LIFESPAN;
+		psEffect->lifeSpan = (uint16_t)SMALL_SMOKE_LIFESPAN;
 		psEffect->velocity.y = (float)(10 + rand() % 20);
 		psEffect->baseScale = 80;
 		break;
@@ -1802,7 +1802,7 @@ void	effectSetupSmoke(EFFECT *psEffect)
 	/* It always faces you */
 	SET_FACING(psEffect);
 
-	psEffect->frameDelay = (UWORD)SMOKE_FRAME_DELAY;
+	psEffect->frameDelay = (uint16_t)SMOKE_FRAME_DELAY;
 	/* Randomly flip gfx for variation */
 	if (ONEINTWO)
 	{
@@ -1834,7 +1834,7 @@ void	effectSetupGraviton(EFFECT *psEffect)
 		psEffect->velocity.x = GRAVITON_INIT_VEL_X;
 		psEffect->velocity.z = GRAVITON_INIT_VEL_Z;
 		psEffect->velocity.y = (5 * GRAVITON_INIT_VEL_Y) / 4;
-		psEffect->size = (UWORD)(120 + rand() % 30);
+		psEffect->size = (uint16_t)(120 + rand() % 30);
 		break;
 	case GRAVITON_TYPE_EMITTING_DR:
 		psEffect->velocity.x = GRAVITON_INIT_VEL_X / 2;
@@ -1860,11 +1860,11 @@ void	effectSetupGraviton(EFFECT *psEffect)
 
 	if (psEffect->type == GRAVITON_TYPE_GIBLET)
 	{
-		psEffect->frameDelay = (UWORD)GRAVITON_BLOOD_DELAY;
+		psEffect->frameDelay = (uint16_t)GRAVITON_BLOOD_DELAY;
 	}
 	else
 	{
-		psEffect->frameDelay = (UWORD)GRAVITON_FRAME_DELAY;
+		psEffect->frameDelay = (uint16_t)GRAVITON_FRAME_DELAY;
 	}
 }
 
@@ -1878,27 +1878,27 @@ void effectSetupExplosion(EFFECT *psEffect)
 		{
 		case EXPLOSION_TYPE_SMALL:
 			psEffect->imd = getImdFromIndex(MI_EXPLOSION_SMALL);
-			psEffect->size = (UBYTE)((6 * EXPLOSION_SIZE) / 5);
+			psEffect->size = (uint8_t)((6 * EXPLOSION_SIZE) / 5);
 			break;
 		case EXPLOSION_TYPE_VERY_SMALL:
 			psEffect->imd = getImdFromIndex(MI_EXPLOSION_SMALL);
-			psEffect->size = (UBYTE)(BASE_FLAME_SIZE + auxVar);
+			psEffect->size = (uint8_t)(BASE_FLAME_SIZE + auxVar);
 			break;
 		case EXPLOSION_TYPE_MEDIUM:
 			psEffect->imd = getImdFromIndex(MI_EXPLOSION_MEDIUM);
-			psEffect->size = (UBYTE)EXPLOSION_SIZE;
+			psEffect->size = (uint8_t)EXPLOSION_SIZE;
 			break;
 		case EXPLOSION_TYPE_LARGE:
 			psEffect->imd = getImdFromIndex(MI_EXPLOSION_MEDIUM);
-			psEffect->size = (UBYTE)EXPLOSION_SIZE * 2;
+			psEffect->size = (uint8_t)EXPLOSION_SIZE * 2;
 			break;
 		case EXPLOSION_TYPE_FLAMETHROWER:
 			psEffect->imd = getImdFromIndex(MI_FLAME);
-			psEffect->size = (UBYTE)(BASE_FLAME_SIZE + auxVar);
+			psEffect->size = (uint8_t)(BASE_FLAME_SIZE + auxVar);
 			break;
 		case EXPLOSION_TYPE_LASER:
 			psEffect->imd = getImdFromIndex(MI_FLAME);	// change this
-			psEffect->size = (UBYTE)(BASE_LASER_SIZE + auxVar);
+			psEffect->size = (uint8_t)(BASE_LASER_SIZE + auxVar);
 			break;
 		case EXPLOSION_TYPE_DISCOVERY:
 			psEffect->imd = getImdFromIndex(MI_TESLA);	// change this
@@ -1966,7 +1966,7 @@ void effectSetupExplosion(EFFECT *psEffect)
 		}
 		else
 		{
-			psEffect->frameDelay = (UWORD)EXPLOSION_FRAME_DELAY;
+			psEffect->frameDelay = (uint16_t)EXPLOSION_FRAME_DELAY;
 		}
 
 
@@ -2000,7 +2000,7 @@ void	effectSetupConstruction(EFFECT *psEffect)
 	psEffect->velocity.x = 0.f;//(1-rand()%3);
 	psEffect->velocity.z = 0.f;//(1-rand()%3);
 	psEffect->velocity.y = (float)(0 - rand() % 3);
-	psEffect->frameDelay = (UWORD)CONSTRUCTION_FRAME_DELAY;
+	psEffect->frameDelay = (uint16_t)CONSTRUCTION_FRAME_DELAY;
 	psEffect->imd = getImdFromIndex(MI_CONSTRUCTION);
 	psEffect->lifeSpan = CONSTRUCTION_LIFESPAN;
 
@@ -2025,7 +2025,7 @@ void	effectSetupFire(EFFECT *psEffect)
 {
 	psEffect->frameDelay = 300;	   // needs to be investigated...
 	psEffect->radius = auxVar;	// needs to be investigated
-	psEffect->lifeSpan = (UWORD)auxVarSec;
+	psEffect->lifeSpan = (uint16_t)auxVarSec;
 	psEffect->birthTime = graphicsTime;
 	SET_ESSENTIAL(psEffect);
 
@@ -2045,7 +2045,7 @@ static void effectSetupBlood(EFFECT *psEffect)
 	psEffect->frameDelay = BLOOD_FRAME_DELAY;
 	psEffect->velocity.y = (float)BLOOD_FALL_SPEED;
 	psEffect->imd = getImdFromIndex(MI_BLOOD);
-	psEffect->size = (UBYTE)BLOOD_SIZE;
+	psEffect->size = (uint8_t)BLOOD_SIZE;
 }
 
 static void effectSetupDestruction(EFFECT *psEffect)
@@ -2148,7 +2148,7 @@ void initPerimeterSmoke(iIMDShape *pImd, Vector3i base)
 }
 
 
-static UDWORD effectGetNumFrames(EFFECT *psEffect)
+static uint32_t effectGetNumFrames(EFFECT *psEffect)
 {
 	if (psEffect->imd)
 	{
@@ -2161,13 +2161,13 @@ static UDWORD effectGetNumFrames(EFFECT *psEffect)
 }
 
 
-void	effectGiveAuxVar(UDWORD var)
+void	effectGiveAuxVar(uint32_t var)
 {
 	auxVar = var;
 }
 
 
-void	effectGiveAuxVarSec(UDWORD var)
+void	effectGiveAuxVarSec(uint32_t var)
 {
 	auxVarSec = var;
 }

@@ -40,7 +40,7 @@ enum LOBBY_ERROR_TYPES
 	ERROR_INVALID,
 	ERROR_KICKED,
 	ERROR_WRONGVERSION,
-	ERROR_WRONGPASSWORD,
+	ERROR_WRONGPASint16_t,
 	ERROR_HOSTDROPPED,
 	ERROR_WRONGDATA,
 	ERROR_UNKNOWNFILEISSUE
@@ -293,18 +293,18 @@ void NETdiscoverUPnPDevices();
 enum NetStatisticType {NetStatisticRawBytes, NetStatisticUncompressedBytes, NetStatisticPackets};
 unsigned NETgetStatistic(NetStatisticType type, bool sent, bool isTotal = false);     // Return some statistic. Call regularly for good results.
 
-void NETplayerKicked(UDWORD index);			// Cleanup after player has been kicked
+void NETplayerKicked(uint32_t index);			// Cleanup after player has been kicked
 
 // from netjoin.c
-SDWORD NETgetGameFlags(UDWORD flag);			// return one of the four flags(dword) about the game.
+int32_t NETgetGameFlags(uint32_t flag);			// return one of the four flags(dword) about the game.
 int32_t NETgetGameFlagsUnjoined(unsigned int gameid, unsigned int flag);	// return one of the four flags(dword) about the game.
-bool NETsetGameFlags(UDWORD flag, SDWORD value);	// set game flag(1-4) to value.
+bool NETsetGameFlags(uint32_t flag, int32_t value);	// set game flag(1-4) to value.
 bool NEThaltJoining();				// stop new players joining this game
 bool NETfindGame();		// find games being played(uses GAME_GUID);
 bool NETjoinGame(const char *host, uint32_t port, const char *playername); // join game given with playername
 bool NEThostGame(const char *SessionName, const char *PlayerName,// host a game
-                 SDWORD one, SDWORD two, SDWORD three, SDWORD four, UDWORD plyrs);
-bool NETchangePlayerName(UDWORD player, char *newName);// change a players name.
+                 int32_t one, int32_t two, int32_t three, int32_t four, uint32_t plyrs);
+bool NETchangePlayerName(uint32_t player, char *newName);// change a players name.
 void NETfixDuplicatePlayerNames();  // Change a player's name automatically, if there are duplicates.
 
 #include "netlog.h"

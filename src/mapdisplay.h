@@ -21,6 +21,6 @@
 #ifndef __INCLUDED_SRC_MAPDISPLAY_H__
 #define __INCLUDED_SRC_MAPDISPLAY_H__
 
-void renderResearchToBuffer(RESEARCH *psResearch, UDWORD OriginX, UDWORD OriginY);
+void renderResearchToBuffer(RESEARCH *psResearch, uint32_t OriginX, uint32_t OriginY);
 
 #endif // __INCLUDED_SRC_MAPDISPLAY_H__

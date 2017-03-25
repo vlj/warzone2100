@@ -63,7 +63,7 @@ int frameRate()
 	return frameCount;
 }
 
-UDWORD	frameGetFrameNumber()
+uint32_t	frameGetFrameNumber()
 {
 	return curFrames;
 }
@@ -162,7 +162,7 @@ PHYSFS_file *openLoadFile(const char *fileName, bool hard_fail)
 
   If hard_fail is true, we will assert and report on failures.
 ***************************************************************************/
-static bool loadFile2(const char *pFileName, char **ppFileData, UDWORD *pFileSize, bool AllocateMem, bool hard_fail)
+static bool loadFile2(const char *pFileName, char **ppFileData, uint32_t *pFileSize, bool AllocateMem, bool hard_fail)
 {
 	if (PHYSFS_isDirectory(pFileName))
 	{
@@ -257,7 +257,7 @@ PHYSFS_file *openSaveFile(const char *fileName)
 /***************************************************************************
 	Save the data in the buffer into the given file.
 ***************************************************************************/
-bool saveFile(const char *pFileName, const char *pFileData, UDWORD fileSize)
+bool saveFile(const char *pFileName, const char *pFileData, uint32_t fileSize)
 {
 	PHYSFS_file *pfile;
 	PHYSFS_uint32 size = fileSize;
@@ -295,20 +295,20 @@ bool saveFile(const char *pFileName, const char *pFileData, UDWORD fileSize)
 	return true;
 }
 
-bool loadFile(const char *pFileName, char **ppFileData, UDWORD *pFileSize)
+bool loadFile(const char *pFileName, char **ppFileData, uint32_t *pFileSize)
 {
 	return loadFile2(pFileName, ppFileData, pFileSize, true, true);
 }
 
 // load a file from disk into a fixed memory buffer
-bool loadFileToBuffer(const char *pFileName, char *pFileBuffer, UDWORD bufferSize, UDWORD *pSize)
+bool loadFileToBuffer(const char *pFileName, char *pFileBuffer, uint32_t bufferSize, uint32_t *pSize)
 {
 	*pSize = bufferSize;
 	return loadFile2(pFileName, &pFileBuffer, pSize, false, true);
 }
 
 // as above but returns quietly if no file found
-bool loadFileToBufferNoError(const char *pFileName, char *pFileBuffer, UDWORD bufferSize, UDWORD *pSize)
+bool loadFileToBufferNoError(const char *pFileName, char *pFileBuffer, uint32_t bufferSize, uint32_t *pSize)
 {
 	*pSize = bufferSize;
 	return loadFile2(pFileName, &pFileBuffer, pSize, false, false);

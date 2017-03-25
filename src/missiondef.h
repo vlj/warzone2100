@@ -52,7 +52,7 @@ struct LANDING_ZONE
 //storage structure for values that need to be kept between missions
 struct MISSION
 {
-	UDWORD				type;							//defines which start and end functions to use - see levels_type in levels.h
+	uint32_t				type;							//defines which start and end functions to use - see levels_type in levels.h
 	MAPTILE				*psMapTiles;					//the original mapTiles
 	int32_t                         mapWidth;                       //the original mapWidth
 	int32_t                         mapHeight;                      //the original mapHeight
@@ -71,23 +71,23 @@ struct MISSION
 	FLAG_POSITION				*apsFlagPosLists[MAX_PLAYERS];
 	int32_t                         asCurrentPower[MAX_PLAYERS];
 
-	UDWORD				startTime;			//time the mission started
-	SDWORD				time;				//how long the mission can last
+	uint32_t				startTime;			//time the mission started
+	int32_t				time;				//how long the mission can last
 	// < 0 = no limit
-	SDWORD				ETA;				//time taken for reinforcements to arrive
+	int32_t				ETA;				//time taken for reinforcements to arrive
 	// < 0 = none allowed
-	UDWORD				cheatTime;			//time the cheating started (mission time-wise!)
+	uint32_t				cheatTime;			//time the cheating started (mission time-wise!)
 
-	UWORD               homeLZ_X;           //selectedPlayer's LZ x and y
-	UWORD               homeLZ_Y;
-	SDWORD				playerX;			//original view position
-	SDWORD				playerY;
+	uint16_t               homeLZ_X;           //selectedPlayer's LZ x and y
+	uint16_t               homeLZ_Y;
+	int32_t				playerX;			//original view position
+	int32_t				playerY;
 
 	/* transporter entry/exit tiles */
-	UWORD				iTranspEntryTileX[MAX_PLAYERS];
-	UWORD				iTranspEntryTileY[MAX_PLAYERS];
-	UWORD				iTranspExitTileX[MAX_PLAYERS];
-	UWORD				iTranspExitTileY[MAX_PLAYERS];
+	uint16_t				iTranspEntryTileX[MAX_PLAYERS];
+	uint16_t				iTranspEntryTileY[MAX_PLAYERS];
+	uint16_t				iTranspExitTileX[MAX_PLAYERS];
+	uint16_t				iTranspExitTileY[MAX_PLAYERS];
 };
 
 #endif // __INCLUDED_MISSIONDEF_H__

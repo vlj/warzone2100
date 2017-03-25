@@ -153,7 +153,7 @@
 /* the widget screen */
 extern W_SCREEN		*psWScreen;
 
-static UDWORD			messageID;
+static uint32_t			messageID;
 static bool				immediateMessage = false;
 
 //flags whether to open the Intel Screen with a message
@@ -180,17 +180,17 @@ protected:
 
 /*deal with the actual button press - proxMsg is set to true if a proximity
   button has been pressed*/
-static void intIntelButtonPressed(bool proxMsg, UDWORD id);
+static void intIntelButtonPressed(bool proxMsg, uint32_t id);
 
-static void intDisplayPIEView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-static void intDisplayFLICView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-static void intDisplayTEXTView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-static void addVideoText(SEQ_DISPLAY *psSeqDisplay, UDWORD sequence);
+static void intDisplayPIEView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+static void intDisplayFLICView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+static void intDisplayTEXTView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+static void addVideoText(SEQ_DISPLAY *psSeqDisplay, uint32_t sequence);
 
-static void intDisplaySeqTextView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+static void intDisplaySeqTextView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 static bool intDisplaySeqTextViewPage(VIEW_REPLAY *psViewReplay,
-                                      UDWORD x0, UDWORD y0,
-                                      UDWORD width, UDWORD height,
+                                      uint32_t x0, uint32_t y0,
+                                      uint32_t width, uint32_t height,
                                       bool render,
                                       size_t *major, size_t *minor);
 
@@ -516,7 +516,7 @@ bool intAddMessageView(MESSAGE *psMessage)
 }
 
 /* Process return codes from the Intelligence Map */
-void intProcessIntelMap(UDWORD id)
+void intProcessIntelMap(uint32_t id)
 {
 
 	if (id >= IDINTMAP_MSGSTART && id <= IDINTMAP_MSGEND)
@@ -543,13 +543,13 @@ void intProcessIntelMap(UDWORD id)
  * Draws the text for the intelligence display window.
  */
 static bool intDisplaySeqTextViewPage(VIEW_REPLAY *psViewReplay,
-                                      UDWORD x0, UDWORD y0,
-                                      UDWORD width, UDWORD height,
+                                      uint32_t x0, uint32_t y0,
+                                      uint32_t width, uint32_t height,
                                       bool render,
                                       size_t *cur_seq, size_t *cur_seqpage)
 {
-	UDWORD i, cur_y;
-	UDWORD sequence;
+	uint32_t i, cur_y;
+	uint32_t sequence;
 
 	if (!psViewReplay)
 	{
@@ -595,7 +595,7 @@ static bool intDisplaySeqTextViewPage(VIEW_REPLAY *psViewReplay,
 /**
  * Draw the text window for the intelligence display
  */
-static void intDisplaySeqTextView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void intDisplaySeqTextView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	VIEW_REPLAY *psViewReplay = (VIEW_REPLAY *)psWidget->pUserData;
 	size_t cur_seq, cur_seqpage;
@@ -630,7 +630,7 @@ static void StartMessageSequences(MESSAGE *psMessage, bool Start)
 	if (((VIEWDATA *)psMessage->pViewData)->type == VIEW_RPL)
 	{
 		VIEW_REPLAY		*psViewReplay;
-		UDWORD Sequence;
+		uint32_t Sequence;
 
 		// Surely we don't need to set up psCurrentMsg when we pass the message into this routine ... tim
 		psViewReplay = (VIEW_REPLAY *)((VIEWDATA *)psMessage->pViewData)->pData;
@@ -666,7 +666,7 @@ static void StartMessageSequences(MESSAGE *psMessage, bool Start)
 	else if (((VIEWDATA *)psMessage->pViewData)->type == VIEW_RES)
 	{
 		VIEW_RESEARCH		*psViewReplay;
-		//UDWORD Sequence;
+		//uint32_t Sequence;
 
 		psViewReplay = (VIEW_RESEARCH *)((VIEWDATA *)psCurrentMsg->pViewData)->pData;
 
@@ -685,10 +685,10 @@ static void StartMessageSequences(MESSAGE *psMessage, bool Start)
 deal with the actual button press - proxMsg is set to true if a proximity
 button has been pressed
 */
-void intIntelButtonPressed(bool proxMsg, UDWORD id)
+void intIntelButtonPressed(bool proxMsg, uint32_t id)
 {
 	MESSAGE			*psMessage;
-	UDWORD			currID;
+	uint32_t			currID;
 	RESEARCH		*psResearch;
 
 	ASSERT_OR_RETURN(, proxMsg != true, "Shouldn't be able to get a proximity message!");
@@ -1019,10 +1019,10 @@ void IntMessageButton::display(int xOffset, int yOffset)
 
 
 /* displays the PIE view for the current message */
-void intDisplayPIEView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayPIEView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	MESSAGE *psMessage = (MESSAGE *)psWidget->pUserData;
-	SWORD			image = -1;
+	int16_t			image = -1;
 	RESEARCH        *psResearch;
 
 	// Should not have any proximity messages here...
@@ -1052,7 +1052,7 @@ void intDisplayPIEView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 		renderResearchToBuffer(psResearch, x0 + (x1 - x0) / 2, y0 + (y1 - y0) / 2);
 
 		//draw image icon in top left of window
-		image = (SWORD)getResearchForMsg((VIEWDATA *)psMessage->pViewData)->iconID;
+		image = (int16_t)getResearchForMsg((VIEWDATA *)psMessage->pViewData)->iconID;
 		if (image > 0)
 		{
 			iV_DrawImage(IntImages, image, x0, y0);
@@ -1061,7 +1061,7 @@ void intDisplayPIEView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 }
 
 /* displays the FLIC view for the current message */
-void intDisplayFLICView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayFLICView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	MESSAGE *psMessage = (MESSAGE *)psWidget->pUserData;
 	VIEW_RESEARCH	*psViewResearch;
@@ -1099,7 +1099,7 @@ void intDisplayFLICView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
  * If this function breaks, please merge it with intDisplaySeqTextViewPage
  * which presumably does almost the same.
  */
-void intDisplayTEXTView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayTEXTView(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	MESSAGE *psMessage = (MESSAGE *)psWidget->pUserData;
 
@@ -1141,9 +1141,9 @@ void intDisplayTEXTView(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 
 //adds text to full screen video
-void addVideoText(SEQ_DISPLAY *psSeqDisplay, UDWORD sequence)
+void addVideoText(SEQ_DISPLAY *psSeqDisplay, uint32_t sequence)
 {
-	UDWORD	i, x, y;
+	uint32_t	i, x, y;
 
 	if (psSeqDisplay->textMsg.size() > 0)
 	{

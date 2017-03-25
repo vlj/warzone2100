@@ -41,7 +41,7 @@ void delPowerRequest(STRUCTURE *psStruct);
 int32_t checkPowerRequest(STRUCTURE *psStruct);
 
 /** Reset the power levels when a power_gen or resource_extractor is destroyed. */
-extern bool resetPlayerPower(UDWORD player, STRUCTURE *psStruct);
+extern bool resetPlayerPower(uint32_t player, STRUCTURE *psStruct);
 
 /** Check the available power. */
 bool checkPower(int player, uint32_t quantity);

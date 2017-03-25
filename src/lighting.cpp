@@ -53,12 +53,12 @@
 
 /*	The vector that holds the sun's lighting direction - planar */
 static Vector3f theSun;
-UDWORD fogStatus = 0;
+uint32_t fogStatus = 0;
 
 /*	Module function Prototypes */
-static void colourTile(SDWORD xIndex, SDWORD yIndex, LIGHT_COLOUR colour, UBYTE percent);
-static UDWORD calcDistToTile(UDWORD tileX, UDWORD tileY, Vector3i *pos);
-static void calcTileIllum(UDWORD tileX, UDWORD tileY);
+static void colourTile(int32_t xIndex, int32_t yIndex, LIGHT_COLOUR colour, uint8_t percent);
+static uint32_t calcDistToTile(uint32_t tileX, uint32_t tileY, Vector3i *pos);
+static void calcTileIllum(uint32_t tileX, uint32_t tileY);
 
 void setTheSun(Vector3f newSun)
 {
@@ -78,11 +78,11 @@ Vector3f getTheSun(void)
 
 //By passing in params - it means that if the scroll limits are changed mid-mission
 //we can re-do over the area that hasn't been seen
-void initLighting(UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2)
+void initLighting(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2)
 {
-	UDWORD       i, j;
+	uint32_t       i, j;
 
-	// quick check not trying to go off the map - don't need to check for < 0 since UWORD's!!
+	// quick check not trying to go off the map - don't need to check for < 0 since uint16_t's!!
 	if (x1 > mapWidth || x2 > mapWidth || y1 > mapHeight || y2 > mapHeight)
 	{
 		ASSERT(false, "initLighting: coords off edge of map");
@@ -112,8 +112,8 @@ void initLighting(UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2)
 			}
 			// Basically darkens down the tiles that are outside the scroll
 			// limits - thereby emphasising the cannot-go-there-ness of them
-			if ((SDWORD)i < scrollMinX + 4 || (SDWORD)i > scrollMaxX - 4
-			    || (SDWORD)j < scrollMinY + 4 || (SDWORD)j > scrollMaxY - 4)
+			if ((int32_t)i < scrollMinX + 4 || (int32_t)i > scrollMaxX - 4
+			    || (int32_t)j < scrollMinY + 4 || (int32_t)j > scrollMaxY - 4)
 			{
 				psTile->illumination /= 3;
 			}
@@ -175,7 +175,7 @@ static void normalsOnTile(unsigned int tileX, unsigned int tileY, unsigned int q
 }
 
 
-static void calcTileIllum(UDWORD tileX, UDWORD tileY)
+static void calcTileIllum(uint32_t tileX, uint32_t tileY)
 {
 	/* The number or normals that we got is in numNormals*/
 	Vector3f finalVector(0.0f, 0.0f, 0.0f);
@@ -234,13 +234,13 @@ static void calcTileIllum(UDWORD tileX, UDWORD tileY)
 
 void	processLight(LIGHT *psLight)
 {
-	SDWORD	tileX, tileY;
-	SDWORD	startX, endX;
-	SDWORD	startY, endY;
-	SDWORD	rangeSkip;
-	SDWORD	i, j;
-	SDWORD	distToCorner;
-	UDWORD	percent;
+	int32_t	tileX, tileY;
+	int32_t	startX, endX;
+	int32_t	startY, endY;
+	int32_t	rangeSkip;
+	int32_t	i, j;
+	int32_t	distToCorner;
+	uint32_t	percent;
 
 	/* Firstly - there's no point processing lights that are off the grid */
 	if (clipXY(psLight->position.x, psLight->position.z) == false)
@@ -276,7 +276,7 @@ void	processLight(LIGHT *psLight)
 			distToCorner = calcDistToTile(i, j, &psLight->position);
 
 			/* If we're inside the range of the light */
-			if (distToCorner < (SDWORD)psLight->range)
+			if (distToCorner < (int32_t)psLight->range)
 			{
 				/* Find how close we are to it */
 				percent = 100 - PERCENT(distToCorner, psLight->range);
@@ -287,7 +287,7 @@ void	processLight(LIGHT *psLight)
 }
 
 
-static UDWORD calcDistToTile(UDWORD tileX, UDWORD tileY, Vector3i *pos)
+static uint32_t calcDistToTile(uint32_t tileX, uint32_t tileY, Vector3i *pos)
 {
 	int x1, y1, z1;
 
@@ -301,7 +301,7 @@ static UDWORD calcDistToTile(UDWORD tileX, UDWORD tileY, Vector3i *pos)
 
 // FIXME: Is the percent variable misnamed here, or is the code wrong? Because we do
 // not use it as a percentage!
-static void colourTile(SDWORD xIndex, SDWORD yIndex, LIGHT_COLOUR colouridx, UBYTE percent)
+static void colourTile(int32_t xIndex, int32_t yIndex, LIGHT_COLOUR colouridx, uint8_t percent)
 {
 	PIELIGHT colour = getTileColour(xIndex, yIndex);
 
@@ -358,7 +358,7 @@ void	calcDroidIllumination(DROID *psDroid)
 	/* Are we at the edge, or even on the map */
 	if (!tileOnMap(tileX, tileY))
 	{
-		psDroid->illumination = UBYTE_MAX;
+		psDroid->illumination = uint8_t_MAX;
 		return;
 	}
 	else if (tileX <= 1 || tileX >= mapWidth - 2 || tileY <= 1 || tileY >= mapHeight - 2)
@@ -396,7 +396,7 @@ void	calcDroidIllumination(DROID *psDroid)
 void	doBuildingLights(void)
 {
 	STRUCTURE	*psStructure;
-	UDWORD	i;
+	uint32_t	i;
 	LIGHT	light;
 
 	for (i = 0; i < MAX_PLAYERS; i++)

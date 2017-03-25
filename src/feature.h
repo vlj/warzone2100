@@ -28,7 +28,7 @@
 
 /* The statistics for the features */
 extern FEATURE_STATS	*asFeatureStats;
-extern UDWORD			numFeatureStats;
+extern uint32_t			numFeatureStats;
 
 //Value is stored for easy access to this feature in destroyDroid()/destroyStruct()
 extern FEATURE_STATS *oilResFeature;
@@ -40,7 +40,7 @@ bool loadFeatureStats(const char *pFileName);
 extern void featureStatsShutDown(void);
 
 /* Create a feature on the map */
-extern FEATURE *buildFeature(FEATURE_STATS *psStats, UDWORD x, UDWORD y, bool FromSave);
+extern FEATURE *buildFeature(FEATURE_STATS *psStats, uint32_t x, uint32_t y, bool FromSave);
 
 /* Update routine for features */
 extern void featureUpdate(FEATURE *psFeat);
@@ -52,7 +52,7 @@ extern bool removeFeature(FEATURE *psDel);
 bool destroyFeature(FEATURE *psDel, unsigned impactTime);
 
 /* get a feature stat id from its name */
-extern SDWORD getFeatureStatFromName(const char *pName);
+extern int32_t getFeatureStatFromName(const char *pName);
 
 int32_t featureDamage(FEATURE *psFeature, unsigned damage, WEAPON_CLASS weaponClass, WEAPON_SUBCLASS weaponSubClass, unsigned impactTime, bool isDamagePerSecond, int minDamage);
 

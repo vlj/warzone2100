@@ -30,7 +30,7 @@
 bool mechanicsShutdown(void);
 
 // Allocate the list for a component
-bool allocComponentList(COMPONENT_TYPE	type, SDWORD number);
+bool allocComponentList(COMPONENT_TYPE	type, int32_t number);
 
 // release all the component lists
 void freeComponentLists(void);

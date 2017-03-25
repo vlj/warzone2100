@@ -28,7 +28,7 @@
 #define FOG_DISTANCE	2
 
 
-extern UDWORD fogStatus;
+extern uint32_t fogStatus;
 
 enum LIGHT_COLOUR
 {
@@ -42,8 +42,8 @@ enum LIGHT_COLOUR
 struct LIGHT
 {
 	Vector3i	position;
-	UBYTE	type;
-	UDWORD	range;
+	uint8_t	type;
+	uint32_t	range;
 	LIGHT_COLOUR	colour;
 };
 
@@ -51,8 +51,8 @@ extern void setTheSun(Vector3f newSun);
 extern Vector3f getTheSun(void);
 
 extern void	processLight(LIGHT *psLight);
-extern void initLighting(UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2);
-extern void	lightValueForTile(UDWORD tileX, UDWORD tileY);
+extern void initLighting(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2);
+extern void	lightValueForTile(uint32_t tileX, uint32_t tileY);
 extern void	doBuildingLights(void);
 extern void UpdateFogDistance(float distance);
 extern void	calcDroidIllumination(DROID *psDroid);

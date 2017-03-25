@@ -97,7 +97,7 @@ static int FormCloseCount;	// Count used to ensure only one sfx played when two 
 
 #define	DEFAULT_BUTTON_ROTATION (45)
 
-static UDWORD ManuPower = 0;	// Power required to manufacture the current item.
+static uint32_t ManuPower = 0;	// Power required to manufacture the current item.
 
 // Get the first factory assigned to a command droid
 static STRUCTURE *droidGetCommandFactory(DROID *psDroid);
@@ -462,7 +462,7 @@ void intUpdateCommandFact(WIDGET *psWidget, W_CONTEXT *psContext)
 {
 	W_LABEL				*Label = (W_LABEL *)psWidget;
 	BASE_OBJECT			*psObj = (BASE_OBJECT *)Label->pUserData;
-	SDWORD                          i, start;
+	int32_t                          i, start;
 
 	// Get the object associated with this widget.
 	if (psObj != NULL && !isDead(psObj))
@@ -505,13 +505,13 @@ void intUpdateCommandFact(WIDGET *psWidget, W_CONTEXT *psContext)
 
 // Widget callback to update and display the power bar.
 // !!!!!!!!!!!!!!!!!!!!!!ONLY WORKS ON A SIDEWAYS POWERBAR!!!!!!!!!!!!!!!!!
-void intDisplayPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayPowerBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	W_BARGRAPH *BarGraph = (W_BARGRAPH *)psWidget;
-	SDWORD		Avail, ManPow, realPower;
-	SDWORD		Empty;
-	SDWORD		BarWidth, textWidth = 0;
-	SDWORD		iX, iY;
+	int32_t		Avail, ManPow, realPower;
+	int32_t		Empty;
+	int32_t		BarWidth, textWidth = 0;
+	int32_t		iX, iY;
 	static char		szVal[8];
 
 	double desiredPower = getPowerMinusQueued(selectedPlayer);
@@ -671,7 +671,7 @@ void IntStatusButton::display(int xOffset, int yOffset)
 	STRUCTURE           *Structure;
 	DROID               *Droid;
 	BASE_STATS          *Stats, *psResGraphic;
-	UDWORD              compID;
+	uint32_t              compID;
 	bool	            bOnHold = false;
 	ImdObject object;
 	Image image;
@@ -861,7 +861,7 @@ IntStatsButton::IntStatsButton(WIDGET *parent)
 void IntStatsButton::display(int xOffset, int yOffset)
 {
 	BASE_STATS     *psResGraphic;
-	SDWORD          compID;
+	int32_t          compID;
 
 	initDisplay();
 
@@ -1021,7 +1021,7 @@ void IntFormAnimated::display(int xOffset, int yOffset)
 
 // Display an image for a widget.
 //
-void intDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayImage(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -1031,7 +1031,7 @@ void intDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 
 //draws the mission clock - flashes when below a predefined time
-void intDisplayMissionClock(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayMissionClock(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -1049,11 +1049,11 @@ void intDisplayMissionClock(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 // Display one of two images depending on if the widget is hilighted by the mouse.
 //
-void intDisplayImageHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayImageHilight(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
-	UWORD ImageID;
+	uint16_t ImageID;
 	bool Hilight = false;
 
 	switch (psWidget->type)
@@ -1111,11 +1111,11 @@ void intDisplayImageHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 }
 
 // Display one of two images depending on whether the widget is highlighted by the mouse.
-void intDisplayButtonHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayButtonHilight(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
-	UWORD ImageID;
+	uint16_t ImageID;
 
 	unsigned state = psWidget->getState();
 	bool grey = (state & WBUT_DISABLE) != 0;
@@ -1142,11 +1142,11 @@ void intDisplayButtonHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 // Flash one of two images, regardless of whether or not it is highlighted
 // Commented-out portions are retained because I am planning on making the intensity of the
 // flash depend on whether or not the button is highlighted.
-void intDisplayButtonFlash(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayButtonFlash(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
-	UWORD ImageID;
+	uint16_t ImageID;
 
 	ASSERT(psWidget->type == WIDG_BUTTON, "Not a button");
 
@@ -1163,13 +1163,13 @@ void intDisplayButtonFlash(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 }
 
 /* display highlighted edit box from left, middle and end edit box graphics */
-void intDisplayEditBox(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayEditBox(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 
 	W_EDITBOX	*psEditBox = (W_EDITBOX *) psWidget;
-	UWORD		iImageIDLeft, iImageIDMid, iImageIDRight;
-	UDWORD		iX, iY, iDX, iXRight;
-	UDWORD          iXLeft = xOffset + psWidget->x(),
+	uint16_t		iImageIDLeft, iImageIDMid, iImageIDRight;
+	uint32_t		iX, iY, iDX, iXRight;
+	uint32_t          iXLeft = xOffset + psWidget->x(),
 	                iYLeft = yOffset + psWidget->y();
 
 	if (psEditBox->state & WEDBS_HILITE)
@@ -1235,9 +1235,9 @@ void IntFancyButton::displayIMD(Image image, ImdObject imdObject, int xOffset, i
 	}
 	int ButXPos = xOffset + x();
 	int ButYPos = yOffset + y();
-	UDWORD ox, oy;
-	UDWORD Radius;
-	UDWORD basePlateSize;
+	uint32_t ox, oy;
+	uint32_t Radius;
+	uint32_t basePlateSize;
 
 	if (isDown())
 	{
@@ -1540,7 +1540,7 @@ void IntFancyButton::displayImage(Image image, int xOffset, int yOffset)
 // Create a blank button.
 void IntFancyButton::displayBlank(int xOffset, int yOffset)
 {
-	UDWORD ox, oy;
+	uint32_t ox, oy;
 
 	if (isDown())
 	{
@@ -1562,7 +1562,7 @@ void IntFancyButton::displayBlank(int xOffset, int yOffset)
 bool DroidIsBuilding(DROID *Droid)
 {
 	BASE_STATS	*Stats;
-	UDWORD x, y;
+	uint32_t x, y;
 
 	if (!(droidType(Droid) == DROID_CONSTRUCT ||
 	      droidType(Droid) == DROID_CYBORG_CONSTRUCT))
@@ -1590,7 +1590,7 @@ bool DroidIsBuilding(DROID *Droid)
 bool DroidGoingToBuild(DROID *Droid)
 {
 	BASE_STATS	*Stats;
-	UDWORD x, y;
+	uint32_t x, y;
 
 	if (!(droidType(Droid) == DROID_CONSTRUCT ||
 	      droidType(Droid) == DROID_CYBORG_CONSTRUCT))
@@ -1624,7 +1624,7 @@ STRUCTURE *DroidGetBuildStructure(DROID *Droid)
 // Get the first factory assigned to a command droid
 static STRUCTURE *droidGetCommandFactory(DROID *psDroid)
 {
-	SDWORD		inc;
+	int32_t		inc;
 	STRUCTURE	*psCurr;
 
 	for (inc = 0; inc < MAX_FACTORY; inc++)
@@ -1678,7 +1678,7 @@ static STRUCTURE *droidGetCommandFactory(DROID *psDroid)
 BASE_STATS *DroidGetBuildStats(DROID *Droid)
 {
 	BASE_STATS *Stats;
-	UDWORD x, y;
+	uint32_t x, y;
 
 	if (orderStateStatsLoc(Droid, DORDER_BUILD, &Stats, &x, &y))  	// Moving to build location?
 	{
@@ -1780,7 +1780,7 @@ bool StatIsFeature(BASE_STATS const *Stat)
 	        REF_FEATURE_START + REF_RANGE);
 }
 
-iIMDShape *StatGetStructureIMD(BASE_STATS *Stat, UDWORD Player)
+iIMDShape *StatGetStructureIMD(BASE_STATS *Stat, uint32_t Player)
 {
 	(void)Player;
 	return ((STRUCTURE_STATS *)Stat)->pIMD[0];
@@ -1792,7 +1792,7 @@ bool StatIsTemplate(BASE_STATS *Stat)
 	        Stat->ref < REF_TEMPLATE_START + REF_RANGE);
 }
 
-SDWORD StatIsComponent(BASE_STATS *Stat)
+int32_t StatIsComponent(BASE_STATS *Stat)
 {
 	if (Stat->ref >= REF_BODY_START &&
 	    Stat->ref < REF_BODY_START + REF_RANGE)
@@ -1845,7 +1845,7 @@ SDWORD StatIsComponent(BASE_STATS *Stat)
 	return COMP_NUMCOMPONENTS;
 }
 
-bool StatGetComponentIMD(BASE_STATS *Stat, SDWORD compID, iIMDShape **CompIMD, iIMDShape **MountIMD)
+bool StatGetComponentIMD(BASE_STATS *Stat, int32_t compID, iIMDShape **CompIMD, iIMDShape **MountIMD)
 {
 	WEAPON_STATS		*psWStat;
 
@@ -1929,7 +1929,7 @@ static void StatGetResearchImage(BASE_STATS *psStat, Image *image, iIMDShape **S
 	}
 }
 
-static void intDisplayBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset, bool isPowerBar)
+static void intDisplayBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset, bool isPowerBar)
 {
 	W_BARGRAPH *BarGraph = (W_BARGRAPH *)psWidget;
 	char szVal[30];
@@ -1985,13 +1985,13 @@ static void intDisplayBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset, bool
 }
 
 /* Draws a stats bar for the design screen */
-void intDisplayStatsBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayStatsBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	intDisplayBar(psWidget, xOffset, yOffset, false);
 }
 
 /* Draws a Template Power Bar for the Design Screen */
-void intDisplayDesignPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayDesignPowerBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	intDisplayBar(psWidget, xOffset, yOffset, true);
 }
@@ -2001,10 +2001,10 @@ void intDisplayDesignPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 #define WIDGETBEEPGAP (200)	// 200 milliseconds between each beep please
 void WidgetAudioCallback(int AudioID)
 {
-	static	SDWORD LastTimeAudio;
+	static	int32_t LastTimeAudio;
 	if (AudioID >= 0)
 	{
-		SDWORD TimeSinceLastWidgetBeep;
+		int32_t TimeSinceLastWidgetBeep;
 
 		// Don't allow a widget beep if one was made in the last WIDGETBEEPGAP milliseconds
 		// This stops double beeps happening (which seems to happen all the time)
@@ -2036,7 +2036,7 @@ void IntTransportButton::display(int xOffset, int yOffset)
 	{
 		// Add the experience level for each droid
 		unsigned gfxId = getDroidRankGraphic(psDroid);
-		if (gfxId != UDWORD_MAX)
+		if (gfxId != uint32_t_MAX)
 		{
 			/* Render the rank graphic at the correct location */
 			iV_DrawImage(IntImages, gfxId, xOffset + x() + 50, yOffset + y() + 30);
@@ -2049,10 +2049,10 @@ void IntTransportButton::display(int xOffset, int yOffset)
 void drawRadarBlips(int radarX, int radarY, float pixSizeH, float pixSizeV)
 {
 	PROXIMITY_DISPLAY	*psProxDisp;
-	UWORD			imageID;
-	UDWORD			delay = 150;
-	UDWORD			i;
-	SDWORD width, height;
+	uint16_t			imageID;
+	uint32_t			delay = 150;
+	uint32_t			i;
+	int32_t width, height;
 	int		x = 0, y = 0;
 	static const uint16_t imagesEnemy[] = {IMAGE_RAD_ENMREAD, IMAGE_RAD_ENM1, IMAGE_RAD_ENM2, IMAGE_RAD_ENM3};
 	static const uint16_t imagesResource[] = {IMAGE_RAD_RESREAD, IMAGE_RAD_RES1, IMAGE_RAD_RES2, IMAGE_RAD_RES3};
@@ -2194,12 +2194,12 @@ void drawRadarBlips(int radarX, int radarY, float pixSizeH, float pixSizeV)
 
 
 /*Displays the proximity messages blips over the world*/
-void intDisplayProximityBlips(WIDGET *psWidget, WZ_DECL_UNUSED UDWORD xOffset, WZ_DECL_UNUSED UDWORD yOffset)
+void intDisplayProximityBlips(WIDGET *psWidget, WZ_DECL_UNUSED uint32_t xOffset, WZ_DECL_UNUSED uint32_t yOffset)
 {
 	W_CLICKFORM			*psButton = (W_CLICKFORM *)psWidget;
 	PROXIMITY_DISPLAY	*psProxDisp = (PROXIMITY_DISPLAY *)psButton->pUserData;
 	MESSAGE				*psMsg = psProxDisp->psMessage;
-	SDWORD				x = 0, y = 0;
+	int32_t				x = 0, y = 0;
 
 	ASSERT(psMsg->type == MSG_PROXIMITY, "Invalid message type");
 
@@ -2233,9 +2233,9 @@ void intDisplayProximityBlips(WIDGET *psWidget, WZ_DECL_UNUSED UDWORD xOffset, W
 	}
 }
 
-static UWORD sliderMouseUnit(W_SLIDER *Slider)
+static uint16_t sliderMouseUnit(W_SLIDER *Slider)
 {
-	UWORD posStops = (UWORD)(Slider->numStops / 20);
+	uint16_t posStops = (uint16_t)(Slider->numStops / 20);
 
 	if (posStops == 0 || Slider->pos == 0 || Slider->pos == Slider->numStops)
 	{
@@ -2249,7 +2249,7 @@ static UWORD sliderMouseUnit(W_SLIDER *Slider)
 
 	if (Slider->pos > (Slider->numStops - posStops))
 	{
-		return (UWORD)(Slider->numStops - Slider->pos);
+		return (uint16_t)(Slider->numStops - Slider->pos);
 	}
 	return posStops;
 }
@@ -2264,24 +2264,24 @@ void intUpdateQuantitySlider(WIDGET *psWidget, W_CONTEXT *psContext)
 		{
 			if (Slider->pos > 0)
 			{
-				Slider->pos = (UWORD)(Slider->pos - sliderMouseUnit(Slider));
+				Slider->pos = (uint16_t)(Slider->pos - sliderMouseUnit(Slider));
 			}
 		}
 		else if (keyDown(KEY_RIGHTARROW))
 		{
 			if (Slider->pos < Slider->numStops)
 			{
-				Slider->pos = (UWORD)(Slider->pos + sliderMouseUnit(Slider));
+				Slider->pos = (uint16_t)(Slider->pos + sliderMouseUnit(Slider));
 			}
 		}
 	}
 }
 
-void intDisplayResSubGroup(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayResSubGroup(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	W_LABEL		*Label = (W_LABEL *)psWidget;
-	UDWORD		x = Label->x() + xOffset;
-	UDWORD		y = Label->y() + yOffset;
+	uint32_t		x = Label->x() + xOffset;
+	uint32_t		y = Label->y() + yOffset;
 	RESEARCH    *psResearch = (RESEARCH *)Label->pUserData;
 
 	if (psResearch->subGroup != NO_RESEARCH_ICON)
@@ -2290,11 +2290,11 @@ void intDisplayResSubGroup(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	}
 }
 
-void intDisplayAllyIcon(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayAllyIcon(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	W_LABEL		*Label = (W_LABEL *)psWidget;
-	UDWORD		x = Label->x() + xOffset;
-	UDWORD		y = Label->y() + yOffset;
+	uint32_t		x = Label->x() + xOffset;
+	uint32_t		y = Label->y() + yOffset;
 
 	unsigned ref = UNPACKDWORD_HI(psWidget->UserData) + REF_RESEARCH_START;
 	unsigned num = UNPACKDWORD_LOW(psWidget->UserData);
@@ -2312,7 +2312,7 @@ void intDisplayAllyIcon(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	iV_DrawImageTc(IntImages, IMAGE_ALLY_RESEARCH, IMAGE_ALLY_RESEARCH_TC, x, y, pal_GetTeamColour(getPlayerColour(researches[num].player)));
 }
 
-void intDisplayAllyBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void intDisplayAllyBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	W_BARGRAPH *psBar = (W_BARGRAPH *)psWidget;
 

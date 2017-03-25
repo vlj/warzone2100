@@ -37,7 +37,7 @@
 
 
 /* See header file for documentation */
-UDWORD gameTime = 0, deltaGameTime = 0, graphicsTime = 0, deltaGraphicsTime = 0, realTime = 0, deltaRealTime = 0;
+uint32_t gameTime = 0, deltaGameTime = 0, graphicsTime = 0, deltaGraphicsTime = 0, realTime = 0, deltaRealTime = 0;
 float graphicsTimeFraction = 0.0, realTimeFraction = 0.0;
 
 /** The current clock modifier. Set to speed up the game. */
@@ -50,7 +50,7 @@ static uint32_t prevRealTime;
   * Count how many times gameTimeStop has been called without a game time start.
   * We use this to ensure that we can properly nest stop commands.
   **/
-static UDWORD	stopCount;
+static uint32_t	stopCount;
 
 static uint32_t gameQueueTime[MAX_PLAYERS];
 static uint32_t gameQueueCheckTime[MAX_PLAYERS];
@@ -131,17 +131,17 @@ void setGameTime(uint32_t newGameTime)
 	// Not setting real time.
 }
 
-UDWORD getModularScaledGameTime(UDWORD timePeriod, UDWORD requiredRange)
+uint32_t getModularScaledGameTime(uint32_t timePeriod, uint32_t requiredRange)
 {
 	return gameTime % timePeriod * requiredRange / MAX(1, timePeriod);
 }
 
-UDWORD getModularScaledGraphicsTime(UDWORD timePeriod, UDWORD requiredRange)
+uint32_t getModularScaledGraphicsTime(uint32_t timePeriod, uint32_t requiredRange)
 {
 	return graphicsTime % MAX(1, timePeriod) * requiredRange / MAX(1, timePeriod);
 }
 
-UDWORD getModularScaledRealTime(UDWORD timePeriod, UDWORD requiredRange)
+uint32_t getModularScaledRealTime(uint32_t timePeriod, uint32_t requiredRange)
 {
 	return realTime % MAX(1, timePeriod) * requiredRange / MAX(1, timePeriod);
 }
@@ -299,7 +299,7 @@ void gameTimeStart(void)
 }
 
 /* Call this to reset the game timer */
-void gameTimeReset(UDWORD time)
+void gameTimeReset(uint32_t time)
 {
 	// reset the game timers
 	setGameTime(time);

@@ -44,13 +44,13 @@ public: // TODO: c++ design to members become private.
 	unsigned int getNumMembers(); // Count the number of members of a group
 
 	void orderGroup(DROID_ORDER order);                     // give an order all the droids of the group
-	void orderGroup(DROID_ORDER order, UDWORD x, UDWORD y); // give an order all the droids of the group (using location)
+	void orderGroup(DROID_ORDER order, uint32_t x, uint32_t y); // give an order all the droids of the group (using location)
 	void orderGroup(DROID_ORDER order, BASE_OBJECT *psObj); // give an order all the droids of the group (using object)
 
 	void setSecondary(SECONDARY_ORDER sec, SECONDARY_STATE state); // set the secondary state for a group of droids
 
 	GROUP_TYPE	type;         // Type from the enum GROUP_TYPE above
-	SWORD		refCount;     // Number of objects in the group. Group is deleted if refCount<=0. Count number of droids+NULL pointers.
+	int16_t		refCount;     // Number of objects in the group. Group is deleted if refCount<=0. Count number of droids+NULL pointers.
 	DROID		*psList;      // List of droids in the group
 	DROID		*psCommander; // The command droid of a command group
 	RUN_DATA	sRunData;   // Where the group should retreat to

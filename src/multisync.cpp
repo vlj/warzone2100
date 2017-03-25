@@ -42,12 +42,12 @@
 // ////////////////////////////////////////////////////////////////////////////
 // function definitions
 
-static UDWORD averagePing(void);
+static uint32_t averagePing(void);
 
 #define AV_PING_FREQUENCY       20000                           // how often to update average pingtimes. in approx millisecs.
 #define PING_FREQUENCY          4000                            // how often to update pingtimes. in approx millisecs.
 
-static UDWORD				PingSend[MAX_PLAYERS];	//stores the time the ping was called.
+static uint32_t				PingSend[MAX_PLAYERS];	//stores the time the ping was called.
 static uint8_t pingChallenge[8];                                // Random data sent with the last ping.
 
 
@@ -80,9 +80,9 @@ bool sendScoreCheck(void)
 // ////////////////////////////////////////////////////////////////////////
 // Pings
 
-static UDWORD averagePing(void)
+static uint32_t averagePing(void)
 {
-	UDWORD i, count = 0, total = 0;
+	uint32_t i, count = 0, total = 0;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -100,8 +100,8 @@ bool sendPing(void)
 	bool			isNew = true;
 	uint8_t			player = selectedPlayer;
 	int				i;
-	static UDWORD	lastPing = 0;	// Last time we sent a ping
-	static UDWORD	lastav = 0;		// Last time we updated average
+	static uint32_t	lastPing = 0;	// Last time we sent a ping
+	static uint32_t	lastav = 0;		// Last time we updated average
 
 	// Only ping every so often
 	if (lastPing > realTime)

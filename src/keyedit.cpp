@@ -77,7 +77,7 @@ static char keymapVersion[8] = "KM_0002";
 // ////////////////////////////////////////////////////////////////////////////
 // funcs
 
-static bool pushedKeyMap(UDWORD key)
+static bool pushedKeyMap(uint32_t key)
 {
 	selectedKeyMap = (KEY_MAPPING *)widgGetFromID(psWScreen, key)->pUserData;
 	if (selectedKeyMap && selectedKeyMap->status != KEYMAP_ASSIGNABLE)
@@ -158,7 +158,7 @@ static bool pushedKeyCombo(KEY_CODE subkey)
 // ////////////////////////////////////////////////////////////////////////////
 static KEY_CODE scanKeyBoardForBinding(void)
 {
-	UDWORD i;
+	uint32_t i;
 	for (i = 0; i < KEY_MAXSCAN; i++)
 	{
 		if (keyPressed((KEY_CODE)i))
@@ -249,7 +249,7 @@ static bool keyMapToString(char *pStr, KEY_MAPPING *psMapping)
 
 // ////////////////////////////////////////////////////////////////////////////
 // display a keymap on the interface.
-static void displayKeyMap(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayKeyMap(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -363,7 +363,7 @@ bool startKeyMapEditor(bool first)
 bool saveKeyMap(void)
 {
 	KEY_MAPPING	*psMapping;
-	SDWORD		count;
+	int32_t		count;
 	char		name[128];
 	PHYSFS_file *pfile;
 
@@ -436,8 +436,8 @@ bool loadKeyMap(void)
 	KEY_CODE	subCode;
 	KEY_ACTION	action;
 	char		name[128];
-	SDWORD		count;
-	UDWORD		funcmap;
+	int32_t		count;
+	uint32_t		funcmap;
 	char		ver[8];
 	PHYSFS_file *pfile;
 	PHYSFS_sint64 filesize;

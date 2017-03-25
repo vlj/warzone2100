@@ -75,10 +75,10 @@ public:
 	bool isDown() const;
 	bool isHighlighted() const;
 
-	UDWORD		state;					// Button state of the form
+	uint32_t		state;					// Button state of the form
 	QString         pTip;                   // Tip for the form
-	SWORD HilightAudioID;				// Audio ID for form clicked sound
-	SWORD ClickedAudioID;				// Audio ID for form hilighted sound
+	int16_t HilightAudioID;				// Audio ID for form clicked sound
+	int16_t ClickedAudioID;				// Audio ID for form hilighted sound
 	WIDGET_AUDIOCALLBACK AudioCallback;	// Pointer to audio callback function
 };
 

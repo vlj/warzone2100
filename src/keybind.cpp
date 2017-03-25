@@ -1086,7 +1086,7 @@ void	kf_ShowMappings(void)
 /*If this is performed twice then it changes the productionPlayer*/
 void	kf_SelectPlayer(void)
 {
-	UDWORD	playerNumber, prevPlayer;
+	uint32_t	playerNumber, prevPlayer;
 
 #ifndef DEBUG
 	// Bail out if we're running a _true_ multiplayer game (to prevent MP
@@ -1115,13 +1115,13 @@ void	kf_SelectPlayer(void)
 
 	if (prevPlayer == selectedPlayer)
 	{
-		changeProductionPlayer((UBYTE)selectedPlayer);
+		changeProductionPlayer((uint8_t)selectedPlayer);
 	}
 }
 // --------------------------------------------------------------------------
 
 /* Selects the player's groups 1..9 */
-void	kf_SelectGrouping(UDWORD	groupNumber)
+void	kf_SelectGrouping(uint32_t	groupNumber)
 {
 	bool	bAlreadySelected;
 	DROID	*psDroid;
@@ -1190,7 +1190,7 @@ DEFINE_NUMED_KF(9)
 // --------------------------------------------------------------------------
 void	kf_SelectMoveGrouping(void)
 {
-	UDWORD	groupNumber;
+	uint32_t	groupNumber;
 
 
 	groupNumber = (getLastSubKey() - KEY_1) + 1;
@@ -1436,7 +1436,7 @@ void	kf_TogglePauseMode(void)
 // finish all the research for the selected player
 void	kf_FinishAllResearch(void)
 {
-	UDWORD	j;
+	uint32_t	j;
 	const char *cmsg;
 
 #ifndef DEBUG
@@ -1862,7 +1862,7 @@ void	kf_SelectNextCyborgFactory(void)
 
 void	kf_KillEnemy(void)
 {
-	UDWORD		player;
+	uint32_t		player;
 	DROID		*psCDroid, *psNDroid;
 	STRUCTURE	*psCStruct, *psNStruct;
 	const char *cmsg;
@@ -2368,7 +2368,7 @@ void	kf_TriggerRayCast(void)
 
 	if (found)
 	{
-//		getBlockHeightDirToEdgeOfGrid(UDWORD x, UDWORD y, UBYTE direction, UDWORD *height, UDWORD *dist)
+//		getBlockHeightDirToEdgeOfGrid(uint32_t x, uint32_t y, uint8_t direction, uint32_t *height, uint32_t *dist)
 //		getBlockHeightDirToEdgeOfGrid(psOther->pos.x,psOther->pos.y,psOther->direction,&height,&dist);
 //		getBlockHeightDirToEdgeOfGrid(mouseTileX*TILE_UNITS,mouseTileY*TILE_UNITS,getTestAngle(),&height,&dist);
 	}
@@ -2386,7 +2386,7 @@ void	kf_CentreOnBase(void)
 {
 	STRUCTURE	*psStruct;
 	bool		bGotHQ;
-	UDWORD		xJump = 0, yJump = 0;
+	uint32_t		xJump = 0, yJump = 0;
 
 	/* Got through our buildings */
 	for (psStruct = apsStructLists[selectedPlayer], bGotHQ = false;	// start
@@ -2671,9 +2671,9 @@ void kf_ToggleRadarTerrain(void)
 void	kf_AddHelpBlip(void)
 {
 	int		worldX, worldY;
-	UDWORD	i;
+	uint32_t	i;
 	char	tempStr[255];
-	SDWORD	x, y;
+	int32_t	x, y;
 	bool	mOverR = false;
 
 	/* not needed in campaign */

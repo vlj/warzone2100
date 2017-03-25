@@ -61,8 +61,8 @@ typedef union YYSTYPE
 	bool			bval;
 	INTERP_TYPE		tval;
 	char			*sval;
-	UDWORD			vindex;
-	SDWORD			ival;
+	uint32_t			vindex;
+	int32_t			ival;
 	VAR_INIT		sInit;
 	ARRAY_INDEXES	*arrayIndex;
 

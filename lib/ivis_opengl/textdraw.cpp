@@ -89,7 +89,7 @@ struct FTFace
 {
 	FTFace(FT_Library &lib, const std::string &fileName, int32_t charSize, int32_t horizDPI, int32_t vertDPI)
 	{
-		UDWORD pFileSize = 0;
+		uint32_t pFileSize = 0;
 		char *pFileData = nullptr;
 		if (!loadFile(fileName.c_str(), &pFileData, &pFileSize))
 		{
@@ -521,14 +521,14 @@ void iV_SetTextColour(PIELIGHT colour)
  *                  FTEXT_LEFTJUSTIFY, FTEXT_CENTRE or FTEXT_RIGHTJUSTIFY.
  *  @return the Y coordinate for the next text line.
  */
-int iV_DrawFormattedText(const char *String, UDWORD x, UDWORD y, UDWORD Width, UDWORD Justify)
+int iV_DrawFormattedText(const char *String, uint32_t x, uint32_t y, uint32_t Width, uint32_t Justify)
 {
 	std::string FString;
 	std::string FWord;
 	int i;
 	int jx = x;		// Default to left justify.
 	int jy = y;
-	UDWORD WWidth;
+	uint32_t WWidth;
 	int TWidth;
 	const char *curChar = String;
 

@@ -137,7 +137,7 @@ static bool InitialiseGlobals(void)
 bool loadLevFile(const char *filename, searchPathMode datadir, bool ignoreWrf, char const *realFileName)
 {
 	char *pBuffer;
-	UDWORD size;
+	uint32_t size;
 
 	if (realFileName == NULL)
 	{
@@ -1179,7 +1179,7 @@ bool stageTwoShutDown(void)
 bool stageThreeInitialise(void)
 {
 	STRUCTURE *psStr;
-	UDWORD i;
+	uint32_t i;
 	DROID		*psDroid;
 
 	debug(LOG_WZ, "== stageThreeInitalise ==");

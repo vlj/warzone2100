@@ -76,7 +76,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 // protos.
 
-static void displayStructureBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+static void displayStructureBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 // ////////////////////////////////////////////////////////////////////////////
 static inline void freeLimitSet(void)
@@ -195,7 +195,7 @@ void runLimitScreen(void)
 		unsigned statid = widgGetFromID(psWScreen, id - 1)->UserData;
 		if (statid)
 		{
-			asStructLimits[0][statid].limit = (UBYTE)((W_SLIDER *)(widgGetFromID(psWScreen, id)))->pos;
+			asStructLimits[0][statid].limit = (uint8_t)((W_SLIDER *)(widgGetFromID(psWScreen, id)))->pos;
 		}
 	}
 	else
@@ -247,7 +247,7 @@ void runLimitScreen(void)
 // ////////////////////////////////////////////////////////////////////////////
 void createLimitSet(void)
 {
-	UDWORD			i, numchanges = 0, bufSize, idx = 0;
+	uint32_t			i, numchanges = 0, bufSize, idx = 0;
 	MULTISTRUCTLIMITS	*pEntry;
 
 	debug(LOG_NET, "LimitSet created");
@@ -326,7 +326,7 @@ void applyLimitSet(void)
 
 // ////////////////////////////////////////////////////////////////////////////
 
-static void displayStructureBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayStructureBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -337,7 +337,7 @@ static void displayStructureBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset
 	Vector3i rotation;
 	char str[20];
 
-	UDWORD scale, Radius;
+	uint32_t scale, Radius;
 
 	drawBlueBox(x, y, w, h);
 

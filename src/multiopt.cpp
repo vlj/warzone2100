@@ -319,7 +319,7 @@ void recvOptions(NETQUEUE queue)
 bool hostCampaign(char *sGame, char *sPlayer)
 {
 	PLAYERSTATS playerStats;
-	UDWORD		i;
+	uint32_t		i;
 
 	debug(LOG_WZ, "Hosting campaign: '%s', player: '%s'", sGame, sPlayer);
 
@@ -406,7 +406,7 @@ bool multiShutdown(void)
 // ////////////////////////////////////////////////////////////////////////////
 static bool gameInit(void)
 {
-	UDWORD			player;
+	uint32_t			player;
 
 	// If this is from a savegame, stop here!
 	if (getSaveGameType() == GTYPE_SAVE_START || getSaveGameType() == GTYPE_SAVE_MIDMISSION)
@@ -468,7 +468,7 @@ void playerResponding(void)
 //called when the game finally gets fired up.
 bool multiGameInit(void)
 {
-	UDWORD player;
+	uint32_t player;
 
 	for (player = 0; player < MAX_PLAYERS; player++)
 	{

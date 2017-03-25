@@ -58,7 +58,7 @@ enum PICKTILE
 // the structure that was last hit
 extern DROID	*psLastDroidHit;
 
-extern UWORD	aDroidExperience[MAX_PLAYERS][MAX_RECYCLED_DROIDS];
+extern uint16_t	aDroidExperience[MAX_PLAYERS][MAX_RECYCLED_DROIDS];
 
 
 // initialise droid module
@@ -75,36 +75,36 @@ struct INITIAL_DROID_ORDERS
 };
 /*Builds an instance of a Structure - the x/y passed in are in world coords.*/
 /// Sends a GAME_DROID message if bMultiMessages is true, or actually creates it if false. Only uses initialOrders if sending a GAME_DROID message.
-extern DROID *buildDroid(DROID_TEMPLATE *pTemplate, UDWORD x, UDWORD y, UDWORD player, bool onMission, const INITIAL_DROID_ORDERS *initialOrders);
+extern DROID *buildDroid(DROID_TEMPLATE *pTemplate, uint32_t x, uint32_t y, uint32_t player, bool onMission, const INITIAL_DROID_ORDERS *initialOrders);
 /// Creates a droid locally, instead of sending a message, even if the bMultiMessages HACK is set to true.
-DROID *reallyBuildDroid(DROID_TEMPLATE *pTemplate, Position pos, UDWORD player, bool onMission, Rotation rot = Rotation());
+DROID *reallyBuildDroid(DROID_TEMPLATE *pTemplate, Position pos, uint32_t player, bool onMission, Rotation rot = Rotation());
 
 /* Set the asBits in a DROID structure given it's template. */
 extern void droidSetBits(DROID_TEMPLATE *pTemplate, DROID *psDroid);
 
 /* Calculate the weight of a droid from it's template */
-extern UDWORD calcDroidWeight(DROID_TEMPLATE *psTemplate);
+extern uint32_t calcDroidWeight(DROID_TEMPLATE *psTemplate);
 
 /* Calculate the power points required to build/maintain a droid */
-extern UDWORD calcDroidPower(DROID *psDroid);
+extern uint32_t calcDroidPower(DROID *psDroid);
 
 // Calculate the number of points required to build a droid
-extern UDWORD calcDroidPoints(DROID *psDroid);
+extern uint32_t calcDroidPoints(DROID *psDroid);
 
 /* Calculate the body points of a droid from it's template */
-extern UDWORD calcTemplateBody(DROID_TEMPLATE *psTemplate, UBYTE player);
+extern uint32_t calcTemplateBody(DROID_TEMPLATE *psTemplate, uint8_t player);
 
 /* Calculate the base speed of a droid from it's template */
-extern UDWORD calcDroidBaseSpeed(DROID_TEMPLATE *psTemplate, UDWORD weight, UBYTE player);
+extern uint32_t calcDroidBaseSpeed(DROID_TEMPLATE *psTemplate, uint32_t weight, uint8_t player);
 
 /* Calculate the speed of a droid over a terrain */
-extern UDWORD calcDroidSpeed(UDWORD baseSpeed, UDWORD terrainType, UDWORD propIndex, UDWORD level);
+extern uint32_t calcDroidSpeed(uint32_t baseSpeed, uint32_t terrainType, uint32_t propIndex, uint32_t level);
 
 /* Calculate the points required to build the template */
-extern UDWORD calcTemplateBuild(DROID_TEMPLATE *psTemplate);
+extern uint32_t calcTemplateBuild(DROID_TEMPLATE *psTemplate);
 
 /* Calculate the power points required to build/maintain the droid */
-extern UDWORD	calcTemplatePower(DROID_TEMPLATE *psTemplate);
+extern uint32_t	calcTemplatePower(DROID_TEMPLATE *psTemplate);
 
 // return whether a droid is IDF
 bool idfDroid(DROID *psDroid);
@@ -162,24 +162,24 @@ extern DROID_TYPE droidType(DROID *psDroid);
 /* Return the type of a droid from it's template */
 extern DROID_TYPE droidTemplateType(DROID_TEMPLATE *psTemplate);
 
-extern void assignDroidsToGroup(UDWORD	playerNumber, UDWORD groupNumber);
+extern void assignDroidsToGroup(uint32_t	playerNumber, uint32_t groupNumber);
 
-extern bool activateGroup(UDWORD playerNumber, UDWORD groupNumber);
+extern bool activateGroup(uint32_t playerNumber, uint32_t groupNumber);
 
-extern UDWORD	getNumDroidsForLevel(UDWORD	level);
+extern uint32_t	getNumDroidsForLevel(uint32_t	level);
 
-extern bool activateGroupAndMove(UDWORD playerNumber, UDWORD groupNumber);
+extern bool activateGroupAndMove(uint32_t playerNumber, uint32_t groupNumber);
 /* calculate muzzle tip location in 3d world added int weapon_slot to fix the always slot 0 hack*/
 bool calcDroidMuzzleLocation(DROID *psDroid, Vector3i *muzzle, int weapon_slot);
 /* calculate muzzle base location in 3d world added int weapon_slot to fix the always slot 0 hack*/
 bool calcDroidMuzzleBaseLocation(DROID *psDroid, Vector3i *muzzle, int weapon_slot);
 
 // finds a droid for the player and sets it to be the current selected droid
-extern bool selectDroidByID(UDWORD id, UDWORD player);
+extern bool selectDroidByID(uint32_t id, uint32_t player);
 
 /* Droid experience stuff */
 extern unsigned int getDroidLevel(const DROID *psDroid);
-extern UDWORD	getDroidEffectiveLevel(DROID *psDroid);
+extern uint32_t	getDroidEffectiveLevel(DROID *psDroid);
 extern const char *getDroidLevelName(DROID *psDroid);
 
 // Get a droid's name.
@@ -189,15 +189,15 @@ extern const char *droidGetName(const DROID *psDroid);
 extern void droidSetName(DROID *psDroid, const char *pName);
 
 // returns true when no droid on x,y square.
-extern bool	noDroid(UDWORD x, UDWORD y);				// true if no droid at x,y
+extern bool	noDroid(uint32_t x, uint32_t y);				// true if no droid at x,y
 // returns an x/y coord to place a droid
-extern PICKTILE pickHalfATile(UDWORD *x, UDWORD *y, UBYTE numIterations);
-extern	bool	zonedPAT(UDWORD x, UDWORD y);
-extern	bool	pickATileGen(UDWORD *x, UDWORD *y, UBYTE numIterations,
-                             bool (*function)(UDWORD x, UDWORD y));
-bool pickATileGen(Vector2i *pos, unsigned numIterations, bool (*function)(UDWORD x, UDWORD y));
-extern	bool	pickATileGenThreat(UDWORD *x, UDWORD *y, UBYTE numIterations, SDWORD threatRange,
-                                   SDWORD player, bool (*function)(UDWORD x, UDWORD y));
+extern PICKTILE pickHalfATile(uint32_t *x, uint32_t *y, uint8_t numIterations);
+extern	bool	zonedPAT(uint32_t x, uint32_t y);
+extern	bool	pickATileGen(uint32_t *x, uint32_t *y, uint8_t numIterations,
+                             bool (*function)(uint32_t x, uint32_t y));
+bool pickATileGen(Vector2i *pos, unsigned numIterations, bool (*function)(uint32_t x, uint32_t y));
+extern	bool	pickATileGenThreat(uint32_t *x, uint32_t *y, uint8_t numIterations, int32_t threatRange,
+                                   int32_t player, bool (*function)(uint32_t x, uint32_t y));
 
 
 //initialises the droid movement model
@@ -230,7 +230,7 @@ extern bool electronicDroid(DROID *psDroid);
 extern bool droidUnderRepair(DROID *psDroid);
 
 //count how many Command Droids exist in the world at any one moment
-extern UBYTE checkCommandExist(UBYTE player);
+extern uint8_t checkCommandExist(uint8_t player);
 
 /*For a given repair droid, check if there are any damaged droids within
 a defined range*/
@@ -252,7 +252,7 @@ extern bool  vtolHappy(const DROID *psDroid);
 /*checks if the droid is a VTOL droid and updates the attack runs as required*/
 extern void updateVtolAttackRun(DROID *psDroid, int weapon_slot);
 /*returns a count of the base number of attack runs for the weapon attached to the droid*/
-extern UWORD   getNumAttackRuns(DROID *psDroid, int weapon_slot);
+extern uint16_t   getNumAttackRuns(DROID *psDroid, int weapon_slot);
 //assign rearmPad to the VTOL
 extern void assignVTOLPad(DROID *psNewDroid, STRUCTURE *psReArmPad);
 // true if a vtol is waiting to be rearmed by a particular rearm pad
@@ -275,16 +275,16 @@ extern bool cbSensorDroid(DROID *psDroid);
 extern bool standardSensorDroid(DROID *psDroid);
 
 // give a droid from one player to another - used in Electronic Warfare and multiplayer
-extern DROID *giftSingleDroid(DROID *psD, UDWORD to);
+extern DROID *giftSingleDroid(DROID *psD, uint32_t to);
 /*calculates the electronic resistance of a droid based on its experience level*/
-extern SWORD   droidResistance(DROID *psDroid);
+extern int16_t   droidResistance(DROID *psDroid);
 
 /*this is called to check the weapon is 'allowed'. Check if VTOL, the weapon is
 direct fire. Also check numVTOLattackRuns for the weapon is not zero - return
 true if valid weapon*/
 extern bool checkValidWeaponForProp(DROID_TEMPLATE *psTemplate);
 
-extern const char *getDroidNameForRank(UDWORD rank);
+extern const char *getDroidNameForRank(uint32_t rank);
 
 /*called when a Template is deleted in the Design screen*/
 void deleteTemplateFromProduction(DROID_TEMPLATE *psTemplate, unsigned player, QUEUE_MODE mode);  // ModeQueue deletes from production queues, which are not yet synchronised. ModeImmediate deletes from current production which is synchronised.
@@ -390,7 +390,7 @@ static inline void _setDroidTarget(DROID *psDroid, BASE_OBJECT *psNewTarget, int
 }
 
 #define setDroidActionTarget(_psDroid, _psNewTarget, _idx) _setDroidActionTarget(_psDroid, _psNewTarget, _idx, __LINE__, __FUNCTION__)
-static inline void _setDroidActionTarget(DROID *psDroid, BASE_OBJECT *psNewTarget, UWORD idx, int line, const char *func)
+static inline void _setDroidActionTarget(DROID *psDroid, BASE_OBJECT *psNewTarget, uint16_t idx, int line, const char *func)
 {
 	psDroid->psActionTarget[idx] = psNewTarget;
 	ASSERT(psNewTarget == NULL || !psNewTarget->died || (psNewTarget->died == NOT_CURRENT_LIST && psDroid->died == NOT_CURRENT_LIST),
@@ -429,7 +429,7 @@ static inline void setSaveDroidTarget(DROID *psSaveDroid, BASE_OBJECT *psNewTarg
 #endif
 }
 
-static inline void setSaveDroidActionTarget(DROID *psSaveDroid, BASE_OBJECT *psNewTarget, UWORD idx)
+static inline void setSaveDroidActionTarget(DROID *psSaveDroid, BASE_OBJECT *psNewTarget, uint16_t idx)
 {
 	psSaveDroid->psActionTarget[idx] = psNewTarget;
 #ifdef DEBUG

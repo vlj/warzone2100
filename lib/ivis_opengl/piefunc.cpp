@@ -88,7 +88,7 @@ void pie_DrawViewingWindow()
 
 void pie_TransColouredTriangle(Vector3f *vrt, PIELIGHT c)
 {
-	UDWORD i;
+	uint32_t i;
 
 	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_SetRendMode(REND_ADDITIVE);

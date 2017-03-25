@@ -76,12 +76,12 @@ bool runTutorialMenu(void);
 void addTopForm(void);
 void addBottomForm(void);
 void addBackdrop(void);
-void addTextButton(UDWORD id, UDWORD PosX, UDWORD PosY, const char *txt, unsigned int style);
-void addSmallTextButton(UDWORD id, UDWORD PosX, UDWORD PosY, const char *txt, unsigned int style);
-void addSideText(UDWORD id, UDWORD PosX, UDWORD PosY, const char *txt);
-void addFESlider(UDWORD id, UDWORD parent, UDWORD x, UDWORD y, UDWORD stops, UDWORD pos);
+void addTextButton(uint32_t id, uint32_t PosX, uint32_t PosY, const char *txt, unsigned int style);
+void addSmallTextButton(uint32_t id, uint32_t PosX, uint32_t PosY, const char *txt, unsigned int style);
+void addSideText(uint32_t id, uint32_t PosX, uint32_t PosY, const char *txt);
+void addFESlider(uint32_t id, uint32_t parent, uint32_t x, uint32_t y, uint32_t stops, uint32_t pos);
 
-void displayTextOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void displayTextOption(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 bool CancelPressed(void);
 
@@ -156,7 +156,7 @@ enum
 	FRONTEND_SIDETEXT2,					// side-ee-ways text
 	FRONTEND_SIDETEXT3,					// side-ee-ways text
 	FRONTEND_SIDETEXT4,					// side-ee-ways text
-	FRONTEND_PASSWORDFORM,
+	FRONTEND_PASint16_tFORM,
 	FRONTEND_HYPERLINK,
 	FRONTEND_UPGRDLINK,
 	FRONTEND_DONATELINK,

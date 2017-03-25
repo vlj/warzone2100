@@ -793,7 +793,7 @@ extern int chat_lex_destroy(void);
 static const char *pInputBuffer = NULL;
 static const char *pEndBuffer = NULL;
 
-static SDWORD playerIndex;
+static int32_t playerIndex;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
@@ -2499,7 +2499,7 @@ void chat_free (void * ptr )
 
 
 /* Set the current input buffer for the lexer */
-void chatSetInputBuffer(const char *pBuffer, UDWORD size)
+void chatSetInputBuffer(const char *pBuffer, uint32_t size)
 {
 	pInputBuffer = pBuffer;
 	pEndBuffer = pBuffer + size;

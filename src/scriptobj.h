@@ -73,10 +73,10 @@ enum _groupids
 };
 
 // Get values from a base object
-extern bool scrBaseObjGet(UDWORD index);
+extern bool scrBaseObjGet(uint32_t index);
 
 // Set values from a base object
-extern bool scrBaseObjSet(UDWORD index);
+extern bool scrBaseObjSet(uint32_t index);
 
 // convert a base object to a droid if it is the right type
 extern bool scrObjToDroid(void);
@@ -88,10 +88,10 @@ extern bool scrObjToStructure(void);
 extern bool scrObjToFeature(void);
 
 // Get values from a group
-extern bool scrGroupObjGet(UDWORD index);
+extern bool scrGroupObjGet(uint32_t index);
 
 // Get values from a weapon
-extern bool scrWeaponObjGet(UDWORD index);
+extern bool scrWeaponObjGet(uint32_t index);
 
 // default value save routine
 extern bool scrValDefSave(INTERP_VAL *psVal, WzConfig &ini);

@@ -59,34 +59,34 @@ WEAPON_MODIFIER		asWeaponModifier[WE_NUMEFFECTS][PROPULSION_TYPE_NUM];
 WEAPON_MODIFIER		asWeaponModifierBody[WE_NUMEFFECTS][SIZE_NUM];
 
 /* The number of different stats stored */
-UDWORD		numBodyStats;
-UDWORD		numBrainStats;
-UDWORD		numPropulsionStats;
-UDWORD		numSensorStats;
-UDWORD		numECMStats;
-UDWORD		numRepairStats;
-UDWORD		numWeaponStats;
-UDWORD		numConstructStats;
+uint32_t		numBodyStats;
+uint32_t		numBrainStats;
+uint32_t		numPropulsionStats;
+uint32_t		numSensorStats;
+uint32_t		numECMStats;
+uint32_t		numRepairStats;
+uint32_t		numWeaponStats;
+uint32_t		numConstructStats;
 
 //the max values of the stats used in the design screen
-static UDWORD	maxComponentWeight;
-static UDWORD	maxBodyArmour;
-static UDWORD	maxBodyPower;
-static UDWORD	maxBodyPoints;
-static UDWORD	maxSensorRange;
-static UDWORD	maxECMRange;
-static UDWORD	maxConstPoints;
-static UDWORD	maxRepairPoints;
-static UDWORD	maxWeaponRange;
-static UDWORD	maxWeaponDamage;
-static UDWORD	maxWeaponROF;
-static UDWORD	maxPropulsionSpeed;
+static uint32_t	maxComponentWeight;
+static uint32_t	maxBodyArmour;
+static uint32_t	maxBodyPower;
+static uint32_t	maxBodyPoints;
+static uint32_t	maxSensorRange;
+static uint32_t	maxECMRange;
+static uint32_t	maxConstPoints;
+static uint32_t	maxRepairPoints;
+static uint32_t	maxWeaponRange;
+static uint32_t	maxWeaponDamage;
+static uint32_t	maxWeaponROF;
+static uint32_t	maxPropulsionSpeed;
 
 //stores for each players component states - can be either UNAVAILABLE, REDUNDANT, FOUND or AVAILABLE
-UBYTE		*apCompLists[MAX_PLAYERS][COMP_NUMCOMPONENTS];
+uint8_t		*apCompLists[MAX_PLAYERS][COMP_NUMCOMPONENTS];
 
 //store for each players Structure states
-UBYTE		*apStructTypeLists[MAX_PLAYERS];
+uint8_t		*apStructTypeLists[MAX_PLAYERS];
 
 static QHash<QString, BASE_STATS *> lookupStatPtr;
 
@@ -94,26 +94,26 @@ static bool getMovementModel(const char *movementModel, MOVEMENT_MODEL *model);
 static bool statsGetAudioIDFromString(const QString &szStatName, const QString &szWavName, int *piWavID);
 
 //Access functions for the max values to be used in the Design Screen
-static void setMaxComponentWeight(UDWORD weight);
-static void setMaxBodyArmour(UDWORD armour);
-static void setMaxBodyPower(UDWORD power);
-static void setMaxBodyPoints(UDWORD points);
-static void setMaxSensorRange(UDWORD range);
-static void setMaxECMRange(UDWORD power);
-static void setMaxConstPoints(UDWORD points);
-static void setMaxRepairPoints(UDWORD repair);
-static void setMaxWeaponRange(UDWORD range);
-static void setMaxWeaponDamage(UDWORD damage);
-static void setMaxWeaponROF(UDWORD rof);
-static void setMaxPropulsionSpeed(UDWORD speed);
+static void setMaxComponentWeight(uint32_t weight);
+static void setMaxBodyArmour(uint32_t armour);
+static void setMaxBodyPower(uint32_t power);
+static void setMaxBodyPoints(uint32_t points);
+static void setMaxSensorRange(uint32_t range);
+static void setMaxECMRange(uint32_t power);
+static void setMaxConstPoints(uint32_t points);
+static void setMaxRepairPoints(uint32_t repair);
+static void setMaxWeaponRange(uint32_t range);
+static void setMaxWeaponDamage(uint32_t damage);
+static void setMaxWeaponROF(uint32_t rof);
+static void setMaxPropulsionSpeed(uint32_t speed);
 
 //determine the effect this upgrade would have on the max values
-static void updateMaxWeaponStats(UWORD maxValue);
-static void updateMaxSensorStats(UWORD maxRange);
-static void updateMaxRepairStats(UWORD maxValue);
-static void updateMaxECMStats(UWORD maxValue);
-static void updateMaxBodyStats(UWORD maxBody, UWORD maxPower, UWORD maxArmour);
-static void updateMaxConstStats(UWORD maxValue);
+static void updateMaxWeaponStats(uint16_t maxValue);
+static void updateMaxSensorStats(uint16_t maxRange);
+static void updateMaxRepairStats(uint16_t maxValue);
+static void updateMaxECMStats(uint16_t maxValue);
+static void updateMaxBodyStats(uint16_t maxBody, uint16_t maxPower, uint16_t maxArmour);
+static void updateMaxConstStats(uint16_t maxValue);
 
 static inline bool stringToEnumFindFunction(std::pair<char const *, unsigned> const &a, char const *b)
 {
@@ -194,9 +194,9 @@ bool statsShutDown(void)
 }
 
 /* Return the number of newlines in a file buffer */
-UDWORD numCR(const char *pFileBuffer, UDWORD fileSize)
+uint32_t numCR(const char *pFileBuffer, uint32_t fileSize)
 {
-	UDWORD  lines = 0;
+	uint32_t  lines = 0;
 
 	while (fileSize-- > 0)
 	{
@@ -214,44 +214,44 @@ UDWORD numCR(const char *pFileBuffer, UDWORD fileSize)
 *		Allocate stats functions
 *******************************************************************************/
 /* Allocate Weapon stats */
-bool statsAllocWeapons(UDWORD	numStats)
+bool statsAllocWeapons(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asWeaponStats, numWeaponStats, WEAPON_STATS);
 }
 /* Allocate Body Stats */
-bool statsAllocBody(UDWORD	numStats)
+bool statsAllocBody(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asBodyStats, numBodyStats, BODY_STATS);
 }
 /* Allocate Brain Stats */
-bool statsAllocBrain(UDWORD	numStats)
+bool statsAllocBrain(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asBrainStats, numBrainStats, BRAIN_STATS);
 }
 /* Allocate Propulsion Stats */
-bool statsAllocPropulsion(UDWORD	numStats)
+bool statsAllocPropulsion(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asPropulsionStats, numPropulsionStats, PROPULSION_STATS);
 }
 /* Allocate Sensor Stats */
-bool statsAllocSensor(UDWORD	numStats)
+bool statsAllocSensor(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asSensorStats, numSensorStats, SENSOR_STATS);
 }
 /* Allocate Ecm Stats */
-bool statsAllocECM(UDWORD	numStats)
+bool statsAllocECM(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asECMStats, numECMStats, ECM_STATS);
 }
 
 /* Allocate Repair Stats */
-bool statsAllocRepair(UDWORD	numStats)
+bool statsAllocRepair(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asRepairStats, numRepairStats, REPAIR_STATS);
 }
 
 /* Allocate Construct Stats */
-bool statsAllocConstruct(UDWORD	numStats)
+bool statsAllocConstruct(uint32_t	numStats)
 {
 	ALLOC_STATS(numStats, asConstructStats, numConstructStats, CONSTRUCT_STATS);
 }
@@ -1087,13 +1087,13 @@ bool loadPropulsionTypes(const char *pFileName)
 
 		//don't care about this anymore! AB FRIDAY 13/11/98
 		//want it back again! AB 27/11/98
-		if (multiplier > UWORD_MAX)
+		if (multiplier > uint16_t_MAX)
 		{
 			ASSERT(false, "loadPropulsionTypes: power Ratio multiplier too high");
 			//set to a default value since not life threatening!
 			multiplier = 100;
 		}
-		pPropType->powerRatioMult = (UWORD)multiplier;
+		pPropType->powerRatioMult = (uint16_t)multiplier;
 
 		//initialise all the sound variables
 		pPropType->startID = NO_SOUND;
@@ -1207,7 +1207,7 @@ bool loadWeaponModifiers(const char *pFileName)
 /*Load the propulsion type sounds from the file exported from Access*/
 bool loadPropulsionSounds(const char *pFileName)
 {
-	SDWORD	i, startID, idleID, moveOffID, moveID, hissID, shutDownID;
+	int32_t	i, startID, idleID, moveOffID, moveID, hissID, shutDownID;
 	PROPULSION_TYPE type;
 	PROPULSION_TYPES *pPropType;
 
@@ -1248,12 +1248,12 @@ bool loadPropulsionSounds(const char *pFileName)
 			return false;
 		}
 		pPropType = asPropulsionTypes + type;
-		pPropType->startID = (SWORD)startID;
-		pPropType->idleID = (SWORD)idleID;
-		pPropType->moveOffID = (SWORD)moveOffID;
-		pPropType->moveID = (SWORD)moveID;
-		pPropType->hissID = (SWORD)hissID;
-		pPropType->shutDownID = (SWORD)shutDownID;
+		pPropType->startID = (int16_t)startID;
+		pPropType->idleID = (int16_t)idleID;
+		pPropType->moveOffID = (int16_t)moveOffID;
+		pPropType->moveID = (int16_t)moveID;
+		pPropType->hissID = (int16_t)hissID;
+		pPropType->shutDownID = (int16_t)shutDownID;
 
 		ini.endGroup();
 	}
@@ -1262,14 +1262,14 @@ bool loadPropulsionSounds(const char *pFileName)
 }
 
 //get the speed factor for a given terrain type and propulsion type
-UDWORD getSpeedFactor(UDWORD type, UDWORD propulsionType)
+uint32_t getSpeedFactor(uint32_t type, uint32_t propulsionType)
 {
 	ASSERT(propulsionType < PROPULSION_TYPE_NUM, "The propulsion type is too large");
 	return asTerrainTable[type * PROPULSION_TYPE_NUM + propulsionType];
 }
 
 //return the type of stat this stat is!
-UDWORD statType(UDWORD ref)
+uint32_t statType(uint32_t ref)
 {
 	if (ref >= REF_BODY_START && ref < REF_BODY_START +
 	    REF_RANGE)
@@ -1317,9 +1317,9 @@ UDWORD statType(UDWORD ref)
 }
 
 //return the REF_START value of this type of stat
-UDWORD statRefStart(UDWORD stat)
+uint32_t statRefStart(uint32_t stat)
 {
-	UDWORD start;
+	uint32_t start;
 
 	switch (stat)
 	{
@@ -1722,7 +1722,7 @@ int weaponROF(const WEAPON_STATS *psStat, int player)
 		rof = weaponFirePause(psStat, player);
 		if (rof != 0)
 		{
-			rof = (UWORD)(60 * GAME_TICKS_PER_SEC / rof);
+			rof = (uint16_t)(60 * GAME_TICKS_PER_SEC / rof);
 		}
 		//else leave it at 0
 	}
@@ -1730,55 +1730,55 @@ int weaponROF(const WEAPON_STATS *psStat, int player)
 }
 
 //Access functions for the max values to be used in the Design Screen
-void setMaxComponentWeight(UDWORD weight)
+void setMaxComponentWeight(uint32_t weight)
 {
 	if (weight > maxComponentWeight)
 	{
 		maxComponentWeight = weight;
 	}
 }
-UDWORD getMaxComponentWeight(void)
+uint32_t getMaxComponentWeight(void)
 {
 	return maxComponentWeight;
 }
 
-void setMaxBodyArmour(UDWORD armour)
+void setMaxBodyArmour(uint32_t armour)
 {
 	if (armour > maxBodyArmour)
 	{
 		maxBodyArmour = armour;
 	}
 }
-UDWORD getMaxBodyArmour(void)
+uint32_t getMaxBodyArmour(void)
 {
 	return maxBodyArmour;
 }
 
-void setMaxBodyPower(UDWORD power)
+void setMaxBodyPower(uint32_t power)
 {
 	if (power > maxBodyPower)
 	{
 		maxBodyPower = power;
 	}
 }
-UDWORD getMaxBodyPower(void)
+uint32_t getMaxBodyPower(void)
 {
 	return maxBodyPower;
 }
 
-void setMaxBodyPoints(UDWORD points)
+void setMaxBodyPoints(uint32_t points)
 {
 	if (points > maxBodyPoints)
 	{
 		maxBodyPoints = points;
 	}
 }
-UDWORD getMaxBodyPoints(void)
+uint32_t getMaxBodyPoints(void)
 {
 	return maxBodyPoints;
 }
 
-void setMaxSensorRange(UDWORD range)
+void setMaxSensorRange(uint32_t range)
 {
 	if (range > maxSensorRange)
 	{
@@ -1786,12 +1786,12 @@ void setMaxSensorRange(UDWORD range)
 	}
 }
 
-UDWORD getMaxSensorRange(void)
+uint32_t getMaxSensorRange(void)
 {
 	return maxSensorRange;
 }
 
-void setMaxECMRange(UDWORD range)
+void setMaxECMRange(uint32_t range)
 {
 	if (range > maxECMRange)
 	{
@@ -1799,87 +1799,87 @@ void setMaxECMRange(UDWORD range)
 	}
 }
 
-UDWORD getMaxECMRange(void)
+uint32_t getMaxECMRange(void)
 {
 	return maxECMRange;
 }
 
-void setMaxConstPoints(UDWORD points)
+void setMaxConstPoints(uint32_t points)
 {
 	if (points > maxConstPoints)
 	{
 		maxConstPoints = points;
 	}
 }
-UDWORD getMaxConstPoints(void)
+uint32_t getMaxConstPoints(void)
 {
 	return maxConstPoints;
 }
 
-void setMaxRepairPoints(UDWORD repair)
+void setMaxRepairPoints(uint32_t repair)
 {
 	if (repair > maxRepairPoints)
 	{
 		maxRepairPoints = repair;
 	}
 }
-UDWORD getMaxRepairPoints(void)
+uint32_t getMaxRepairPoints(void)
 {
 	return maxRepairPoints;
 }
 
-void setMaxWeaponRange(UDWORD range)
+void setMaxWeaponRange(uint32_t range)
 {
 	if (range > maxWeaponRange)
 	{
 		maxWeaponRange = range;
 	}
 }
-UDWORD getMaxWeaponRange(void)
+uint32_t getMaxWeaponRange(void)
 {
 	return maxWeaponRange;
 }
 
-void setMaxWeaponDamage(UDWORD damage)
+void setMaxWeaponDamage(uint32_t damage)
 {
 	if (damage > maxWeaponDamage)
 	{
 		maxWeaponDamage = damage;
 	}
 }
-UDWORD getMaxWeaponDamage(void)
+uint32_t getMaxWeaponDamage(void)
 {
 	return maxWeaponDamage;
 }
 
-void setMaxWeaponROF(UDWORD rof)
+void setMaxWeaponROF(uint32_t rof)
 {
 	if (rof > maxWeaponROF)
 	{
 		maxWeaponROF = rof;
 	}
 }
-UDWORD getMaxWeaponROF(void)
+uint32_t getMaxWeaponROF(void)
 {
 	return maxWeaponROF;
 }
 
-void setMaxPropulsionSpeed(UDWORD speed)
+void setMaxPropulsionSpeed(uint32_t speed)
 {
 	if (speed > maxPropulsionSpeed)
 	{
 		maxPropulsionSpeed = speed;
 	}
 }
-UDWORD getMaxPropulsionSpeed(void)
+uint32_t getMaxPropulsionSpeed(void)
 {
 	return maxPropulsionSpeed;
 }
 
 //determine the effect this upgrade would have on the max values
-void updateMaxWeaponStats(UWORD maxValue)
+void updateMaxWeaponStats(uint16_t maxValue)
 {
-	UDWORD currentMaxValue = getMaxWeaponDamage();
+	uint32_t currentMaxValue = getMaxWeaponDamage();
 
 	if (currentMaxValue < (currentMaxValue + maxValue / 100))
 	{
@@ -1890,9 +1890,9 @@ void updateMaxWeaponStats(UWORD maxValue)
 	//the fire pause is dealt with differently
 }
 
-void updateMaxSensorStats(UWORD maxRange)
+void updateMaxSensorStats(uint16_t maxRange)
 {
-	UDWORD currentMaxValue = getMaxSensorRange();
+	uint32_t currentMaxValue = getMaxSensorRange();
 
 	if (currentMaxValue < (currentMaxValue + currentMaxValue * maxRange / 100))
 	{
@@ -1901,9 +1901,9 @@ void updateMaxSensorStats(UWORD maxRange)
 	}
 }
 
-void updateMaxRepairStats(UWORD maxValue)
+void updateMaxRepairStats(uint16_t maxValue)
 {
-	UDWORD currentMaxValue = getMaxRepairPoints();
+	uint32_t currentMaxValue = getMaxRepairPoints();
 
 	if (currentMaxValue < (currentMaxValue + currentMaxValue * maxValue / 100))
 	{
@@ -1912,7 +1912,7 @@ void updateMaxRepairStats(UWORD maxValue)
 	}
 }
 
-void updateMaxECMStats(UWORD maxValue)
+void updateMaxECMStats(uint16_t maxValue)
 {
 	int currentMaxValue = getMaxECMRange();
 
@@ -1923,9 +1923,9 @@ void updateMaxECMStats(UWORD maxValue)
 	}
 }
 
-void updateMaxBodyStats(UWORD maxBody, UWORD maxPower, UWORD maxArmour)
+void updateMaxBodyStats(uint16_t maxBody, uint16_t maxPower, uint16_t maxArmour)
 {
-	UDWORD currentMaxValue = getMaxBodyPoints();
+	uint32_t currentMaxValue = getMaxBodyPoints();
 
 	if (currentMaxValue < (currentMaxValue + currentMaxValue * maxBody / 100))
 	{
@@ -1948,9 +1948,9 @@ void updateMaxBodyStats(UWORD maxBody, UWORD maxPower, UWORD maxArmour)
 	}
 }
 
-void updateMaxConstStats(UWORD maxValue)
+void updateMaxConstStats(uint16_t maxValue)
 {
-	UDWORD currentMaxValue = getMaxConstPoints();
+	uint32_t currentMaxValue = getMaxConstPoints();
 
 	if (currentMaxValue < (currentMaxValue + currentMaxValue * maxValue / 100))
 	{
@@ -1961,7 +1961,7 @@ void updateMaxConstStats(UWORD maxValue)
 
 void adjustMaxDesignStats(void)
 {
-	UWORD       weaponDamage, sensorRange, repairPoints,
+	uint16_t       weaponDamage, sensorRange, repairPoints,
 	            ecmRange, constPoints, bodyPoints, bodyPower, bodyArmour;
 
 	// init all the values

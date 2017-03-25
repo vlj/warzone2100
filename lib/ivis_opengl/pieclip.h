@@ -40,9 +40,9 @@
  */
 /***************************************************************************/
 
-extern bool pie_SetVideoBufferDepth(UDWORD depth);
-extern bool pie_SetVideoBufferWidth(UDWORD width);
-extern bool pie_SetVideoBufferHeight(UDWORD height);
+extern bool pie_SetVideoBufferDepth(uint32_t depth);
+extern bool pie_SetVideoBufferWidth(uint32_t width);
+extern bool pie_SetVideoBufferHeight(uint32_t height);
 extern int pie_GetVideoBufferDepth(void) WZ_DECL_PURE;
 extern int pie_GetVideoBufferWidth(void) WZ_DECL_PURE;
 extern int pie_GetVideoBufferHeight(void) WZ_DECL_PURE;

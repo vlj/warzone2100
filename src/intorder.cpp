@@ -100,16 +100,16 @@ struct ORDERBUTTONS
 {
 	ORDBUTTONCLASS Class;					// The class of button.
 	SECONDARY_ORDER Order;					// The droid order.
-	UDWORD StateMask;						// It's state mask.
+	uint32_t StateMask;						// It's state mask.
 	ORDBUTTONTYPE ButType;					// The group type.
 	unsigned ButJustify;                            // Button justification. Type ORDBUTTONJUSTIFY, possibly ored with ORD_JUSTIFY_NEWLINE.
-	UDWORD ButBaseID;						// Starting widget ID for buttons
-	UWORD NumButs;							// Number of buttons ( = number of states )
-	UWORD AcNumButs;						// Actual bumber of buttons enabled.
-	UWORD ButImageID[MAX_ORDER_BUTS];		// Image ID's for each button ( normal ).
-	UWORD ButGreyID[MAX_ORDER_BUTS];		// Image ID's for each button ( greyed ).
-	UWORD ButHilightID[MAX_ORDER_BUTS];		// Image ID's for each button ( hilight overlay ).
-	UWORD ButTips[MAX_ORDER_BUTS];			// Tip string id for each button.
+	uint32_t ButBaseID;						// Starting widget ID for buttons
+	uint16_t NumButs;							// Number of buttons ( = number of states )
+	uint16_t AcNumButs;						// Actual bumber of buttons enabled.
+	uint16_t ButImageID[MAX_ORDER_BUTS];		// Image ID's for each button ( normal ).
+	uint16_t ButGreyID[MAX_ORDER_BUTS];		// Image ID's for each button ( greyed ).
+	uint16_t ButHilightID[MAX_ORDER_BUTS];		// Image ID's for each button ( hilight overlay ).
+	uint16_t ButTips[MAX_ORDER_BUTS];			// Tip string id for each button.
 	unsigned States[MAX_ORDER_BUTS];                // Order state relating to each button, combination of SECONDARY_STATEs ored together.
 };
 
@@ -125,7 +125,7 @@ struct AVORDER
 		return OrderIndex == b.OrderIndex;
 	}
 
-	UWORD OrderIndex;		// Index into ORDERBUTTONS array of available orders.
+	uint16_t OrderIndex;		// Index into ORDERBUTTONS array of available orders.
 };
 
 
@@ -435,14 +435,14 @@ static SECONDARY_STATE GetSecondaryStates(SECONDARY_ORDER sec)
 }
 
 
-static UDWORD GetImageWidth(IMAGEFILE *ImageFile, UDWORD ImageID)
+static uint32_t GetImageWidth(IMAGEFILE *ImageFile, uint32_t ImageID)
 {
-	return iV_GetImageWidth(ImageFile, (UWORD)ImageID);
+	return iV_GetImageWidth(ImageFile, (uint16_t)ImageID);
 }
 
-static UDWORD GetImageHeight(IMAGEFILE *ImageFile, UDWORD ImageID)
+static uint32_t GetImageHeight(IMAGEFILE *ImageFile, uint32_t ImageID)
 {
-	return iV_GetImageHeight(ImageFile, (UWORD)ImageID);
+	return iV_GetImageHeight(ImageFile, (uint16_t)ImageID);
 }
 
 
@@ -454,10 +454,10 @@ bool intAddOrder(BASE_OBJECT *psObj)
 {
 	bool Animate = true;
 	SECONDARY_STATE State;
-	UWORD OrdIndex;
-	UWORD Height, NumDisplayedOrders;
-	UWORD NumButs;
-	UWORD NumJustifyButs, NumCombineButs, NumCombineBefore;
+	uint16_t OrdIndex;
+	uint16_t Height, NumDisplayedOrders;
+	uint16_t NumButs;
+	uint16_t NumJustifyButs, NumCombineButs, NumCombineBefore;
 	bool  bLastCombine, bHidden;
 	DROID *Droid;
 	STRUCTURE *psStructure;
@@ -598,13 +598,13 @@ bool intAddOrder(BASE_OBJECT *psObj)
 		switch (OrderButtons[OrdIndex].Class)
 		{
 		case ORDBUTCLASS_FACTORY:
-			NumButs = countAssignableFactories((UBYTE)selectedPlayer, FACTORY_FLAG);
+			NumButs = countAssignableFactories((uint8_t)selectedPlayer, FACTORY_FLAG);
 			break;
 		case ORDBUTCLASS_CYBORGFACTORY:
-			NumButs = countAssignableFactories((UBYTE)selectedPlayer, CYBORG_FLAG);
+			NumButs = countAssignableFactories((uint8_t)selectedPlayer, CYBORG_FLAG);
 			break;
 		case ORDBUTCLASS_VTOLFACTORY:
-			NumButs = countAssignableFactories((UBYTE)selectedPlayer, VTOL_FLAG);
+			NumButs = countAssignableFactories((uint8_t)selectedPlayer, VTOL_FLAG);
 			break;
 		default:
 			break;
@@ -644,7 +644,7 @@ bool intAddOrder(BASE_OBJECT *psObj)
 					NumCombineBefore += 1;
 				}
 			}
-			NumCombineButs = (UWORD)(NumCombineBefore + 1);
+			NumCombineButs = (uint16_t)(NumCombineBefore + 1);
 
 			// now see how many in total
 			for (unsigned i = j + 1; i < AvailableOrders.size(); ++i)
@@ -657,12 +657,12 @@ bool intAddOrder(BASE_OBJECT *psObj)
 			}
 
 			// get position on line
-			NumCombineButs = (UWORD)(NumCombineButs - (NumCombineBefore - (NumCombineBefore % ORD_MAX_COMBINE_BUTS)));
+			NumCombineButs = (uint16_t)(NumCombineButs - (NumCombineBefore - (NumCombineBefore % ORD_MAX_COMBINE_BUTS)));
 
 			if (NumCombineButs >= ORD_MAX_COMBINE_BUTS)
 			{
 				// the buttons will fill the line
-				sButInit.x = (SWORD)(ORDER_BUTX +
+				sButInit.x = (int16_t)(ORDER_BUTX +
 				                     (GetImageWidth(IntImages, OrderButtons[OrdIndex].ButImageID[0]) + ORDER_BUTGAP) * NumCombineBefore);
 			}
 			else
@@ -671,7 +671,7 @@ bool intAddOrder(BASE_OBJECT *psObj)
 				sButInit.x = orderForm->width() / 2 -
 				             (NumCombineButs * GetImageWidth(IntImages, OrderButtons[OrdIndex].ButImageID[0]) +
 				              (NumCombineButs - 1) * ORDER_BUTGAP) / 2;
-				sButInit.x = (SWORD)(sButInit.x +
+				sButInit.x = (int16_t)(sButInit.x +
 				                     (GetImageWidth(IntImages, OrderButtons[OrdIndex].ButImageID[0]) + ORDER_BUTGAP) * NumCombineBefore);
 			}
 
@@ -687,8 +687,8 @@ bool intAddOrder(BASE_OBJECT *psObj)
 		for (unsigned i = 0; i < OrderButtons[OrdIndex].AcNumButs; ++i)
 		{
 			sButInit.pTip = getDORDDescription(OrderButtons[OrdIndex].ButTips[i]);
-			sButInit.width = (UWORD)GetImageWidth(IntImages, OrderButtons[OrdIndex].ButImageID[i]);
-			sButInit.height = (UWORD)GetImageHeight(IntImages, OrderButtons[OrdIndex].ButImageID[i]);
+			sButInit.width = (uint16_t)GetImageWidth(IntImages, OrderButtons[OrdIndex].ButImageID[i]);
+			sButInit.height = (uint16_t)GetImageHeight(IntImages, OrderButtons[OrdIndex].ButImageID[i]);
 			sButInit.UserData = PACKDWORD_TRI(OrderButtons[OrdIndex].ButGreyID[i],
 			                                  OrderButtons[OrdIndex].ButHilightID[i],
 			                                  OrderButtons[OrdIndex].ButImageID[i]);
@@ -703,20 +703,20 @@ bool intAddOrder(BASE_OBJECT *psObj)
 			case ORD_BTYPE_RADIO:
 			case ORD_BTYPE_BOOLEAN:
 			 {
-				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (uint32_t)OrderButtons[OrdIndex].States[i];
 				widgSetButtonState(psWScreen, sButInit.id, selected? WBUT_CLICKLOCK : 0);
 				break;
 			 }
 			case ORD_BTYPE_BOOLEAN_DEPEND:
 			 {
-				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (uint32_t)OrderButtons[OrdIndex].States[i];
 				bool first = i == 0;
 				widgSetButtonState(psWScreen, sButInit.id, selected? WBUT_CLICKLOCK : first? 0 : WBUT_DISABLE);
 				break;
 			 }
 			case ORD_BTYPE_BOOLEAN_COMBINE:
 			 {
-				bool selected = State & (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = State & (uint32_t)OrderButtons[OrdIndex].States[i];
 				widgSetButtonState(psWScreen, sButInit.id, selected? WBUT_CLICKLOCK : 0);
 				break;
 			 }
@@ -754,7 +754,7 @@ bool intAddOrder(BASE_OBJECT *psObj)
 			if (!bHidden)
 			{
 
-				sButInit.x = (SWORD)(sButInit.x + sButInit.width + ORDER_BUTGAP);
+				sButInit.x = (int16_t)(sButInit.x + sButInit.width + ORDER_BUTGAP);
 			}
 			sButInit.id++;
 		}
@@ -762,8 +762,8 @@ bool intAddOrder(BASE_OBJECT *psObj)
 		if (((OrderButtons[OrdIndex].ButJustify & ORD_JUSTIFY_MASK) != ORD_JUSTIFY_COMBINE) ||
 		    bLastCombine)
 		{
-			sButInit.y = (SWORD)(sButInit.y + sButInit.height + ORDER_BUTGAP);
-			Height = (UWORD)(Height + sButInit.height + ORDER_BUTGAP);
+			sButInit.y = (int16_t)(sButInit.y + sButInit.height + ORDER_BUTGAP);
+			Height = (uint16_t)(Height + sButInit.height + ORDER_BUTGAP);
 		}
 		NumDisplayedOrders ++;
 	}
@@ -850,13 +850,13 @@ static bool SetSecondaryState(SECONDARY_ORDER sec, unsigned State)
 
 // Process the droid order screen.
 //
-void intProcessOrder(UDWORD id)
+void intProcessOrder(uint32_t id)
 {
-	UWORD i;
-	UWORD OrdIndex;
-	UDWORD BaseID;
-	UDWORD StateIndex;
-	UDWORD CombineState;
+	uint16_t i;
+	uint16_t OrdIndex;
+	uint32_t BaseID;
+	uint32_t StateIndex;
+	uint32_t CombineState;
 
 	if (id == IDORDER_CLOSE)
 	{
@@ -1009,8 +1009,8 @@ static bool CheckObjectOrderList(void)
 static bool intRefreshOrderButtons(void)
 {
 	SECONDARY_STATE State;
-	UWORD OrdIndex;
-	UDWORD	id;
+	uint16_t OrdIndex;
+	uint32_t	id;
 
 	for (unsigned j = 0; j < AvailableOrders.size() && j < MAX_DISPLAYABLE_ORDERS; ++j)
 	{
@@ -1031,20 +1031,20 @@ static bool intRefreshOrderButtons(void)
 			case ORD_BTYPE_RADIO:
 			case ORD_BTYPE_BOOLEAN:
 			 {
-				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (uint32_t)OrderButtons[OrdIndex].States[i];
 				widgSetButtonState(psWScreen, id, selected? WBUT_CLICKLOCK : 0);
 				break;
 			 }
 			case ORD_BTYPE_BOOLEAN_DEPEND:
 			 {
-				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = (State & OrderButtons[OrdIndex].StateMask) == (uint32_t)OrderButtons[OrdIndex].States[i];
 				bool first = i == 0;
 				widgSetButtonState(psWScreen, id, selected? WBUT_CLICKLOCK : first? 0 : WBUT_DISABLE);
 				break;
 			 }
 			case ORD_BTYPE_BOOLEAN_COMBINE:
 			 {
-				bool selected = State & (UDWORD)OrderButtons[OrdIndex].States[i];
+				bool selected = State & (uint32_t)OrderButtons[OrdIndex].States[i];
 				widgSetButtonState(psWScreen, id, selected? WBUT_CLICKLOCK : 0);
 				break;
 			 }

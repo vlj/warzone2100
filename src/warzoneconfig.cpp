@@ -46,9 +46,9 @@
 struct WARZONE_GLOBALS
 {
 	FMV_MODE	FMVmode;
-	SWORD		effectsLevel;
-	UDWORD		width;
-	UDWORD		height;
+	int16_t		effectsLevel;
+	uint32_t		width;
+	uint32_t		height;
 	int		screen;
 	int8_t		SPcolor;
 	int			MPcolour;
@@ -159,22 +159,22 @@ bool war_GetVsync(void)
 	return warGlobs.vsync;
 }
 
-void war_SetWidth(UDWORD width)
+void war_SetWidth(uint32_t width)
 {
 	warGlobs.width = width;
 }
 
-UDWORD war_GetWidth(void)
+uint32_t war_GetWidth(void)
 {
 	return warGlobs.width;
 }
 
-void war_SetHeight(UDWORD height)
+void war_SetHeight(uint32_t height)
 {
 	warGlobs.height = height;
 }
 
-UDWORD war_GetHeight(void)
+uint32_t war_GetHeight(void)
 {
 	return warGlobs.height;
 }

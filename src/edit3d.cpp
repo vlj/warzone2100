@@ -38,7 +38,7 @@ x coordinate that is greater than mapWidth implies that the highlight
 is invalid (not currently being used)
 */
 
-UDWORD	buildState = BUILD3D_NONE;
+uint32_t	buildState = BUILD3D_NONE;
 BUILDDETAILS	sBuildDetails;
 HIGHLIGHT		buildSite;
 int brushSize = 1;
@@ -91,7 +91,7 @@ void lowerTile(int tile3dX, int tile3dY)
 }
 
 /* Ensures any adjustment to tile elevation is within allowed ranges */
-void	adjustTileHeight(MAPTILE *psTile, SDWORD adjust)
+void	adjustTileHeight(MAPTILE *psTile, int32_t adjust)
 {
 	int32_t newHeight = psTile->height + adjust * ELEVATION_SCALE;
 
@@ -101,7 +101,7 @@ void	adjustTileHeight(MAPTILE *psTile, SDWORD adjust)
 	}
 }
 
-bool	inHighlight(UDWORD realX, UDWORD realY)
+bool	inHighlight(uint32_t realX, uint32_t realY)
 {
 	bool	retVal = false;
 
@@ -224,7 +224,7 @@ bool process3DBuilding(void)
 
 
 /* See if a structure location has been found */
-bool found3DBuilding(UDWORD *x, UDWORD *y)
+bool found3DBuilding(uint32_t *x, uint32_t *y)
 {
 	if (buildState != BUILD3D_FINISHED || x == NULL || y == NULL)
 	{
@@ -248,7 +248,7 @@ bool found3DBuilding(UDWORD *x, UDWORD *y)
 }
 
 /* See if a second position for a build has been found */
-bool found3DBuildLocTwo(UDWORD *px1, UDWORD *py1, UDWORD *px2, UDWORD *py2)
+bool found3DBuildLocTwo(uint32_t *px1, uint32_t *py1, uint32_t *px2, uint32_t *py2)
 {
 	if ((((STRUCTURE_STATS *)sBuildDetails.psStats)->type != REF_WALL &&
 	     ((STRUCTURE_STATS *)sBuildDetails.psStats)->type != REF_GATE &&

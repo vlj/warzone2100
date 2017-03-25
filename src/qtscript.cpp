@@ -358,7 +358,7 @@ static QScriptValue js_include(QScriptContext *context, QScriptEngine *engine)
 	{
 		path = "scripts/" + basename.filePath(); // use this path instead (in user write dir)
 	}
-	UDWORD size;
+	uint32_t size;
 	char *bytes = NULL;
 	if (!loadFile(path.toUtf8().constData(), &bytes, &size))
 	{
@@ -530,7 +530,7 @@ QScriptEngine *loadPlayerScript(QString path, int player, int difficulty)
 {
 	ASSERT_OR_RETURN(NULL, player < MAX_PLAYERS, "Player index %d out of bounds", player);
 	QScriptEngine *engine = new QScriptEngine();
-	UDWORD size;
+	uint32_t size;
 	char *bytes = NULL;
 	if (!loadFile(path.toUtf8().constData(), &bytes, &size))
 	{

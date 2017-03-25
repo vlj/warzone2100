@@ -30,7 +30,7 @@
 // array to store release functions
 static VAL_CREATE_FUNC	*asCreateFuncs = NULL;
 static VAL_RELEASE_FUNC	*asReleaseFuncs = NULL;
-static UDWORD		numFuncs;
+static uint32_t		numFuncs;
 
 /** The list of currently active triggers */
 ACTIVE_TRIGGER		*psTrigList = NULL;
@@ -43,13 +43,13 @@ static ACTIVE_TRIGGER	*psAddedTriggers = NULL;
 
 /** The trigger which is currently firing */
 static ACTIVE_TRIGGER	*psFiringTrigger = NULL;
-static UDWORD		updateTime;
+static uint32_t		updateTime;
 
 /** The currently allocated contexts */
 SCRIPT_CONTEXT	*psContList = NULL;
 
 // The current event trace level
-static SDWORD			eventTraceLevel = 3;
+static int32_t			eventTraceLevel = 3;
 
 // print info on trigger
 #ifdef DEBUG
@@ -89,7 +89,7 @@ static void eventPrintTriggerInfo(ACTIVE_TRIGGER *psTrigger)
 
 // Initialise a trigger
 static bool eventInitTrigger(ACTIVE_TRIGGER **ppsTrigger, SCRIPT_CONTEXT *psContext,
-                             UDWORD event, SDWORD trigger, UDWORD currTime);
+                             uint32_t event, int32_t trigger, uint32_t currTime);
 
 // Add a trigger to the list in order
 static void eventAddTrigger(ACTIVE_TRIGGER *psTrigger);
@@ -107,7 +107,7 @@ static void eventPruneLists(void)
 }
 
 //resets the event timer - updateTime
-void eventTimeReset(UDWORD initTime)
+void eventTimeReset(uint32_t initTime)
 {
 	updateTime = initTime;
 }
@@ -129,7 +129,7 @@ bool eventInitialise()
 // reset the event system
 void eventReset(void)
 {
-	SDWORD			count = 0;
+	int32_t			count = 0;
 
 	// Free any active triggers and their context's
 	while (psTrigList)
@@ -191,11 +191,11 @@ void eventShutDown(void)
 }
 
 // get the trigger id string
-const char *eventGetTriggerID(SCRIPT_CODE *psCode, SDWORD trigger)
+const char *eventGetTriggerID(SCRIPT_CODE *psCode, int32_t trigger)
 {
 	const char	*pID, *pTrigType;
 	static char	aIDNum[255];
-	SDWORD			i;
+	int32_t			i;
 	TRIGGER_TYPE	type;
 
 	if ((trigger >= 0) && (trigger < psCode->numTriggers))
@@ -255,11 +255,11 @@ const char *eventGetTriggerID(SCRIPT_CODE *psCode, SDWORD trigger)
 }
 
 // get the event id string
-const char *eventGetEventID(SCRIPT_CODE *psCode, SDWORD event)
+const char *eventGetEventID(SCRIPT_CODE *psCode, int32_t event)
 {
 	const char	*pID;
 	static char	aIDNum[255];
-	SDWORD			i;
+	int32_t			i;
 
 	// skip if not debugging scripts
 	if (!debugPartEnabled(LOG_SCRIPT))
@@ -289,7 +289,7 @@ const char *eventGetEventID(SCRIPT_CODE *psCode, SDWORD event)
 }
 
 // Initialise the create/release function array - specify the maximum value type
-bool eventInitValueFuncs(SDWORD maxType)
+bool eventInitValueFuncs(int32_t maxType)
 {
 	ASSERT(asReleaseFuncs == NULL, "eventInitValueFuncs: array already initialised");
 	asCreateFuncs = (VAL_CREATE_FUNC *)calloc(maxType, sizeof(*asCreateFuncs));
@@ -327,8 +327,8 @@ bool eventNewContext(SCRIPT_CODE *psCode, CONTEXT_RELEASE release,
                      SCRIPT_CONTEXT **ppsContext)
 {
 	SCRIPT_CONTEXT	*psContext;
-	SDWORD		val, storeIndex, arrayNum, arraySize;
-	UDWORD		i, j;
+	int32_t		val, storeIndex, arrayNum, arraySize;
+	uint32_t		i, j;
 	INTERP_TYPE	type;
 	VAL_CHUNK	*psNewChunk;
 
@@ -476,9 +476,9 @@ bool eventNewContext(SCRIPT_CODE *psCode, CONTEXT_RELEASE release,
 
 // Add a new object to the trigger system
 // Time is the application time at which all the triggers are to be started
-bool eventRunContext(SCRIPT_CONTEXT *psContext, UDWORD time)
+bool eventRunContext(SCRIPT_CONTEXT *psContext, uint32_t time)
 {
-	SDWORD			event;
+	int32_t			event;
 	ACTIVE_TRIGGER	*psTrigger;
 	TRIGGER_DATA	*psData;
 	SCRIPT_CODE		*psCode;
@@ -523,7 +523,7 @@ void eventRemoveContext(SCRIPT_CONTEXT *psContext)
 	ACTIVE_TRIGGER *psCurr, *psPrev, *psNext;
 	VAL_CHUNK		*psCChunk, *psNChunk;
 	SCRIPT_CONTEXT	*psCCont, *psPCont = NULL;
-	SDWORD			i, chunkStart;
+	int32_t			i, chunkStart;
 	INTERP_VAL		*psVal;
 
 	// Get rid of all it's triggers
@@ -643,7 +643,7 @@ void eventRemoveContext(SCRIPT_CONTEXT *psContext)
 }
 
 // Get the value pointer for a variable index
-bool eventGetContextVal(SCRIPT_CONTEXT *psContext, UDWORD index, INTERP_VAL **ppsVal)
+bool eventGetContextVal(SCRIPT_CONTEXT *psContext, uint32_t index, INTERP_VAL **ppsVal)
 {
 	VAL_CHUNK	*psChunk;
 
@@ -666,7 +666,7 @@ bool eventGetContextVal(SCRIPT_CONTEXT *psContext, UDWORD index, INTERP_VAL **pp
 }
 
 // Set a global variable value for a context
-bool eventSetContextVar(SCRIPT_CONTEXT *psContext, UDWORD index, INTERP_VAL *data)
+bool eventSetContextVar(SCRIPT_CONTEXT *psContext, uint32_t index, INTERP_VAL *data)
 {
 	INTERP_VAL *psVal;
 
@@ -701,7 +701,7 @@ bool eventSetContextVar(SCRIPT_CONTEXT *psContext, UDWORD index, INTERP_VAL *dat
 // Add a trigger to the list in order
 static void eventAddTrigger(ACTIVE_TRIGGER *psTrigger)
 {
-	UDWORD	testTime = psTrigger->testTime;
+	uint32_t	testTime = psTrigger->testTime;
 
 	if (psTrigger->type >= TR_CALLBACKSTART)
 	{
@@ -753,11 +753,11 @@ static void eventAddTrigger(ACTIVE_TRIGGER *psTrigger)
 
 // Initialise a trigger
 static bool eventInitTrigger(ACTIVE_TRIGGER **ppsTrigger, SCRIPT_CONTEXT *psContext,
-                             UDWORD event, SDWORD trigger, UDWORD currTime)
+                             uint32_t event, int32_t trigger, uint32_t currTime)
 {
 	ACTIVE_TRIGGER	*psNewTrig;
 	TRIGGER_DATA	*psTrigData;
-	UDWORD			testTime;
+	uint32_t			testTime;
 
 	ASSERT(event < psContext->psCode->numEvents, "Event out of range");
 	ASSERT(trigger < psContext->psCode->numTriggers, "Trigger out of range");
@@ -775,9 +775,9 @@ static bool eventInitTrigger(ACTIVE_TRIGGER **ppsTrigger, SCRIPT_CONTEXT *psCont
 	psTrigData = psContext->psCode->psTriggerData + trigger;
 	testTime = currTime + psTrigData->time;
 	psNewTrig->testTime = testTime;
-	psNewTrig->trigger = (SWORD)trigger;
-	psNewTrig->type = (SWORD)psTrigData->type;
-	psNewTrig->event = (UWORD)event;
+	psNewTrig->trigger = (int16_t)trigger;
+	psNewTrig->type = (int16_t)psTrigData->type;
+	psNewTrig->event = (uint16_t)event;
 	psNewTrig->offset = 0;
 	psNewTrig->deactivated = false;
 
@@ -787,8 +787,8 @@ static bool eventInitTrigger(ACTIVE_TRIGGER **ppsTrigger, SCRIPT_CONTEXT *psCont
 }
 
 // Load a trigger into the system from a save game
-bool eventLoadTrigger(UDWORD time, SCRIPT_CONTEXT *psContext,
-                      SDWORD type, SDWORD trigger, UDWORD event, UDWORD offset)
+bool eventLoadTrigger(uint32_t time, SCRIPT_CONTEXT *psContext,
+                      int32_t type, int32_t trigger, uint32_t event, uint32_t offset)
 {
 	ACTIVE_TRIGGER	*psNewTrig;
 
@@ -802,10 +802,10 @@ bool eventLoadTrigger(UDWORD time, SCRIPT_CONTEXT *psContext,
 	psNewTrig->psContext = psContext;
 	psContext->triggerCount += 1;
 	psNewTrig->testTime = time;
-	psNewTrig->trigger = (SWORD)trigger;
-	psNewTrig->type = (SWORD)type;
-	psNewTrig->event = (UWORD)event;
-	psNewTrig->offset = (UWORD)offset;
+	psNewTrig->trigger = (int16_t)trigger;
+	psNewTrig->type = (int16_t)type;
+	psNewTrig->event = (uint16_t)event;
+	psNewTrig->offset = (uint16_t)offset;
 	psNewTrig->deactivated = false;
 
 	eventAddTrigger(psNewTrig);
@@ -814,10 +814,10 @@ bool eventLoadTrigger(UDWORD time, SCRIPT_CONTEXT *psContext,
 }
 
 // add a TR_PAUSE trigger to the event system.
-bool eventAddPauseTrigger(SCRIPT_CONTEXT *psContext, UDWORD event, UDWORD offset, UDWORD time)
+bool eventAddPauseTrigger(SCRIPT_CONTEXT *psContext, uint32_t event, uint32_t offset, uint32_t time)
 {
 	ACTIVE_TRIGGER	*psNewTrig;
-	SDWORD			trigger;
+	int32_t			trigger;
 
 	ASSERT(event < psContext->psCode->numEvents, "Event out of range");
 
@@ -846,10 +846,10 @@ bool eventAddPauseTrigger(SCRIPT_CONTEXT *psContext, UDWORD event, UDWORD offset
 	psNewTrig->psContext = psContext;
 	psContext->triggerCount += 1;
 	psNewTrig->testTime = updateTime + time;
-	psNewTrig->trigger = (SWORD)trigger;
+	psNewTrig->trigger = (int16_t)trigger;
 	psNewTrig->type = TR_PAUSE;
-	psNewTrig->event = (UWORD)event;
-	psNewTrig->offset = (UWORD)offset;
+	psNewTrig->event = (uint16_t)event;
+	psNewTrig->offset = (uint16_t)offset;
 	psNewTrig->deactivated = false;
 
 	// store the new trigger
@@ -1035,7 +1035,7 @@ static bool eventFireTrigger(ACTIVE_TRIGGER *psTrigger)
 
 
 // Process all the currently active triggers
-void eventProcessTriggers(UDWORD currTime)
+void eventProcessTriggers(uint32_t currTime)
 {
 	ACTIVE_TRIGGER	*psCurr, *psNext, *psNew;
 	TRIGGER_DATA	*psData;
@@ -1116,7 +1116,7 @@ static void eventPruneList(ACTIVE_TRIGGER **ppsList)
 }
 
 // Mark a trigger for removal from a list
-static void eventMarkTriggerInList(ACTIVE_TRIGGER **ppsList, SCRIPT_CONTEXT *psContext, SDWORD event, SDWORD *pTrigger)
+static void eventMarkTriggerInList(ACTIVE_TRIGGER **ppsList, SCRIPT_CONTEXT *psContext, int32_t event, int32_t *pTrigger)
 {
 	ACTIVE_TRIGGER	**ppsCurr;
 
@@ -1136,7 +1136,7 @@ static void eventMarkTriggerInList(ACTIVE_TRIGGER **ppsList, SCRIPT_CONTEXT *psC
 	{
 		// pause trigger, don't remove it,
 		// just note the type for when the pause finishes
-		(*ppsCurr)->trigger = (SWORD) * pTrigger;
+		(*ppsCurr)->trigger = (int16_t) * pTrigger;
 		*pTrigger = -1;
 	}
 	else
@@ -1149,8 +1149,8 @@ static void eventMarkTriggerInList(ACTIVE_TRIGGER **ppsList, SCRIPT_CONTEXT *psC
 bool eventSetTrigger(void)
 {
 	ACTIVE_TRIGGER	*psTrigger;
-	UDWORD			event;
-	SDWORD			trigger;
+	uint32_t			event;
+	int32_t			trigger;
 	SCRIPT_CONTEXT	*psContext;
 
 	if (!stackPopParams(2, VAL_EVENT, &event, VAL_TRIGGER, &trigger))
@@ -1196,7 +1196,7 @@ bool eventSetTrigger(void)
 // set the event tracing level - to be called from script functions
 bool eventSetTraceLevel(void)
 {
-	SDWORD	level;
+	int32_t	level;
 
 	if (!stackPopParams(1, VAL_INT, &level))
 	{

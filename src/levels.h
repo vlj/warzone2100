@@ -58,8 +58,8 @@ enum LEVEL_TYPE
 struct LEVEL_DATASET
 {
 	LEVEL_TYPE type;				// type of map
-	SWORD	players;				// number of players for the map
-	SWORD	game;					// index of WRF/WDG that loads the scenario file
+	int16_t	players;				// number of players for the map
+	int16_t	game;					// index of WRF/WDG that loads the scenario file
 	char	*pName;					// title for the level
 	searchPathMode	dataDir;					// title for the level
 	char	*apDataFiles[LEVEL_MAXFILES];		// the WRF/GAM files for the level
@@ -99,7 +99,7 @@ extern bool levReleaseAll(void);
 extern bool levReleaseMissionData(void);
 
 //get the type of level currently being loaded of GTYPE type
-extern SDWORD getLevelLoadType(void);
+extern int32_t getLevelLoadType(void);
 
 extern char *getLevelName(void);
 

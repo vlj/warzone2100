@@ -50,15 +50,15 @@ extern WEAPON_MODIFIER		asWeaponModifier[WE_NUMEFFECTS][PROPULSION_TYPE_NUM];
 extern WEAPON_MODIFIER		asWeaponModifierBody[WE_NUMEFFECTS][SIZE_NUM];
 
 /* The number of different stats stored */
-extern UDWORD		numBodyStats;
-extern UDWORD		numBrainStats;
-extern UDWORD		numPropulsionStats;
-extern UDWORD		numSensorStats;
-extern UDWORD		numECMStats;
-extern UDWORD		numRepairStats;
-extern UDWORD		numWeaponStats;
-extern UDWORD		numConstructStats;
-extern UDWORD		numTerrainTypes;
+extern uint32_t		numBodyStats;
+extern uint32_t		numBrainStats;
+extern uint32_t		numPropulsionStats;
+extern uint32_t		numSensorStats;
+extern uint32_t		numECMStats;
+extern uint32_t		numRepairStats;
+extern uint32_t		numWeaponStats;
+extern uint32_t		numConstructStats;
+extern uint32_t		numTerrainTypes;
 
 /* What number the ref numbers start at for each type of stat */
 #define REF_BODY_START			0x010000
@@ -80,10 +80,10 @@ extern UDWORD		numTerrainTypes;
 
 
 //stores for each players component states - see below
-extern UBYTE		*apCompLists[MAX_PLAYERS][COMP_NUMCOMPONENTS];
+extern uint8_t		*apCompLists[MAX_PLAYERS][COMP_NUMCOMPONENTS];
 
 //store for each players Structure states
-extern UBYTE		*apStructTypeLists[MAX_PLAYERS];
+extern uint8_t		*apStructTypeLists[MAX_PLAYERS];
 
 //Values to fill apCompLists and apStructTypeLists. Not a bitfield, values are in case that helps with savegame compatibility.
 enum ItemAvailability
@@ -98,31 +98,31 @@ enum ItemAvailability
 *		Allocate stats functions
 *******************************************************************************/
 /* Allocate Weapon stats */
-extern bool statsAllocWeapons(UDWORD numEntries);
+extern bool statsAllocWeapons(uint32_t numEntries);
 
 /*Allocate Armour stats*/
-//extern bool statsAllocArmour(UDWORD numEntries);
+//extern bool statsAllocArmour(uint32_t numEntries);
 
 /*Allocate Body stats*/
-extern bool statsAllocBody(UDWORD numEntries);
+extern bool statsAllocBody(uint32_t numEntries);
 
 /*Allocate Brain stats*/
-extern bool statsAllocBrain(UDWORD numEntries);
+extern bool statsAllocBrain(uint32_t numEntries);
 
 /*Allocate Propulsion stats*/
-extern bool statsAllocPropulsion(UDWORD numEntries);
+extern bool statsAllocPropulsion(uint32_t numEntries);
 
 /*Allocate Sensor stats*/
-extern bool statsAllocSensor(UDWORD numEntries);
+extern bool statsAllocSensor(uint32_t numEntries);
 
 /*Allocate Ecm Stats*/
-extern bool statsAllocECM(UDWORD numEntries);
+extern bool statsAllocECM(uint32_t numEntries);
 
 /*Allocate Repair Stats*/
-extern bool statsAllocRepair(UDWORD numEntries);
+extern bool statsAllocRepair(uint32_t numEntries);
 
 /*Allocate Construct Stats*/
-extern bool statsAllocConstruct(UDWORD numEntries);
+extern bool statsAllocConstruct(uint32_t numEntries);
 
 /*******************************************************************************
 *		Load stats functions
@@ -130,7 +130,7 @@ extern bool statsAllocConstruct(UDWORD numEntries);
 void loadStats(WzConfig &json, BASE_STATS *psStats, int index);
 
 /* Return the number of newlines in a file buffer */
-extern UDWORD numCR(const char *pFileBuffer, UDWORD fileSize);
+extern uint32_t numCR(const char *pFileBuffer, uint32_t fileSize);
 
 /*Load the weapon stats from the file exported from Access*/
 extern bool loadWeaponStats(const char *pFileName);
@@ -175,7 +175,7 @@ extern bool loadWeaponModifiers(const char *pFileName);
 /*calls the STATS_DEALLOC macro for each set of stats*/
 extern bool statsShutDown(void);
 
-extern UDWORD getSpeedFactor(UDWORD terrainType, UDWORD propulsionType);
+extern uint32_t getSpeedFactor(uint32_t terrainType, uint32_t propulsionType);
 
 /// Get the component index for a component based on the name, verifying with type.
 /// It is currently identical to getCompFromID, but may not be in the future.
@@ -244,18 +244,18 @@ WZ_DECL_PURE int bodyArmour(const BODY_STATS *psStats, int player, WEAPON_CLASS 
 extern void adjustMaxDesignStats(void);
 
 //Access functions for the max values to be used in the Design Screen
-extern UDWORD getMaxComponentWeight(void);
-extern UDWORD getMaxBodyArmour(void);
-extern UDWORD getMaxBodyPower(void);
-extern UDWORD getMaxBodyPoints(void);
-extern UDWORD getMaxSensorRange(void);
-extern UDWORD getMaxECMRange(void);
-extern UDWORD getMaxConstPoints(void);
-extern UDWORD getMaxRepairPoints(void);
-extern UDWORD getMaxWeaponRange(void);
-extern UDWORD getMaxWeaponDamage(void);
-extern UDWORD getMaxWeaponROF(void);
-extern UDWORD getMaxPropulsionSpeed(void);
+extern uint32_t getMaxComponentWeight(void);
+extern uint32_t getMaxBodyArmour(void);
+extern uint32_t getMaxBodyPower(void);
+extern uint32_t getMaxBodyPoints(void);
+extern uint32_t getMaxSensorRange(void);
+extern uint32_t getMaxECMRange(void);
+extern uint32_t getMaxConstPoints(void);
+extern uint32_t getMaxRepairPoints(void);
+extern uint32_t getMaxWeaponRange(void);
+extern uint32_t getMaxWeaponDamage(void);
+extern uint32_t getMaxWeaponROF(void);
+extern uint32_t getMaxPropulsionSpeed(void);
 
 WZ_DECL_PURE bool objHasWeapon(const BASE_OBJECT *psObj);
 

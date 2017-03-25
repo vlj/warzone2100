@@ -92,7 +92,7 @@ bool scrGroupAddArea(void)
 {
 	DROID_GROUP		*psGroup;
 	DROID			*psDroid;
-	SDWORD			x1, y1, x2, y2, player;
+	int32_t			x1, y1, x2, y2, player;
 
 	if (!stackPopParams(6, ST_GROUP, &psGroup, VAL_INT, &player,
 	                    VAL_INT, &x1, VAL_INT, &y1, VAL_INT, &x2, VAL_INT, &y2))
@@ -111,8 +111,8 @@ bool scrGroupAddArea(void)
 
 	for (psDroid = apsDroidLists[player]; psDroid; psDroid = psDroid->psNext)
 	{
-		if (((SDWORD)psDroid->pos.x >= x1) && ((SDWORD)psDroid->pos.x <= x2) &&
-		    ((SDWORD)psDroid->pos.y >= y1) && ((SDWORD)psDroid->pos.y <= y2) &&
+		if (((int32_t)psDroid->pos.x >= x1) && ((int32_t)psDroid->pos.x <= x2) &&
+		    ((int32_t)psDroid->pos.y >= y1) && ((int32_t)psDroid->pos.y <= y2) &&
 		    psDroid->droidType != DROID_COMMAND &&
 		    !isTransporter(psDroid))
 
@@ -130,7 +130,7 @@ bool scrGroupAddAreaNoGroup(void)
 {
 	DROID_GROUP		*psGroup;
 	DROID			*psDroid;
-	SDWORD			x1, y1, x2, y2, player;
+	int32_t			x1, y1, x2, y2, player;
 
 	if (!stackPopParams(6, ST_GROUP, &psGroup, VAL_INT, &player,
 	                    VAL_INT, &x1, VAL_INT, &y1, VAL_INT, &x2, VAL_INT, &y2))
@@ -149,8 +149,8 @@ bool scrGroupAddAreaNoGroup(void)
 
 	for (psDroid = apsDroidLists[player]; psDroid; psDroid = psDroid->psNext)
 	{
-		if (((SDWORD)psDroid->pos.x >= x1) && ((SDWORD)psDroid->pos.x <= x2) &&
-		    ((SDWORD)psDroid->pos.y >= y1) && ((SDWORD)psDroid->pos.y <= y2) &&
+		if (((int32_t)psDroid->pos.x >= x1) && ((int32_t)psDroid->pos.x <= x2) &&
+		    ((int32_t)psDroid->pos.y >= y1) && ((int32_t)psDroid->pos.y <= y2) &&
 		    psDroid->droidType != DROID_COMMAND &&
 		    !isTransporter(psDroid) &&
 		    psDroid->psGroup   == NULL)
@@ -232,7 +232,7 @@ bool scrIdleGroup(void)
 {
 	DROID_GROUP *psGroup;
 	DROID		*psDroid;
-	UDWORD		count = 0;
+	uint32_t		count = 0;
 
 	if (!stackPopParams(1, ST_GROUP, &psGroup))
 	{
@@ -248,7 +248,7 @@ bool scrIdleGroup(void)
 		}
 	}
 
-	scrFunctionResult.v.ival = (SDWORD)count;
+	scrFunctionResult.v.ival = (int32_t)count;
 	if (!stackPushResult(VAL_INT, &scrFunctionResult))
 	{
 		return false;
@@ -372,7 +372,7 @@ bool scrOrderGroupLoc(void)
 {
 	DROID_GROUP		*psGroup;
 	DROID_ORDER		order;
-	SDWORD			x, y;
+	int32_t			x, y;
 
 	if (!stackPopParams(4, ST_GROUP, &psGroup, VAL_INT, &order, VAL_INT, &x, VAL_INT, &y))
 	{
@@ -400,7 +400,7 @@ bool scrOrderGroupLoc(void)
 
 	debug(LOG_NEVER, "group %p (%u) order %d (%d,%d)",
 	      psGroup, psGroup->getNumMembers(), order, x, y);
-	psGroup->orderGroup(order, (UDWORD)x, (UDWORD)y);
+	psGroup->orderGroup(order, (uint32_t)x, (uint32_t)y);
 
 	return true;
 }
@@ -483,7 +483,7 @@ bool scrOrderDroidLoc(void)
 {
 	DROID			*psDroid;
 	DROID_ORDER		order;
-	SDWORD			x, y;
+	int32_t			x, y;
 
 	if (!stackPopParams(4, ST_DROID, &psDroid, VAL_INT, &order, VAL_INT, &x, VAL_INT, &y))
 	{
@@ -565,7 +565,7 @@ bool scrOrderDroidStatsLoc(void)
 {
 	DROID			*psDroid;
 	DROID_ORDER		order;
-	SDWORD			x, y, statIndex;
+	int32_t			x, y, statIndex;
 
 	if (!stackPopParams(5, ST_DROID, &psDroid, VAL_INT, &order, ST_STRUCTURESTAT, &statIndex,
 	                    VAL_INT, &x, VAL_INT, &y))
@@ -573,7 +573,7 @@ bool scrOrderDroidStatsLoc(void)
 		return false;
 	}
 
-	if (statIndex < 0 || statIndex >= (SDWORD)numStructureStats)
+	if (statIndex < 0 || statIndex >= (int32_t)numStructureStats)
 	{
 		ASSERT(false, "Invalid structure stat");
 		return false;
@@ -585,8 +585,8 @@ bool scrOrderDroidStatsLoc(void)
 	ASSERT_OR_RETURN(false, psDroid != NULL, "Invalid Unit pointer");
 	ASSERT_OR_RETURN(false, psStats != NULL, "Invalid object pointer");
 
-	if ((x < 0) || (x > (SDWORD)mapWidth * TILE_UNITS) ||
-	    (y < 0) || (y > (SDWORD)mapHeight * TILE_UNITS))
+	if ((x < 0) || (x > (int32_t)mapWidth * TILE_UNITS) ||
+	    (y < 0) || (y > (int32_t)mapHeight * TILE_UNITS))
 	{
 		ASSERT(false, "Invalid location");
 		return false;
@@ -695,8 +695,8 @@ bool scrCmdDroidMaxGroup(void)
 }
 
 // store the prefered and ignore targets for the target functions
-UDWORD	scrStructPref, scrStructIgnore;
-UDWORD	scrDroidPref, scrDroidIgnore;
+uint32_t	scrStructPref, scrStructIgnore;
+uint32_t	scrDroidPref, scrDroidIgnore;
 
 
 // reset the structure preferences
@@ -722,7 +722,7 @@ bool scrResetDroidTargets(void)
 // set prefered structure target types
 bool scrSetStructTarPref(void)
 {
-	UDWORD	pref;
+	uint32_t	pref;
 
 	if (!stackPopParams(1, VAL_INT, &pref))
 	{
@@ -756,7 +756,7 @@ bool scrSetStructTarPref(void)
 // set structure target ignore types
 bool scrSetStructTarIgnore(void)
 {
-	UDWORD	pref;
+	uint32_t	pref;
 
 	if (!stackPopParams(1, VAL_INT, &pref))
 	{
@@ -790,7 +790,7 @@ bool scrSetStructTarIgnore(void)
 // set prefered droid target types
 bool scrSetDroidTarPref(void)
 {
-	UDWORD	pref;
+	uint32_t	pref;
 
 	if (!stackPopParams(1, VAL_INT, &pref))
 	{
@@ -827,7 +827,7 @@ bool scrSetDroidTarPref(void)
 // set droid target ignore types
 bool scrSetDroidTarIgnore(void)
 {
-	UDWORD	pref;
+	uint32_t	pref;
 
 	if (!stackPopParams(1, VAL_INT, &pref))
 	{
@@ -862,9 +862,9 @@ bool scrSetDroidTarIgnore(void)
 
 
 // get the correct type mask for a structure target
-static UDWORD scrStructTargetMask(STRUCTURE *psStruct)
+static uint32_t scrStructTargetMask(STRUCTURE *psStruct)
 {
-	UDWORD				mask = 0;
+	uint32_t				mask = 0;
 	STRUCTURE_STATS		*psStats;
 	WEAPON_STATS		*psWStats;
 
@@ -965,9 +965,9 @@ static void scrStructTargetPriority(STRUCTURE **ppsTarget, STRUCTURE *psCurr)
 }
 
 
-static UDWORD scrDroidTargetMask(DROID *psDroid)
+static uint32_t scrDroidTargetMask(DROID *psDroid)
 {
-	UDWORD				mask = 0;
+	uint32_t				mask = 0;
 	WEAPON_STATS		*psWStats;
 	BODY_STATS			*psBStats;
 	PROPULSION_STATS	*psPStats;
@@ -1104,21 +1104,21 @@ enum
 };
 
 // get target mask function for scrTargetInArea
-typedef UDWORD(*TARGET_MASK)(BASE_OBJECT *);
+typedef uint32_t(*TARGET_MASK)(BASE_OBJECT *);
 
 // see if one target is preferable to another
 typedef void (*TARGET_PREF)(BASE_OBJECT **, BASE_OBJECT *);
 
 // generic find a target in an area given preference data
-static BASE_OBJECT *scrTargetInArea(SDWORD tarPlayer, SDWORD visPlayer, SDWORD tarType, SDWORD cluster,
-                                    SDWORD x1, SDWORD y1, SDWORD x2, SDWORD y2)
+static BASE_OBJECT *scrTargetInArea(int32_t tarPlayer, int32_t visPlayer, int32_t tarType, int32_t cluster,
+                                    int32_t x1, int32_t y1, int32_t x2, int32_t y2)
 {
 	BASE_OBJECT		*psTarget, *psCurr;
-	SDWORD			temp;
-	UDWORD			tarMask;
+	int32_t			temp;
+	uint32_t			tarMask;
 	TARGET_MASK		getTargetMask;
 	TARGET_PREF		targetPriority;
-	UDWORD			prefer, ignore;
+	uint32_t			prefer, ignore;
 
 	if (tarPlayer < 0 || tarPlayer >= MAX_PLAYERS)
 	{
@@ -1166,10 +1166,10 @@ static BASE_OBJECT *scrTargetInArea(SDWORD tarPlayer, SDWORD visPlayer, SDWORD t
 	for (; psCurr; psCurr = psCurr->psNext)
 	{
 		if ((cluster == 0 || psCurr->cluster == cluster) &&
-		    ((SDWORD)psCurr->pos.x >= x1) &&
-		    ((SDWORD)psCurr->pos.x <= x2) &&
-		    ((SDWORD)psCurr->pos.y >= y1) &&
-		    ((SDWORD)psCurr->pos.y <= y2))
+		    ((int32_t)psCurr->pos.x >= x1) &&
+		    ((int32_t)psCurr->pos.x <= x2) &&
+		    ((int32_t)psCurr->pos.y >= y1) &&
+		    ((int32_t)psCurr->pos.y <= y2))
 		{
 			tarMask = getTargetMask(psCurr);
 			if (tarMask & ignore)
@@ -1198,8 +1198,8 @@ static BASE_OBJECT *scrTargetInArea(SDWORD tarPlayer, SDWORD visPlayer, SDWORD t
 // get a structure target in an area using the preferences
 bool scrStructTargetInArea(void)
 {
-	SDWORD		x1, y1, x2, y2;
-	SDWORD		tarPlayer, visPlayer;
+	int32_t		x1, y1, x2, y2;
+	int32_t		tarPlayer, visPlayer;
 
 	if (!stackPopParams(6, VAL_INT, &tarPlayer, VAL_INT, &visPlayer,
 	                    VAL_INT, &x1, VAL_INT, &y1, VAL_INT, &x2, VAL_INT, &y2))
@@ -1220,7 +1220,7 @@ bool scrStructTargetInArea(void)
 // get a structure target on the map using the preferences
 bool scrStructTargetOnMap(void)
 {
-	SDWORD		tarPlayer, visPlayer;
+	int32_t		tarPlayer, visPlayer;
 	STRUCTURE	*psTarget;
 
 	if (!stackPopParams(2, VAL_INT, &tarPlayer, VAL_INT, &visPlayer))
@@ -1244,8 +1244,8 @@ bool scrStructTargetOnMap(void)
 // get a droid target in an area using the preferences
 bool scrDroidTargetInArea(void)
 {
-	SDWORD		x1, y1, x2, y2;
-	SDWORD		tarPlayer, visPlayer;
+	int32_t		x1, y1, x2, y2;
+	int32_t		tarPlayer, visPlayer;
 	DROID		*psTarget;
 
 	if (!stackPopParams(6, VAL_INT, &tarPlayer, VAL_INT, &visPlayer,
@@ -1268,7 +1268,7 @@ bool scrDroidTargetInArea(void)
 // get a droid target on the map using the preferences
 bool scrDroidTargetOnMap(void)
 {
-	SDWORD		tarPlayer, visPlayer;
+	int32_t		tarPlayer, visPlayer;
 	DROID		*psTarget;
 
 	if (!stackPopParams(2, VAL_INT, &tarPlayer, VAL_INT, &visPlayer))
@@ -1292,7 +1292,7 @@ bool scrDroidTargetOnMap(void)
 // get a target from a cluster using the preferences
 bool scrTargetInCluster(void)
 {
-	SDWORD		tarPlayer, tarType, visPlayer, clusterID, cluster;
+	int32_t		tarPlayer, tarType, visPlayer, clusterID, cluster;
 	BASE_OBJECT	*psTarget;
 
 	if (!stackPopParams(2, VAL_INT, &clusterID, VAL_INT, &visPlayer))
@@ -1334,7 +1334,7 @@ bool scrSkCanBuildTemplate(void)
 	STRUCTURE *psStructure;
 	DROID_TEMPLATE *psTempl;
 
-	SDWORD player;
+	int32_t player;
 
 	if (!stackPopParams(3, VAL_INT, &player, ST_STRUCTURE, &psStructure, ST_TEMPLATE, &psTempl))
 	{
@@ -1391,7 +1391,7 @@ failTempl:
 // gives a target location given a player to attack.
 bool scrSkLocateEnemy(void)
 {
-	SDWORD		player;//,*x,*y;
+	int32_t		player;//,*x,*y;
 	STRUCTURE	*psStruct;
 
 	if (!stackPopParams(1, VAL_INT, &player))
@@ -1431,9 +1431,9 @@ bool scrSkLocateEnemy(void)
 
 // ********************************************************************************************
 
-bool skTopicAvail(UWORD inc, UDWORD player)
+bool skTopicAvail(uint16_t inc, uint32_t player)
 {
-	UDWORD				incPR, incS;
+	uint32_t				incPR, incS;
 	bool				bPRFound, bStructFound;
 
 
@@ -1504,8 +1504,8 @@ bool skTopicAvail(UWORD inc, UDWORD player)
 // ********************************************************************************************
 bool scrSkDoResearch(void)
 {
-	SDWORD				player, bias;
-	UWORD				i;
+	int32_t				player, bias;
+	uint16_t				i;
 	STRUCTURE			*psBuilding;
 	RESEARCH_FACILITY	*psResFacilty;
 
@@ -1549,8 +1549,8 @@ bool scrSkDoResearch(void)
 // ********************************************************************************************
 bool scrSkVtolEnableCheck(void)
 {
-	SDWORD player;
-	UDWORD i;
+	int32_t player;
+	uint32_t i;
 
 	if (!stackPopParams(1, VAL_INT, &player))
 	{
@@ -1589,7 +1589,7 @@ bool scrSkVtolEnableCheck(void)
 // ********************************************************************************************
 bool scrSkGetFactoryCapacity(void)
 {
-	SDWORD count = 0;
+	int32_t count = 0;
 	STRUCTURE *psStructure;
 
 	if (!stackPopParams(1, ST_STRUCTURE, &psStructure))
@@ -1623,9 +1623,9 @@ bool scrSkDifficultyModifier(void)
 	}
 
 	/* Skip cheats if difficulty modifier slider is set to minimum or this is a true multiplayer game.
-	 * (0 - player disabled, 20 - max value, UBYTE_MAX - autogame)
+	 * (0 - player disabled, 20 - max value, uint8_t_MAX - autogame)
 	 */
-	if (game.skDiff[player] <= 1 || game.skDiff[player] == UBYTE_MAX || NetPlay.bComms)
+	if (game.skDiff[player] <= 1 || game.skDiff[player] == uint8_t_MAX || NetPlay.bComms)
 	{
 		return true;
 	}
@@ -1661,14 +1661,14 @@ bool scrSkDifficultyModifier(void)
 // not a direct script function but a helper for scrSkDefenseLocation and scrSkDefenseLocationB
 static bool defenseLocation(bool variantB)
 {
-	SDWORD		*pX, *pY, statIndex, statIndex2;
-	UDWORD		x, y, gX, gY, dist, player, nearestSoFar, count;
+	int32_t		*pX, *pY, statIndex, statIndex2;
+	uint32_t		x, y, gX, gY, dist, player, nearestSoFar, count;
 	GATEWAY		*psChosenGate;
 	DROID		*psDroid;
-	UDWORD		x1, x2, x3, x4, y1, y2, y3, y4;
+	uint32_t		x1, x2, x3, x4, y1, y2, y3, y4;
 	bool		noWater;
-	UDWORD      minCount;
-	UDWORD      offset;
+	uint32_t      minCount;
+	uint32_t      offset;
 
 	if (!stackPopParams(6,
 	                    VAL_REF | VAL_INT, &pX,
@@ -1707,7 +1707,7 @@ static bool defenseLocation(bool variantB)
 	y = map_coord(*pY);
 
 	// go down the gateways, find the nearest gateway with >1 empty tiles
-	nearestSoFar = UDWORD_MAX;
+	nearestSoFar = uint32_t_MAX;
 	psChosenGate = NULL;
 	for (auto psGate : gwGetGateways())
 	{
@@ -1917,7 +1917,7 @@ bool scrSkDefenseLocationB(void)
 
 bool scrSkFireLassat(void)
 {
-	SDWORD	player;
+	int32_t	player;
 	BASE_OBJECT *psObj;
 
 	if (!stackPopParams(2,  VAL_INT, &player, ST_BASEOBJECT, &psObj))
@@ -1979,7 +1979,7 @@ static DROID *psScrIterateGroupDroidB[MAX_PLAYERS];
 bool scrInitIterateGroupB(void)
 {
 	DROID_GROUP	*psGroup;
-	SDWORD		bucket;
+	int32_t		bucket;
 
 	if (!stackPopParams(2, ST_GROUP, &psGroup, VAL_INT, &bucket))
 	{
@@ -2002,7 +2002,7 @@ bool scrIterateGroupB(void)
 {
 	DROID_GROUP	*psGroup;
 	DROID		*psDroid;
-	SDWORD		bucket;
+	int32_t		bucket;
 
 	if (!stackPopParams(2, ST_GROUP, &psGroup, VAL_INT, &bucket))
 	{

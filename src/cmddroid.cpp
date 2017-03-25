@@ -39,7 +39,7 @@
 #include "console.h"
 
 /**This represents the current selected player, which is the client's player.*/
-extern UDWORD selectedPlayer;
+extern uint32_t selectedPlayer;
 
 
 /** This global instance is responsible for dealing with the each player's target designator.*/
@@ -88,13 +88,13 @@ void cmdDroidAddDroid(DROID *psCommander, DROID *psDroid)
 	{
 		psGroup = grpCreate();
 		psGroup->add(psCommander);
-		psDroid->group = UBYTE_MAX;
+		psDroid->group = uint8_t_MAX;
 	}
 
 	if (psCommander->psGroup->getNumMembers() < cmdDroidMaxGroup(psCommander))
 	{
 		psCommander->psGroup->add(psDroid);
-		psDroid->group = UBYTE_MAX;
+		psDroid->group = uint8_t_MAX;
 
 		// set the secondary states for the unit
 		secondarySetState(psDroid, DSO_REPAIR_LEVEL, (SECONDARY_STATE)(psCommander->secondaryOrder & DSS_REPLEV_MASK), ModeImmediate);
@@ -109,7 +109,7 @@ void cmdDroidAddDroid(DROID *psCommander, DROID *psDroid)
 	}
 }
 
-DROID *cmdDroidGetDesignator(UDWORD player)
+DROID *cmdDroidGetDesignator(uint32_t player)
 {
 	return apsCmdDesignator[player];
 }
@@ -125,7 +125,7 @@ void cmdDroidSetDesignator(DROID *psDroid)
 	apsCmdDesignator[psDroid->player] = psDroid;
 }
 
-void cmdDroidClearDesignator(UDWORD player)
+void cmdDroidClearDesignator(uint32_t player)
 {
 	apsCmdDesignator[player] = NULL;
 }
@@ -134,9 +134,9 @@ void cmdDroidClearDesignator(UDWORD player)
  * It does this by searching throughout all the player's droids.
  * @todo try to find something more efficient, has this function is of O(TotalNumberOfDroidsOfPlayer).
  */
-SDWORD cmdDroidGetIndex(DROID *psCommander)
+int32_t cmdDroidGetIndex(DROID *psCommander)
 {
-	SDWORD	index = 1;
+	int32_t	index = 1;
 	DROID	*psCurr;
 
 	if (psCommander->droidType != DROID_COMMAND)

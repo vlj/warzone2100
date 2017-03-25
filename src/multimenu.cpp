@@ -71,9 +71,9 @@ W_SCREEN  *psRScreen;			// requester stuff.
 extern char	MultiCustomMapsPath[PATH_MAX];
 
 bool	MultiMenuUp			= false;
-static UDWORD	context = 0;
-UDWORD	current_tech = 1;
-UDWORD	current_numplayers = 4;
+static uint32_t	context = 0;
+uint32_t	current_tech = 1;
+uint32_t	current_numplayers = 4;
 static std::string current_searchString;
 
 #define MULTIMENU_FORM_X		10 + D_W
@@ -156,7 +156,7 @@ static bool		giftsUp[MAX_PLAYERS] = {true};		//gift buttons for player are up.
  * \param mode  the specified alliance
  * \param player the specified player
  */
-static void SetPlayerTextColor(int mode, UDWORD player)
+static void SetPlayerTextColor(int mode, uint32_t player)
 {
 	// override color if they are dead...
 	if (!apsDroidLists[player] && !apsStructLists[player])
@@ -180,7 +180,7 @@ static void SetPlayerTextColor(int mode, UDWORD player)
 
 // ////////////////////////////////////////////////////////////////////////////
 // ////////////////////////////////////////////////////////////////////////////
-void displayRequestOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void displayRequestOption(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	LEVEL_DATASET *mapData = (LEVEL_DATASET *)psWidget->pUserData;
 
@@ -248,7 +248,7 @@ void displayRequestOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 // ////////////////////////////////////////////////////////////////////////////
 // ////////////////////////////////////////////////////////////////////////////
 
-static void displayCamTypeBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayCamTypeBut(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -268,7 +268,7 @@ static void displayCamTypeBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	iV_DrawText(buffer, x + 2, y + 12);
 }
 
-static void displayNumPlayersBut(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayNumPlayersBut(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -352,7 +352,7 @@ static int stringRelevance(std::string const &string, std::string const &search)
  *  \param mode (purpose unknown)
  *  \param numPlayers (purpose unknown)
  */
-void addMultiRequest(const char *searchDir, const char *fileExtension, UDWORD mode, UBYTE mapCam, UBYTE numPlayers, std::string const &searchString)
+void addMultiRequest(const char *searchDir, const char *fileExtension, uint32_t mode, uint8_t mapCam, uint8_t numPlayers, std::string const &searchString)
 {
 	const unsigned int extensionLength = strlen(fileExtension);
 	const unsigned int buttonsX = (mode == MULTIOP_MAP) ? 22 : 17;
@@ -514,7 +514,7 @@ static void closeMultiRequester(void)
 	return;
 }
 
-bool runMultiRequester(UDWORD id, UDWORD *mode, QString *chosen, LEVEL_DATASET **chosenValue, bool *isHoverPreview)
+bool runMultiRequester(uint32_t id, uint32_t *mode, QString *chosen, LEVEL_DATASET **chosenValue, bool *isHoverPreview)
 {
 	static unsigned hoverId = 0;
 	static unsigned hoverStartTime = 0;
@@ -605,7 +605,7 @@ bool runMultiRequester(UDWORD id, UDWORD *mode, QString *chosen, LEVEL_DATASET *
 // Display Functions
 
 
-static void displayExtraGubbins(UDWORD height)
+static void displayExtraGubbins(uint32_t height)
 {
 	char str[128];
 
@@ -687,7 +687,7 @@ static void displayExtraGubbins(UDWORD height)
 }
 
 
-static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayMultiPlayer(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	char str[128];
 	int x = xOffset + psWidget->x();
@@ -874,9 +874,9 @@ static void displayMultiPlayer(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 // ////////////////////////////////////////////////////////////////////////////
 // alliance display funcs
 
-static void displayAllianceState(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayAllianceState(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
-	UDWORD a, b, c, player = psWidget->UserData;
+	uint32_t a, b, c, player = psWidget->UserData;
 	switch (alliances[selectedPlayer][player])
 	{
 	case ALLIANCE_BROKEN:
@@ -907,9 +907,9 @@ static void displayAllianceState(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffse
 	psWidget->UserData = player;
 }
 
-static void displayChannelState(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayChannelState(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
-	UDWORD player = psWidget->UserData;
+	uint32_t player = psWidget->UserData;
 
 	if (openchannels[player])
 	{
@@ -926,9 +926,9 @@ static void displayChannelState(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset
 
 // ////////////////////////////////////////////////////////////////////////////
 
-static void addMultiPlayer(UDWORD player, UDWORD pos)
+static void addMultiPlayer(uint32_t player, uint32_t pos)
 {
-	UDWORD			y, id;
+	uint32_t			y, id;
 	y	= MULTIMENU_PLAYER_H * (pos + 1);					// this is the top of the pos.
 	id	= MULTIMENU_PLAYER + player;
 
@@ -1018,7 +1018,7 @@ static void addMultiPlayer(UDWORD player, UDWORD pos)
 
 bool intAddMultiMenu(void)
 {
-	UDWORD			i;
+	uint32_t			i;
 
 	//check for already open.
 	if (widgGetFromID(psWScreen, MULTIMENU_FORM))
@@ -1122,9 +1122,9 @@ bool intRunMultiMenu(void)
 
 // ////////////////////////////////////////////////////////////////////////////
 // process clicks made by user.
-void intProcessMultiMenu(UDWORD id)
+void intProcessMultiMenu(uint32_t id)
 {
-	UBYTE	i;
+	uint8_t	i;
 
 	//close
 	if (id == MULTIMENU_CLOSE)
@@ -1135,22 +1135,22 @@ void intProcessMultiMenu(UDWORD id)
 	//alliance button
 	if (id >= MULTIMENU_ALLIANCE_BASE  &&  id < MULTIMENU_ALLIANCE_BASE + MAX_PLAYERS)
 	{
-		i = (UBYTE)(id - MULTIMENU_ALLIANCE_BASE);
+		i = (uint8_t)(id - MULTIMENU_ALLIANCE_BASE);
 
 		switch (alliances[selectedPlayer][i])
 		{
 		case ALLIANCE_BROKEN:
-			requestAlliance((UBYTE)selectedPlayer, i, true, true);			// request an alliance
+			requestAlliance((uint8_t)selectedPlayer, i, true, true);			// request an alliance
 			break;
 		case ALLIANCE_INVITATION:
-			formAlliance((UBYTE)selectedPlayer, i, true, true, true);			// form an alliance
+			formAlliance((uint8_t)selectedPlayer, i, true, true, true);			// form an alliance
 			break;
 		case ALLIANCE_REQUESTED:
-			breakAlliance((UBYTE)selectedPlayer, i, true, true);		// break an alliance
+			breakAlliance((uint8_t)selectedPlayer, i, true, true);		// break an alliance
 			break;
 
 		case ALLIANCE_FORMED:
-			breakAlliance((UBYTE)selectedPlayer, i, true, true);		// break an alliance
+			breakAlliance((uint8_t)selectedPlayer, i, true, true);		// break an alliance
 			break;
 		default:
 			break;

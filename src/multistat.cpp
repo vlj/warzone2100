@@ -52,7 +52,7 @@ PLAYERSTATS::PLAYERSTATS()
 
 // ////////////////////////////////////////////////////////////////////////////
 // Get Player's stats
-PLAYERSTATS const &getMultiStats(UDWORD player)
+PLAYERSTATS const &getMultiStats(uint32_t player)
 {
 	return playerStats[player];
 }
@@ -156,7 +156,7 @@ void recvMultiStats(NETQUEUE queue)
 bool loadMultiStats(char *sPlayerName, PLAYERSTATS *st)
 {
 	char				fileName[255];
-	UDWORD				size;
+	uint32_t				size;
 	char				*pFileData;
 
 	*st = PLAYERSTATS();  // clear in case we don't get to load
@@ -233,7 +233,7 @@ bool saveMultiStats(const char *sFileName, const char *sPlayerName, const PLAYER
 // score update functions
 
 // update players damage stats.
-void updateMultiStatsDamage(UDWORD attacker, UDWORD defender, UDWORD inflicted)
+void updateMultiStatsDamage(uint32_t attacker, uint32_t defender, uint32_t inflicted)
 {
 	if (Cheated)
 	{
@@ -299,7 +299,7 @@ void updateMultiStatsLoses(void)
 }
 
 // update kills
-void updateMultiStatsKills(BASE_OBJECT *psKilled, UDWORD player)
+void updateMultiStatsKills(BASE_OBJECT *psKilled, uint32_t player)
 {
 	if (Cheated || player >= MAX_PLAYERS)
 	{

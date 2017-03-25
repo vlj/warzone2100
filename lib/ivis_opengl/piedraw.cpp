@@ -207,13 +207,13 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	if (pieFlag & pie_ADDITIVE)
 	{
 		pie_SetRendMode(REND_ADDITIVE);
-		colour.byte.a = (UBYTE)pieFlagData;
+		colour.byte.a = (uint8_t)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_TRANSLUCENT)
 	{
 		pie_SetRendMode(REND_ALPHA);
-		colour.byte.a = (UBYTE)pieFlagData;
+		colour.byte.a = (uint8_t)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_PREMULTIPLIED)

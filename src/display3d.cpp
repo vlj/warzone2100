@@ -99,14 +99,14 @@ static void displayProximityMsgs();
 static void displayDynamicObjects();
 static void displayStaticObjects();
 static void displayFeatures();
-static UDWORD	getTargettingGfx(void);
+static uint32_t	getTargettingGfx(void);
 static void	drawDroidGroupNumber(DROID *psDroid);
 static void	trackHeight(float desiredHeight);
 static void	renderSurroundings(void);
 static void	locateMouse(void);
 static bool	renderWallSection(STRUCTURE *psStructure);
 static void	drawDragBox(void);
-static void	calcFlagPosScreenCoords(SDWORD *pX, SDWORD *pY, SDWORD *pR);
+static void	calcFlagPosScreenCoords(int32_t *pX, int32_t *pY, int32_t *pR);
 static void	drawTiles(iView *player);
 static void	display3DProjectiles(void);
 static void	drawDroidSelections(void);
@@ -118,7 +118,7 @@ static bool	eitherSelected(DROID *psDroid);
 static void	structureEffects(void);
 static void	showDroidSensorRanges(void);
 static void	showSensorRange2(BASE_OBJECT *psObj);
-static void	drawRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius);
+static void	drawRangeAtPos(int32_t centerX, int32_t centerY, int32_t radius);
 static void	addConstructionLine(DROID *psDroid, STRUCTURE *psStructure);
 static void	doConstructionLines(void);
 static void	drawDroidCmndNo(DROID *psDroid);
@@ -128,8 +128,8 @@ static void	calcAverageTerrainHeight(iView *player);
 bool	doWeDrawProximitys(void);
 static PIELIGHT getBlueprintColour(STRUCT_STATES state);
 
-static void NetworkDisplayPlainForm(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-static void NetworkDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+static void NetworkDisplayPlainForm(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+static void NetworkDisplayImage(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 extern bool writeGameInfo(const char *pFileName); // Used to help debug issues when we have fatal errors & crash handler testing.
 
 /********************  Variables  ********************/
@@ -142,7 +142,7 @@ static Vector3i actualCameraPosition;
 
 bool	bRender3DOnly;
 static bool	bRangeDisplay = false;
-static SDWORD	rangeCenterX, rangeCenterY, rangeRadius;
+static int32_t	rangeCenterX, rangeCenterY, rangeRadius;
 static bool	bDrawProximitys = true;
 bool	godMode;
 bool	showGateways = false;
@@ -154,7 +154,7 @@ static float windSpeed = 0.0f;
 static float skybox_scale = 10000.0f;
 
 /// When to display HP bars
-UWORD barMode;
+uint16_t barMode;
 
 /// Have we made a selection by clicking the mouse? - used for dragging etc
 bool	selectAttempt = false;
@@ -169,7 +169,7 @@ static float distance;
 static Vector3i tileScreenInfo[VISIBLE_YTILES + 1][VISIBLE_XTILES + 1];
 
 /// Records the present X and Y values for the current mouse tile (in tiles)
-SDWORD mouseTileX, mouseTileY;
+int32_t mouseTileX, mouseTileY;
 Vector2i mousePos(0, 0);
 
 /// Do we want the radar to be rendered
@@ -186,7 +186,7 @@ bool tuiTargetOrigin = false;
 static int playerXTile, playerZTile;
 
 /// The cached value of frameGetFrameNumber()
-static UDWORD currentGameFrame;
+static uint32_t currentGameFrame;
 /// The box used for multiple selection - present screen coordinates
 static QUAD dragQuad;
 
@@ -238,16 +238,16 @@ static int averageCentreTerrainHeight;
 /** The time at which a sensor target was last asssigned
  * Used to draw a visual effect.
  */
-static UDWORD	lastTargetAssignation = 0;
+static uint32_t	lastTargetAssignation = 0;
 /** The time at which an order concerning a destination was last given
  * Used to draw a visual effect.
  */
-static UDWORD	lastDestAssignation = 0;
+static uint32_t	lastDestAssignation = 0;
 static bool	bSensorTargetting = false;
 static bool	bDestTargetting = false;
 static BASE_OBJECT *psSensorObj = NULL;
-static UDWORD	destTargetX, destTargetY;
-static UDWORD	destTileX = 0, destTileY = 0;
+static uint32_t	destTargetX, destTargetY;
+static uint32_t	destTileX = 0, destTileY = 0;
 
 struct Blueprint
 {
@@ -453,7 +453,7 @@ static PIELIGHT structureBrightness(STRUCTURE *psStructure)
 		/* If it's selected, then it's brighter */
 		if (psStructure->selected)
 		{
-			SDWORD brightVar;
+			int32_t brightVar;
 
 			if (!gamePaused())
 			{
@@ -517,7 +517,7 @@ static void showDroidPaths(void)
 	}
 }
 /// Renders the Network Issue form
-static void NetworkDisplayPlainForm(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void NetworkDisplayPlainForm(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x0 = xOffset + psWidget->x();
 	int y0 = yOffset + psWidget->y();
@@ -533,11 +533,11 @@ static void NetworkDisplayPlainForm(WIDGET *psWidget, UDWORD xOffset, UDWORD yOf
 }
 
 /// Displays an image for the Network Issue button
-static void NetworkDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void NetworkDisplayImage(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
-	UWORD ImageID;
+	uint16_t ImageID;
 	CONNECTION_STATUS status = (CONNECTION_STATUS)UNPACKDWORD_TRI_A(psWidget->UserData);
 
 	ASSERT(psWidget->type == WIDG_BUTTON, "Not a button");
@@ -1176,7 +1176,7 @@ void disp3d_getView(iView *newView)
 }
 
 /// Are the current tile coordinates visible on screen?
-bool clipXY(SDWORD x, SDWORD y)
+bool clipXY(int32_t x, int32_t y)
 {
 	// +2 for edge of visibility fading (see terrain.cpp)
 	if (std::abs(x - player.p.x) < world_coord(visibleTiles.x / 2 + 2) &&
@@ -1194,13 +1194,13 @@ bool clipXY(SDWORD x, SDWORD y)
  * This function is used to determine the area the user can click for the
  * intelligence screen buttons. The radius parameter is always set to the same value.
  */
-static void	calcFlagPosScreenCoords(SDWORD *pX, SDWORD *pY, SDWORD *pR)
+static void	calcFlagPosScreenCoords(int32_t *pX, int32_t *pY, int32_t *pR)
 {
 	/* Get it's absolute dimensions */
 	Vector3i center3d(0, 0, 0);
 	Vector2i center2d(0, 0);
 	/* How big a box do we want - will ultimately be calculated using xmax, ymax, zmax etc */
-	UDWORD	radius = 22;
+	uint32_t	radius = 22;
 
 	/* Pop matrices and get the screen coordinates for last point*/
 	pie_RotateProject(&center3d, &center2d);
@@ -1624,7 +1624,7 @@ static void displayProximityMsgs()
 {
 	PROXIMITY_DISPLAY	*psProxDisp;
 	VIEW_PROXIMITY		*pViewProximity;
-	UDWORD				x, y;
+	uint32_t				x, y;
 
 	/* Go through all the proximity Displays*/
 	for (psProxDisp = apsProxDisp[selectedPlayer]; psProxDisp != NULL; psProxDisp = psProxDisp->psNext)
@@ -1684,7 +1684,7 @@ static void displayDynamicObjects()
 }
 
 /// Sets the player's position and view angle - defaults player rotations as well
-void setViewPos(UDWORD x, UDWORD y, WZ_DECL_UNUSED bool Pan)
+void setViewPos(uint32_t x, uint32_t y, WZ_DECL_UNUSED bool Pan)
 {
 	player.p.x = world_coord(x);
 	player.p.z = world_coord(y);
@@ -1705,7 +1705,7 @@ Vector2i getPlayerPos()
 }
 
 /// Set the player position
-void setPlayerPos(SDWORD x, SDWORD y)
+void setPlayerPos(int32_t x, int32_t y)
 {
 	ASSERT(x >= 0 && x < world_coord(mapWidth) && y >= 0 && y < world_coord(mapHeight), "Position off map");
 	player.p.x = x;
@@ -1728,7 +1728,7 @@ void setViewDistance(float dist)
 /// Draw a feature (tree/rock/etc.)
 void	renderFeature(FEATURE *psFeature)
 {
-	SDWORD		rotation;
+	int32_t		rotation;
 	PIELIGHT	brightness = pal_SetBrightness(200);
 	Vector3i dv;
 	bool bForceDraw = (getRevealStatus() && psFeature->psStats->visibleAtStart);
@@ -1802,10 +1802,10 @@ void	renderFeature(FEATURE *psFeature)
 
 void renderProximityMsg(PROXIMITY_DISPLAY *psProxDisp)
 {
-	UDWORD			msgX = 0, msgY = 0;
+	uint32_t			msgX = 0, msgY = 0;
 	Vector3i                dv(0, 0, 0);
 	VIEW_PROXIMITY	*pViewProximity = NULL;
-	SDWORD			x, y, r;
+	int32_t			x, y, r;
 	iIMDShape		*proxImd = NULL;
 
 	//store the frame number for when deciding what has been clicked on
@@ -2006,7 +2006,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 			pie_TRANSLATE(0, 0, recoilValue);
 
 			pie_Draw3DShape(weaponImd[i], 0, colour, buildingBrightness, pieFlag, pieFlagData);
-			if (psStructure->status == SS_BUILT && psStructure->visible[selectedPlayer] > (UBYTE_MAX / 2))
+			if (psStructure->status == SS_BUILT && psStructure->visible[selectedPlayer] > (uint8_t_MAX / 2))
 			{
 				if (psStructure->pStructureType->type == REF_REPAIR_FACILITY)
 				{
@@ -2016,9 +2016,9 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 					    && psRepairFac->psObj->type == OBJ_DROID)
 					{
 						DROID *psDroid = (DROID *)psRepairFac->psObj;
-						SDWORD xdiff, ydiff;
-						xdiff = (SDWORD)psDroid->pos.x - (SDWORD)psStructure->pos.x;
-						ydiff = (SDWORD)psDroid->pos.y - (SDWORD)psStructure->pos.y;
+						int32_t xdiff, ydiff;
+						xdiff = (int32_t)psDroid->pos.x - (int32_t)psStructure->pos.x;
+						ydiff = (int32_t)psDroid->pos.y - (int32_t)psStructure->pos.y;
 						if (xdiff * xdiff + ydiff * ydiff <= (TILE_UNITS * 5 / 2) * (TILE_UNITS * 5 / 2))
 						{
 							iIMDShape	*pRepImd;
@@ -2074,7 +2074,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 					}
 					pie_MatRotX(rot.pitch);
 					// draw the muzzle flash?
-					if (psStructure->visible[selectedPlayer] > UBYTE_MAX / 2)
+					if (psStructure->visible[selectedPlayer] > uint8_t_MAX / 2)
 					{
 						// animate for the duration of the flash only
 						// assume no clan colours for muzzle effects
@@ -2135,7 +2135,7 @@ void renderStructure(STRUCTURE *psStructure)
 		return;
 	}
 	// If the structure is not truly visible, but we know there is something there, we will instead draw a blip
-	if (psStructure->visible[selectedPlayer] < UBYTE_MAX && psStructure->visible[selectedPlayer] > 0)
+	if (psStructure->visible[selectedPlayer] < uint8_t_MAX && psStructure->visible[selectedPlayer] > 0)
 	{
 		pie_MatBegin(true);
 		pie_TRANSLATE(dv);
@@ -2261,7 +2261,7 @@ void renderStructure(STRUCTURE *psStructure)
 void	renderDeliveryPoint(FLAG_POSITION *psPosition, bool blueprint)
 {
 	Vector3i	dv;
-	SDWORD		x, y, r;
+	int32_t		x, y, r;
 	int pieFlag, pieFlagData;
 	PIELIGHT colour;
 
@@ -2449,7 +2449,7 @@ static void	drawDragBox(void)
 /// Display reload bars for structures and droids
 static void drawWeaponReloadBar(BASE_OBJECT *psObj, WEAPON *psWeap, int weapon_slot)
 {
-	SDWORD			scrX, scrY, scrR, scale;
+	int32_t			scrX, scrY, scrR, scale;
 	STRUCTURE		*psStruct;
 	float			mulH;	// display unit resistance instead of reload!
 	DROID			*psDroid;
@@ -2477,7 +2477,7 @@ static void drawWeaponReloadBar(BASE_OBJECT *psObj, WEAPON *psWeap, int weapon_s
 		}
 		firingStage = mulH;
 		firingStage = ((((2 * scrR) * 10000) / 100) * firingStage) / 10000;
-		if (firingStage >= (UDWORD)(2 * scrR))
+		if (firingStage >= (uint32_t)(2 * scrR))
 		{
 			firingStage = (2 * scrR);
 		}
@@ -2521,8 +2521,8 @@ static void drawWeaponReloadBar(BASE_OBJECT *psObj, WEAPON *psWeap, int weapon_s
 /// draw target origin icon for the specified structure
 static void drawStructureTargetOriginIcon(STRUCTURE *psStruct, int weapon_slot)
 {
-	SDWORD		scrX, scrY, scrR;
-	UDWORD		scale;
+	int32_t		scrX, scrY, scrR;
+	uint32_t		scale;
 
 	// Process main weapon only for now
 	if (!tuiTargetOrigin || weapon_slot || !((psStruct->asWeaps[weapon_slot]).nStat))
@@ -2567,10 +2567,10 @@ static void drawStructureTargetOriginIcon(STRUCTURE *psStruct, int weapon_slot)
 /// draw the health bar for the specified structure
 static void drawStructureHealth(STRUCTURE *psStruct)
 {
-	SDWORD		scrX, scrY, scrR;
+	int32_t		scrX, scrY, scrR;
 	PIELIGHT	powerCol = WZCOL_BLACK, powerColShadow = WZCOL_BLACK;
-	UDWORD		health, width;
-	UDWORD		scale;
+	uint32_t		health, width;
+	uint32_t		scale;
 
 	scale = MAX(psStruct->pStructureType->baseWidth, psStruct->pStructureType->baseBreadth);
 	width = scale * 20;
@@ -2581,7 +2581,7 @@ static void drawStructureHealth(STRUCTURE *psStruct)
 	if (ctrlShiftDown())
 	{
 		//show resistance values if CTRL/SHIFT depressed
-		UDWORD  resistance = structureResistance(
+		uint32_t  resistance = structureResistance(
 		                         psStruct->pStructureType, psStruct->player);
 		if (resistance)
 		{
@@ -2627,9 +2627,9 @@ static void drawStructureHealth(STRUCTURE *psStruct)
 /// draw the construction bar for the specified structure
 static void drawStructureBuildProgress(STRUCTURE *psStruct)
 {
-	SDWORD		scrX, scrY, scrR;
-	UDWORD		health, width;
-	UDWORD		scale;
+	int32_t		scrX, scrY, scrR;
+	uint32_t		health, width;
+	uint32_t		scale;
 
 	scale = MAX(psStruct->pStructureType->baseWidth, psStruct->pStructureType->baseBreadth);
 	width = scale * 20;
@@ -2648,8 +2648,8 @@ static void drawStructureBuildProgress(STRUCTURE *psStruct)
 static void	drawStructureSelections(void)
 {
 	STRUCTURE	*psStruct;
-	SDWORD		scrX, scrY;
-	UDWORD		i;
+	int32_t		scrX, scrY;
+	uint32_t		i;
 	BASE_OBJECT	*psClickedOn;
 	bool		bMouseOverStructure = false;
 	bool		bMouseOverOwnStructure = false;
@@ -2729,9 +2729,9 @@ static void	drawStructureSelections(void)
 	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 }
 
-static UDWORD	getTargettingGfx(void)
+static uint32_t	getTargettingGfx(void)
 {
-	UDWORD	index;
+	uint32_t	index;
 
 	index = getModularScaledRealTime(1000, 10);
 
@@ -2791,15 +2791,15 @@ bool	eitherSelected(DROID *psDroid)
 /// Draw the selection graphics for selected droids
 static void	drawDroidSelections(void)
 {
-	UDWORD			scrX, scrY, scrR;
+	uint32_t			scrX, scrY, scrR;
 	DROID			*psDroid;
-	UDWORD			damage;
+	uint32_t			damage;
 	PIELIGHT		powerCol = WZCOL_BLACK, powerColShadow = WZCOL_BLACK;
 	PIELIGHT		boxCol;
 	BASE_OBJECT		*psClickedOn;
 	bool			bMouseOverDroid = false;
 	bool			bMouseOverOwnDroid = false;
-	UDWORD			i, index;
+	uint32_t			i, index;
 	FEATURE			*psFeature;
 	float			mulH;
 
@@ -2984,7 +2984,7 @@ static void	drawDroidSelections(void)
 			if (i != selectedPlayer && !psDroid->died && psDroid->sDisplay.frameNumber == currentGameFrame)
 			{
 				/* If it's selected */
-				if ((psDroid->flags & BASEFLAG_TARGETED) && psDroid->visible[selectedPlayer] == UBYTE_MAX)
+				if ((psDroid->flags & BASEFLAG_TARGETED) && psDroid->visible[selectedPlayer] == uint8_t_MAX)
 				{
 					scrX = psDroid->sDisplay.screenX;
 					scrY = psDroid->sDisplay.screenY;
@@ -3017,7 +3017,7 @@ static void	drawDroidSelections(void)
 /// Draw the number of the group the droid is in next to the droid
 static void	drawDroidGroupNumber(DROID *psDroid)
 {
-	UWORD id = UWORD_MAX;
+	uint16_t id = uint16_t_MAX;
 
 	switch (psDroid->group)
 	{
@@ -3055,7 +3055,7 @@ static void	drawDroidGroupNumber(DROID *psDroid)
 		break;
 	}
 
-	if (id != UWORD_MAX)
+	if (id != uint16_t_MAX)
 	{
 		int xShift = psDroid->sDisplay.screenR + GN_X_OFFSET;
 		int yShift = psDroid->sDisplay.screenR;
@@ -3069,15 +3069,15 @@ static void	drawDroidGroupNumber(DROID *psDroid)
 /// Draw the number of the commander the droid is assigned to
 static void	drawDroidCmndNo(DROID *psDroid)
 {
-	SDWORD	xShift, yShift, index;
-	UDWORD	id2;
-	UWORD	id;
+	int32_t	xShift, yShift, index;
+	uint32_t	id2;
+	uint16_t	id;
 	bool	bDraw = true;
 
-	id = UWORD_MAX;
+	id = uint16_t_MAX;
 
 	id2 = IMAGE_GN_STAR;
-	index = SDWORD_MAX;
+	index = int32_t_MAX;
 	if (psDroid->droidType == DROID_COMMAND)
 	{
 		index = cmdDroidGetIndex(psDroid);
@@ -3323,10 +3323,10 @@ void	assignDestTarget(void)
 /// Draw a graphical effect after selecting a sensor target
 static void	processSensorTarget(void)
 {
-	SWORD x, y;
-	SWORD offset;
-	SWORD x0, y0, x1, y1;
-	UDWORD	index;
+	int16_t x, y;
+	int16_t offset;
+	int16_t x0, y0, x1, y1;
+	uint32_t	index;
 
 
 	if (bSensorTargetting)
@@ -3335,8 +3335,8 @@ static void	processSensorTarget(void)
 		{
 			if (!psSensorObj->died && psSensorObj->sDisplay.frameNumber == currentGameFrame)
 			{
-				x = /*mouseX();*/(SWORD)psSensorObj->sDisplay.screenX;
-				y = (SWORD)psSensorObj->sDisplay.screenY;
+				x = /*mouseX();*/(int16_t)psSensorObj->sDisplay.screenX;
+				y = (int16_t)psSensorObj->sDisplay.screenY;
 				if (!gamePaused())
 				{
 					index = IMAGE_BLUE1 + getModularScaledGraphicsTime(1020, 5);
@@ -3347,12 +3347,12 @@ static void	processSensorTarget(void)
 				}
 				iV_DrawImage(IntImages, index, x, y);
 
-				offset = (SWORD)(12 + ((TARGET_TO_SENSOR_TIME) - (realTime - lastTargetAssignation)) / 2);
+				offset = (int16_t)(12 + ((TARGET_TO_SENSOR_TIME) - (realTime - lastTargetAssignation)) / 2);
 
-				x0 = (SWORD)(x - offset);
-				y0 = (SWORD)(y - offset);
-				x1 = (SWORD)(x + offset);
-				y1 = (SWORD)(y + offset);
+				x0 = (int16_t)(x - offset);
+				y0 = (int16_t)(y - offset);
+				x1 = (int16_t)(x + offset);
+				y1 = (int16_t)(y + offset);
 
 				iV_Line(x0, y0, x0 + 8, y0, WZCOL_WHITE);
 				iV_Line(x0, y0, x0, y0 + 8, WZCOL_WHITE);
@@ -3382,23 +3382,23 @@ static void	processSensorTarget(void)
 /// Draw a graphical effect after selecting a destination
 static void	processDestinationTarget(void)
 {
-	SWORD x, y;
-	SWORD offset;
-	SWORD x0, y0, x1, y1;
+	int16_t x, y;
+	int16_t offset;
+	int16_t x0, y0, x1, y1;
 
 	if (bDestTargetting)
 	{
 		if ((realTime - lastDestAssignation) < DEST_TARGET_TIME)
 		{
-			x = (SWORD)destTargetX;
-			y = (SWORD)destTargetY;
+			x = (int16_t)destTargetX;
+			y = (int16_t)destTargetY;
 
-			offset = (SWORD)(((DEST_TARGET_TIME) - (realTime - lastDestAssignation)) / 2);
+			offset = (int16_t)(((DEST_TARGET_TIME) - (realTime - lastDestAssignation)) / 2);
 
-			x0 = (SWORD)(x - offset);
-			y0 = (SWORD)(y - offset);
-			x1 = (SWORD)(x + offset);
-			y1 = (SWORD)(y + offset);
+			x0 = (int16_t)(x - offset);
+			y0 = (int16_t)(y - offset);
+			x1 = (int16_t)(x + offset);
+			y1 = (int16_t)(y + offset);
 
 			pie_BoxFill(x0, y0, x0 + 2, y0 + 2, WZCOL_WHITE);
 			pie_BoxFill(x1 - 2, y0 - 2, x1, y0, WZCOL_WHITE);
@@ -3413,40 +3413,40 @@ static void	processDestinationTarget(void)
 }
 
 /// Set what tile is being used to draw the bottom of a body of water
-void	setUnderwaterTile(UDWORD num)
+void	setUnderwaterTile(uint32_t num)
 {
 	underwaterTile = num;
 }
 
 /// Set what tile is being used to show rubble
-void	setRubbleTile(UDWORD num)
+void	setRubbleTile(uint32_t num)
 {
 	rubbleTile = num;
 }
 /// Get the tile that is currently being used to draw underwater ground
-UDWORD	getWaterTileNum(void)
+uint32_t	getWaterTileNum(void)
 {
 	return (underwaterTile);
 }
 /// Get the tile that is being used to show rubble
-UDWORD	getRubbleTileNum(void)
+uint32_t	getRubbleTileNum(void)
 {
 	return (rubbleTile);
 }
 
 /// Draw the spinning particles for power stations and re-arm pads for the specified player
-static void structureEffectsPlayer(UDWORD player)
+static void structureEffectsPlayer(uint32_t player)
 {
-	SDWORD	radius;
+	int32_t	radius;
 	STRUCTURE	*psStructure;
-	SDWORD	xDif, yDif;
+	int32_t	xDif, yDif;
 	Vector3i	pos;
-	UDWORD	numConnected;
+	uint32_t	numConnected;
 	DROID	*psDroid;
-	UDWORD	gameDiv;
-	UDWORD	i;
+	uint32_t	gameDiv;
+	uint32_t	i;
 	BASE_OBJECT			*psChosenObj = NULL;
-	UWORD	bFXSize;
+	uint16_t	bFXSize;
 
 	const int effectsPerSecond = 12;  // Effects per second. Will add effects up to once time per frame, so won't add as many effects if the framerate is low, but will be consistent, otherwise.
 	unsigned effectTime = graphicsTime / (GAME_TICKS_PER_SEC / effectsPerSecond) * (GAME_TICKS_PER_SEC / effectsPerSecond);
@@ -3548,7 +3548,7 @@ static void structureEffectsPlayer(UDWORD player)
 /// Draw the effects for all players and buildings
 static void structureEffects()
 {
-	UDWORD	i;
+	uint32_t	i;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -3645,7 +3645,7 @@ static void showSensorRange2(BASE_OBJECT *psObj)
 }
 
 /// Draw a circle on the map (to show the range of something)
-static void drawRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius)
+static void drawRangeAtPos(int32_t centerX, int32_t centerY, int32_t radius)
 {
 	Position pos(centerX, centerY, 0);  // .z ignored.
 	showEffectCircle(pos, radius, 80, EFFECT_EXPLOSION, EXPLOSION_TYPE_SMALL);
@@ -3654,7 +3654,7 @@ static void drawRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius)
 /** Turn on drawing some effects at certain position to visualize the radius.
  * \note Pass a negative radius to turn this off
  */
-void showRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius)
+void showRangeAtPos(int32_t centerX, int32_t centerY, int32_t radius)
 {
 	rangeCenterX = centerX;
 	rangeCenterY = centerY;
@@ -3669,11 +3669,11 @@ void showRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius)
 }
 
 /// Get the graphic ID for a droid rank
-UDWORD  getDroidRankGraphic(DROID *psDroid)
+uint32_t  getDroidRankGraphic(DROID *psDroid)
 {
-	UDWORD gfxId;
+	uint32_t gfxId;
 	/* Not found yet */
-	gfxId = UDWORD_MAX;
+	gfxId = uint32_t_MAX;
 
 	/* Establish the numerical value of the droid's rank */
 	switch (getDroidLevel(psDroid))
@@ -3717,13 +3717,13 @@ UDWORD  getDroidRankGraphic(DROID *psDroid)
  */
 static void	drawDroidRank(DROID *psDroid)
 {
-	UDWORD	gfxId = getDroidRankGraphic(psDroid);
+	uint32_t	gfxId = getDroidRankGraphic(psDroid);
 
 	/* Did we get one? - We should have... */
-	if (gfxId != UDWORD_MAX)
+	if (gfxId != uint32_t_MAX)
 	{
 		/* Render the rank graphic at the correct location */ // remove hardcoded numbers?!
-		iV_DrawImage(IntImages, (UWORD)gfxId,
+		iV_DrawImage(IntImages, (uint16_t)gfxId,
 		             psDroid->sDisplay.screenX + psDroid->sDisplay.screenR + 8,
 		             psDroid->sDisplay.screenY + psDroid->sDisplay.screenR);
 	}
@@ -3746,14 +3746,14 @@ static void	drawDroidSensorLock(DROID *psDroid)
 static	void	doConstructionLines(void)
 {
 	DROID	*psDroid;
-	UDWORD	i;
+	uint32_t	i;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		for (psDroid = apsDroidLists[i]; psDroid; psDroid = psDroid->psNext)
 		{
 			if (clipXY(psDroid->pos.x, psDroid->pos.y)
-			    && psDroid->visible[selectedPlayer] == UBYTE_MAX
+			    && psDroid->visible[selectedPlayer] == uint8_t_MAX
 			    && psDroid->sMove.Status != MOVESHUFFLE)
 			{
 				if (psDroid->action == DACTION_BUILD)

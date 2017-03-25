@@ -40,7 +40,7 @@ enum CONSOLE_TEXT_JUSTIFICATION
 
 extern char ConsoleString[MAX_CONSOLE_TMP_STRING_LENGTH];
 
-bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, SDWORD player, bool team = false);
+bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, int32_t player, bool team = false);
 void updateConsoleMessages(void);
 void initConsoleMessages(void);
 void removeTopConsoleMessage(void);
@@ -50,14 +50,14 @@ void flushConsoleMessages(void);
 void setConsoleBackdropStatus(bool state);
 void enableConsoleDisplay(bool state);
 bool getConsoleDisplayStatus(void);
-void setConsoleSizePos(UDWORD x, UDWORD y, UDWORD width);
+void setConsoleSizePos(uint32_t x, uint32_t y, uint32_t width);
 void setConsolePermanence(bool state, bool bClearOld);
 void clearActiveConsole(void);
 bool mouseOverConsoleBox(void);
 bool mouseOverHistoryConsoleBox(void);
 int getNumberConsoleMessages(void);
-void setConsoleLineInfo(UDWORD vis);
-UDWORD getConsoleLineInfo(void);
+void setConsoleLineInfo(uint32_t vis);
+uint32_t getConsoleLineInfo(void);
 void permitNewConsoleMessages(bool allow);
 void toggleConsoleDrop(void);
 void setHistoryMode(bool mode);

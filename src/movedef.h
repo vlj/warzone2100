@@ -52,15 +52,15 @@ struct MOVE_CONTROL
 
 	uint16_t moveDir;					// direction of motion (not the direction the droid is facing)
 	uint16_t bumpDir;					// direction at last bump
-	UDWORD	bumpTime;					// time of first bump with something
-	UWORD	lastBump;					// time of last bump with a droid - relative to bumpTime
-	UWORD	pauseTime;					// when MOVEPAUSE started - relative to bumpTime
-	UWORD	bumpX, bumpY;				// position of last bump
+	uint32_t	bumpTime;					// time of first bump with something
+	uint16_t	lastBump;					// time of last bump with a droid - relative to bumpTime
+	uint16_t	pauseTime;					// when MOVEPAUSE started - relative to bumpTime
+	uint16_t	bumpX, bumpY;				// position of last bump
 
-	UDWORD	shuffleStart;				// when a shuffle started
+	uint32_t	shuffleStart;				// when a shuffle started
 
 	/* vtol movement - GJ */
-	SWORD	iVertSpeed;
+	int16_t	iVertSpeed;
 };
 
 #endif // __INCLUDED_MOVEDEF_H__

@@ -51,15 +51,15 @@ struct FEATURE_STATS : public BASE_STATS
 	FEATURE_TYPE    subType;                ///< type of feature
 
 	iIMDShape      *psImd;                  ///< Graphic for the feature
-	UWORD           baseWidth;              ///< The width of the base in tiles
-	UWORD           baseBreadth;            ///< The breadth of the base in tiles
+	uint16_t           baseWidth;              ///< The width of the base in tiles
+	uint16_t           baseBreadth;            ///< The breadth of the base in tiles
 
 	bool            tileDraw;               ///< Whether the tile needs to be drawn
 	bool            allowLOS;               ///< Whether the feature allows the LOS. true = can see through the feature
 	bool            visibleAtStart;         ///< Whether the feature is visible at the start of the mission
 	bool            damageable;             ///< Whether the feature can be destroyed
-	UDWORD		body;			///< Number of body points
-	UDWORD          armourValue;            ///< Feature armour
+	uint32_t		body;			///< Number of body points
+	uint32_t          armourValue;            ///< Feature armour
 };
 
 struct FEATURE : public BASE_OBJECT

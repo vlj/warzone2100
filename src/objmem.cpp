@@ -654,7 +654,7 @@ void freeAllFeatures(void)
 /**************************  FLAG_POSITION ********************************/
 
 /* Create a new Flag Position */
-bool createFlagPosition(FLAG_POSITION **ppsNew, UDWORD player)
+bool createFlagPosition(FLAG_POSITION **ppsNew, uint32_t player)
 {
 	ASSERT(player < MAX_PLAYERS, "createFlagPosition: invalid player number");
 
@@ -716,7 +716,7 @@ void removeFlagPosition(FLAG_POSITION *psDel)
 void freeAllFlagPositions(void)
 {
 	FLAG_POSITION	*psNext;
-	SDWORD			player;
+	int32_t			player;
 
 	for (player = 0; player < MAX_PLAYERS; player++)
 	{
@@ -832,10 +832,10 @@ BASE_OBJECT *getBaseObjFromData(unsigned id, unsigned player, OBJECT_TYPE type)
 }
 
 // Find a base object from it's id
-BASE_OBJECT *getBaseObjFromId(UDWORD id)
+BASE_OBJECT *getBaseObjFromId(uint32_t id)
 {
 	unsigned int i;
-	UDWORD			player;
+	uint32_t			player;
 	BASE_OBJECT		*psObj;
 	DROID			*psTrans;
 
@@ -918,10 +918,10 @@ BASE_OBJECT *getBaseObjFromId(UDWORD id)
 	return NULL;
 }
 
-UDWORD getRepairIdFromFlag(FLAG_POSITION *psFlag)
+uint32_t getRepairIdFromFlag(FLAG_POSITION *psFlag)
 {
 	unsigned int i;
-	UDWORD			player;
+	uint32_t			player;
 	STRUCTURE		*psObj;
 	REPAIR_FACILITY	*psRepair;
 
@@ -963,12 +963,12 @@ UDWORD getRepairIdFromFlag(FLAG_POSITION *psFlag)
 	}
 	ASSERT(!"unable to find repair id for FLAG_POSITION", "getRepairIdFromFlag() failed");
 
-	return UDWORD_MAX;
+	return uint32_t_MAX;
 }
 
 
 // check a base object exists for an ID
-bool checkValidId(UDWORD id)
+bool checkValidId(uint32_t id)
 {
 	return getBaseObjFromId(id) != NULL;
 }
@@ -978,7 +978,7 @@ bool checkValidId(UDWORD id)
 #ifdef DEBUG
 static void objListIntegCheck(void)
 {
-	SDWORD			player;
+	int32_t			player;
 	BASE_OBJECT		*psCurr;
 
 	for (player = 0; player < MAX_PLAYERS; player += 1)
@@ -986,7 +986,7 @@ static void objListIntegCheck(void)
 		for (psCurr = (BASE_OBJECT *)apsDroidLists[player]; psCurr; psCurr = psCurr->psNext)
 		{
 			ASSERT(psCurr->type == OBJ_DROID &&
-			       (SDWORD)psCurr->player == player,
+			       (int32_t)psCurr->player == player,
 			       "objListIntegCheck: misplaced object in the droid list for player %d",
 			       player);
 		}
@@ -996,7 +996,7 @@ static void objListIntegCheck(void)
 		for (psCurr = (BASE_OBJECT *)apsStructLists[player]; psCurr; psCurr = psCurr->psNext)
 		{
 			ASSERT(psCurr->type == OBJ_STRUCTURE &&
-			       (SDWORD)psCurr->player == player,
+			       (int32_t)psCurr->player == player,
 			       "objListIntegCheck: misplaced %s(%p) in the structure list for player %d, is owned by %d",
 			       objInfo(psCurr), psCurr, player, (int)psCurr->player);
 		}

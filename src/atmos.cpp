@@ -58,7 +58,7 @@ enum AP_STATUS
 };
 
 static ATPART	*asAtmosParts = NULL;
-static UDWORD	freeParticle;
+static uint32_t	freeParticle;
 static WT_CLASS	weather = WT_NONE;
 
 /* Setup all the particles */
@@ -105,9 +105,9 @@ static void testParticleWrap(ATPART *psPart)
 /* Moves one of the particles */
 static void processParticle(ATPART *psPart)
 {
-	SDWORD	groundHeight;
+	int32_t	groundHeight;
 	Vector3i pos;
-	UDWORD	x, y;
+	uint32_t	x, y;
 	MAPTILE	*psTile;
 
 	/* Only move if the game isn't paused */
@@ -177,8 +177,8 @@ static void processParticle(ATPART *psPart)
 /* Adds a particle to the system if it can */
 static void atmosAddParticle(const Vector3f &pos, AP_TYPE type)
 {
-	UDWORD	activeCount;
-	UDWORD	i;
+	uint32_t	activeCount;
+	uint32_t	i;
 
 	for (i = freeParticle, activeCount = 0; asAtmosParts[i].status == APS_ACTIVE && activeCount < MAX_ATMOS_PARTICLES; i++)
 	{
@@ -203,7 +203,7 @@ static void atmosAddParticle(const Vector3f &pos, AP_TYPE type)
 	}
 
 	/* Record it's type */
-	asAtmosParts[freeParticle].type = (UBYTE)type;
+	asAtmosParts[freeParticle].type = (uint8_t)type;
 
 	/* Make it active */
 	asAtmosParts[freeParticle].status = APS_ACTIVE;
@@ -240,8 +240,8 @@ static void atmosAddParticle(const Vector3f &pos, AP_TYPE type)
 /* Move the particles */
 void atmosUpdateSystem()
 {
-	UDWORD	i;
-	UDWORD	numberToAdd;
+	uint32_t	i;
+	uint32_t	numberToAdd;
 	Vector3f pos;
 
 	// we don't want to do any of this while paused.
@@ -270,8 +270,8 @@ void atmosUpdateSystem()
 
 			/* If we've got one on the grid */
 			if (pos.x > 0 && pos.z > 0 &&
-			    pos.x < (SDWORD)world_coord(mapWidth - 1) &&
-			    pos.z < (SDWORD)world_coord(mapHeight - 1))
+			    pos.x < (int32_t)world_coord(mapWidth - 1) &&
+			    pos.z < (int32_t)world_coord(mapHeight - 1))
 			{
 				/* On grid, so which particle shall we add? */
 				switch (weather)
@@ -292,7 +292,7 @@ void atmosUpdateSystem()
 
 void atmosDrawParticles()
 {
-	UDWORD	i;
+	uint32_t	i;
 
 	if (weather == WT_NONE)
 	{

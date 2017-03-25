@@ -27,33 +27,33 @@
 
 #include <string.h>
 
-static inline void endian_uword(UWORD *p)
+static inline void endian_uword(uint16_t *p)
 {
-	static_assert(sizeof(*p) == 2, "Wrong UDWORD size");
+	static_assert(sizeof(*p) == 2, "Wrong uint32_t size");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[1] << 8 | bytes[0];
 }
 
-static inline void endian_sword(SWORD *p)
+static inline void endian_sword(int16_t *p)
 {
-	static_assert(sizeof(*p) == 2, "Wrong SWORD size");
+	static_assert(sizeof(*p) == 2, "Wrong int16_t size");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[1] << 8 | bytes[0];
 }
 
-static inline void endian_udword(UDWORD *p)
+static inline void endian_udword(uint32_t *p)
 {
-	static_assert(sizeof(*p) == 4, "Wrong UDWORD size");
+	static_assert(sizeof(*p) == 4, "Wrong uint32_t size");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];
 }
 
-static inline void endian_sdword(SDWORD *p)
+static inline void endian_sdword(int32_t *p)
 {
-	static_assert(sizeof(*p) == 4, "Wrong SDWORD size");
+	static_assert(sizeof(*p) == 4, "Wrong int32_t size");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];

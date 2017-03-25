@@ -65,7 +65,7 @@ static QJsonObject jsonMerge(QJsonObject original, const QJsonObject override)
 
 WzConfig::WzConfig(const QString &name, WzConfig::warning warning, QObject *parent)
 {
-	UDWORD size;
+	uint32_t size;
 	char *data;
 	QJsonParseError error;
 

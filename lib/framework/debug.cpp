@@ -44,7 +44,7 @@
 #define MAX_LEN_LOG_LINE 512
 
 char last_called_script_event[MAX_EVENT_NAME_LEN];
-UDWORD traceID = -1;
+uint32_t traceID = -1;
 
 static debug_callback *callbackRegistry = NULL;
 bool enabled_debug[LOG_LAST]; // global

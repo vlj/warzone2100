@@ -49,7 +49,7 @@ struct RENDER_STATE
 	PIELIGHT			fogColour;
 	float				fogBegin;
 	float				fogEnd;
-	SDWORD				texPage;
+	int32_t				texPage;
 	REND_MODE			rendMode;
 };
 
@@ -81,7 +81,7 @@ extern void pie_SetFogColour(PIELIGHT colour);
 extern PIELIGHT pie_GetFogColour(void) WZ_DECL_PURE;
 extern void pie_UpdateFogDistance(float begin, float end);
 //render states
-extern void pie_SetTexturePage(SDWORD num);
+extern void pie_SetTexturePage(int32_t num);
 extern void pie_SetRendMode(REND_MODE rendMode);
 RENDER_STATE getCurrentRenderState();
 

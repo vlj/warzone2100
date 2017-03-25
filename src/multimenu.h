@@ -28,14 +28,14 @@
 #include "stringdef.h"
 
 // requester
-void addMultiRequest(const char *searchDir, const char *fileExtension, UDWORD id, UBYTE mapCam, UBYTE numPlayers, std::string const &searchString = std::string());
+void addMultiRequest(const char *searchDir, const char *fileExtension, uint32_t id, uint8_t mapCam, uint8_t numPlayers, std::string const &searchString = std::string());
 extern bool		multiRequestUp;
 extern W_SCREEN *psRScreen;			// requester stuff.
-bool runMultiRequester(UDWORD id, UDWORD *mode, QString *chosen, LEVEL_DATASET **chosenValue, bool *isHoverPreview);
-void displayRequestOption(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+bool runMultiRequester(uint32_t id, uint32_t *mode, QString *chosen, LEVEL_DATASET **chosenValue, bool *isHoverPreview);
+void displayRequestOption(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 // multimenu
-extern void		intProcessMultiMenu(UDWORD id);
+extern void		intProcessMultiMenu(uint32_t id);
 extern bool		intRunMultiMenu(void);
 extern bool		intCloseMultiMenu(void);
 extern void		intCloseMultiMenuNoAnim(void);
@@ -43,8 +43,8 @@ extern bool		intAddMultiMenu(void);
 
 extern bool		MultiMenuUp;
 
-extern UDWORD		current_numplayers;
-extern UDWORD		current_tech;
+extern uint32_t		current_numplayers;
+extern uint32_t		current_tech;
 
 #define MULTIMENU				10600
 #define MULTIMENU_FORM			MULTIMENU

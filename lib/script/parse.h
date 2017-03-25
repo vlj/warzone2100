@@ -63,9 +63,9 @@ struct SCR_MACRO
 /* Definition for the chunks of code that are used within the compiler */
 struct CODE_BLOCK
 {
-	UDWORD				size;				// size of the code block
+	uint32_t				size;				// size of the code block
 	INTERP_VAL			*pCode;		// pointer to the code data
-	UDWORD				debugEntries;
+	uint32_t				debugEntries;
 	SCRIPT_DEBUG		*psDebug;	// Debugging info for the script.
 	INTERP_TYPE			type;			// The type of the code block
 };
@@ -73,29 +73,29 @@ struct CODE_BLOCK
 /* The chunk of code returned from parsing a parameter list. */
 struct PARAM_BLOCK
 {
-	UDWORD		numParams;
+	uint32_t		numParams;
 	INTERP_TYPE	*aParams;	// List of parameter types
-	UDWORD		size;
+	uint32_t		size;
 	INTERP_VAL	*pCode;		// The code that puts the parameters onto the stack
 };
 
 /* The types of a functions parameters, returned from parsing a parameter declaration */
 struct PARAM_DECL
 {
-	UDWORD		numParams;
+	uint32_t		numParams;
 	INTERP_TYPE	*aParams;
 };
 
 /* The chunk of code used while parsing a conditional statement */
 struct COND_BLOCK
 {
-	UDWORD		numOffsets;
-	UDWORD		*aOffsets;	// Positions in the code that have to be
+	uint32_t		numOffsets;
+	uint32_t		*aOffsets;	// Positions in the code that have to be
 	// replaced with the offset to the end of the
 	// conditional statement (for the jumps). - //TODO: change to INTERP_VAL - probbaly not necessary
-	UDWORD		size;
+	uint32_t		size;
 	INTERP_VAL		*pCode;
-	UDWORD			debugEntries;	// Number of debugging entries in psDebug.
+	uint32_t			debugEntries;	// Number of debugging entries in psDebug.
 	SCRIPT_DEBUG	*psDebug;		// Debugging info for the script.
 };
 
@@ -119,7 +119,7 @@ struct TYPE_SYMBOL
 {
 	const char		*pIdent;	// Type identifier
 	INTERP_TYPE		typeID;		// The type id to use in the type field of values
-	SWORD			accessType;	// Whether the type is an object or a simple value
+	int16_t			accessType;	// Whether the type is an object or a simple value
 	SCR_VAL_SAVE	saveFunc;	// load and save functions
 	SCR_VAL_LOAD	loadFunc;	//
 };
@@ -128,8 +128,8 @@ struct TYPE_SYMBOL
 struct VAR_IDENT_DECL
 {
 	char			*pIdent;						// variable identifier
-	SDWORD			dimensions;						// number of dimensions of an array - 0 for normal var
-	SDWORD			elements[VAR_MAX_DIMENSIONS];	// number of elements in an array
+	int32_t			dimensions;						// number of dimensions of an array - 0 for normal var
+	int32_t			elements[VAR_MAX_DIMENSIONS];	// number of elements in an array
 };
 
 /* Type for a variable symbol */
@@ -139,10 +139,10 @@ struct VAR_SYMBOL
 	INTERP_TYPE		type;		// variable type
 	STORAGE_TYPE	storage;	// Where the variable is stored
 	uint32_t /*INTERP_TYPE*/ objType;  // The object type if this is an object variable
-	UDWORD			index;		// Index of the variable in its data space
+	uint32_t			index;		// Index of the variable in its data space
 	SCRIPT_VARFUNC	get, set;	// Access functions if the variable is stored in an object/in-game
-	UDWORD			dimensions;						// number of dimensions of an array - 0 for normal var
-	SDWORD			elements[VAR_MAX_DIMENSIONS];	// number of elements in an array
+	uint32_t			dimensions;						// number of dimensions of an array - 0 for normal var
+	int32_t			elements[VAR_MAX_DIMENSIONS];	// number of elements in an array
 
 	VAR_SYMBOL     *psNext;
 };
@@ -152,11 +152,11 @@ struct VAR_SYMBOL
 struct ARRAY_BLOCK
 {
 	VAR_SYMBOL		*psArrayVar;
-	UDWORD			dimensions;
+	uint32_t			dimensions;
 
-	UDWORD			size;
+	uint32_t			size;
 	INTERP_VAL			*pCode;
-	UDWORD			debugEntries;	// Number of debugging entries in psDebug.
+	uint32_t			debugEntries;	// Number of debugging entries in psDebug.
 	SCRIPT_DEBUG	*psDebug;		// Debugging info for the script.
 };
 
@@ -171,7 +171,7 @@ struct CONST_SYMBOL
 	 * A union is not used as a union cannot be statically initialised
 	 */
 	int32_t			bval;
-	SDWORD			ival;
+	int32_t			ival;
 	void			*oval;
 	char			*sval;	//String values
 	float			fval;
@@ -182,7 +182,7 @@ struct OBJVAR_BLOCK
 {
 	VAR_SYMBOL		*psObjVar;	// The object variables symbol
 
-	UDWORD			size;
+	uint32_t			size;
 	INTERP_VAL		*pCode;		// The code to get the object value on the stack
 };
 
@@ -195,15 +195,15 @@ struct FUNC_SYMBOL
 	const char	*pIdent;	// function's identifier
 	SCRIPT_FUNC	pFunc;		// Pointer to the instinct function
 	INTERP_TYPE	type;		// function type
-	UDWORD		numParams;	// Number of parameters to the function
+	uint32_t		numParams;	// Number of parameters to the function
 	uint32_t/*INTERP_TYPE*/ aParams[INST_MAXPARAMS];
 	// List of parameter types
 	int32_t		script;		// Whether the function is defined in the script
 	// or a C instinct function
-	UDWORD		size;		// The size of script code
+	uint32_t		size;		// The size of script code
 	INTERP_VAL	*pCode;		// The code for a function if it is defined in the script
-	UDWORD		location;	// The position of the function in the final code block
-	UDWORD			debugEntries;	// Number of debugging entries in psDebug.
+	uint32_t		location;	// The position of the function in the final code block
+	uint32_t			debugEntries;	// Number of debugging entries in psDebug.
 	SCRIPT_DEBUG	*psDebug;		// Debugging info for the script.
 
 	FUNC_SYMBOL    *psNext;
@@ -220,22 +220,22 @@ struct VAR_DECL
 struct TRIGGER_DECL
 {
 	TRIGGER_TYPE	type;
-	UDWORD			size;
+	uint32_t			size;
 	INTERP_VAL		*pCode;
-	UDWORD			time;
+	uint32_t			time;
 };
 
 /* Type for a trigger symbol */
 struct TRIGGER_SYMBOL
 {
 	char			*pIdent;	// Trigger's identifier
-	UDWORD			index;		// The triggers index number
+	uint32_t			index;		// The triggers index number
 	TRIGGER_TYPE	type;		// Trigger type
-	UDWORD			size;		// Code size for the trigger
+	uint32_t			size;		// Code size for the trigger
 	INTERP_VAL		*pCode;		// The trigger code
-	UDWORD			time;		// How often to check the trigger
+	uint32_t			time;		// How often to check the trigger
 
-	UDWORD			debugEntries;
+	uint32_t			debugEntries;
 	SCRIPT_DEBUG	*psDebug;
 
 	TRIGGER_SYMBOL *psNext;
@@ -247,7 +247,7 @@ struct CALLBACK_SYMBOL
 	const char		*pIdent;	// Callback identifier
 	TRIGGER_TYPE	type;		// user defined callback id >= TR_CALLBACKSTART
 	SCRIPT_FUNC		pFunc;		// Pointer to the instinct function
-	UDWORD			numParams;	// Number of parameters to the function
+	uint32_t			numParams;	// Number of parameters to the function
 	uint32_t/*INTERP_TYPE*/ aParams[INST_MAXPARAMS];
 	// List of parameter types
 };
@@ -257,17 +257,17 @@ struct CALLBACK_SYMBOL
 struct EVENT_SYMBOL
 {
 	char		*pIdent;	// Event's identifier
-	UDWORD		index;		// the events index number
-	UDWORD		size;		// Code size for the event
+	uint32_t		index;		// the events index number
+	uint32_t		size;		// Code size for the event
 	INTERP_VAL		*pCode;		// Event code
-	SDWORD		trigger;	// Index of the event's trigger
+	int32_t		trigger;	// Index of the event's trigger
 
-	UDWORD			debugEntries;
+	uint32_t			debugEntries;
 	SCRIPT_DEBUG	*psDebug;
 
 	//functions stuff
-	UDWORD		numParams;		//Number of parameters to the function
-	UDWORD		numLocalVars;	//local variables
+	uint32_t		numParams;		//Number of parameters to the function
+	uint32_t		numLocalVars;	//local variables
 	int32_t		bFunction;		//if this event is defined as a function
 	int32_t		bDeclared;		//if function was declared before
 	INTERP_TYPE	retType;		//return type if a function
@@ -316,13 +316,13 @@ extern bool scriptLookUpType(const char *pIdent, INTERP_TYPE *pType);
 extern bool scriptAddVariable(VAR_DECL *psStorage, VAR_IDENT_DECL *psVarIdent);
 
 /* Add a new trigger symbol */
-extern bool scriptAddTrigger(const char *pIdent, TRIGGER_DECL *psDecl, UDWORD line);
+extern bool scriptAddTrigger(const char *pIdent, TRIGGER_DECL *psDecl, uint32_t line);
 
 /* Add a new event symbol */
-extern bool scriptDeclareEvent(const char *pIdent, EVENT_SYMBOL **ppsEvent, SDWORD numArgs);
+extern bool scriptDeclareEvent(const char *pIdent, EVENT_SYMBOL **ppsEvent, int32_t numArgs);
 
 // Add the code to a defined event
-extern bool scriptDefineEvent(EVENT_SYMBOL *psEvent, CODE_BLOCK *psCode, SDWORD trigger);
+extern bool scriptDefineEvent(EVENT_SYMBOL *psEvent, CODE_BLOCK *psCode, int32_t trigger);
 
 /* Look up a variable symbol */
 extern bool scriptLookUpVariable(const char *pIdent, VAR_SYMBOL **ppsSym);
@@ -344,7 +344,7 @@ extern bool scriptStartFunctionDef(const char *pIdent,	// Functions name
                                    INTERP_TYPE		type);		// return type
 
 /* Store the parameter types for the current script function definition  */
-extern bool scriptSetParameters(UDWORD		numParams,	// number of parameters
+extern bool scriptSetParameters(uint32_t		numParams,	// number of parameters
                                 INTERP_TYPE		*pParams);	// parameter types
 
 /* Store the code for a script function definition.
@@ -358,7 +358,7 @@ extern bool scriptLookUpFunction(const char *pIdent, FUNC_SYMBOL **ppsSym);
 /* Look up an in-script custom function symbol */
 extern bool scriptLookUpCustomFunction(const char *pIdent, EVENT_SYMBOL **ppsSym);
 
-extern bool popArguments(INTERP_VAL **ip_temp, SDWORD numParams);
+extern bool popArguments(INTERP_VAL **ip_temp, int32_t numParams);
 
 extern void widgCopyString(char *pDest, const char *pSrc); // FIXME Duplicate declaration of internal widget function
 

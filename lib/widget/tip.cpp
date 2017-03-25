@@ -50,11 +50,11 @@ static enum _tip_state
 } tipState;
 
 
-static SDWORD		startTime;			// When the tip was created
-static SDWORD		mx, my;				// Last mouse coords
-static SDWORD		wx, wy, ww, wh;		// Position and size of button to place tip by
-static SDWORD		tx, ty, tw, th;		// Position and size of the tip box
-static SDWORD		fx, fy;				// Position of the text
+static int32_t		startTime;			// When the tip was created
+static int32_t		mx, my;				// Last mouse coords
+static int32_t		wx, wy, ww, wh;		// Position and size of button to place tip by
+static int32_t		tx, ty, tw, th;		// Position and size of the tip box
+static int32_t		fx, fy;				// Position of the text
 static int              lineHeight;
 static QStringList      pTip;                   // Tip text
 static WIDGET		*psWidget;			// The button the tip is for
@@ -118,9 +118,9 @@ void tipStop(WIDGET *psSource)
 /* Update and possibly display the tip */
 void tipDisplay()
 {
-	SDWORD		newMX, newMY;
-	SDWORD		currTime;
-	SDWORD		fw, topGap;
+	int32_t		newMX, newMY;
+	int32_t		currTime;
+	int32_t		fw, topGap;
 
 	switch (tipState)
 	{

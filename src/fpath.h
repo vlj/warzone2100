@@ -51,7 +51,7 @@ struct PATHJOB
 	int		destX, destY;
 	int		origX, origY;
 	StructureBounds dstStructure;
-	UDWORD		droidID;
+	uint32_t		droidID;
 	FPATH_MOVETYPE	moveType;
 	int		owner;		///< Player owner
 	std::shared_ptr<PathBlockingMap> blockingMap;   ///< Map of blocking tiles.
@@ -78,7 +78,7 @@ extern void fpathUpdate(void);
 
 /** Find a route for a droid to a location.
  */
-extern FPATH_RETVAL fpathDroidRoute(DROID *psDroid, SDWORD targetX, SDWORD targetY, FPATH_MOVETYPE moveType);
+extern FPATH_RETVAL fpathDroidRoute(DROID *psDroid, int32_t targetX, int32_t targetY, FPATH_MOVETYPE moveType);
 
 /// Returns true iff the parameters have equivalent behaviour in fpathBaseBlockingTile.
 bool fpathIsEquivalentBlocking(PROPULSION_TYPE propulsion1, int player1, FPATH_MOVETYPE moveType1,
@@ -96,9 +96,9 @@ bool fpathIsEquivalentBlocking(PROPULSION_TYPE propulsion1, int player1, FPATH_M
  *
  *  @return true if the given tile is blocking for this droid
  */
-bool fpathBlockingTile(SDWORD x, SDWORD y, PROPULSION_TYPE propulsion);
+bool fpathBlockingTile(int32_t x, int32_t y, PROPULSION_TYPE propulsion);
 bool fpathDroidBlockingTile(DROID *psDroid, int x, int y, FPATH_MOVETYPE moveType);
-bool fpathBaseBlockingTile(SDWORD x, SDWORD y, PROPULSION_TYPE propulsion, int player, FPATH_MOVETYPE moveType);
+bool fpathBaseBlockingTile(int32_t x, int32_t y, PROPULSION_TYPE propulsion, int player, FPATH_MOVETYPE moveType);
 
 static inline bool fpathBlockingTile(Vector2i tile, PROPULSION_TYPE propulsion)
 {
@@ -112,7 +112,7 @@ static inline bool fpathBlockingTile(Vector2i tile, PROPULSION_TYPE propulsion)
  *
  *  Used for instance by VTOLs. Function is thread-safe.
  */
-extern void fpathSetDirectRoute(DROID *psDroid, SDWORD targetX, SDWORD targetY);
+extern void fpathSetDirectRoute(DROID *psDroid, int32_t targetX, int32_t targetY);
 
 /** Clean up path jobs and results for a droid. Function is thread-safe. */
 extern void fpathRemoveDroidData(int id);

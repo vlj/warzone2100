@@ -61,7 +61,7 @@ W_SLIDER::W_SLIDER(W_SLDINIT const *init)
 }
 
 /* Get the current position of a slider bar */
-UDWORD widgGetSliderPos(W_SCREEN *psScreen, UDWORD id)
+uint32_t widgGetSliderPos(W_SCREEN *psScreen, uint32_t id)
 {
 	WIDGET	*psWidget;
 
@@ -75,7 +75,7 @@ UDWORD widgGetSliderPos(W_SCREEN *psScreen, UDWORD id)
 }
 
 /* Set the current position of a slider bar */
-void widgSetSliderPos(W_SCREEN *psScreen, UDWORD id, UWORD pos)
+void widgSetSliderPos(W_SCREEN *psScreen, uint32_t id, uint16_t pos)
 {
 	WIDGET	*psWidget;
 

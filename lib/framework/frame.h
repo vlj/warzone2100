@@ -120,7 +120,7 @@ int getFramerateLimit();
 void frameUpdate();
 
 /** Returns the current frame we're on - used to establish whats on screen. */
-UDWORD frameGetFrameNumber();
+uint32_t frameGetFrameNumber();
 
 /** Return framerate of the last second. */
 int frameRate();

@@ -71,7 +71,7 @@ int aiBestNearestTarget(DROID *psDroid, BASE_OBJECT **ppsObj, int weapon_slot, i
 bool aiObjectIsProbablyDoomed(BASE_OBJECT *psObject, bool isDirect);
 
 // Update the expected damage of the object.
-void aiObjectAddExpectedDamage(BASE_OBJECT *psObject, SDWORD damage, bool isDirect);
+void aiObjectAddExpectedDamage(BASE_OBJECT *psObject, int32_t damage, bool isDirect);
 
 /* See if there is a target in range added int weapon_slot*/
 bool aiChooseTarget(BASE_OBJECT *psObj,

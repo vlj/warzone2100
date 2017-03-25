@@ -51,7 +51,7 @@ void setPlayerHasLost(bool val);
 bool testPlayerHasLost(void);
 bool testPlayerHasWon(void);
 void setPlayerHasWon(bool val);
-void setScriptWinLoseVideo(UBYTE val);
-UBYTE getScriptWinLoseVideo(void);
+void setScriptWinLoseVideo(uint8_t val);
+uint8_t getScriptWinLoseVideo(void);
 
 #endif // __INCLUDED_SRC_WRAPPERS_H__

@@ -29,15 +29,15 @@
 	Pumpkin Studios, EIDOS Interactive.
 */
 
-bool setPlayerColour(UDWORD player, UDWORD col);
-UBYTE getPlayerColour(UDWORD pl);
+bool setPlayerColour(uint32_t player, uint32_t col);
+uint8_t getPlayerColour(uint32_t pl);
 
-UDWORD getComponentDroidRadius(DROID *psDroid);
-UDWORD getComponentDroidTemplateRadius(DROID_TEMPLATE *psDroid);
-UDWORD getComponentRadius(BASE_STATS *psComponent);
-UDWORD getResearchRadius(BASE_STATS *Stat);
-UDWORD getStructureSizeMax(STRUCTURE *psStructure);
-UDWORD getStructureStatSizeMax(STRUCTURE_STATS *Stats);
+uint32_t getComponentDroidRadius(DROID *psDroid);
+uint32_t getComponentDroidTemplateRadius(DROID_TEMPLATE *psDroid);
+uint32_t getComponentRadius(BASE_STATS *psComponent);
+uint32_t getResearchRadius(BASE_STATS *Stat);
+uint32_t getStructureSizeMax(STRUCTURE *psStructure);
+uint32_t getStructureStatSizeMax(STRUCTURE_STATS *Stats);
 
 #define BLIP_ANIM_DURATION			(200)
 #define OBJECT_RADIUS				(128)
@@ -57,7 +57,7 @@ UDWORD getStructureStatSizeMax(STRUCTURE_STATS *Stats);
 #define LARGE_FEATURE_SCALE			(16)
 
 #define TOWER_HEIGHT    100
-UDWORD getStructureStatHeight(STRUCTURE_STATS *psStat);
+uint32_t getStructureStatHeight(STRUCTURE_STATS *psStat);
 
 void displayIMDButton(iIMDShape *IMDShape, const Vector3i *Rotation, const Vector3i *Position, int scale);
 void displayStructureButton(STRUCTURE *psStructure, const Vector3i *Rotation, const Vector3i *Position, int scale);
@@ -70,10 +70,10 @@ void displayComponentObject(DROID *psDroid);
 
 void compPersonToBits(DROID *psDroid);
 
-SDWORD rescaleButtonObject(SDWORD radius, SDWORD baseScale, SDWORD baseRadius);
+int32_t rescaleButtonObject(int32_t radius, int32_t baseScale, int32_t baseRadius);
 void destroyFXDroid(DROID *psDroid, unsigned impactTime);
 
-void drawMuzzleFlash(WEAPON sWeap, iIMDShape *weaponImd, iIMDShape *flashImd, PIELIGHT buildingBrightness, int pieFlag, int pieFlagData, UBYTE colour = 0);
+void drawMuzzleFlash(WEAPON sWeap, iIMDShape *weaponImd, iIMDShape *flashImd, PIELIGHT buildingBrightness, int pieFlag, int pieFlagData, uint8_t colour = 0);
 
 /* Pass in the stats you're interested in and the COMPONENT - double reference, but works. NOTE: Unused!*/
 #define PART_IMD(STATS,DROID,COMPONENT,PLAYER)	(STATS[DROID->asBits[COMPONENT]].pIMD)

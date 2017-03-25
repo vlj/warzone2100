@@ -29,7 +29,7 @@ extern bool intAddInGameOptions(void);
 extern bool intCloseInGameOptions(bool bPutUpLoadSave, bool bResetMissionWidgets);
 extern void intCloseInGameOptionsNoAnim(bool bResetMissionWidgets);
 extern bool intRunInGameOptions(void);
-extern void intProcessInGameOptions(UDWORD);
+extern void intProcessInGameOptions(uint32_t);
 extern void intAddInGamePopup(void);
 
 // status bools.

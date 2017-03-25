@@ -80,7 +80,7 @@
 bool						bMultiPlayer				= false;	// true when more than 1 player.
 bool						bMultiMessages				= false;	// == bMultiPlayer unless multimessages are disabled
 bool						openchannels[MAX_PLAYERS] = {true};
-UBYTE						bDisplayMultiJoiningStatus;
+uint8_t						bDisplayMultiJoiningStatus;
 
 MULTIPLAYERGAME				game;									//info to describe game.
 MULTIPLAYERINGAME			ingame;
@@ -94,20 +94,20 @@ char								playerName[MAX_PLAYERS][MAX_STR_LENGTH];	//Array to store all player
 #define MAX_MSG_STACK	100				// must be *at least* 64
 
 static char msgStr[MAX_MSG_STACK][MAX_STR_LENGTH];
-static SDWORD msgPlFrom[MAX_MSG_STACK];
-static SDWORD msgPlTo[MAX_MSG_STACK];
-static SDWORD callbackType[MAX_MSG_STACK];
-static SDWORD locx[MAX_MSG_STACK];
-static SDWORD locy[MAX_MSG_STACK];
+static int32_t msgPlFrom[MAX_MSG_STACK];
+static int32_t msgPlTo[MAX_MSG_STACK];
+static int32_t callbackType[MAX_MSG_STACK];
+static int32_t locx[MAX_MSG_STACK];
+static int32_t locy[MAX_MSG_STACK];
 static DROID *msgDroid[MAX_MSG_STACK];
-static SDWORD msgStackPos = -1;				//top element pointer
+static int32_t msgStackPos = -1;				//top element pointer
 
 // ////////////////////////////////////////////////////////////////////////////
 // Local Prototypes
 
 static bool recvBeacon(NETQUEUE queue);
 static bool recvResearch(NETQUEUE queue);
-static bool sendAIMessage(char *pStr, UDWORD player, UDWORD to);
+static bool sendAIMessage(char *pStr, uint32_t player, uint32_t to);
 
 bool		multiplayPlayersReady(bool bNotifyStatus);
 void		startMultiplayerGame(void);
@@ -132,7 +132,7 @@ bool multiplayerWinSequence(bool firstCall)
 {
 	static Position pos;
 	Position pos2;
-	static UDWORD last = 0;
+	static uint32_t last = 0;
 	float		rotAmount;
 	STRUCTURE	*psStruct;
 
@@ -214,8 +214,8 @@ bool multiplayerWinSequence(bool firstCall)
 // MultiPlayer main game loop code.
 bool multiPlayerLoop(void)
 {
-	UDWORD		i;
-	UBYTE		joinCount;
+	uint32_t		i;
+	uint8_t		joinCount;
 
 	joinCount = 0;
 	for (i = 0; i < MAX_PLAYERS; i++)
@@ -303,7 +303,7 @@ bool multiPlayerLoop(void)
 // quikie functions.
 
 // to get droids ...
-DROID *IdToDroid(UDWORD id, UDWORD player)
+DROID *IdToDroid(uint32_t id, uint32_t player)
 {
 	if (player == ANYPLAYER)
 	{
@@ -332,7 +332,7 @@ DROID *IdToDroid(UDWORD id, UDWORD player)
 }
 
 // find off-world droids
-DROID *IdToMissionDroid(UDWORD id, UDWORD player)
+DROID *IdToMissionDroid(uint32_t id, uint32_t player)
 {
 	if (player == ANYPLAYER)
 	{
@@ -362,7 +362,7 @@ DROID *IdToMissionDroid(UDWORD id, UDWORD player)
 
 // ////////////////////////////////////////////////////////////////////////////
 // find a structure
-STRUCTURE *IdToStruct(UDWORD id, UDWORD player)
+STRUCTURE *IdToStruct(uint32_t id, uint32_t player)
 {
 	int beginPlayer = 0, endPlayer = MAX_PLAYERS;
 	if (player != ANYPLAYER)
@@ -389,7 +389,7 @@ STRUCTURE *IdToStruct(UDWORD id, UDWORD player)
 
 // ////////////////////////////////////////////////////////////////////////////
 // find a feature
-FEATURE *IdToFeature(UDWORD id, UDWORD player)
+FEATURE *IdToFeature(uint32_t id, uint32_t player)
 {
 	(void)player;	// unused, all features go into player 0
 	for (FEATURE *d = apsFeatureLists[0]; d; d = d->psNext)
@@ -404,7 +404,7 @@ FEATURE *IdToFeature(UDWORD id, UDWORD player)
 
 // ////////////////////////////////////////////////////////////////////////////
 
-DROID_TEMPLATE *IdToTemplate(UDWORD tempId, UDWORD player)
+DROID_TEMPLATE *IdToTemplate(uint32_t tempId, uint32_t player)
 {
 	// Check if we know which player this is from, in that case, assume it is a player template
 	// FIXME: nuke the ANYPLAYER hack
@@ -432,7 +432,7 @@ DROID_TEMPLATE *IdToTemplate(UDWORD tempId, UDWORD player)
 
 /////////////////////////////////////////////////////////////////////////////////
 //  Returns a pointer to base object, given an id and optionally a player.
-BASE_OBJECT *IdToPointer(UDWORD id, UDWORD player)
+BASE_OBJECT *IdToPointer(uint32_t id, uint32_t player)
 {
 	DROID		*pD;
 	STRUCTURE	*pS;
@@ -562,10 +562,10 @@ int scavengerPlayer()
 
 // ////////////////////////////////////////////////////////////////////////////
 // probably temporary. Places the camera on the players 1st droid or struct.
-Vector3i cameraToHome(UDWORD player, bool scroll)
+Vector3i cameraToHome(uint32_t player, bool scroll)
 {
 	Vector3i res;
-	UDWORD x, y;
+	uint32_t x, y;
 	STRUCTURE	*psBuilding;
 
 	for (psBuilding = apsStructLists[player]; psBuilding && (psBuilding->pStructureType->type != REF_HQ); psBuilding = psBuilding->psNext) {}
@@ -1210,7 +1210,7 @@ bool sendTextMessage(const char *pStr, bool all, uint32_t from)
 	bool				normal = true, team = false;
 	bool				sendto[MAX_PLAYERS];
 	int					posTable[MAX_PLAYERS];
-	UDWORD				i;
+	uint32_t				i;
 	char				display[MAX_CONSOLE_STRING_LENGTH];
 	char				msg[MAX_CONSOLE_STRING_LENGTH];
 	char				*curStr = (char *)pStr;
@@ -1389,9 +1389,9 @@ void printConsoleNameChange(const char *oldName, const char *newName)
 
 
 //AI multiplayer message, send from a certain player index to another player index
-static bool sendAIMessage(char *pStr, UDWORD player, UDWORD to)
+static bool sendAIMessage(char *pStr, uint32_t player, uint32_t to)
 {
-	UDWORD	sendPlayer;
+	uint32_t	sendPlayer;
 
 	if (!ingame.localOptionsReceived)
 	{
@@ -1460,7 +1460,7 @@ bool sendBeacon(int32_t locX, int32_t locY, int32_t forPlayer, int32_t sender, c
 // Write a message to the console.
 bool recvTextMessage(NETQUEUE queue)
 {
-	UDWORD	playerIndex;
+	uint32_t	playerIndex;
 	char	msg[MAX_CONSOLE_STRING_LENGTH];
 	char newmsg[MAX_CONSOLE_STRING_LENGTH];
 	bool team = false;
@@ -1516,7 +1516,7 @@ bool recvTextMessage(NETQUEUE queue)
 //AI multiplayer message - received message for AI (for hosted scripts)
 bool recvTextMessageAI(NETQUEUE queue)
 {
-	UDWORD	sender, receiver;
+	uint32_t	sender, receiver;
 	char	msg[MAX_CONSOLE_STRING_LENGTH];
 	char	newmsg[MAX_CONSOLE_STRING_LENGTH];
 
@@ -1731,7 +1731,7 @@ void msgStackReset(void)
 	msgStackPos = -1;		//Beginning of the stack
 }
 
-UDWORD msgStackPush(SDWORD CBtype, SDWORD plFrom, SDWORD plTo, const char *tStr, SDWORD x, SDWORD y, DROID *psDroid)
+uint32_t msgStackPush(int32_t CBtype, int32_t plFrom, int32_t plTo, const char *tStr, int32_t x, int32_t y, DROID *psDroid)
 {
 	debug(LOG_WZ, "msgStackPush: pushing message type %d to pos %d", CBtype, msgStackPos + 1);
 
@@ -1768,7 +1768,7 @@ bool isMsgStackEmpty(void)
 	return false;
 }
 
-bool msgStackGetFrom(SDWORD  *psVal)
+bool msgStackGetFrom(int32_t  *psVal)
 {
 	if (msgStackPos < 0)
 	{
@@ -1781,7 +1781,7 @@ bool msgStackGetFrom(SDWORD  *psVal)
 	return true;
 }
 
-bool msgStackGetTo(SDWORD  *psVal)
+bool msgStackGetTo(int32_t  *psVal)
 {
 	if (msgStackPos < 0)
 	{
@@ -1794,7 +1794,7 @@ bool msgStackGetTo(SDWORD  *psVal)
 	return true;
 }
 
-static bool msgStackGetCallbackType(SDWORD  *psVal)
+static bool msgStackGetCallbackType(int32_t  *psVal)
 {
 	if (msgStackPos < 0)
 	{
@@ -1807,7 +1807,7 @@ static bool msgStackGetCallbackType(SDWORD  *psVal)
 	return true;
 }
 
-static bool msgStackGetXY(SDWORD  *psValx, SDWORD  *psValy)
+static bool msgStackGetXY(int32_t  *psValx, int32_t  *psValy)
 {
 	if (msgStackPos < 0)
 	{
@@ -1838,7 +1838,7 @@ bool msgStackGetMsg(char  *psVal)
 
 static bool msgStackSort(void)
 {
-	SDWORD i;
+	int32_t i;
 
 	//go through all-1 elements (bottom-top)
 	for (i = 0; i < msgStackPos; i++)
@@ -1894,14 +1894,14 @@ bool msgStackGetDroid(DROID **ppsDroid)
 	return true;
 }
 
-SDWORD msgStackGetCount(void)
+int32_t msgStackGetCount(void)
 {
 	return msgStackPos + 1;
 }
 
 bool msgStackFireTop(void)
 {
-	SDWORD		_callbackType;
+	int32_t		_callbackType;
 	char		msg[255];
 
 	if (msgStackPos < 0)

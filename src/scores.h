@@ -58,14 +58,14 @@ extern MISSION_DATA	missionData;
 // Could use widgets, but hey.....
 struct STAT_BAR
 {
-	UDWORD	topX, topY;		// Obvious
-	UDWORD	width, height;	// Height down screen and width _unfilled_
-	UDWORD	percent;		// What percentage full is it?
-	UDWORD	stringID;		// String resource name to stick next to it.
-	UDWORD	queTime;		// How many game ticks before it's active?
+	uint32_t	topX, topY;		// Obvious
+	uint32_t	width, height;	// Height down screen and width _unfilled_
+	uint32_t	percent;		// What percentage full is it?
+	uint32_t	stringID;		// String resource name to stick next to it.
+	uint32_t	queTime;		// How many game ticks before it's active?
 	bool	bQueued;		// Already fired off?
 	bool	bActive;		// Is this one active?
-	UDWORD	number;			// %d string for the associated text string.
+	uint32_t	number;			// %d string for the associated text string.
 };
 
 enum

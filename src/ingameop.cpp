@@ -61,7 +61,7 @@ bool 	isInGamePopupUp = false;
 
 // ////////////////////////////////////////////////////////////////////////////
 
-static bool addIGTextButton(UDWORD id, UWORD x, UWORD y, UWORD width, const char *string, UDWORD Style)
+static bool addIGTextButton(uint32_t id, uint16_t x, uint16_t y, uint16_t width, const char *string, uint32_t Style)
 {
 	W_BUTINIT sButInit;
 
@@ -395,7 +395,7 @@ bool intCloseInGameOptions(bool bPutUpLoadSave, bool bResetMissionWidgets)
 
 // ////////////////////////////////////////////////////////////////////////////
 // process clicks made by user.
-void intProcessInGameOptions(UDWORD id)
+void intProcessInGameOptions(uint32_t id)
 {
 	switch (id)
 	{

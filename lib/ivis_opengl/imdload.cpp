@@ -64,7 +64,7 @@ static bool tryLoad(const QString &path, const QString &filename)
 	if (PHYSFS_exists(path + filename))
 	{
 		char *pFileData = NULL, *fileEnd;
-		UDWORD size = 0;
+		uint32_t size = 0;
 		if (!loadFile(QString(path + filename).toUtf8().constData(), &pFileData, &size))
 		{
 			debug(LOG_ERROR, "Failed to load model file: %s", QString(path + filename).toUtf8().constData());
@@ -724,7 +724,7 @@ static iIMDShape *iV_ProcessIMD(const QString &filename, const char **ppFileData
 	char buffer[PATH_MAX], texfile[PATH_MAX], normalfile[PATH_MAX], specfile[PATH_MAX];
 	int cnt, nlevels;
 	iIMDShape *shape;
-	UDWORD level;
+	uint32_t level;
 	int32_t imd_version;
 	uint32_t imd_flags;
 	bool bTextured = false;

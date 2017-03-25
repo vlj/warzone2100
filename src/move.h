@@ -28,17 +28,17 @@
 #include "fpath.h"
 
 /* Set a target location for a droid to move to  - returns a bool based on if there is a path to the destination (true if there is a path)*/
-extern bool moveDroidTo(DROID *psDroid, UDWORD x, UDWORD y, FPATH_MOVETYPE moveType = FMT_MOVE);
+extern bool moveDroidTo(DROID *psDroid, uint32_t x, uint32_t y, FPATH_MOVETYPE moveType = FMT_MOVE);
 
 /* Set a target location for a droid to move to  - returns a bool based on if there is a path to the destination (true if there is a path)*/
 // the droid will not join a formation when it gets to the location
-extern bool moveDroidToNoFormation(DROID *psDroid, UDWORD x, UDWORD y, FPATH_MOVETYPE moveType = FMT_MOVE);
+extern bool moveDroidToNoFormation(DROID *psDroid, uint32_t x, uint32_t y, FPATH_MOVETYPE moveType = FMT_MOVE);
 
 // move a droid directly to a location (used by vtols only)
-extern void moveDroidToDirect(DROID *psDroid, UDWORD x, UDWORD y);
+extern void moveDroidToDirect(DROID *psDroid, uint32_t x, uint32_t y);
 
 // Get a droid to turn towards a locaton
-extern void moveTurnDroid(DROID *psDroid, UDWORD x, UDWORD y);
+extern void moveTurnDroid(DROID *psDroid, uint32_t x, uint32_t y);
 
 /* Stop a droid */
 extern void moveStopDroid(DROID *psDroid);
@@ -49,7 +49,7 @@ extern void moveReallyStopDroid(DROID *psDroid);
 /* Get a droid to do a frame's worth of moving */
 extern void moveUpdateDroid(DROID *psDroid);
 
-SDWORD moveCalcDroidSpeed(DROID *psDroid);
+int32_t moveCalcDroidSpeed(DROID *psDroid);
 
 /* Frame update for the movement of a tracked droid */
 extern void moveUpdateTracked(DROID *psDroid);

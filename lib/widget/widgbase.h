@@ -47,7 +47,7 @@ class StateButton;
 class ListWidget;
 
 /* The display function prototype */
-typedef void (*WIDGET_DISPLAY)(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+typedef void (*WIDGET_DISPLAY)(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 /* The optional user callback function */
 typedef void (*WIDGET_CALLBACK)(WIDGET *psWidget, W_CONTEXT *psContext);
@@ -177,13 +177,13 @@ public:
 	void attach(WIDGET *widget);
 	void detach(WIDGET *widget);
 
-	UDWORD                  id;                     ///< The user set ID number for the widget. This is returned when e.g. a button is pressed.
+	uint32_t                  id;                     ///< The user set ID number for the widget. This is returned when e.g. a button is pressed.
 	WIDGET_TYPE             type;                   ///< The widget type
-	UDWORD                  style;                  ///< The style of the widget
+	uint32_t                  style;                  ///< The style of the widget
 	WIDGET_DISPLAY          displayFunction;        ///< Override function to display the widget.
 	WIDGET_CALLBACK         callback;               ///< User callback (if any)
 	void                   *pUserData;              ///< Pointer to a user data block (if any)
-	UDWORD                  UserData;               ///< User data (if any)
+	uint32_t                  UserData;               ///< User data (if any)
 	W_SCREEN               *screenPointer;          ///< Pointer to screen the widget is on (if attached).
 
 private:
@@ -242,8 +242,8 @@ private:
 /* Context information to pass into the widget functions */
 struct W_CONTEXT
 {
-	SDWORD		xOffset, yOffset;	// Screen offset of the parent form
-	SDWORD		mx, my;				// mouse position on the form
+	int32_t		xOffset, yOffset;	// Screen offset of the parent form
+	int32_t		mx, my;				// mouse position on the form
 };
 
 #endif // __INCLUDED_LIB_WIDGET_WIDGBASE_H__

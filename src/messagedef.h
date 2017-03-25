@@ -76,7 +76,7 @@ struct SEQ_DISPLAY
 {
 	char		sequenceName[MAX_STR_LENGTH];
 
-	UBYTE		flag;			//flag data to control video playback 1 = loop till audio finish
+	uint8_t		flag;			//flag data to control video playback 1 = loop till audio finish
 	QStringList     textMsg;	//Text messages - if any
 	char		*pAudio;		/*name of audio track to play (for this seq)*/
 };
@@ -84,20 +84,20 @@ struct SEQ_DISPLAY
 //info required to view a flic in Intelligence Screen
 struct VIEW_REPLAY
 {
-	UBYTE		numSeq;
+	uint8_t		numSeq;
 	SEQ_DISPLAY *pSeqList;
 };
 
 // info required to view a proximity message
 struct VIEW_PROXIMITY
 {
-	UDWORD		x;			//world coords for position of Proximity message
-	UDWORD		y;
-	UDWORD		z;
+	uint32_t		x;			//world coords for position of Proximity message
+	uint32_t		y;
+	uint32_t		z;
 	PROX_TYPE	proxType;
-	SDWORD		audioID;	/*ID of the audio track to play - if any */
-	SDWORD		sender;		//user who sent this msg
-	SDWORD		timeAdded;	//remember when was added, so can remove after certain period of time
+	int32_t		audioID;	/*ID of the audio track to play - if any */
+	int32_t		sender;		//user who sent this msg
+	int32_t		timeAdded;	//remember when was added, so can remove after certain period of time
 };
 
 struct VIEWDATA
@@ -122,10 +122,10 @@ enum MSG_DATA_TYPE
 struct MESSAGE
 {
 	MESSAGE_TYPE	type;					//The type of message
-	UDWORD			id;						//ID number of the message
+	uint32_t			id;						//ID number of the message
 	MSG_VIEWDATA	*pViewData;				//Pointer to view data - if any - should be some!
 	bool			read;					//flag to indicate whether message has been read
-	UDWORD			player;					//which player this message belongs to
+	uint32_t			player;					//which player this message belongs to
 	MSG_DATA_TYPE	dataType;				//stores actual type of data pViewData points to
 	//only relevant for messages of type MSG_PROXIMITY
 
@@ -136,9 +136,9 @@ struct MESSAGE
 struct PROXIMITY_DISPLAY : public OBJECT_POSITION
 {
 	MESSAGE			*psMessage;				//message associated with this 'button'
-	UDWORD			timeLastDrawn;			//stores the time the 'button' was last drawn for animation
-	UDWORD			strobe;					//id of image last used
-	UDWORD			buttonID;				//id of the button for the interface
+	uint32_t			timeLastDrawn;			//stores the time the 'button' was last drawn for animation
+	uint32_t			strobe;					//id of image last used
+	uint32_t			buttonID;				//id of the button for the interface
 	PROXIMITY_DISPLAY      *psNext;                         //pointer to the next in the list
 };
 

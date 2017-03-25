@@ -42,7 +42,7 @@
 
 
 // current game level
-SDWORD		scrGameLevel = 0;
+int32_t		scrGameLevel = 0;
 
 // whether the tutorial is active
 bool		bInTutorial = false;
@@ -69,7 +69,7 @@ void scrExternReset(void)
 
 
 // General function to get some basic game values
-bool scrGenExternGet(UDWORD index)
+bool scrGenExternGet(uint32_t index)
 {
 	INTERP_TYPE		type;
 	INTERP_VAL	scrFunctionResult;	//function return value to be pushed to stack
@@ -103,7 +103,7 @@ bool scrGenExternGet(UDWORD index)
 		break;
 	case EXTID_GAMETIME:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)(gameTime / SCR_TICKRATE);
+		scrFunctionResult.v.ival = (int32_t)(gameTime / SCR_TICKRATE);
 		break;
 	case EXTID_TUTORIAL:
 		type = VAL_BOOL;
@@ -163,11 +163,11 @@ bool scrGenExternGet(UDWORD index)
 
 
 // General function to set some basic game values
-bool scrGenExternSet(UDWORD index)
+bool scrGenExternSet(uint32_t index)
 {
 	INTERP_VAL		sVal;
 	INTERP_TYPE		type;
-	SDWORD			val;
+	int32_t			val;
 
 	// Get the value and store it in type,val
 	if (!stackPop(&sVal))

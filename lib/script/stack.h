@@ -54,7 +54,7 @@ extern bool stackPopType(INTERP_VAL  *psVal);
  * index is how far down the stack to look.
  * Index 0 is the top entry on the stack.
  */
-extern bool stackPeek(INTERP_VAL *psVal, UDWORD index);
+extern bool stackPeek(INTERP_VAL *psVal, uint32_t index);
 
 /* Print the top value on the stack */
 extern void stackPrintTop(void);

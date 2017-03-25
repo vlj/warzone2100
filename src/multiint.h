@@ -100,7 +100,7 @@ extern void setLobbyError(LOBBY_ERROR_TYPES error_type);
 
 extern	void	runConnectionScreen(void);
 extern	bool	startConnectionScreen(void);
-extern	void	intProcessConnection(UDWORD id);
+extern	void	intProcessConnection(uint32_t id);
 
 extern	void	runGameFind(void);
 extern	void	startGameFind(void);
@@ -111,7 +111,7 @@ extern	void	runMultiOptions(void);
 extern	bool	startMultiOptions(bool bReenter);
 extern	void	frontendMultiMessages(void);
 
-bool addMultiBut(W_SCREEN *screen, UDWORD formid, UDWORD id, UDWORD x, UDWORD y, UDWORD width, UDWORD height, const char *tipres, UDWORD norm, UDWORD down, UDWORD hi, unsigned tc = MAX_PLAYERS);
+bool addMultiBut(W_SCREEN *screen, uint32_t formid, uint32_t id, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const char *tipres, uint32_t norm, uint32_t down, uint32_t hi, unsigned tc = MAX_PLAYERS);
 bool changeColour(unsigned player, int col, bool isHost);
 extern	char	sPlayer[128];
 
@@ -151,9 +151,9 @@ void loadMapPreview(bool hideInterface);
 #define CON_IP_CANCEL		10134
 
 //for clients
-#define CON_PASSWORD		10139
-#define CON_PASSWORDYES		10141
-#define CON_PASSWORDNO		10142
+#define CON_PASint16_t		10139
+#define CON_PASint16_tYES		10141
+#define CON_PASint16_tNO		10142
 
 
 // ////////////////////////////////////////////////////////////////
@@ -281,9 +281,9 @@ void loadMapPreview(bool hideInterface);
 
 #define MULTIOP_MAP_PREVIEW 920000
 
-#define MULTIOP_PASSWORD	920010
-#define MULTIOP_PASSWORD_BUT 920012
-#define MULTIOP_PASSWORD_EDIT 920013
+#define MULTIOP_PASint16_t	920010
+#define MULTIOP_PASint16_t_BUT 920012
+#define MULTIOP_PASint16_t_EDIT 920013
 
 #define MULTIOP_NO_SOMETHING            10331
 #define MULTIOP_NO_SOMETHINGX           3

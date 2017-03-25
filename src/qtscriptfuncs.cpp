@@ -90,7 +90,7 @@ enum Scrcb {
 
 // TODO, move this stuff into a script common subsystem
 #include "scriptfuncs.h"
-extern bool structDoubleCheck(BASE_STATS *psStat, UDWORD xx, UDWORD yy, SDWORD maxBlockingTiles);
+extern bool structDoubleCheck(BASE_STATS *psStat, uint32_t xx, uint32_t yy, int32_t maxBlockingTiles);
 extern Vector2i positions[MAX_PLAYERS];
 extern std::vector<Vector2i> derricks;
 
@@ -1272,7 +1272,7 @@ static QScriptValue js_enumBlips(QScriptContext *context, QScriptEngine *engine)
 	SCRIPT_ASSERT_PLAYER(context, player);
 	for (BASE_OBJECT *psSensor = apsSensorList[0]; psSensor; psSensor = psSensor->psNextFunc)
 	{
-		if (psSensor->visible[player] > 0 && psSensor->visible[player] < UBYTE_MAX)
+		if (psSensor->visible[player] > 0 && psSensor->visible[player] < uint8_t_MAX)
 		{
 			matches.push_back(psSensor->pos);
 		}

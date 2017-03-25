@@ -202,26 +202,26 @@ bool saveConfig()
 	{
 		ini.setValue("difficulty", getDifficultyLevel());		// level
 	}
-	ini.setValue("showFPS", (SDWORD)showFPS);
-	ini.setValue("scroll", (SDWORD)scroll_speed_accel);		// scroll
-	ini.setValue("mouseflip", (SDWORD)(getInvertMouseStatus()));	// flipmouse
-	ini.setValue("nomousewarp", (SDWORD)getMouseWarp()); 		// mouse warp
-	ini.setValue("coloredCursor", (SDWORD)war_GetColouredCursor());
-	ini.setValue("RightClickOrders", (SDWORD)(getRightClickOrders()));
-	ini.setValue("MiddleClickRotate", (SDWORD)(getMiddleClickRotate()));
-	ini.setValue("showFPS", (SDWORD)showFPS);
-	ini.setValue("shadows", (SDWORD)(getDrawShadows()));	// shadows
-	ini.setValue("sound", (SDWORD)war_getSoundEnabled());
-	ini.setValue("FMVmode", (SDWORD)(war_GetFMVmode()));		// sequences
-	ini.setValue("scanlines", (SDWORD)war_getScanlineMode());
-	ini.setValue("subtitles", (SDWORD)(seq_GetSubtitles()));		// subtitles
-	ini.setValue("radarObjectMode", (SDWORD)bEnemyAllyRadarColor);   // enemy/allies radar view
-	ini.setValue("radarTerrainMode", (SDWORD)radarDrawMode);
+	ini.setValue("showFPS", (int32_t)showFPS);
+	ini.setValue("scroll", (int32_t)scroll_speed_accel);		// scroll
+	ini.setValue("mouseflip", (int32_t)(getInvertMouseStatus()));	// flipmouse
+	ini.setValue("nomousewarp", (int32_t)getMouseWarp()); 		// mouse warp
+	ini.setValue("coloredCursor", (int32_t)war_GetColouredCursor());
+	ini.setValue("RightClickOrders", (int32_t)(getRightClickOrders()));
+	ini.setValue("MiddleClickRotate", (int32_t)(getMiddleClickRotate()));
+	ini.setValue("showFPS", (int32_t)showFPS);
+	ini.setValue("shadows", (int32_t)(getDrawShadows()));	// shadows
+	ini.setValue("sound", (int32_t)war_getSoundEnabled());
+	ini.setValue("FMVmode", (int32_t)(war_GetFMVmode()));		// sequences
+	ini.setValue("scanlines", (int32_t)war_getScanlineMode());
+	ini.setValue("subtitles", (int32_t)(seq_GetSubtitles()));		// subtitles
+	ini.setValue("radarObjectMode", (int32_t)bEnemyAllyRadarColor);   // enemy/allies radar view
+	ini.setValue("radarTerrainMode", (int32_t)radarDrawMode);
 	ini.setValue("trapCursor", war_GetTrapCursor());
 	ini.setValue("vsync", war_GetVsync());
 	ini.setValue("textureSize", getTextureSize());
 	ini.setValue("FSAA", war_getFSAA());
-	ini.setValue("UPnP", (SDWORD)NetPlay.isUPNP);
+	ini.setValue("UPnP", (int32_t)NetPlay.isUPNP);
 	ini.setValue("rotateRadar", rotateRadar);
 	ini.setValue("PauseOnFocusLoss", war_GetPauseOnFocusLoss());
 	ini.setValue("masterserver_name", NETgetMasterserverName());

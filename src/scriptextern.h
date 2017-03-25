@@ -25,7 +25,7 @@
 #define __INCLUDED_SRC_SCRIPTEXTERN_H__
 
 // current game level
-extern SDWORD	scrGameLevel;
+extern int32_t	scrGameLevel;
 // whether the tutorial is active
 extern bool		bInTutorial;
 // whether any additional special case victory/failure conditions have been met
@@ -60,9 +60,9 @@ enum _externids
 extern void scrExternReset(void);
 
 // General function to get some basic game values
-extern bool scrGenExternGet(UDWORD index);
+extern bool scrGenExternGet(uint32_t index);
 
 // General function to set some basic game values
-extern bool scrGenExternSet(UDWORD index);
+extern bool scrGenExternSet(uint32_t index);
 
 #endif // __INCLUDED_SRC_SCRIPTEXTERN_H__

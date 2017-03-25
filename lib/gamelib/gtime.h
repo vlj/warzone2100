@@ -43,19 +43,19 @@ struct Rational;
 
 /// The current time in the game world.
 /// Changes in GAME_UNITS_PER_TICK increments.
-extern UDWORD gameTime;
+extern uint32_t gameTime;
 /// The current time in the graphical display of the game world.
 /// Should be close to gameTime, up to GAME_UNITS_PER_TICK behind.
-extern UDWORD graphicsTime;
+extern uint32_t graphicsTime;
 /// The current time in the real world - never stops, and not reset between games.
-extern UDWORD realTime;
+extern uint32_t realTime;
 
 /// The difference between the previous and current gameTime.
-extern UDWORD deltaGameTime;
+extern uint32_t deltaGameTime;
 /// The difference between the previous and current graphicsTime.
-extern UDWORD deltaGraphicsTime;
+extern uint32_t deltaGraphicsTime;
 /// The difference between the previous and current realTime.
-extern UDWORD deltaRealTime;
+extern uint32_t deltaRealTime;
 
 /** Initialise the game clock. */
 void gameTimeInit();
@@ -85,7 +85,7 @@ void gameTimeStop();
 void gameTimeStart();
 
 /** Call this to set the game time and to reset the time modifier, and to update the real time, setting the delta to 0. */
-void gameTimeReset(UDWORD time);
+void gameTimeReset(uint32_t time);
 
 /**
  *	Reset the game time modifiers.
@@ -108,7 +108,7 @@ Rational gameTimeGetMod();
  * Operates on game time, which can be paused, and increases in GAME_UNITS_PER_TICK increments.
  * NOTE Currently unused – turns out only getModularScaledGraphicsTime was appropriate in the places this was previously used.
  */
-UDWORD getModularScaledGameTime(UDWORD timePeriod, UDWORD requiredRange);
+uint32_t getModularScaledGameTime(uint32_t timePeriod, uint32_t requiredRange);
 /**
  * Returns the graphics time, modulo the time period, scaled to 0..requiredRange.
  * For instance getModularScaledGraphicsTime(4096,256) will return a number that cycles through the values
@@ -117,7 +117,7 @@ UDWORD getModularScaledGameTime(UDWORD timePeriod, UDWORD requiredRange);
  *
  * Operates on graphics time, which can be paused.
  */
-UDWORD getModularScaledGraphicsTime(UDWORD timePeriod, UDWORD requiredRange);
+uint32_t getModularScaledGraphicsTime(uint32_t timePeriod, uint32_t requiredRange);
 /**
  * Returns the real time, modulo the time period, scaled to 0..requiredRange.
  * For instance getModularScaledRealTime(4096,256) will return a number that cycles through the values
@@ -126,7 +126,7 @@ UDWORD getModularScaledGraphicsTime(UDWORD timePeriod, UDWORD requiredRange);
  *
  * Operates on real time, which can't be paused.
  */
-UDWORD getModularScaledRealTime(UDWORD timePeriod, UDWORD requiredRange);
+uint32_t getModularScaledRealTime(uint32_t timePeriod, uint32_t requiredRange);
 
 
 /** Break down given time into its constituent components. */

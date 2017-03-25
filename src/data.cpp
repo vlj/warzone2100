@@ -66,7 +66,7 @@ uint32_t	DataHash[DATA_MAXDATA] = {0};
 *	This is almost the same routine that Pumpkin had, minus the ugly bug :)
 *	And minus the old algorithm and debugging trace, replaced with a simple CRC...
 */
-static UDWORD	hashBuffer(uint8_t *pData, uint32_t size)
+static uint32_t	hashBuffer(uint8_t *pData, uint32_t size)
 {
 	char nl = '\n';
 	uint32_t crc = 0;
@@ -117,7 +117,7 @@ static void calcDataHash(uint8_t *pBuffer, uint32_t size, uint32_t index)
 
 void resetDataHash(void)
 {
-	UDWORD i;
+	uint32_t i;
 	for (i = 0; i < DATA_MAXDATA; i++)
 	{
 		DataHash[i] = 0;
@@ -415,7 +415,7 @@ static bool bufferRESCHLoad(const char *fileName, void **ppData)
 }
 
 /* Load the message viewdata */
-static bool bufferSMSGLoad(const char *pBuffer, UDWORD size, void **ppData)
+static bool bufferSMSGLoad(const char *pBuffer, uint32_t size, void **ppData)
 {
 	const char *ptr;
 

@@ -44,16 +44,16 @@ extern void cmdDroidUpdate(void);
 extern void cmdDroidAddDroid(DROID *psCommander, DROID *psDroid);
 
 /** \brief Returns the current target designator for a player.*/
-extern DROID *cmdDroidGetDesignator(UDWORD player);
+extern DROID *cmdDroidGetDesignator(uint32_t player);
 
 /** \brief Sets the current target designator for a player.*/
 extern void cmdDroidSetDesignator(DROID *psDroid);
 
 /** \brief Clears the current target designator for a player.*/
-extern void cmdDroidClearDesignator(UDWORD player);
+extern void cmdDroidClearDesignator(uint32_t player);
 
 /** \brief Gets the index of the command droid.*/
-extern SDWORD cmdDroidGetIndex(DROID *psCommander);
+extern int32_t cmdDroidGetIndex(DROID *psCommander);
 
 /** \brief Gets the maximum group size for a command droid.*/
 extern unsigned int cmdDroidMaxGroup(const DROID *psCommander);

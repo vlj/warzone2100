@@ -112,24 +112,24 @@ extern bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bo
 so can be called in levLoadData when starting a game from a load save game*/
 extern bool loadGameInit(const char *fileName);
 
-extern bool loadMissionExtras(const char *pGameToLoad, SWORD levelType);
+extern bool loadMissionExtras(const char *pGameToLoad, int16_t levelType);
 
 // load the script state given a .gam name
 extern bool loadScriptState(char *pFileName);
 
 /// Load the terrain types
-extern bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize);
+extern bool loadTerrainTypeMap(const char *pFileData, uint32_t filesize);
 
 extern bool saveGame(char *aFileName, GAME_TYPE saveType);
 
 // Get the campaign number for loadGameInit game
-extern UDWORD getCampaign(const char *fileName);
+extern uint32_t getCampaign(const char *fileName);
 
 /*calls windows find file tree*/
 extern bool getSaveGameName(char *pName);
 
 /*returns the current type of save game being loaded*/
-extern UDWORD getSaveGameType(void);
+extern uint32_t getSaveGameType(void);
 
 bool plotStructurePreview16(char *backDropSprite, Vector2i playeridpos[]);
 

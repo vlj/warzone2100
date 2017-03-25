@@ -60,32 +60,32 @@ std::vector<RESEARCH> asResearch;
 //used for Callbacks to say which topic was last researched
 RESEARCH                *psCBLastResearch;
 STRUCTURE				*psCBLastResStructure;
-SDWORD					CBResFacilityOwner;
+int32_t					CBResFacilityOwner;
 
 //List of pointers to arrays of PLAYER_RESEARCH[numResearch] for each player
 std::vector<PLAYER_RESEARCH> asPlayerResList[MAX_PLAYERS];
 
 /* Default level of sensor, Repair and ECM */
-UDWORD					aDefaultSensor[MAX_PLAYERS];
-UDWORD					aDefaultECM[MAX_PLAYERS];
-UDWORD					aDefaultRepair[MAX_PLAYERS];
+uint32_t					aDefaultSensor[MAX_PLAYERS];
+uint32_t					aDefaultECM[MAX_PLAYERS];
+uint32_t					aDefaultRepair[MAX_PLAYERS];
 
 //set the iconID based on the name read in in the stats
-static UWORD setIconID(char *pIconName, const char *pName);
+static uint16_t setIconID(char *pIconName, const char *pName);
 static void replaceComponent(COMPONENT_STATS *pNewComponent, COMPONENT_STATS *pOldComponent,
-                             UBYTE player);
-static bool checkResearchName(RESEARCH *psRes, UDWORD numStats);
+                             uint8_t player);
+static bool checkResearchName(RESEARCH *psRes, uint32_t numStats);
 
 //flag that indicates whether the player can self repair
-static UBYTE bSelfRepair[MAX_PLAYERS];
-static void replaceDroidComponent(DROID *pList, UDWORD oldType, UDWORD oldCompInc,
-                                  UDWORD newCompInc);
-static void replaceStructureComponent(STRUCTURE *pList, UDWORD oldType, UDWORD oldCompInc,
-                                      UDWORD newCompInc, UBYTE player);
-static void switchComponent(DROID *psDroid, UDWORD oldType, UDWORD oldCompInc,
-                            UDWORD newCompInc);
-static void replaceTransDroidComponents(DROID *psTransporter, UDWORD oldType,
-                                        UDWORD oldCompInc, UDWORD newCompInc);
+static uint8_t bSelfRepair[MAX_PLAYERS];
+static void replaceDroidComponent(DROID *pList, uint32_t oldType, uint32_t oldCompInc,
+                                  uint32_t newCompInc);
+static void replaceStructureComponent(STRUCTURE *pList, uint32_t oldType, uint32_t oldCompInc,
+                                      uint32_t newCompInc, uint8_t player);
+static void switchComponent(DROID *psDroid, uint32_t oldType, uint32_t oldCompInc,
+                            uint32_t newCompInc);
+static void replaceTransDroidComponents(DROID *psTransporter, uint32_t oldType,
+                                        uint32_t oldCompInc, uint32_t newCompInc);
 
 
 bool researchInitVars(void)
@@ -160,7 +160,7 @@ bool loadResearch(QString filename)
 		}
 
 		//set tech code
-		UBYTE techCode = ini.value("techCode", 0).toUInt();
+		uint8_t techCode = ini.value("techCode", 0).toUInt();
 		ASSERT(techCode <= 1, "Invalid tech code for research topic - '%s' ", getName(&research));
 		if (techCode == 0)
 		{
@@ -219,12 +219,12 @@ bool loadResearch(QString filename)
 
 		//set the researchPoints
 		unsigned int resPoints = ini.value("researchPoints", 0).toUInt();
-		ASSERT_OR_RETURN(false, resPoints <= UWORD_MAX, "Research Points too high for research topic - '%s' ", getName(&research));
+		ASSERT_OR_RETURN(false, resPoints <= uint16_t_MAX, "Research Points too high for research topic - '%s' ", getName(&research));
 		research.researchPoints = resPoints;
 
 		//set the research power
 		unsigned int resPower = ini.value("researchPower", 0).toUInt();
-		ASSERT_OR_RETURN(false, resPower <= UWORD_MAX, "Research Power too high for research topic - '%s' ", getName(&research));
+		ASSERT_OR_RETURN(false, resPower <= uint16_t_MAX, "Research Power too high for research topic - '%s' ", getName(&research));
 		research.researchPower = resPower;
 
 		//rememeber research pre-requisites for futher checking
@@ -366,7 +366,7 @@ bool researchAvailable(int inc, int playerID, QUEUE_MODE mode)
 		IsResearchStartedFunc = IsResearchStarted;
 	}
 
-	UDWORD				incPR, incS;
+	uint32_t				incPR, incS;
 	bool				bPRFound, bStructFound;
 
 	// if its a cancelled topic - add to list
@@ -465,9 +465,9 @@ There can only be 'limit' number of entries
 'topic' is the currently researched topic
 */
 // NOTE by AJL may 99 - skirmish now has it's own version of this, skTopicAvail.
-UWORD fillResearchList(UWORD *plist, UDWORD playerID, UWORD topic, UWORD limit)
+uint16_t fillResearchList(uint16_t *plist, uint32_t playerID, uint16_t topic, uint16_t limit)
 {
-	UWORD				inc, count = 0;
+	uint16_t				inc, count = 0;
 
 	for (inc = 0; inc < asResearch.size(); inc++)
 	{
@@ -486,7 +486,7 @@ UWORD fillResearchList(UWORD *plist, UDWORD playerID, UWORD topic, UWORD limit)
 }
 
 /* process the results of a completed research topic */
-void researchResult(UDWORD researchIndex, UBYTE player, bool bDisplay, STRUCTURE *psResearchFacility, bool bTrigger)
+void researchResult(uint32_t researchIndex, uint8_t player, bool bDisplay, STRUCTURE *psResearchFacility, bool bTrigger)
 {
 	RESEARCH                                       *pResearch = &asResearch[researchIndex];
 	MESSAGE						*pMessage;
@@ -688,7 +688,7 @@ void releaseResearch(STRUCTURE *psBuilding, QUEUE_MODE mode)
 	Cancel All Research for player 0
 
 */
-void CancelAllResearch(UDWORD pl)
+void CancelAllResearch(uint32_t pl)
 {
 	STRUCTURE	*psCurr;
 
@@ -712,7 +712,7 @@ void CancelAllResearch(UDWORD pl)
 /** Sets the status of the topic to cancelled and stores the current research points accquired */
 void cancelResearch(STRUCTURE *psBuilding, QUEUE_MODE mode)
 {
-	UDWORD              topicInc;
+	uint32_t              topicInc;
 	PLAYER_RESEARCH	    *pPlayerRes;
 
 	ASSERT_OR_RETURN(, psBuilding->pStructureType->type == REF_RESEARCH, "Structure not a research facility");
@@ -771,7 +771,7 @@ RESEARCH *getResearchForMsg(VIEWDATA *pViewData)
 }
 
 //set the iconID based on the name read in in the stats
-static UWORD setIconID(char *pIconName, const char *pName)
+static uint16_t setIconID(char *pIconName, const char *pName)
 {
 	//compare the names with those created in 'Framer'
 	if (!strcmp(pIconName, "IMAGE_ROCKET"))
@@ -876,7 +876,7 @@ static UWORD setIconID(char *pIconName, const char *pName)
 }
 
 
-SDWORD	mapRIDToIcon(UDWORD rid)
+int32_t	mapRIDToIcon(uint32_t rid)
 {
 	switch (rid)
 	{
@@ -948,7 +948,7 @@ SDWORD	mapRIDToIcon(UDWORD rid)
 	}
 }
 
-SDWORD	mapIconToRID(UDWORD iconID)
+int32_t	mapIconToRID(uint32_t iconID)
 {
 	switch (iconID)
 	{
@@ -1035,7 +1035,7 @@ RESEARCH *getResearch(const char *pName)
 /* looks through the players lists of structures and droids to see if any are using
  the old component - if any then replaces them with the new component */
 static void replaceComponent(COMPONENT_STATS *pNewComponent, COMPONENT_STATS *pOldComponent,
-                             UBYTE player)
+                             uint8_t player)
 {
 	COMPONENT_TYPE oldType = pOldComponent->compType;
 	int oldCompInc = pOldComponent->index;
@@ -1065,7 +1065,7 @@ static void replaceComponent(COMPONENT_STATS *pNewComponent, COMPONENT_STATS *pO
 		case COMP_ECM:
 		case COMP_SENSOR:
 		case COMP_CONSTRUCT:
-			if (psTemplates->asParts[oldType] == (SDWORD)oldCompInc)
+			if (psTemplates->asParts[oldType] == (int32_t)oldCompInc)
 			{
 				psTemplates->asParts[oldType] = newCompInc;
 			}
@@ -1092,7 +1092,7 @@ static void replaceComponent(COMPONENT_STATS *pNewComponent, COMPONENT_STATS *pO
 
 /*Looks through all the currently allocated stats to check the name is not
 a duplicate*/
-static bool checkResearchName(RESEARCH *psResearch, UDWORD numStats)
+static bool checkResearchName(RESEARCH *psResearch, uint32_t numStats)
 {
 	for (int inc = 0; inc < numStats; inc++)
 	{
@@ -1105,9 +1105,9 @@ static bool checkResearchName(RESEARCH *psResearch, UDWORD numStats)
 
 /* Sets the 'possible' flag for a player's research so the topic will appear in
 the research list next time the Research Facilty is selected */
-bool enableResearch(RESEARCH *psResearch, UDWORD player)
+bool enableResearch(RESEARCH *psResearch, uint32_t player)
 {
-	UDWORD				inc;
+	uint32_t				inc;
 
 	ASSERT_OR_RETURN(false, psResearch, "No such research topic");
 
@@ -1134,9 +1134,9 @@ bool enableResearch(RESEARCH *psResearch, UDWORD player)
 
 /*find the last research topic of importance that the losing player did and
 'give' the results to the reward player*/
-void researchReward(UBYTE losingPlayer, UBYTE rewardPlayer)
+void researchReward(uint8_t losingPlayer, uint8_t rewardPlayer)
 {
-	UDWORD topicIndex = 0, researchPoints = 0, rewardID = 0;
+	uint32_t topicIndex = 0, researchPoints = 0, rewardID = 0;
 	STRUCTURE			*psStruct;
 	RESEARCH_FACILITY	*psFacility;
 
@@ -1180,13 +1180,13 @@ void researchReward(UBYTE losingPlayer, UBYTE rewardPlayer)
 }
 
 /*flag self repair so droids can start when idle*/
-void enableSelfRepair(UBYTE player)
+void enableSelfRepair(uint8_t player)
 {
 	bSelfRepair[player] = true;
 }
 
 /*check to see if any research has been completed that enables self repair*/
-bool selfRepairEnabled(UBYTE player)
+bool selfRepairEnabled(uint8_t player)
 {
 	if (bSelfRepair[player])
 	{
@@ -1213,8 +1213,8 @@ bool wallDefenceStruct(STRUCTURE_STATS *psStats)
 }
 
 /*for a given list of droids, replace the old component if exists*/
-void replaceDroidComponent(DROID *pList, UDWORD oldType, UDWORD oldCompInc,
-                           UDWORD newCompInc)
+void replaceDroidComponent(DROID *pList, uint32_t oldType, uint32_t oldCompInc,
+                           uint32_t newCompInc)
 {
 	DROID   *psDroid;
 
@@ -1231,8 +1231,8 @@ void replaceDroidComponent(DROID *pList, UDWORD oldType, UDWORD oldCompInc,
 }
 
 /*replaces any components necessary for units that are inside a transporter*/
-void replaceTransDroidComponents(DROID *psTransporter, UDWORD oldType,
-                                 UDWORD oldCompInc, UDWORD newCompInc)
+void replaceTransDroidComponents(DROID *psTransporter, uint32_t oldType,
+                                 uint32_t oldCompInc, uint32_t newCompInc)
 {
 	DROID       *psCurr;
 
@@ -1248,8 +1248,8 @@ void replaceTransDroidComponents(DROID *psTransporter, UDWORD oldType,
 	}
 }
 
-void replaceStructureComponent(STRUCTURE *pList, UDWORD oldType, UDWORD oldCompInc,
-                               UDWORD newCompInc, UBYTE player)
+void replaceStructureComponent(STRUCTURE *pList, uint32_t oldType, uint32_t oldCompInc,
+                               uint32_t newCompInc, uint8_t player)
 {
 	STRUCTURE   *psStructure;
 	int			inc;
@@ -1285,8 +1285,8 @@ void replaceStructureComponent(STRUCTURE *pList, UDWORD oldType, UDWORD oldCompI
 }
 
 /*swaps the old component for the new one for a specific droid*/
-static void switchComponent(DROID *psDroid, UDWORD oldType, UDWORD oldCompInc,
-                            UDWORD newCompInc)
+static void switchComponent(DROID *psDroid, uint32_t oldType, uint32_t oldCompInc,
+                            uint32_t newCompInc)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid droid pointer");
 
@@ -1301,7 +1301,7 @@ static void switchComponent(DROID *psDroid, UDWORD oldType, UDWORD oldCompInc,
 	case COMP_CONSTRUCT:
 		if (psDroid->asBits[oldType] == oldCompInc)
 		{
-			psDroid->asBits[oldType] = (UBYTE)newCompInc;
+			psDroid->asBits[oldType] = (uint8_t)newCompInc;
 		}
 		break;
 	case COMP_WEAPON:

@@ -212,7 +212,7 @@ typedef union YYSTYPE
 #line 178 "chat_parser.ypp"
 
 	int32_t				bval;
-	SDWORD			ival;
+	int32_t			ival;
 
 
 

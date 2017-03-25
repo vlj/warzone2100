@@ -57,7 +57,7 @@ extern bool		bRequestLoad;
  */
 /***************************************************************************/
 
-extern void		drawBlueBox(UDWORD x, UDWORD y, UDWORD w, UDWORD h);
+extern void		drawBlueBox(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 extern bool		addLoadSave(LOADSAVE_MODE mode, const char *title);
 extern bool		closeLoadSave(void);

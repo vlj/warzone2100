@@ -50,7 +50,7 @@ extern bool scrSetSunPosition(void);
 extern bool scrSetSunIntensity(void);
 
 // not used in scripts, but used in code.
-extern  bool objectInRange(struct BASE_OBJECT *psList, SDWORD x, SDWORD y, SDWORD range);
+extern  bool objectInRange(struct BASE_OBJECT *psList, int32_t x, int32_t y, int32_t range);
 
 // Check for any player object being within a certain range of a position
 extern bool scrObjectInRange(void);
@@ -663,25 +663,25 @@ extern bool scrPgettext_expr(void);
 extern bool scrPgettext_noop(void);
 
 
-extern bool beingResearchedByAlly(SDWORD resIndex, SDWORD player);
-extern bool ThreatInRange(SDWORD player, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bVTOLs);
-extern bool skTopicAvail(UWORD inc, UDWORD player);
-extern UDWORD numPlayerWeapDroidsInRange(SDWORD player, SDWORD lookingPlayer, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bVTOLs);
-extern UDWORD numPlayerWeapStructsInRange(SDWORD player, SDWORD lookingPlayer, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bFinished);
-extern UDWORD playerWeapDroidsCostInRange(SDWORD player, SDWORD lookingPlayer, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bVTOLs);
-extern UDWORD playerWeapStructsCostInRange(SDWORD player, SDWORD lookingPlayer, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bFinished);
-extern UDWORD numEnemyObjInRange(SDWORD player, SDWORD range, SDWORD rangeX, SDWORD rangeY, bool bVTOLs, bool bFinished);
-extern bool addBeaconBlip(SDWORD x, SDWORD y, SDWORD forPlayer, SDWORD sender, const char *textMsg);
-extern bool sendBeaconToPlayer(SDWORD locX, SDWORD locY, SDWORD forPlayer, SDWORD sender, const char *beaconMsg);
-extern MESSAGE *findBeaconMsg(UDWORD player, SDWORD sender);
-extern SDWORD getNumRepairedBy(struct DROID *psDroidToCheck, SDWORD player);
-extern bool objectInRangeVis(struct BASE_OBJECT *psList, SDWORD x, SDWORD y, SDWORD range, SDWORD lookingPlayer);
-extern SDWORD getPlayerFromString(char *playerName);
+extern bool beingResearchedByAlly(int32_t resIndex, int32_t player);
+extern bool ThreatInRange(int32_t player, int32_t range, int32_t rangeX, int32_t rangeY, bool bVTOLs);
+extern bool skTopicAvail(uint16_t inc, uint32_t player);
+extern uint32_t numPlayerWeapDroidsInRange(int32_t player, int32_t lookingPlayer, int32_t range, int32_t rangeX, int32_t rangeY, bool bVTOLs);
+extern uint32_t numPlayerWeapStructsInRange(int32_t player, int32_t lookingPlayer, int32_t range, int32_t rangeX, int32_t rangeY, bool bFinished);
+extern uint32_t playerWeapDroidsCostInRange(int32_t player, int32_t lookingPlayer, int32_t range, int32_t rangeX, int32_t rangeY, bool bVTOLs);
+extern uint32_t playerWeapStructsCostInRange(int32_t player, int32_t lookingPlayer, int32_t range, int32_t rangeX, int32_t rangeY, bool bFinished);
+extern uint32_t numEnemyObjInRange(int32_t player, int32_t range, int32_t rangeX, int32_t rangeY, bool bVTOLs, bool bFinished);
+extern bool addBeaconBlip(int32_t x, int32_t y, int32_t forPlayer, int32_t sender, const char *textMsg);
+extern bool sendBeaconToPlayer(int32_t locX, int32_t locY, int32_t forPlayer, int32_t sender, const char *beaconMsg);
+extern MESSAGE *findBeaconMsg(uint32_t player, int32_t sender);
+extern int32_t getNumRepairedBy(struct DROID *psDroidToCheck, int32_t player);
+extern bool objectInRangeVis(struct BASE_OBJECT *psList, int32_t x, int32_t y, int32_t range, int32_t lookingPlayer);
+extern int32_t getPlayerFromString(char *playerName);
 extern bool scrExp(void);
 extern bool scrSqrt(void);
 extern bool scrLog(void);
 
-extern VIEWDATA *CreateBeaconViewData(SDWORD sender, UDWORD LocX, UDWORD LocY);
+extern VIEWDATA *CreateBeaconViewData(int32_t sender, uint32_t LocX, uint32_t LocY);
 
 extern bool scrEnumUnbuilt(void);
 extern bool scrIterateUnbuilt(void);

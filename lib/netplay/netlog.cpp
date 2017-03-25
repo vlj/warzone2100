@@ -74,7 +74,7 @@ bool NETstopLogging(void)
 	static const char dash_line[] = "-----------------------------------------------------------\n";
 	char buf[256];
 	int i;
-	UDWORD totalBytessent = 0, totalBytesrecv = 0, totalPacketsent = 0, totalPacketrecv = 0;
+	uint32_t totalBytessent = 0, totalBytesrecv = 0, totalPacketsent = 0, totalPacketrecv = 0;
 
 	if (!pFileHandle)
 	{
@@ -149,11 +149,11 @@ void NETlogPacket(uint8_t type, uint32_t size, bool received)
 	packetsize[received][type] += size;
 }
 
-bool NETlogEntry(const char *str, UDWORD a, UDWORD b)
+bool NETlogEntry(const char *str, uint32_t a, uint32_t b)
 {
 	static const char star_line[] = "************************************************************\n";
-	static UDWORD lastframe = 0;
-	UDWORD frame = frameGetFrameNumber();
+	static uint32_t lastframe = 0;
+	uint32_t frame = frameGetFrameNumber();
 	time_t aclock;
 	struct tm *newtime;
 	char buf[256];

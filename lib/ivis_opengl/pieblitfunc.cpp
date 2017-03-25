@@ -225,7 +225,7 @@ void iV_DrawImage2(const ImageDef &image, float x, float y, float width, float h
 		WZCOL_WHITE);
 }
 
-void iV_DrawImage(IMAGEFILE *ImageFile, UWORD ID, int x, int y)
+void iV_DrawImage(IMAGEFILE *ImageFile, uint16_t ID, int x, int y)
 {
 	if (!assertValidImage(ImageFile, ID))
 	{
@@ -258,7 +258,7 @@ void iV_DrawImageTc(Image image, Image imageTc, int x, int y, PIELIGHT colour)
 }
 
 // Repeat a texture
-void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width)
+void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, uint16_t ID, int x, int y, int Width)
 {
 	assertValidImage(ImageFile, ID);
 	const ImageDef *Image = &ImageFile->imageDefs[ID];
@@ -285,7 +285,7 @@ void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width
 	}
 }
 
-void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Height)
+void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, uint16_t ID, int x, int y, int Height)
 {
 	assertValidImage(ImageFile, ID);
 	const ImageDef *Image = &ImageFile->imageDefs[ID];
@@ -334,7 +334,7 @@ void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidt
 }
 
 /** Store radar texture with given width and height. */
-void pie_DownLoadRadar(UDWORD *buffer)
+void pie_DownLoadRadar(uint32_t *buffer)
 {
 	radarGfx->updateTexture(buffer);
 }

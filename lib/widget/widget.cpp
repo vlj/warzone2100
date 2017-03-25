@@ -47,9 +47,9 @@ static	bool	bWidgetsActive = true;
 static WIDGET	*psMouseOverWidget = NULL;
 
 static WIDGET_AUDIOCALLBACK AudioCallback = NULL;
-static SWORD HilightAudioID = -1;
-static SWORD ClickedAudioID = -1;
-static SWORD ErrorAudioID = -1;
+static int16_t HilightAudioID = -1;
+static int16_t ClickedAudioID = -1;
+static int16_t ErrorAudioID = -1;
 
 static WIDGET_KEY lastReleasedKey_DEPRECATED = WKEY_NONE;
 
@@ -245,7 +245,7 @@ W_SCREEN::~W_SCREEN()
 }
 
 /* Check whether an ID has been used on a form */
-static bool widgCheckIDForm(WIDGET *psForm, UDWORD id)
+static bool widgCheckIDForm(WIDGET *psForm, uint32_t id)
 {
 	if (psForm->id == id)
 	{
@@ -335,13 +335,13 @@ W_SLIDER *widgAddSlider(W_SCREEN *psScreen, const W_SLDINIT *psInit)
 }
 
 /* Delete a widget from the screen */
-void widgDelete(W_SCREEN *psScreen, UDWORD id)
+void widgDelete(W_SCREEN *psScreen, uint32_t id)
 {
 	delete widgGetFromID(psScreen, id);
 }
 
 /* Find a widget on a form from its id number */
-static WIDGET *widgFormGetFromID(WIDGET *widget, UDWORD id)
+static WIDGET *widgFormGetFromID(WIDGET *widget, uint32_t id)
 {
 	if (widget->id == id)
 	{
@@ -360,12 +360,12 @@ static WIDGET *widgFormGetFromID(WIDGET *widget, UDWORD id)
 }
 
 /* Find a widget in a screen from its ID number */
-WIDGET *widgGetFromID(W_SCREEN *psScreen, UDWORD id)
+WIDGET *widgGetFromID(W_SCREEN *psScreen, uint32_t id)
 {
 	return widgFormGetFromID(psScreen->psForm, id);
 }
 
-void widgHide(W_SCREEN *psScreen, UDWORD id)
+void widgHide(W_SCREEN *psScreen, uint32_t id)
 {
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
 	ASSERT_OR_RETURN(, psWidget != NULL, "Couldn't find widget from id.");
@@ -373,7 +373,7 @@ void widgHide(W_SCREEN *psScreen, UDWORD id)
 	psWidget->hide();
 }
 
-void widgReveal(W_SCREEN *psScreen, UDWORD id)
+void widgReveal(W_SCREEN *psScreen, uint32_t id)
 {
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
 	ASSERT_OR_RETURN(, psWidget != NULL, "Couldn't find widget from id.");
@@ -383,7 +383,7 @@ void widgReveal(W_SCREEN *psScreen, UDWORD id)
 
 
 /* Get the current position of a widget */
-void widgGetPos(W_SCREEN *psScreen, UDWORD id, SWORD *pX, SWORD *pY)
+void widgGetPos(W_SCREEN *psScreen, uint32_t id, int16_t *pX, int16_t *pY)
 {
 	WIDGET	*psWidget;
 
@@ -403,7 +403,7 @@ void widgGetPos(W_SCREEN *psScreen, UDWORD id, SWORD *pX, SWORD *pY)
 }
 
 /* Return the ID of the widget the mouse was over this frame */
-UDWORD widgGetMouseOver(W_SCREEN *psScreen)
+uint32_t widgGetMouseOver(W_SCREEN *psScreen)
 {
 	/* Don't actually need the screen parameter at the moment - but it might be
 	   handy if psMouseOverWidget needs to stop being a static and moves into
@@ -420,7 +420,7 @@ UDWORD widgGetMouseOver(W_SCREEN *psScreen)
 
 
 /* Return the user data for a widget */
-void *widgGetUserData(W_SCREEN *psScreen, UDWORD id)
+void *widgGetUserData(W_SCREEN *psScreen, uint32_t id)
 {
 	WIDGET	*psWidget;
 
@@ -435,7 +435,7 @@ void *widgGetUserData(W_SCREEN *psScreen, UDWORD id)
 
 
 /* Return the user data for a widget */
-UDWORD widgGetUserData2(W_SCREEN *psScreen, UDWORD id)
+uint32_t widgGetUserData2(W_SCREEN *psScreen, uint32_t id)
 {
 	WIDGET	*psWidget;
 
@@ -450,7 +450,7 @@ UDWORD widgGetUserData2(W_SCREEN *psScreen, UDWORD id)
 
 
 /* Set user data for a widget */
-void widgSetUserData(W_SCREEN *psScreen, UDWORD id, void *UserData)
+void widgSetUserData(W_SCREEN *psScreen, uint32_t id, void *UserData)
 {
 	WIDGET	*psWidget;
 
@@ -462,7 +462,7 @@ void widgSetUserData(W_SCREEN *psScreen, UDWORD id, void *UserData)
 }
 
 /* Set user data for a widget */
-void widgSetUserData2(W_SCREEN *psScreen, UDWORD id, UDWORD UserData)
+void widgSetUserData2(W_SCREEN *psScreen, uint32_t id, uint32_t UserData)
 {
 	WIDGET	*psWidget;
 
@@ -479,7 +479,7 @@ void WIDGET::setTip(QString)
 }
 
 /* Set tip string for a widget */
-void widgSetTip(W_SCREEN *psScreen, UDWORD id, QString pTip)
+void widgSetTip(W_SCREEN *psScreen, uint32_t id, QString pTip)
 {
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
 
@@ -492,7 +492,7 @@ void widgSetTip(W_SCREEN *psScreen, UDWORD id, QString pTip)
 }
 
 /* Return which key was used to press the last returned widget */
-UDWORD widgGetButtonKey_DEPRECATED(W_SCREEN *psScreen)
+uint32_t widgGetButtonKey_DEPRECATED(W_SCREEN *psScreen)
 {
 	/* Don't actually need the screen parameter at the moment - but it might be
 	   handy if released needs to stop being a static and moves into
@@ -509,7 +509,7 @@ unsigned WIDGET::getState()
 }
 
 /* Get a button or clickable form's state */
-UDWORD widgGetButtonState(W_SCREEN *psScreen, UDWORD id)
+uint32_t widgGetButtonState(W_SCREEN *psScreen, uint32_t id)
 {
 	/* Get the button */
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
@@ -523,7 +523,7 @@ void WIDGET::setFlash(bool)
 	ASSERT(false, "Can't set widget type %u's flash.", type);
 }
 
-void widgSetButtonFlash(W_SCREEN *psScreen, UDWORD id)
+void widgSetButtonFlash(W_SCREEN *psScreen, uint32_t id)
 {
 	/* Get the button */
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
@@ -532,7 +532,7 @@ void widgSetButtonFlash(W_SCREEN *psScreen, UDWORD id)
 	psWidget->setFlash(true);
 }
 
-void widgClearButtonFlash(W_SCREEN *psScreen, UDWORD id)
+void widgClearButtonFlash(W_SCREEN *psScreen, uint32_t id)
 {
 	/* Get the button */
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
@@ -548,7 +548,7 @@ void WIDGET::setState(unsigned)
 }
 
 /* Set a button or clickable form's state */
-void widgSetButtonState(W_SCREEN *psScreen, UDWORD id, UDWORD state)
+void widgSetButtonState(W_SCREEN *psScreen, uint32_t id, uint32_t state)
 {
 	/* Get the button */
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
@@ -566,7 +566,7 @@ QString WIDGET::getString() const
 /* Return a pointer to a buffer containing the current string of a widget.
  * NOTE: The string must be copied out of the buffer
  */
-const char *widgGetString(W_SCREEN *psScreen, UDWORD id)
+const char *widgGetString(W_SCREEN *psScreen, uint32_t id)
 {
 	const WIDGET *psWidget = widgGetFromID(psScreen, id);
 	ASSERT_OR_RETURN("", psWidget, "Couldn't find widget by ID %u", id);
@@ -582,7 +582,7 @@ void WIDGET::setString(QString)
 }
 
 /* Set the text in a widget */
-void widgSetString(W_SCREEN *psScreen, UDWORD id, const char *pText)
+void widgSetString(W_SCREEN *psScreen, uint32_t id, const char *pText)
 {
 	/* Get the widget */
 	WIDGET *psWidget = widgGetFromID(psScreen, id);
@@ -868,7 +868,7 @@ void W_SCREEN::setFocus(WIDGET *widget)
 	psFocus = widget;
 }
 
-void WidgSetAudio(WIDGET_AUDIOCALLBACK Callback, SWORD HilightID, SWORD ClickedID, SWORD ErrorID)
+void WidgSetAudio(WIDGET_AUDIOCALLBACK Callback, int16_t HilightID, int16_t ClickedID, int16_t ErrorID)
 {
 	AudioCallback = Callback;
 	HilightAudioID = HilightID;
@@ -881,17 +881,17 @@ WIDGET_AUDIOCALLBACK WidgGetAudioCallback(void)
 	return AudioCallback;
 }
 
-SWORD WidgGetHilightAudioID(void)
+int16_t WidgGetHilightAudioID(void)
 {
 	return HilightAudioID;
 }
 
-SWORD WidgGetClickedAudioID(void)
+int16_t WidgGetClickedAudioID(void)
 {
 	return ClickedAudioID;
 }
 
-SWORD WidgGetErrorAudioID(void)
+int16_t WidgGetErrorAudioID(void)
 {
 	return ErrorAudioID;
 }

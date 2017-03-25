@@ -40,7 +40,7 @@ CURSOR scroll();
 extern void resetScroll(void);
 extern void setMouseScroll(bool);
 
-extern bool DrawnInLastFrame(SDWORD Frame);
+extern bool DrawnInLastFrame(int32_t Frame);
 
 // Clear all selections.
 extern void clearSel();
@@ -74,7 +74,7 @@ extern void displayWorld(void);
 
 #define MAX_SCROLL_SPEED (800+scroll_speed_accel)	// make max speed dependant on accel chosen.
 
-extern UDWORD scroll_speed_accel;			// now user modifyable.
+extern uint32_t scroll_speed_accel;			// now user modifyable.
 
 
 #define DRAG_INACTIVE 0
@@ -90,9 +90,9 @@ struct	_dragBox
 	int y1;
 	int x2;
 	int y2;
-	UDWORD	status;
-	UDWORD	lastTime;
-	UDWORD	pulse;
+	uint32_t	status;
+	uint32_t	lastTime;
+	uint32_t	pulse;
 };
 
 extern struct	_dragBox dragBox3D, wallDrag;
@@ -171,7 +171,7 @@ extern bool		godMode;
 // reset the input state
 void resetInput(void);
 
-bool CheckInScrollLimits(SDWORD *xPos, SDWORD *zPos);
+bool CheckInScrollLimits(int32_t *xPos, int32_t *zPos);
 extern bool CheckScrollLimits(void);
 extern bool	rotActive;
 
@@ -189,10 +189,10 @@ extern bool deliveryReposFinished(FLAG_POSITION *psFlag = NULL);
 
 extern void StartTacticalScrollObj(bool driveActive, BASE_OBJECT *psObj);
 extern void CancelTacticalScroll(void);
-extern void MoveTacticalScroll(SDWORD xVel, SDWORD yVel);
+extern void MoveTacticalScroll(int32_t xVel, int32_t yVel);
 extern bool	getRotActive(void);
-extern SDWORD	getDesiredPitch(void);
-extern void	setDesiredPitch(SDWORD pitch);
+extern int32_t	getDesiredPitch(void);
+extern void	setDesiredPitch(int32_t pitch);
 
 #define MAX_PLAYER_X_ANGLE	(-1)
 #define MIN_PLAYER_X_ANGLE	(-60)
@@ -218,7 +218,7 @@ void AddDerrickBurningMessage(void);
 // check whether the queue order keys are pressed
 extern bool ctrlShiftDown(void);
 
-extern UDWORD getTargetType(void);
+extern uint32_t getTargetType(void);
 
 void setZoom(float zoomSpeed, float zoomTarget);
 float getZoom();

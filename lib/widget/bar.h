@@ -46,11 +46,11 @@ public:
 	}
 
 	WBAR_ORIENTATION barPos;                        // Orientation of the bar on the widget
-	UWORD		majorSize;			// Percentage of the main bar that is filled
-	UWORD		minorSize;			// Percentage of the minor bar if there is one
-	UWORD		iRange;				// Maximum range
-	UWORD		iValue;				// Current value
-	UWORD		iOriginal;			// hack to keep uncapped value around
+	uint16_t		majorSize;			// Percentage of the main bar that is filled
+	uint16_t		minorSize;			// Percentage of the minor bar if there is one
+	uint16_t		iRange;				// Maximum range
+	uint16_t		iValue;				// Current value
+	uint16_t		iOriginal;			// hack to keep uncapped value around
 	int             denominator;                    // Denominator, 1 by default.
 	int             precision;                      // Number of places after the decimal point to display, 0 by default.
 	PIELIGHT	majorCol;			// Colour for the major bar
@@ -64,6 +64,6 @@ public:
 };
 
 /* The trough bar graph display function */
-void barGraphDisplayTrough(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void barGraphDisplayTrough(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 #endif // __INCLUDED_LIB_WIDGET_BAR_H__

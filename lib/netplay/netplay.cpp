@@ -81,8 +81,8 @@ static unsigned int masterserver_port = 0, gameserver_port = 0;
 
 // ////////////////////////////////////////////////////////////////////////
 // Function prototypes
-static void NETplayerLeaving(UDWORD player);		// Cleanup sockets on player leaving (nicely)
-static void NETplayerDropped(UDWORD player);		// Broadcast NET_PLAYER_DROPPED & cleanup
+static void NETplayerLeaving(uint32_t player);		// Cleanup sockets on player leaving (nicely)
+static void NETplayerDropped(uint32_t player);		// Broadcast NET_PLAYER_DROPPED & cleanup
 static void NETregisterServer(int state);
 static void NETallowJoining(void);
 static void recvDebugSync(NETQUEUE queue);
@@ -501,7 +501,7 @@ static void NETplayerClientDisconnect(uint32_t index)
  *       message), we clean up the socket that we used.
  * \param index
  */
-static void NETplayerLeaving(UDWORD index)
+static void NETplayerLeaving(uint32_t index)
 {
 	if (connected_bsocket[index])
 	{
@@ -530,7 +530,7 @@ static void NETplayerLeaving(UDWORD index)
  *       message.
  * \param index
  */
-static void NETplayerDropped(UDWORD index)
+static void NETplayerDropped(uint32_t index)
 {
 	uint32_t id = index;
 
@@ -559,7 +559,7 @@ static void NETplayerDropped(UDWORD index)
  * @note Cleanup for when a player is kicked.
  * \param index
  */
-void NETplayerKicked(UDWORD index)
+void NETplayerKicked(uint32_t index)
 {
 	// kicking a player counts as "leaving nicely", since "nicely" in this case
 	// simply means "there wasn't a connection error."
@@ -576,7 +576,7 @@ void NETplayerKicked(UDWORD index)
 
 // ////////////////////////////////////////////////////////////////////////
 // rename the local player
-bool NETchangePlayerName(UDWORD index, char *newName)
+bool NETchangePlayerName(uint32_t index, char *newName)
 {
 	if (!NetPlay.bComms)
 	{
@@ -639,7 +639,7 @@ void NETfixDuplicatePlayerNames(void)
 
 // ////////////////////////////////////////////////////////////////////////
 // return one of the four user flags in the current sessiondescription.
-SDWORD NETgetGameFlags(UDWORD flag)
+int32_t NETgetGameFlags(uint32_t flag)
 {
 	if (flag < 1 || flag > 4)
 	{
@@ -671,7 +671,7 @@ static void NETsendGameFlags(void)
 
 // ////////////////////////////////////////////////////////////////////////
 // Set a game flag
-bool NETsetGameFlags(UDWORD flag, SDWORD value)
+bool NETsetGameFlags(uint32_t flag, int32_t value)
 {
 	if (!NetPlay.bComms)
 	{
@@ -2483,7 +2483,7 @@ static void NETallowJoining(void)
 					else if (NetPlay.GamePassworded && strcmp(NetPlay.gamePassword, GamePassword) != 0)
 					{
 						// Wrong password. Reject.
-						rejected = (uint8_t)ERROR_WRONGPASSWORD;
+						rejected = (uint8_t)ERROR_WRONGPASint16_t;
 					}
 					else if ((int)NetPlay.playercount > gamestruct.desc.dwMaxPlayers)
 					{
@@ -2570,8 +2570,8 @@ static void NETallowJoining(void)
 }
 
 bool NEThostGame(const char *SessionName, const char *PlayerName,
-                 SDWORD one, SDWORD two, SDWORD three, SDWORD four,
-                 UDWORD plyrs)	// # of players.
+                 int32_t one, int32_t two, int32_t three, int32_t four,
+                 uint32_t plyrs)	// # of players.
 {
 	unsigned int i;
 

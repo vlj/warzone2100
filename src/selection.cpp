@@ -304,7 +304,7 @@ void selNextUnassignedUnit()
 	for (DROID *psCurr = apsDroidLists[selectedPlayer]; psCurr && !psResult; psCurr = psCurr->psNext)
 	{
 		/* Only look at unselected ones */
-		if (psCurr->group == UBYTE_MAX)
+		if (psCurr->group == uint8_t_MAX)
 		{
 			/* Keep a record of first one */
 			if (!psFirst)
@@ -420,7 +420,7 @@ void selNextSpecifiedBuilding(STRUCTURE_TYPE structType)
 
 // ---------------------------------------------------------------------
 // see if a commander is the n'th command droid
-static bool droidIsCommanderNum(DROID *psDroid, SDWORD n)
+static bool droidIsCommanderNum(DROID *psDroid, int32_t n)
 {
 	if (psDroid->droidType != DROID_COMMAND)
 	{

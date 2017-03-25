@@ -237,10 +237,10 @@ extern INTMODE intMode;
 extern W_SCREEN		*psWScreen;
 
 // The last widget ID from widgRunScreen
-extern UDWORD			intLastWidget;
+extern uint32_t			intLastWidget;
 
 /* The button ID of the objects stat when the stat screen is displayed */
-extern UDWORD			objStatID;
+extern uint32_t			objStatID;
 
 /* The current template for the design screen to start with*/
 extern std::vector<DROID_TEMPLATE *> apsTemplateList;  ///< Either a list of templates a factory can build or a list of designable templates, for UI use only.
@@ -281,10 +281,10 @@ void intRemoveReticule();
 void setReticuleStats(int ButId, QString tip, QString filename, QString filenameDown);
 
 /* Set the map view point to the world coordinates x,y */
-extern void intSetMapPos(UDWORD x, UDWORD y);
+extern void intSetMapPos(uint32_t x, uint32_t y);
 
 /* Set the map view point to the world coordinates x,y */
-extern void intSetMapPos(UDWORD x, UDWORD y);
+extern void intSetMapPos(uint32_t x, uint32_t y);
 
 /* Tell the interface when an object is created
  * - it may have to be added to a screen
@@ -339,10 +339,10 @@ extern STRUCTURE *interfaceStructList(void);
 extern void addTransporterInterface(DROID *psSelected, bool onMission);
 
 /*causes a reticule button to start flashing*/
-extern void flashReticuleButton(UDWORD buttonID);
+extern void flashReticuleButton(uint32_t buttonID);
 
 // stop a reticule button flashing
-extern void stopReticuleButtonFlash(UDWORD buttonID);
+extern void stopReticuleButtonFlash(uint32_t buttonID);
 
 //toggles the Power Bar display on and off
 void togglePowerBar();
@@ -353,13 +353,13 @@ void intHidePowerBar();
 extern void forceHidePowerBar(void);
 
 /* Add the Proximity message buttons */
-extern bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc);
+extern bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc);
 
 /*Remove a Proximity Button - when the message is deleted*/
 extern void intRemoveProximityButton(PROXIMITY_DISPLAY *psProxDisp);
 
 /* Allows us to fool the widgets with a keypress */
-void	setKeyButtonMapping(UDWORD	val);
+void	setKeyButtonMapping(uint32_t	val);
 
 STRUCTURE *intFindAStructure(void);
 DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGroup);
@@ -372,7 +372,7 @@ int intGetResearchState();
 void intNotifyResearchButton(int prevState);
 
 // see if a reticule button is enabled
-extern bool intCheckReticuleButEnabled(UDWORD id);
+extern bool intCheckReticuleButEnabled(uint32_t id);
 
 //access function for selected object in the interface
 extern BASE_OBJECT *getCurrentSelected(void);

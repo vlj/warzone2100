@@ -26,7 +26,7 @@
 
 bool NETstartLogging();
 bool NETstopLogging();
-WZ_DECL_NONNULL(1) bool NETlogEntry(const char *str, UDWORD a, UDWORD b);
+WZ_DECL_NONNULL(1) bool NETlogEntry(const char *str, uint32_t a, uint32_t b);
 void NETlogPacket(uint8_t type, uint32_t size, bool received);
 
 #endif // _netlog_h

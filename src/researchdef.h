@@ -44,24 +44,24 @@ struct RES_COMP_REPLACEMENT
 
 struct RESEARCH : public BASE_STATS
 {
-	UBYTE			techCode;
-	UWORD       	subGroup;			/* Subgroup of the item - an iconID from 'Framer' to depict in the button*/
+	uint8_t			techCode;
+	uint16_t       	subGroup;			/* Subgroup of the item - an iconID from 'Framer' to depict in the button*/
 
-	UWORD			researchPoints;		/* Number of research points required to
+	uint16_t			researchPoints;		/* Number of research points required to
 										   complete the research */
-	UDWORD			researchPower;		/* Power cost to research */
-	UBYTE			keyTopic;			/* Flag to indicate whether in single player
+	uint32_t			researchPower;		/* Power cost to research */
+	uint8_t			keyTopic;			/* Flag to indicate whether in single player
 										   this topic must be explicitly enabled*/
-	std::vector<UWORD>	pPRList;		///< List of research pre-requisites
-	std::vector<UWORD>	pStructList;		///< List of structures that when built would enable this research
-	std::vector<UWORD>	pRedStructs;		///< List of Structures that become redundant
+	std::vector<uint16_t>	pPRList;		///< List of research pre-requisites
+	std::vector<uint16_t>	pStructList;		///< List of structures that when built would enable this research
+	std::vector<uint16_t>	pRedStructs;		///< List of Structures that become redundant
 	std::vector<COMPONENT_STATS *> pRedArtefacts;	///< List of Artefacts that become redundant
-	std::vector<UWORD>	pStructureResults;	///< List of Structures that are possible after this research
+	std::vector<uint16_t>	pStructureResults;	///< List of Structures that are possible after this research
 	QList<COMPONENT_STATS *> componentResults;	///< List of Components that are possible after this research
 	QList<RES_COMP_REPLACEMENT> componentReplacement;	///< List of Components that are automatically replaced with new onew after research
 	QJsonValue		results;		///< Research upgrades
 	const struct VIEWDATA *pViewData;               // data used to display a message in the Intelligence Screen
-	UWORD			iconID;				/* the ID from 'Framer' for which graphic to draw in interface*/
+	uint16_t			iconID;				/* the ID from 'Framer' for which graphic to draw in interface*/
 	BASE_STATS      *psStat;   /* A stat used to define which graphic is drawn instead of the two fields below */
 	iIMDShape		*pIMD;		/* the IMD to draw for this research topic */
 	iIMDShape		*pIMD2;		/* the 2nd IMD for base plates/turrets*/
@@ -72,10 +72,10 @@ struct RESEARCH : public BASE_STATS
 
 struct PLAYER_RESEARCH
 {
-	UDWORD		currentPoints;			// If the research has been suspended then this value contains the number of points generated at the suspension/cancel point
+	uint32_t		currentPoints;			// If the research has been suspended then this value contains the number of points generated at the suspension/cancel point
 	// normally it is null
 
-	UBYTE		ResearchStatus;			// Bit flags   ...  see below
+	uint8_t		ResearchStatus;			// Bit flags   ...  see below
 
 	bool            possible;                       ///< is the research possible ... so can enable topics vis scripts
 };

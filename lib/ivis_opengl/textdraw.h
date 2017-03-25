@@ -57,7 +57,7 @@ enum
 	FTEXT_RIGHTJUSTIFY,			// Right justify.
 };
 
-extern int iV_DrawFormattedText(const char *String, UDWORD x, UDWORD y, UDWORD Width, UDWORD Justify);
+extern int iV_DrawFormattedText(const char *String, uint32_t x, uint32_t y, uint32_t Width, uint32_t Justify);
 
 extern void iV_DrawTextRotated(const char *string, float x, float y, float rotation);
 

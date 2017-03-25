@@ -90,7 +90,7 @@ static MISC_IMD	miscImds[] =
 // Load up all the imds into an array
 static bool multiLoadMiscImds(void)
 {
-	UDWORD	i = 0;
+	uint32_t	i = 0;
 	bool	bMoreToProcess = true;
 	char	name[15];	// hopefully!
 
@@ -118,7 +118,7 @@ static bool multiLoadMiscImds(void)
 }
 // -------------------------------------------------------------------------------
 // Returns a pointer to the imd from a #define number passed in - see above
-iIMDShape	*getImdFromIndex(UDWORD	index)
+iIMDShape	*getImdFromIndex(uint32_t	index)
 {
 	ASSERT(index < MI_TOO_MANY, "Out of range index in getImdFromIndex");
 

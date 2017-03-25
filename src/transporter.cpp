@@ -110,22 +110,22 @@ extern W_SCREEN		*psWScreen;
 static DROID *psCurrTransporter = NULL;
 static	DROID			*g_psCurScriptTransporter = NULL;
 static	bool			onMission;
-static	UDWORD			g_iLaunchTime = 0;
+static	uint32_t			g_iLaunchTime = 0;
 //used for audio message for reinforcements
 static  bool            bFirstTransporter;
 //the tab positions of the DroidsAvail window
-static  UWORD           objMajor = 0;
+static  uint16_t           objMajor = 0;
 
 /*functions */
 static bool intAddTransporterContents(void);
-static void setCurrentTransporter(UDWORD id);
+static void setCurrentTransporter(uint32_t id);
 static void intRemoveTransContentNoAnim(void);
 static bool intAddTransButtonForm(void);
 static bool intAddTransContentsForm(void);
 static bool intAddDroidsAvailForm(void);
 static void intRemoveTransContent(void);
 static DROID *transInterfaceDroidList(void);
-static void intTransporterAddDroid(UDWORD id);
+static void intTransporterAddDroid(uint32_t id);
 static void intRemoveTransDroidsAvail(void);
 static void intRemoveTransDroidsAvailNoAnim(void);
 
@@ -267,7 +267,7 @@ bool intAddTransporterContents(void)
 		W_LABINIT sLabInit;
 		sLabInit.formID = IDTRANS_CONTENTFORM;
 		sLabInit.id = IDTRANS_CAPACITY;
-		sLabInit.x = (SWORD)sButInit.x - 40;
+		sLabInit.x = (int16_t)sButInit.x - 40;
 		sLabInit.y = 0;
 		sLabInit.width = 16;
 		sLabInit.height = 16;
@@ -287,7 +287,7 @@ bool intAddTransporterContents(void)
 		sButFInit.style = WFORM_CLICKABLE | WFORM_NOCLICKMOVE;
 
 		sButFInit.x = OBJ_STARTX;
-		sButFInit.y = (UWORD)(STAT_SLDY - 1);
+		sButFInit.y = (uint16_t)(STAT_SLDY - 1);
 
 		sButFInit.width = iV_GetImageWidth(IntImages, IMAGE_LAUNCHUP);
 		sButFInit.height = iV_GetImageHeight(IntImages, IMAGE_LAUNCHUP);
@@ -313,7 +313,7 @@ bool intAddTransporterContents(void)
 /*This is used to display the transporter button and capacity when at the home base ONLY*/
 bool intAddTransporterLaunch(DROID *psDroid)
 {
-	UDWORD          capacity;
+	uint32_t          capacity;
 	DROID           *psCurr, *psNext;
 
 	if (bMultiPlayer)
@@ -336,8 +336,8 @@ bool intAddTransporterLaunch(DROID *psDroid)
 	sButInit.id = IDTRANS_LAUNCH;
 	sButInit.style = WFORM_CLICKABLE | WFORM_NOCLICKMOVE;
 	sButInit.x = RET_X;
-	sButInit.y = (SWORD)TIMER_Y;
-	sButInit.width = (UWORD)(10 + iV_GetImageWidth(IntImages, IMAGE_LAUNCHUP));
+	sButInit.y = (int16_t)TIMER_Y;
+	sButInit.width = (uint16_t)(10 + iV_GetImageWidth(IntImages, IMAGE_LAUNCHUP));
 	sButInit.height = iV_GetImageHeight(IntImages, IMAGE_LAUNCHUP);
 	sButInit.pTip = _("Launch Transport");
 	sButInit.pDisplay = intDisplayImageHilight;
@@ -351,7 +351,7 @@ bool intAddTransporterLaunch(DROID *psDroid)
 	W_LABINIT sLabInit;
 	sLabInit.formID = IDTRANS_LAUNCH;
 	sLabInit.id = IDTRANS_CAPACITY;
-	sLabInit.x = (SWORD)(sButInit.x + 20);
+	sLabInit.x = (int16_t)(sButInit.x + 20);
 	sLabInit.y = 0;
 	sLabInit.width = 16;
 	sLabInit.height = 16;
@@ -581,7 +581,7 @@ bool intAddDroidsAvailForm(void)
 			droidList->addWidgetToLayout(button);
 
 			//add bar to indicate stare of repair
-			sBarInit.size = (UWORD) PERCENT(psDroid->body, psDroid->originalBody);
+			sBarInit.size = (uint16_t) PERCENT(psDroid->body, psDroid->originalBody);
 			if (sBarInit.size > 100)
 			{
 				sBarInit.size = 100;
@@ -673,7 +673,7 @@ void intUpdateTransCapacity(WIDGET *psWidget, W_CONTEXT *psContext)
 }
 
 /* Process return codes from the Transporter Screen*/
-void intProcessTransporter(UDWORD id)
+void intProcessTransporter(uint32_t id)
 {
 	if (id >= IDTRANS_START && id <= IDTRANS_END)
 	{
@@ -813,10 +813,10 @@ void intRemoveTransDroidsAvailNoAnim(void)
 }
 
 /*sets psCurrTransporter */
-void setCurrentTransporter(UDWORD id)
+void setCurrentTransporter(uint32_t id)
 {
 	DROID	*psDroid;
-	UDWORD	currID;
+	uint32_t	currID;
 
 	psCurrTransporter = NULL;
 	currID = IDTRANS_START;
@@ -924,10 +924,10 @@ void transporterRemoveDroid(DROID *psTransport, DROID *psDroid, QUEUE_MODE mode)
 }
 
 /*adds a droid to the current transporter via the interface*/
-static void intTransporterAddDroid(UDWORD id)
+static void intTransporterAddDroid(uint32_t id)
 {
 	DROID		*psDroid, *psNext;
-	UDWORD		currID;
+	uint32_t		currID;
 
 	ASSERT(psCurrTransporter != NULL, "intTransporterAddUnit:can't remove units");
 
@@ -1012,7 +1012,7 @@ void transporterAddDroid(DROID *psTransporter, DROID *psDroidToAdd)
 bool checkTransporterSpace(DROID const *psTransporter, DROID const *psAssigned, bool mayFlash)
 {
 	DROID		*psDroid, *psNext;
-	UDWORD		capacity;
+	uint32_t		capacity;
 
 	ASSERT_OR_RETURN(false, psTransporter != NULL, "Invalid droid pointer");
 	ASSERT_OR_RETURN(false, psAssigned != NULL, "Invalid droid pointer");
@@ -1062,12 +1062,12 @@ DROID *transInterfaceDroidList(void)
 	}
 }
 
-UDWORD transporterGetLaunchTime(void)
+uint32_t transporterGetLaunchTime(void)
 {
 	return g_iLaunchTime;
 }
 
-void transporterSetLaunchTime(UDWORD time)
+void transporterSetLaunchTime(uint32_t time)
 {
 	g_iLaunchTime = time;
 }
@@ -1075,7 +1075,7 @@ void transporterSetLaunchTime(UDWORD time)
 /*launches the defined transporter to the offworld map*/
 bool launchTransporter(DROID *psTransporter)
 {
-	UDWORD	iX, iY;
+	uint32_t	iX, iY;
 
 	//close the interface
 	intResetScreen(true);
@@ -1191,7 +1191,7 @@ bool updateTransporter(DROID *psTransporter)
 //process the launch transporter button click
 void processLaunchTransporter(void)
 {
-	UDWORD		capacity = TRANSPORTER_CAPACITY;
+	uint32_t		capacity = TRANSPORTER_CAPACITY;
 	W_CLICKFORM *psForm;
 
 	//launch the Transporter
@@ -1227,7 +1227,7 @@ void processLaunchTransporter(void)
 	}
 }
 
-SDWORD	bobTransporterHeight(void)
+int32_t	bobTransporterHeight(void)
 {
 	// Because 4320/12 = 360 degrees
 	// this gives us a bob frequency of 4.32 seconds.
@@ -1240,7 +1240,7 @@ SDWORD	bobTransporterHeight(void)
 }
 
 /*causes one of the mission buttons (Launch Button or Mission Timer) to start flashing*/
-void flashMissionButton(UDWORD buttonID)
+void flashMissionButton(uint32_t buttonID)
 {
 	//get the button from the id
 	WIDGET *psForm = widgGetFromID(psWScreen, buttonID);
@@ -1263,7 +1263,7 @@ void flashMissionButton(UDWORD buttonID)
 }
 
 /*stops one of the mission buttons (Launch Button or Mission Timer) flashing*/
-void stopMissionButtonFlash(UDWORD buttonID)
+void stopMissionButtonFlash(uint32_t buttonID)
 {
 	//get the button from the id
 	WIDGET *psForm = widgGetFromID(psWScreen, buttonID);

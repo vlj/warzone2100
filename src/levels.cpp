@@ -105,7 +105,7 @@ bool levInitialise(void)
 	return true;
 }
 
-SDWORD getLevelLoadType(void)
+int32_t getLevelLoadType(void)
 {
 	return levelLoadType;
 }
@@ -306,7 +306,7 @@ bool levParse(const char *buffer, size_t size, searchPathMode datadir, bool igno
 		case LTK_INTEGER:
 			if (state == LP_PLAYERS)
 			{
-				psDataSet->players = (SWORD)levVal;
+				psDataSet->players = (int16_t)levVal;
 			}
 			else if (state == LP_TYPE)
 			{
@@ -437,7 +437,7 @@ bool levParse(const char *buffer, size_t size, searchPathMode datadir, bool igno
 				// note the game index if necessary
 				if (state == LP_GAME)
 				{
-					psDataSet->game = (SWORD)currData;
+					psDataSet->game = (int16_t)currData;
 				}
 				else if (ignoreWrf)
 				{

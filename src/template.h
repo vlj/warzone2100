@@ -35,7 +35,7 @@ void fillTemplateList(std::vector<DROID_TEMPLATE *> &pList, STRUCTURE *psFactory
 DROID_TEMPLATE *getTemplateFromTranslatedNameNoPlayer(char const *pName);
 
 /*getTemplateFromMultiPlayerID gets template for unique ID  searching all lists */
-DROID_TEMPLATE *getTemplateFromMultiPlayerID(UDWORD multiPlayerID);
+DROID_TEMPLATE *getTemplateFromMultiPlayerID(uint32_t multiPlayerID);
 
 /// Have we researched the components of this template?
 bool researchedTemplate(const DROID_TEMPLATE *psCurr, int player, bool allowRedundant = false, bool verbose = false);

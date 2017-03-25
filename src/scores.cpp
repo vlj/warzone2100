@@ -178,7 +178,7 @@ static void fillUpStats(void);
 
 /* The present mission data */
 MISSION_DATA	missionData;
-static	UDWORD	dispST;
+static	uint32_t	dispST;
 static	bool	bDispStarted = false;
 static	char	text[255];
 static	char	text2[255];
@@ -347,7 +347,7 @@ void scoreDataToScreen(WIDGET *psWidget)
 			/* If we're beyond STAT_ROOKIE, then we're on rankings */
 			if (index >= STAT_GREEN && index <= STAT_ACE)
 			{
-				iV_DrawImage(IntImages, (UWORD)(IMAGE_LEV_0 + (index - STAT_GREEN)), x - 8, y + 2);
+				iV_DrawImage(IntImages, (uint16_t)(IMAGE_LEV_0 + (index - STAT_GREEN)), x - 8, y + 2);
 			}
 		}
 		/* Move onto the next bar */
@@ -386,11 +386,11 @@ void scoreDataToScreen(WIDGET *psWidget)
 // -----------------------------------------------------------------------------------
 void	fillUpStats(void)
 {
-	UDWORD	i;
-	UDWORD	maxi, num;
+	uint32_t	i;
+	uint32_t	maxi, num;
 	float	scaleFactor;
-	UDWORD	length;
-	UDWORD	numUnits;
+	uint32_t	length;
+	uint32_t	numUnits;
 	DROID	*psDroid;
 
 	/* Do rankings first cos they're easier */

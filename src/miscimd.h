@@ -26,7 +26,7 @@
 #include "messagedef.h"
 
 extern bool initMiscImds(void);
-extern iIMDShape	*getImdFromIndex(UDWORD	index);
+extern iIMDShape	*getImdFromIndex(uint32_t	index);
 extern iIMDShape	*getRandomDebrisImd(void);
 
 #define	MAX_DEBRIS		5

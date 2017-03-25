@@ -92,39 +92,39 @@ static const CURSOR arnMPointers[POSSIBLE_TARGETS][POSSIBLE_SELECTIONS] =
 };
 
 /// acceleration on scrolling. Game Option.
-UDWORD	scroll_speed_accel;
+uint32_t	scroll_speed_accel;
 
 /// Control zoom. Add an amount to zoom this much each second.
 static float zoom_speed = 0.0f;
 static float zoom_target = 0.0f;
 
 static bool	buildingDamaged(STRUCTURE *psStructure);
-static bool	repairDroidSelected(UDWORD player);
-static bool vtolDroidSelected(UDWORD player);
-static bool	anyDroidSelected(UDWORD player);
-static bool cyborgDroidSelected(UDWORD player);
+static bool	repairDroidSelected(uint32_t player);
+static bool vtolDroidSelected(uint32_t player);
+static bool	anyDroidSelected(uint32_t player);
+static bool cyborgDroidSelected(uint32_t player);
 static bool bInvertMouse = true;
 static bool bRightClickOrders = false;
 static bool bMiddleClickRotate = false;
 static bool bDrawShadows = true;
-static SELECTION_TYPE	establishSelection(UDWORD selectedPlayer);
+static SELECTION_TYPE	establishSelection(uint32_t selectedPlayer);
 static void	dealWithLMB(void);
 static void	dealWithLMBDClick(void);
 static void	dealWithRMB(void);
-static bool	mouseInBox(SDWORD x0, SDWORD y0, SDWORD x1, SDWORD y1);
+static bool	mouseInBox(int32_t x0, int32_t y0, int32_t x1, int32_t y1);
 static OBJECT_POSITION *checkMouseLoc(void);
 
 void finishDeliveryPosition(void);
 
 static bool	bInstantRadarJump = false;
-static SDWORD	desiredPitch = 340;
-static UDWORD	currentFrame;
-static UDWORD StartOfLastFrame;
-static SDWORD	rotX;
-static SDWORD	rotY;
-static UDWORD	rotInitial;
-static UDWORD	rotInitialUp;
-static UDWORD	xMoved, yMoved;
+static int32_t	desiredPitch = 340;
+static uint32_t	currentFrame;
+static uint32_t StartOfLastFrame;
+static int32_t	rotX;
+static int32_t	rotY;
+static uint32_t	rotInitial;
+static uint32_t	rotInitialUp;
+static uint32_t	xMoved, yMoved;
 static uint32_t scrollRefTime;
 static float	scrollSpeedLeftRight; //use two directions and add them because its simple
 static float	scrollStepLeftRight;
@@ -138,7 +138,7 @@ static DROID	*psSelectedVtol;
 static DROID	*psDominantSelected;
 static bool bRadarDragging = false;
 static bool mouseScroll = true;
-static UDWORD CurrentItemUnderMouse = 0;
+static uint32_t CurrentItemUnderMouse = 0;
 
 bool	rotActive = false;
 bool	gameStats = false;
@@ -255,7 +255,7 @@ void ProcessRadarInput()
 	int PosX, PosY;
 	int x = mouseX();
 	int y = mouseY();
-	UDWORD	temp1, temp2;
+	uint32_t	temp1, temp2;
 
 	/* Only allow jump-to-area-of-map if radar is on-screen */
 	mouseOverRadar = false;
@@ -552,7 +552,7 @@ static bool CheckFinishedFindPosition(void)
 
 static void HandleDrag(void)
 {
-	UDWORD dragX = 0, dragY = 0;
+	uint32_t dragX = 0, dragY = 0;
 
 	if (mouseDrag(MOUSE_LMB, &dragX, &dragY) && !mouseOverRadar && !mouseDown(MOUSE_RMB))
 	{
@@ -593,7 +593,7 @@ static void HandleDrag(void)
 	}
 }
 
-UDWORD getTargetType(void)
+uint32_t getTargetType(void)
 {
 	return CurrentItemUnderMouse;
 }
@@ -601,7 +601,7 @@ UDWORD getTargetType(void)
 //don't want to do any of these whilst in the Intelligence Screen
 CURSOR processMouseClickInput()
 {
-	UDWORD	i;
+	uint32_t	i;
 	SELECTION_TYPE	selection;
 	MOUSE_TARGET	item = MT_NOTARGET;
 	bool OverRadar = OverRadarAndNotDragging();
@@ -664,7 +664,7 @@ CURSOR processMouseClickInput()
 		}
 	}
 
-	if (!mouseDrag(MOUSE_SELECT, (UDWORD *)&rotX, (UDWORD *)&rotY) && bRadarDragging)
+	if (!mouseDrag(MOUSE_SELECT, (uint32_t *)&rotX, (uint32_t *)&rotY) && bRadarDragging)
 	{
 		bRadarDragging = false;
 	}
@@ -681,7 +681,7 @@ CURSOR processMouseClickInput()
 	{
 		cancelDeliveryRepos();
 	}
-	if (mouseDrag(MOUSE_ROTATE, (UDWORD *)&rotX, (UDWORD *)&rotY) && !rotActive && !bRadarDragging)
+	if (mouseDrag(MOUSE_ROTATE, (uint32_t *)&rotX, (uint32_t *)&rotY) && !rotActive && !bRadarDragging)
 	{
 		rotInitial = player.r.y;
 		rotInitialUp = player.r.x;
@@ -822,7 +822,7 @@ CURSOR processMouseClickInput()
 			//check for VTOL droids being assigned to a sensor droid/structure
 			else if ((item == MT_SENSOR || item == MT_SENSORSTRUCT || item == MT_SENSORSTRUCTDAM)
 			         && selection == SC_DROID_DIRECT
-			         && vtolDroidSelected((UBYTE)selectedPlayer))
+			         && vtolDroidSelected((uint8_t)selectedPlayer))
 			{
 				// NB. psSelectedVtol was set by vtolDroidSelected - yes I know its horrible, but it
 				// only smells as much as the rest of display.c so I don't feel so bad
@@ -839,7 +839,7 @@ CURSOR processMouseClickInput()
 			//vtols cannot pick up artifacts
 			else if (item == MT_ARTIFACT
 			         && selection == SC_DROID_DIRECT
-			         && vtolDroidSelected((UBYTE)selectedPlayer))
+			         && vtolDroidSelected((uint8_t)selectedPlayer))
 			{
 				item = MT_BLOCKING;
 			}
@@ -993,7 +993,7 @@ static void calcScroll(float *y, float *dydt, float accel, float decel, float ta
 
 CURSOR scroll()
 {
-	SDWORD	xDif, yDif;
+	int32_t	xDif, yDif;
 	uint32_t timeDiff;
 	int scrollDirLeftRight = 0, scrollDirUpDown = 0;
 	float scroll_zoom_factor = 1 + 2 * ((getViewDistance() - MINDISTANCE) / ((float)(MAXDISTANCE - MINDISTANCE)));
@@ -1093,13 +1093,13 @@ void resetScroll(void)
 	scrollSpeedLeftRight = 0.0f;
 }
 
-// Check a coordinate is within the scroll limits, SDWORD version.
+// Check a coordinate is within the scroll limits, int32_t version.
 // Returns true if edge hit.
 //
-bool CheckInScrollLimits(SDWORD *xPos, SDWORD *zPos)
+bool CheckInScrollLimits(int32_t *xPos, int32_t *zPos)
 {
 	bool EdgeHit = false;
-	SDWORD	minX, minY, maxX, maxY;
+	int32_t	minX, minY, maxX, maxY;
 
 	minX = world_coord(scrollMinX);
 	maxX = world_coord(scrollMaxX - 1);
@@ -1137,8 +1137,8 @@ bool CheckInScrollLimits(SDWORD *xPos, SDWORD *zPos)
 //
 bool CheckScrollLimits(void)
 {
-	SDWORD xp = player.p.x;
-	SDWORD zp = player.p.z;
+	int32_t xp = player.p.x;
+	int32_t zp = player.p.z;
 	bool ret = CheckInScrollLimits(&xp, &zp);
 
 	player.p.x = xp;
@@ -1216,7 +1216,7 @@ void displayWorld(void)
 	draw3DScene();
 }
 
-static bool mouseInBox(SDWORD x0, SDWORD y0, SDWORD x1, SDWORD y1)
+static bool mouseInBox(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
 	return mouseX() > x0 && mouseX() < x1 && mouseY() > y0 && mouseY() < y1;
 }
@@ -1495,8 +1495,8 @@ void dealWithDroidSelect(DROID *psDroid, bool bDragBox)
 
 static void FeedbackOrderGiven(void)
 {
-	static UDWORD LastFrame = 0;
-	UDWORD ThisFrame = frameGetFrameNumber();
+	static uint32_t LastFrame = 0;
+	uint32_t ThisFrame = frameGetFrameNumber();
 
 	// Ensure only played once per game cycle.
 	if (ThisFrame != LastFrame)
@@ -1987,12 +1987,12 @@ bool	getRotActive(void)
 	return (rotActive);
 }
 
-SDWORD	getDesiredPitch(void)
+int32_t	getDesiredPitch(void)
 {
 	return (desiredPitch);
 }
 
-void	setDesiredPitch(SDWORD pitch)
+void	setDesiredPitch(int32_t pitch)
 {
 	desiredPitch = pitch;
 }
@@ -2057,8 +2057,8 @@ when the mouse button was pressed */
 static OBJECT_POSITION 	*checkMouseLoc(void)
 {
 	FLAG_POSITION		*psPoint;
-	UDWORD				i;
-	UDWORD				dispX, dispY, dispR;
+	uint32_t				i;
+	uint32_t				dispX, dispY, dispR;
 
 	// First have a look through the DeliveryPoint lists
 	for (i = 0; i < MAX_PLAYERS; i++)
@@ -2270,11 +2270,11 @@ return code, but also a pointer to the BASE_OBJECT) ... well if your going to be
 */
 static MOUSE_TARGET	itemUnderMouse(BASE_OBJECT **ppObjectUnderMouse)
 {
-	UDWORD		i;
+	uint32_t		i;
 	MOUSE_TARGET retVal;
 	BASE_OBJECT	 *psNotDroid;
 	DROID		*psDroid;
-	UDWORD		dispX, dispY, dispR;
+	uint32_t		dispX, dispY, dispR;
 	STRUCTURE	*psStructure;
 
 	*ppObjectUnderMouse = NULL;
@@ -2480,7 +2480,7 @@ static MOUSE_TARGET	itemUnderMouse(BASE_OBJECT **ppObjectUnderMouse)
 // enum in DroidDef.h
 //
 #define NUM_DROID_WEIGHTS (14)
-static UBYTE DroidSelectionWeights[NUM_DROID_WEIGHTS] =
+static uint8_t DroidSelectionWeights[NUM_DROID_WEIGHTS] =
 {
 	3,	//DROID_WEAPON,
 	1,	//DROID_SENSOR,
@@ -2501,10 +2501,10 @@ static UBYTE DroidSelectionWeights[NUM_DROID_WEIGHTS] =
 /* Only deals with one type of droid being selected!!!! */
 /*	We'll have to make it assesss which selection is to be dominant in the case
 	of multiple selections */
-static SELECTION_TYPE	establishSelection(UDWORD selectedPlayer)
+static SELECTION_TYPE	establishSelection(uint32_t selectedPlayer)
 {
 	DROID *psDominant = NULL;
-	UBYTE CurrWeight = UBYTE_MAX;
+	uint8_t CurrWeight = uint8_t_MAX;
 	SELECTION_TYPE selectionClass = SC_INVALID;
 
 	for (DROID *psDroid = apsDroidLists[selectedPlayer]; psDroid; psDroid = psDroid->psNext)
@@ -2593,7 +2593,7 @@ static bool	buildingDamaged(STRUCTURE *psStructure)
 }
 
 /*Looks through the list of selected players droids to see if one is a repair droid*/
-bool	repairDroidSelected(UDWORD player)
+bool	repairDroidSelected(uint32_t player)
 {
 	DROID	*psCurr;
 
@@ -2612,7 +2612,7 @@ bool	repairDroidSelected(UDWORD player)
 }
 
 /*Looks through the list of selected players droids to see if one is a VTOL droid*/
-bool	vtolDroidSelected(UDWORD player)
+bool	vtolDroidSelected(uint32_t player)
 {
 	DROID	*psCurr;
 
@@ -2631,7 +2631,7 @@ bool	vtolDroidSelected(UDWORD player)
 }
 
 /*Looks through the list of selected players droids to see if any is selected*/
-bool	anyDroidSelected(UDWORD player)
+bool	anyDroidSelected(uint32_t player)
 {
 	DROID	*psCurr;
 
@@ -2648,7 +2648,7 @@ bool	anyDroidSelected(UDWORD player)
 }
 
 /*Looks through the list of selected players droids to see if one is a cyborg droid*/
-bool cyborgDroidSelected(UDWORD player)
+bool cyborgDroidSelected(uint32_t player)
 {
 	DROID	*psCurr;
 

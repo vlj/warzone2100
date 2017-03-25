@@ -55,7 +55,7 @@
 bool	powerCalculated;
 
 /* Updates the current power based on the extracted power and a Power Generator*/
-static void updateCurrentPower(STRUCTURE *psStruct, UDWORD player, int ticks);
+static void updateCurrentPower(STRUCTURE *psStruct, uint32_t player, int ticks);
 static int64_t updateExtractedPower(STRUCTURE *psBuilding);
 
 //returns the relevant list based on OffWorld or OnWorld
@@ -294,7 +294,7 @@ void updatePlayerPower(int player, int ticks)
 }
 
 /* Updates the current power based on the extracted power and a Power Generator*/
-static void updateCurrentPower(STRUCTURE *psStruct, UDWORD player, int ticks)
+static void updateCurrentPower(STRUCTURE *psStruct, uint32_t player, int ticks)
 {
 	POWER_GEN *psPowerGen = (POWER_GEN *)psStruct->pFunctionality;
 	int i;

@@ -117,7 +117,7 @@ extern char DROIDDOING[512];
 /** This function initializes asRunData, allocking it. It should be called AFTER every mission so that asRunData gets reset. */
 void initRunData(void)
 {
-	UBYTE   i;
+	uint8_t   i;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -129,10 +129,10 @@ void initRunData(void)
 /** This function checks if the droid is off range. If yes, it uses actionDroid() to make the droid to move to its target if its target is on range, or to move to its order position if not.
  * @todo droid doesn't shoot while returning to the guard position.
  */
-static void orderCheckGuardPosition(DROID *psDroid, SDWORD range)
+static void orderCheckGuardPosition(DROID *psDroid, int32_t range)
 {
-	SDWORD		xdiff, ydiff;
-	UDWORD		x, y;
+	int32_t		xdiff, ydiff;
+	uint32_t		x, y;
 
 	if (psDroid->order.psObj != NULL)
 	{
@@ -331,9 +331,9 @@ void orderUpdateDroid(DROID *psDroid)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStruct, *psWall;
-	SDWORD			xdiff, ydiff;
+	int32_t			xdiff, ydiff;
 	bool			bAttack;
-	SDWORD			xoffset, yoffset;
+	int32_t			xoffset, yoffset;
 
 	// clear the target if it has died
 	if (psDroid->order.psObj && psDroid->order.psObj->died)
@@ -818,8 +818,8 @@ void orderUpdateDroid(DROID *psDroid)
 					psDroid->order = DroidOrder(DORDER_NONE);
 					actionDroid(psDroid, DACTION_NONE);
 				}
-				else if (abs((SDWORD)psDroid->pos.x - (SDWORD)psDroid->order.psObj->pos.x) < TILE_UNITS
-				         && abs((SDWORD)psDroid->pos.y - (SDWORD)psDroid->order.psObj->pos.y) < TILE_UNITS)
+				else if (abs((int32_t)psDroid->pos.x - (int32_t)psDroid->order.psObj->pos.x) < TILE_UNITS
+				         && abs((int32_t)psDroid->pos.y - (int32_t)psDroid->order.psObj->pos.y) < TILE_UNITS)
 				{
 					// save the target of current droid (the transporter)
 					DROID *transporter = (DROID *)psDroid->order.psObj;
@@ -1211,7 +1211,7 @@ void orderUpdateDroid(DROID *psDroid)
 static void orderCmdGroupBase(DROID_GROUP *psGroup, DROID_ORDER_DATA *psData)
 {
 	DROID	*psCurr, *psChosen;
-	SDWORD	currdist, mindist;
+	int32_t	currdist, mindist;
 
 	ASSERT_OR_RETURN(, psGroup != NULL, "Invalid unit group");
 
@@ -1221,7 +1221,7 @@ static void orderCmdGroupBase(DROID_GROUP *psGroup, DROID_ORDER_DATA *psData)
 	{
 		// picking up an artifact - only need to send one unit
 		psChosen = NULL;
-		mindist = SDWORD_MAX;
+		mindist = int32_t_MAX;
 		for (psCurr = psGroup->psList; psCurr; psCurr = psCurr->psGrpNext)
 		{
 			currdist = objPosDiffSq(psCurr->pos, psData->psObj->pos);
@@ -1260,7 +1260,7 @@ static void orderCmdGroupBase(DROID_GROUP *psGroup, DROID_ORDER_DATA *psData)
  */
 static void orderPlayFireSupportAudio(BASE_OBJECT *psObj)
 {
-	SDWORD	iAudioID = NO_SOUND;
+	int32_t	iAudioID = NO_SOUND;
 	DROID *psDroid;
 	STRUCTURE *psStruct;
 
@@ -1308,7 +1308,7 @@ static void orderPlayFireSupportAudio(BASE_OBJECT *psObj)
  */
 void orderDroidBase(DROID *psDroid, DROID_ORDER_DATA *psOrder)
 {
-	UDWORD		iFactoryDistSq;
+	uint32_t		iFactoryDistSq;
 	STRUCTURE	*psStruct, *psRepairFac, *psFactory;
 	const PROPULSION_STATS *psPropStats = asPropulsionStats + psDroid->asBits[COMP_PROPULSION];
 	const Vector3i rPos(psOrder->pos, 0);
@@ -1877,7 +1877,7 @@ bool validOrderForLoc(DROID_ORDER order)
 /** This function sends the droid an order with a location.
  * If the mode is ModeQueue, the order is added to the droid's order list using sendDroidInfo(), else, a DROID_ORDER_DATA is alloc, the old order list is erased, and the order is sent using orderDroidBase().
  */
-void orderDroidLoc(DROID *psDroid, DROID_ORDER order, UDWORD x, UDWORD y, QUEUE_MODE mode)
+void orderDroidLoc(DROID *psDroid, DROID_ORDER order, uint32_t x, uint32_t y, QUEUE_MODE mode)
 {
 	ASSERT_OR_RETURN(, psDroid != NULL, "Invalid unit pointer");
 	ASSERT_OR_RETURN(, validOrderForLoc(order), "Invalid order for location");
@@ -1897,7 +1897,7 @@ void orderDroidLoc(DROID *psDroid, DROID_ORDER order, UDWORD x, UDWORD y, QUEUE_
 /** This function attributes the order's location to (pX,pY) if the order is the same as the droid.
  * Returns true if it was attributed and false if not.
  */
-bool orderStateLoc(DROID *psDroid, DROID_ORDER order, UDWORD *pX, UDWORD *pY)
+bool orderStateLoc(DROID *psDroid, DROID_ORDER order, uint32_t *pX, uint32_t *pY)
 {
 	if (order != psDroid->order.type)
 	{
@@ -2047,7 +2047,7 @@ BASE_OBJECT *orderStateObj(DROID *psDroid, DROID_ORDER order)
 /** This function sends the droid an order with a location and stats.
  * If the mode is ModeQueue, the order is added to the droid's order list using sendDroidInfo(), else, a DROID_ORDER_DATA is alloc, the old order list is erased, and the order is sent using orderDroidBase().
  */
-void orderDroidStatsLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x, UDWORD y, uint16_t direction, QUEUE_MODE mode)
+void orderDroidStatsLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x, uint32_t y, uint16_t direction, QUEUE_MODE mode)
 {
 	ASSERT(psDroid != NULL, "Invalid unit pointer");
 	ASSERT(order == DORDER_BUILD, "Invalid order for location");
@@ -2067,7 +2067,7 @@ void orderDroidStatsLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *p
 /** This function adds that order to the droid's list using sendDroidInfo().
  * @todo seems closely related with orderDroidStatsLocDir(). See if this one can be incorporated on it.
  */
-void orderDroidStatsLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x, UDWORD y, uint16_t direction, bool add)
+void orderDroidStatsLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x, uint32_t y, uint16_t direction, bool add)
 {
 	ASSERT(psDroid != NULL, "Invalid unit pointer");
 
@@ -2082,7 +2082,7 @@ void orderDroidStatsLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS
 
 
 /** Equivalent to orderDroidStatsLocDir(), but uses two locations.*/
-void orderDroidStatsTwoLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2, uint16_t direction, QUEUE_MODE mode)
+void orderDroidStatsTwoLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t direction, QUEUE_MODE mode)
 {
 	ASSERT(psDroid != NULL,	"Invalid unit pointer");
 	ASSERT(order == DORDER_LINEBUILD, "Invalid order for location");
@@ -2103,7 +2103,7 @@ void orderDroidStatsTwoLocDir(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS
 /** Equivalent to orderDroidStatsLocDirAdd(), but uses two locations.
  * @todo seems closely related with orderDroidStatsTwoLocDir(). See if this can be incorporated on it.
  */
-void orderDroidStatsTwoLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2, uint16_t direction)
+void orderDroidStatsTwoLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t direction)
 {
 	ASSERT(psDroid != NULL, "Invalid unit pointer");
 	ASSERT(order == DORDER_LINEBUILD, "Invalid order for location");
@@ -2116,7 +2116,7 @@ void orderDroidStatsTwoLocDirAdd(DROID *psDroid, DROID_ORDER order, STRUCTURE_ST
 /** This function returns false if droid's order and order don't match or the order is not a location order. Else ppsStats = psDroid->psTarStats, (pX,pY) = psDroid.(orderX,orderY) and it returns true.
  * @todo seems closely related to orderStateLoc()
  */
-bool orderStateStatsLoc(DROID *psDroid, DROID_ORDER order, BASE_STATS **ppsStats, UDWORD *pX, UDWORD *pY)
+bool orderStateStatsLoc(DROID *psDroid, DROID_ORDER order, BASE_STATS **ppsStats, uint32_t *pX, uint32_t *pY)
 {
 	bool	match = false;
 
@@ -2332,7 +2332,7 @@ void orderCheckList(DROID *psDroid)
 /** This function sends the droid an order with a location using sendDroidInfo().
  * @todo it is very close to what orderDroidLoc() function does. Suggestion to refract them.
  */
-static bool orderDroidLocAdd(DROID *psDroid, DROID_ORDER order, UDWORD x, UDWORD y, bool add = true)
+static bool orderDroidLocAdd(DROID *psDroid, DROID_ORDER order, uint32_t x, uint32_t y, bool add = true)
 {
 	// can only queue move, scout, and disembark orders
 	if (order != DORDER_MOVE && order != DORDER_SCOUT && order != DORDER_DISEMBARK)
@@ -2376,7 +2376,7 @@ static bool orderDroidObjAdd(DROID *psDroid, DroidOrder const &order, bool add)
 
 
 /** This function returns an order which is assigned according to the location and droid. Uses altOrder flag to choose between a direct order or an altOrder.*/
-DROID_ORDER chooseOrderLoc(DROID *psDroid, UDWORD x, UDWORD y, bool altOrder)
+DROID_ORDER chooseOrderLoc(DROID *psDroid, uint32_t x, uint32_t y, bool altOrder)
 {
 	DROID_ORDER		order = DORDER_NONE;
 	PROPULSION_TYPE		propulsion = getPropulsionStats(psDroid)->propulsionType;
@@ -2700,8 +2700,8 @@ DroidOrder chooseOrderObj(DROID *psDroid, BASE_OBJECT *psObj, bool altOrder)
 				order = DroidOrder(DORDER_RTR_SPECIFIED, psObj);
 			}
 			else if (electronicDroid(psDroid) &&
-			         //psStruct->resistance < (SDWORD)(psStruct->pStructureType->resistance))
-			         psStruct->resistance < (SDWORD)structureResistance(psStruct->
+			         //psStruct->resistance < (int32_t)(psStruct->pStructureType->resistance))
+			         psStruct->resistance < (int32_t)structureResistance(psStruct->
 			                 pStructureType, psStruct->player))
 			{
 				order = DroidOrder(DORDER_RESTORE, psObj);
@@ -2746,7 +2746,7 @@ DroidOrder chooseOrderObj(DROID *psDroid, BASE_OBJECT *psObj, bool altOrder)
  * @todo this function runs through all the player's droids, but only uses the selected ones. Consider an efficiency improvement in here.
  * @todo current scope of this function is quite small. Consider refactoring it.
  */
-static void orderPlayOrderObjAudio(UDWORD player, BASE_OBJECT *psObj)
+static void orderPlayOrderObjAudio(uint32_t player, BASE_OBJECT *psObj)
 {
 	DROID	*psDroid;
 
@@ -2779,7 +2779,7 @@ static void orderPlayOrderObjAudio(UDWORD player, BASE_OBJECT *psObj)
  * If add is true, the orders are queued.
  * @todo this function runs through all the player's droids, but only uses the selected ones. Consider an efficiency improvement in here.
  */
-void orderSelectedObjAdd(UDWORD player, BASE_OBJECT *psObj, bool add)
+void orderSelectedObjAdd(uint32_t player, BASE_OBJECT *psObj, bool add)
 {
 	DROID		*psCurr;
 	// note that an order list graphic needs to be displayed
@@ -2819,7 +2819,7 @@ void orderSelectedObjAdd(UDWORD player, BASE_OBJECT *psObj, bool add)
 
 
 /** This function just calls orderSelectedObjAdd with add = false.*/
-void orderSelectedObj(UDWORD player, BASE_OBJECT *psObj)
+void orderSelectedObj(uint32_t player, BASE_OBJECT *psObj)
 {
 	orderSelectedObjAdd(player, psObj, false);
 }
@@ -2829,7 +2829,7 @@ void orderSelectedObj(UDWORD player, BASE_OBJECT *psObj)
  * If add is true, the orders are queued.
  * @todo this function runs through all the player's droids, but only uses the selected ones and the ones that are construction droids. Consider an efficiency improvement.
  */
-void orderSelectedStatsLocDir(UDWORD player, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x, UDWORD y, uint16_t direction, bool add)
+void orderSelectedStatsLocDir(uint32_t player, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x, uint32_t y, uint16_t direction, bool add)
 {
 	DROID		*psCurr;
 
@@ -2853,7 +2853,7 @@ void orderSelectedStatsLocDir(UDWORD player, DROID_ORDER order, STRUCTURE_STATS 
 /** Same as orderSelectedStatsLocDir() but with two locations.
  * @todo this function runs through all the player's droids, but only uses the selected ones. Consider an efficiency improvement.
  */
-void orderSelectedStatsTwoLocDir(UDWORD player, DROID_ORDER order, STRUCTURE_STATS *psStats, UDWORD x1, UDWORD y1, UDWORD x2, UDWORD y2, uint16_t direction, bool add)
+void orderSelectedStatsTwoLocDir(uint32_t player, DROID_ORDER order, STRUCTURE_STATS *psStats, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t direction, bool add)
 {
 	DROID		*psCurr;
 
@@ -2904,7 +2904,7 @@ DROID *FindATransporter(DROID const *embarkee)
 
 
 /** Given a factory type, this function runs though all player's structures to check if any is of factory type. Returns the structure if any was found, and NULL else.*/
-static STRUCTURE *FindAFactory(UDWORD player, UDWORD factoryType)
+static STRUCTURE *FindAFactory(uint32_t player, uint32_t factoryType)
 {
 	STRUCTURE *psStruct;
 
@@ -3064,9 +3064,9 @@ SECONDARY_STATE secondaryGetState(DROID *psDroid, SECONDARY_ORDER sec, QUEUE_MOD
 
 
 #ifdef DEBUG
-static char *secondaryPrintFactories(UDWORD state)
+static char *secondaryPrintFactories(uint32_t state)
 {
-	SDWORD		i;
+	int32_t		i;
 	static		char aBuff[255];
 
 	memset(aBuff, 0, sizeof(aBuff));
@@ -3142,7 +3142,7 @@ void secondaryCheckDamageLevel(DROID *psDroid)
 	{
 		if (!isVtolDroid(psDroid))
 		{
-			psDroid->group = UBYTE_MAX;
+			psDroid->group = uint8_t_MAX;
 		}
 
 		/* set return to repair if not on hold */
@@ -3166,9 +3166,9 @@ void secondaryCheckDamageLevel(DROID *psDroid)
 /** This function assigns a state to a droid. It returns true if it assigned and false if it failed to assign.*/
 bool secondarySetState(DROID *psDroid, SECONDARY_ORDER sec, SECONDARY_STATE State, QUEUE_MODE mode)
 {
-	UDWORD		CurrState, factType, prodType;
+	uint32_t		CurrState, factType, prodType;
 	STRUCTURE	*psStruct;
-	SDWORD		factoryInc;
+	int32_t		factoryInc;
 	bool		retVal;
 	DROID		*psTransport, *psCurr, *psNext;
 	DROID_ORDER     order;
@@ -3417,7 +3417,7 @@ bool secondarySetState(DROID *psDroid, SECONDARY_ORDER sec, SECONDARY_STATE Stat
 			}
 			CurrState &= ~(DSS_RTL_MASK | DSS_RECYCLE_MASK);
 			CurrState |= DSS_RECYCLE_SET;
-			psDroid->group = UBYTE_MAX;
+			psDroid->group = uint8_t_MAX;
 			if (psDroid->psGroup != NULL)
 			{
 				if (psDroid->droidType == DROID_COMMAND)
@@ -3555,7 +3555,7 @@ bool secondarySetState(DROID *psDroid, SECONDARY_ORDER sec, SECONDARY_STATE Stat
  */
 bool secondaryGotPrimaryOrder(DROID *psDroid, DROID_ORDER order)
 {
-	UDWORD	oldState;
+	uint32_t	oldState;
 
 	if (isTransporter(psDroid))
 	{
@@ -3586,7 +3586,7 @@ bool secondaryGotPrimaryOrder(DROID *psDroid, DROID_ORDER order)
  * @todo this function runs through all the player's droids. Consider something more efficient to select a group.
  * @todo SECONDARY_STATE argument is called "state", which is not current style. Suggestion to change it to "pState".
  */
-static void secondarySetGroupState(UDWORD player, UDWORD group, SECONDARY_ORDER sec, SECONDARY_STATE state)
+static void secondarySetGroupState(uint32_t player, uint32_t group, SECONDARY_ORDER sec, SECONDARY_STATE state)
 {
 	DROID	*psCurr;
 
@@ -3605,14 +3605,14 @@ static void secondarySetGroupState(UDWORD player, UDWORD group, SECONDARY_ORDER 
  * @todo this function runs through all the player's droids. Consider something more efficient to select a group.
  * @todo this function uses a "local" define. Consider removing it, refactoring this function.
  */
-static SECONDARY_STATE secondaryGetAverageGroupState(UDWORD player, UDWORD group, UDWORD mask)
+static SECONDARY_STATE secondaryGetAverageGroupState(uint32_t player, uint32_t group, uint32_t mask)
 {
 #define MAX_STATES		5
 	struct
 	{
-		UDWORD state, num;
+		uint32_t state, num;
 	} aStateCount[MAX_STATES];
-	SDWORD	i, numStates, max;
+	int32_t	i, numStates, max;
 	DROID	*psCurr;
 
 	// count the number of units for each state
@@ -3657,20 +3657,20 @@ static SECONDARY_STATE secondaryGetAverageGroupState(UDWORD player, UDWORD group
  * @todo this function runs through all the player's droids. Consider something more efficient to select a group.
  * @todo this function uses a "local" define. Consider removing it, refactoring this function.
  */
-void secondarySetAverageGroupState(UDWORD player, UDWORD group)
+void secondarySetAverageGroupState(uint32_t player, uint32_t group)
 {
 	// lookup table for orders and masks
 #define MAX_ORDERS	2
 	struct
 	{
 		SECONDARY_ORDER order;
-		UDWORD mask;
+		uint32_t mask;
 	} aOrders[MAX_ORDERS] =
 	{
 		{ DSO_REPAIR_LEVEL, DSS_REPLEV_MASK },
 		{ DSO_ATTACK_LEVEL, DSS_ALEV_MASK },
 	};
-	SDWORD	i, state;
+	int32_t	i, state;
 
 	for (i = 0; i < MAX_ORDERS; i++)
 	{
@@ -3681,10 +3681,10 @@ void secondarySetAverageGroupState(UDWORD player, UDWORD group)
 
 
 /** This function runs through all player's droids and check if their moral is below the minimum moral to flee. If it is, then it uses the orderDroid() to send the order DORDER_RUN to the droid.*/
-void orderMoralCheck(UDWORD player)
+void orderMoralCheck(uint32_t player)
 {
 	DROID	*psCurr;
-	SDWORD	units, numVehicles, leadership, personLShip, check;
+	int32_t	units, numVehicles, leadership, personLShip, check;
 
 	// count the number of vehicles and units on the side
 	units = 0;
@@ -3748,7 +3748,7 @@ void orderMoralCheck(UDWORD player)
 void orderGroupMoralCheck(DROID_GROUP *psGroup)
 {
 	DROID		*psCurr;
-	SDWORD		units, numVehicles, leadership, personLShip, check;
+	int32_t		units, numVehicles, leadership, personLShip, check;
 	RUN_DATA	*psRunData;
 
 	// count the number of vehicles and units on the side
@@ -3814,8 +3814,8 @@ void orderGroupMoralCheck(DROID_GROUP *psGroup)
 void orderHealthCheck(DROID *psDroid)
 {
 	DROID		*psCurr;
-	SBYTE       healthLevel = 0;
-	UDWORD      retreatX = 0, retreatY = 0;
+	int8_t       healthLevel = 0;
+	uint32_t      retreatX = 0, retreatY = 0;
 
 	if (isTransporter(psDroid))
 	{
@@ -3886,7 +3886,7 @@ void orderHealthCheck(DROID *psDroid)
  */
 bool setFactoryState(STRUCTURE *psStruct, SECONDARY_ORDER sec, SECONDARY_STATE State)
 {
-	UDWORD		CurrState;
+	uint32_t		CurrState;
 	bool		retVal;
 	FACTORY     *psFactory;
 
@@ -3938,7 +3938,7 @@ bool setFactoryState(STRUCTURE *psStruct, SECONDARY_ORDER sec, SECONDARY_STATE S
  */
 bool getFactoryState(STRUCTURE *psStruct, SECONDARY_ORDER sec, SECONDARY_STATE *pState)
 {
-	UDWORD	state;
+	uint32_t	state;
 
 	ASSERT_OR_RETURN(false, StructIsFactory(psStruct), "Structure is not a factory");
 	if ((FACTORY *)psStruct->pFunctionality)
@@ -3970,7 +3970,7 @@ bool getFactoryState(STRUCTURE *psStruct, SECONDARY_ORDER sec, SECONDARY_STATE *
 /** lasSat structure can select a target
  * @todo improve documentation: it is not clear what this function performs by the current documentation.
  */
-void orderStructureObj(UDWORD player, BASE_OBJECT *psObj)
+void orderStructureObj(uint32_t player, BASE_OBJECT *psObj)
 {
 	STRUCTURE   *psStruct;
 

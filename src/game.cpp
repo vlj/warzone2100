@@ -94,10 +94,10 @@
 #define MAX_SAVE_NAME_SIZE_V19	40
 #define MAX_SAVE_NAME_SIZE	60
 
-static const UDWORD NULL_ID = UDWORD_MAX;
+static const uint32_t NULL_ID = uint32_t_MAX;
 #define SAVEKEY_ONMISSION	0x100
 
-static UDWORD RemapPlayerNumber(UDWORD OldNumber);
+static uint32_t RemapPlayerNumber(uint32_t OldNumber);
 static void plotFeature(char *backDropSprite);
 bool writeGameInfo(const char *pFileName);
 
@@ -170,18 +170,18 @@ static bool deserializeSaveGameHeader(PHYSFS_file *fileHandle, GAME_SAVEHEADER *
 
 struct STRUCT_SAVEHEADER : public GAME_SAVEHEADER
 {
-	UDWORD		quantity;
+	uint32_t		quantity;
 };
 
 struct FEATURE_SAVEHEADER : public GAME_SAVEHEADER
 {
-	UDWORD		quantity;
+	uint32_t		quantity;
 };
 
 /* Structure definitions for loading and saving map data */
 struct TILETYPE_SAVEHEADER : public GAME_SAVEHEADER
 {
-	UDWORD quantity;
+	uint32_t quantity;
 };
 
 /* Sanity check definitions for the save struct file sizes */
@@ -195,23 +195,23 @@ struct TILETYPE_SAVEHEADER : public GAME_SAVEHEADER
 
 #define OBJECT_SAVE_V19 \
 	char				name[MAX_SAVE_NAME_SIZE_V19]; \
-	UDWORD				id; \
-	UDWORD				x,y,z; \
-	UDWORD				direction; \
-	UDWORD				player; \
+	uint32_t				id; \
+	uint32_t				x,y,z; \
+	uint32_t				direction; \
+	uint32_t				player; \
 	int32_t				inFire; \
-	UDWORD				periodicalDamageStart; \
-	UDWORD				periodicalDamage
+	uint32_t				periodicalDamageStart; \
+	uint32_t				periodicalDamage
 
 #define OBJECT_SAVE_V20 \
 	char				name[MAX_SAVE_NAME_SIZE]; \
-	UDWORD				id; \
-	UDWORD				x,y,z; \
-	UDWORD				direction; \
-	UDWORD				player; \
+	uint32_t				id; \
+	uint32_t				x,y,z; \
+	uint32_t				direction; \
+	uint32_t				player; \
 	int32_t		inFire; \
-	UDWORD				periodicalDamageStart; \
-	UDWORD				periodicalDamage
+	uint32_t				periodicalDamageStart; \
+	uint32_t				periodicalDamage
 
 struct SAVE_POWER
 {
@@ -1403,7 +1403,7 @@ static bool deserializeSaveGameData(PHYSFS_file *fileHandle, SAVE_GAME *serializ
 
 struct DROIDINIT_SAVEHEADER : public GAME_SAVEHEADER
 {
-	UDWORD		quantity;
+	uint32_t		quantity;
 };
 
 struct SAVE_DROIDINIT
@@ -1417,17 +1417,17 @@ struct SAVE_DROIDINIT
 
 #define STRUCTURE_SAVE_V2 \
 	OBJECT_SAVE_V19; \
-	UBYTE				status; \
-	SDWORD				currentBuildPts; \
-	UDWORD				body; \
-	UDWORD				armour; \
-	UDWORD				resistance; \
-	UDWORD				dummy1; \
-	UDWORD				subjectInc;  /*research inc or factory prod id*/\
-	UDWORD				timeStarted; \
-	UDWORD				output; \
-	UDWORD				capacity; \
-	UDWORD				quantity
+	uint8_t				status; \
+	int32_t				currentBuildPts; \
+	uint32_t				body; \
+	uint32_t				armour; \
+	uint32_t				resistance; \
+	uint32_t				dummy1; \
+	uint32_t				subjectInc;  /*research inc or factory prod id*/\
+	uint32_t				timeStarted; \
+	uint32_t				output; \
+	uint32_t				capacity; \
+	uint32_t				quantity
 
 struct SAVE_STRUCTURE_V2
 {
@@ -1436,13 +1436,13 @@ struct SAVE_STRUCTURE_V2
 
 #define STRUCTURE_SAVE_V12 \
 	STRUCTURE_SAVE_V2; \
-	UDWORD				factoryInc;			\
-	UBYTE				loopsPerformed;		\
-	UDWORD				powerAccrued;		\
-	UDWORD				dummy2;			\
-	UDWORD				droidTimeStarted;	\
-	UDWORD				timeToBuild;		\
-	UDWORD				timeStartHold
+	uint32_t				factoryInc;			\
+	uint8_t				loopsPerformed;		\
+	uint32_t				powerAccrued;		\
+	uint32_t				dummy2;			\
+	uint32_t				droidTimeStarted;	\
+	uint32_t				timeToBuild;		\
+	uint32_t				timeStartHold
 
 struct SAVE_STRUCTURE_V12
 {
@@ -1451,7 +1451,7 @@ struct SAVE_STRUCTURE_V12
 
 #define STRUCTURE_SAVE_V14 \
 	STRUCTURE_SAVE_V12; \
-	UBYTE	visible[MAX_PLAYERS]
+	uint8_t	visible[MAX_PLAYERS]
 
 struct SAVE_STRUCTURE_V14
 {
@@ -1469,7 +1469,7 @@ struct SAVE_STRUCTURE_V15
 
 #define STRUCTURE_SAVE_V17 \
 	STRUCTURE_SAVE_V15;\
-	SWORD				currentPowerAccrued
+	int16_t				currentPowerAccrued
 
 struct SAVE_STRUCTURE_V17
 {
@@ -1478,27 +1478,27 @@ struct SAVE_STRUCTURE_V17
 
 #define STRUCTURE_SAVE_V20 \
 	OBJECT_SAVE_V20; \
-	UBYTE				status; \
-	SDWORD				currentBuildPts; \
-	UDWORD				body; \
-	UDWORD				armour; \
-	UDWORD				resistance; \
-	UDWORD				dummy1; \
-	UDWORD				subjectInc;  /*research inc or factory prod id*/\
-	UDWORD				timeStarted; \
-	UDWORD				output; \
-	UDWORD				capacity; \
-	UDWORD				quantity; \
-	UDWORD				factoryInc;			\
-	UBYTE				loopsPerformed;		\
-	UDWORD				powerAccrued;		\
-	UDWORD				dummy2;			\
-	UDWORD				droidTimeStarted;	\
-	UDWORD				timeToBuild;		\
-	UDWORD				timeStartHold; \
-	UBYTE				visible[MAX_PLAYERS]; \
+	uint8_t				status; \
+	int32_t				currentBuildPts; \
+	uint32_t				body; \
+	uint32_t				armour; \
+	uint32_t				resistance; \
+	uint32_t				dummy1; \
+	uint32_t				subjectInc;  /*research inc or factory prod id*/\
+	uint32_t				timeStarted; \
+	uint32_t				output; \
+	uint32_t				capacity; \
+	uint32_t				quantity; \
+	uint32_t				factoryInc;			\
+	uint8_t				loopsPerformed;		\
+	uint32_t				powerAccrued;		\
+	uint32_t				dummy2;			\
+	uint32_t				droidTimeStarted;	\
+	uint32_t				timeToBuild;		\
+	uint32_t				timeStartHold; \
+	uint8_t				visible[MAX_PLAYERS]; \
 	char				researchName[MAX_SAVE_NAME_SIZE]; \
-	SWORD				currentPowerAccrued
+	int16_t				currentPowerAccrued
 
 struct SAVE_STRUCTURE_V20
 {
@@ -1507,7 +1507,7 @@ struct SAVE_STRUCTURE_V20
 
 #define STRUCTURE_SAVE_V21 \
 	STRUCTURE_SAVE_V20; \
-	UDWORD				commandId
+	uint32_t				commandId
 
 struct SAVE_STRUCTURE_V21
 {
@@ -1529,7 +1529,7 @@ struct SAVE_FEATURE_V2
 
 #define FEATURE_SAVE_V14 \
 	FEATURE_SAVE_V2; \
-	UBYTE	visible[MAX_PLAYERS]
+	uint8_t	visible[MAX_PLAYERS]
 
 struct SAVE_FEATURE_V14
 {
@@ -1544,15 +1544,15 @@ struct SAVE_FEATURE_V14
 extern uint32_t unsynchObjID;  // unique ID creation thing..
 extern uint32_t synchObjID;    // unique ID creation thing..
 
-static UDWORD			saveGameVersion = 0;
+static uint32_t			saveGameVersion = 0;
 static bool				saveGameOnMission = false;
 static SAVE_GAME		saveGameData;
 
-static UDWORD	savedGameTime;
-static UDWORD	savedObjId;
-static SDWORD	startX, startY;
-static UDWORD   width, height;
-static UDWORD	gameType;
+static uint32_t	savedGameTime;
+static uint32_t	savedObjId;
+static int32_t	startX, startY;
+static uint32_t   width, height;
+static uint32_t	gameType;
 static bool IsScenario;
 
 /***************************************************************************/
@@ -1562,16 +1562,16 @@ static bool IsScenario;
 /***************************************************************************/
 static bool gameLoadV7(PHYSFS_file *fileHandle);
 static bool gameLoadV(PHYSFS_file *fileHandle, unsigned int version);
-static bool writeGameFile(const char *fileName, SDWORD saveType);
+static bool writeGameFile(const char *fileName, int32_t saveType);
 static bool writeMapFile(const char *fileName);
 
-static bool loadSaveDroidInit(char *pFileData, UDWORD filesize);
+static bool loadSaveDroidInit(char *pFileData, uint32_t filesize);
 
 static bool loadSaveDroid(const char *pFileName, DROID **ppsCurrentDroidLists);
 static bool loadSaveDroidPointers(const QString &pFileName, DROID **ppsCurrentDroidLists);
 static bool writeDroidFile(const char *pFileName, DROID **ppsCurrentDroidLists);
 
-static bool loadSaveStructure(char *pFileData, UDWORD filesize);
+static bool loadSaveStructure(char *pFileData, uint32_t filesize);
 static bool loadSaveStructure2(const char *pFileName, STRUCTURE **ppList);
 static bool loadSaveStructurePointers(QString filename, STRUCTURE **ppList);
 static bool writeStructFile(const char *pFileName);
@@ -1579,7 +1579,7 @@ static bool writeStructFile(const char *pFileName);
 static bool loadSaveTemplate(const char *pFileName);
 static bool writeTemplateFile(const char *pFileName);
 
-static bool loadSaveFeature(char *pFileData, UDWORD filesize);
+static bool loadSaveFeature(char *pFileData, uint32_t filesize);
 static bool writeFeatureFile(const char *pFileName);
 static bool loadSaveFeature2(const char *pFileName);
 
@@ -1594,7 +1594,7 @@ static bool writeStructTypeListFile(const char *pFileName);
 static bool loadSaveResearch(const char *pFileName);
 static bool writeResearchFile(char *pFileName);
 
-static bool loadSaveMessage(const char *pFileName, SWORD levelType);
+static bool loadSaveMessage(const char *pFileName, int16_t levelType);
 static bool writeMessageFile(const char *pFileName);
 
 static bool loadSaveStructLimits(const char *pFileName);
@@ -1643,10 +1643,10 @@ bool loadGameInit(const char *fileName)
 //
 // if it is a level loaded up from CD then UserSaveGame will by false
 // UserSaveGame ... Extra stuff to load after scripts
-bool loadMissionExtras(const char *pGameToLoad, SWORD levelType)
+bool loadMissionExtras(const char *pGameToLoad, int16_t levelType)
 {
 	char			aFileName[256];
-	UDWORD			fileExten;
+	uint32_t			fileExten;
 
 	sstrcpy(aFileName, pGameToLoad);
 	fileExten = strlen(pGameToLoad) - 3;
@@ -1760,11 +1760,11 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 	QMap<QString, DROID **> droidMap;
 	QMap<QString, STRUCTURE **> structMap;
 	char			aFileName[256];
-	UDWORD			fileExten, fileSize;
+	uint32_t			fileExten, fileSize;
 	char			*pFileData = NULL;
-	UDWORD			player, inc, i, j;
+	uint32_t			player, inc, i, j;
 	DROID           *psCurr;
-	UWORD           missionScrollMinX = 0, missionScrollMinY = 0,
+	uint16_t           missionScrollMinX = 0, missionScrollMinY = 0,
 	                missionScrollMaxX = 0, missionScrollMaxY = 0;
 
 	/* Stop the game clock */
@@ -1871,7 +1871,7 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 				if (aDefaultRepair[player] != 0
 				    && asRepairStats[aDefaultRepair[player]].location == LOC_DEFAULT)
 				{
-					enableSelfRepair((UBYTE)player);
+					enableSelfRepair((uint8_t)player);
 				}
 				mission.iTranspEntryTileX[player]	= saveGameData.iTranspEntryTileX[player];
 				mission.iTranspEntryTileY[player]	= saveGameData.iTranspEntryTileY[player];
@@ -1999,7 +1999,7 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 				NetPlay.players[i].ai = saveGameData.sNetPlay.players[i].ai;
 				NetPlay.players[i].difficulty = saveGameData.sNetPlay.players[i].difficulty;
 				sstrcpy(NetPlay.players[i].name, saveGameData.sNetPlay.players[i].name);
-				if (saveGameData.sGame.skDiff[i] == UBYTE_MAX || (game.type == CAMPAIGN && i == 0))
+				if (saveGameData.sGame.skDiff[i] == uint8_t_MAX || (game.type == CAMPAIGN && i == 0))
 				{
 					NetPlay.players[i].allocated = true;
 				}
@@ -2096,10 +2096,10 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 		//the scroll limits for the mission map have already been written
 		if (saveGameVersion >= VERSION_29)
 		{
-			missionScrollMinX = (UWORD)mission.scrollMinX;
-			missionScrollMinY = (UWORD)mission.scrollMinY;
-			missionScrollMaxX = (UWORD)mission.scrollMaxX;
-			missionScrollMaxY = (UWORD)mission.scrollMaxY;
+			missionScrollMinX = (uint16_t)mission.scrollMinX;
+			missionScrollMinY = (uint16_t)mission.scrollMinY;
+			missionScrollMaxX = (uint16_t)mission.scrollMaxX;
+			missionScrollMaxY = (uint16_t)mission.scrollMaxY;
 		}
 
 		//load the map and the droids then swap pointers
@@ -2256,7 +2256,7 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 		for (inc = 0; inc < MAX_NOGO_AREAS; inc++)
 		{
 			setNoGoArea(saveGameData.sLandingZone[inc].x1, saveGameData.sLandingZone[inc].y1,
-			            saveGameData.sLandingZone[inc].x2, saveGameData.sLandingZone[inc].y2, (UBYTE)inc);
+			            saveGameData.sLandingZone[inc].x2, saveGameData.sLandingZone[inc].y2, (uint8_t)inc);
 		}
 	}
 
@@ -2622,7 +2622,7 @@ error:
 // Modified by AlexL , now takes a filename, with no popup....
 bool saveGame(char *aFileName, GAME_TYPE saveType)
 {
-	UDWORD			fileExtension;
+	uint32_t			fileExtension;
 	DROID			*psDroid, *psNext;
 	char			CurrentFileName[PATH_MAX] = {'\0'};
 
@@ -2922,7 +2922,7 @@ error:
 static bool writeMapFile(const char *fileName)
 {
 	char *pFileData = NULL;
-	UDWORD fileSize;
+	uint32_t fileSize;
 
 	/* Get the save data */
 	bool status = mapSave(&pFileData, &fileSize);
@@ -3045,7 +3045,7 @@ static bool gameLoad(const char *fileName)
 }
 
 // Fix endianness of a savegame
-static void endian_SaveGameV(SAVE_GAME *psSaveGame, UDWORD version)
+static void endian_SaveGameV(SAVE_GAME *psSaveGame, uint32_t version)
 {
 	unsigned int i, j;
 	/* SAVE_GAME is GAME_SAVE_V33 */
@@ -3194,7 +3194,7 @@ static void endian_SaveGameV(SAVE_GAME *psSaveGame, UDWORD version)
 
 // -----------------------------------------------------------------------------------------
 // Get campaign number stuff is not needed in this form on the PSX (thank you very much)
-static UDWORD getCampaignV(PHYSFS_file *fileHandle, unsigned int version)
+static uint32_t getCampaignV(PHYSFS_file *fileHandle, unsigned int version)
 {
 	SAVE_GAME_V14 saveGame;
 
@@ -3238,7 +3238,7 @@ static UDWORD getCampaignV(PHYSFS_file *fileHandle, unsigned int version)
 // -----------------------------------------------------------------------------------------
 // Returns the campaign number  --- apparently this is does alot less than it look like
 /// it now does even less than it looks like on the psx ... cause its pc only
-UDWORD getCampaign(const char *fileName)
+uint32_t getCampaign(const char *fileName)
 {
 	GAME_SAVEHEADER fileHeader;
 
@@ -3297,7 +3297,7 @@ UDWORD getCampaign(const char *fileName)
 	// dont check skirmish saves.
 	if (fileHeader.version <= CURRENT_VERSION_NUM)
 	{
-		UDWORD retVal = getCampaignV(fileHandle, fileHeader.version);
+		uint32_t retVal = getCampaignV(fileHandle, fileHeader.version);
 		PHYSFS_close(fileHandle);
 		return retVal;
 	}
@@ -3385,7 +3385,7 @@ bool gameLoadV(PHYSFS_file *fileHandle, unsigned int version)
 {
 	unsigned int i, j;
 	static	SAVE_POWER	powerSaved[MAX_PLAYERS];
-	UDWORD			player;
+	uint32_t			player;
 
 	debug(LOG_WZ, "gameLoadV: version %u", version);
 
@@ -3765,7 +3765,7 @@ bool gameLoadV(PHYSFS_file *fileHandle, unsigned int version)
 			NetPlay.players[player].ai = saveGameData.sNetPlay.players[player].ai;
 			NetPlay.players[player].difficulty = saveGameData.sNetPlay.players[player].difficulty;
 			sstrcpy(NetPlay.players[player].name, saveGameData.sNetPlay.players[player].name);
-			if ((saveGameData.sGame.skDiff[player] == UBYTE_MAX || game.type == CAMPAIGN) && player == 0)
+			if ((saveGameData.sGame.skDiff[player] == uint8_t_MAX || game.type == CAMPAIGN) && player == 0)
 			{
 				NetPlay.players[player].allocated = true;
 			}
@@ -3844,7 +3844,7 @@ bool gameLoadV(PHYSFS_file *fileHandle, unsigned int version)
 /*
 Writes the game specifics to a file
 */
-static bool writeGameFile(const char *fileName, SDWORD saveType)
+static bool writeGameFile(const char *fileName, int32_t saveType)
 {
 	GAME_SAVEHEADER fileHeader;
 	SAVE_GAME       saveGame;
@@ -3926,10 +3926,10 @@ static bool writeGameFile(const char *fileName, SDWORD saveType)
 	saveGame.missionHomeLZ_Y =		mission.homeLZ_Y;
 	saveGame.missionPlayerX =		mission.playerX;
 	saveGame.missionPlayerY =		mission.playerY;
-	saveGame.missionScrollMinX = (UWORD)mission.scrollMinX;
-	saveGame.missionScrollMinY = (UWORD)mission.scrollMinY;
-	saveGame.missionScrollMaxX = (UWORD)mission.scrollMaxX;
-	saveGame.missionScrollMaxY = (UWORD)mission.scrollMaxY;
+	saveGame.missionScrollMinX = (uint16_t)mission.scrollMinX;
+	saveGame.missionScrollMinY = (uint16_t)mission.scrollMinY;
+	saveGame.missionScrollMaxX = (uint16_t)mission.scrollMaxX;
+	saveGame.missionScrollMaxY = (uint16_t)mission.scrollMaxY;
 
 	saveGame.offWorldKeepLists = offWorldKeepLists;
 	saveGame.RubbleTile	= getRubbleTileNum();
@@ -3980,10 +3980,10 @@ static bool writeGameFile(const char *fileName, SDWORD saveType)
 	{
 		saveGame.playerColour[i] = getPlayerColour(i);
 	}
-	saveGame.radarZoom = (UBYTE)GetRadarZoom();
+	saveGame.radarZoom = (uint8_t)GetRadarZoom();
 
 	//version 20
-	saveGame.bDroidsToSafetyFlag = (UBYTE)getDroidsToSafetyFlag();
+	saveGame.bDroidsToSafetyFlag = (uint8_t)getDroidsToSafetyFlag();
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		memcpy(&saveGame.asVTOLReturnPos[i], &asVTOLReturnPos[i], sizeof(Vector2i));
@@ -3997,15 +3997,15 @@ static bool writeGameFile(const char *fileName, SDWORD saveType)
 
 	//version 24
 	saveGame.reinforceTime = missionGetReinforcementTime();
-	saveGame.bPlayCountDown = (UBYTE)getPlayCountDown();
-	saveGame.bPlayerHasWon = (UBYTE)testPlayerHasWon();
-	saveGame.bPlayerHasLost = (UBYTE)testPlayerHasLost();
+	saveGame.bPlayCountDown = (uint8_t)getPlayCountDown();
+	saveGame.bPlayerHasWon = (uint8_t)testPlayerHasWon();
+	saveGame.bPlayerHasLost = (uint8_t)testPlayerHasLost();
 
 	//version 30
 	saveGame.scrGameLevel = scrGameLevel;
-	saveGame.bExtraFailFlag = (UBYTE)bExtraFailFlag;
-	saveGame.bExtraVictoryFlag = (UBYTE)bExtraVictoryFlag;
-	saveGame.bTrackTransporter = (UBYTE)bTrackTransporter;
+	saveGame.bExtraFailFlag = (uint8_t)bExtraFailFlag;
+	saveGame.bExtraVictoryFlag = (uint8_t)bExtraVictoryFlag;
+	saveGame.bTrackTransporter = (uint8_t)bTrackTransporter;
 
 	// version 33
 	saveGame.sGame		= game;
@@ -4032,7 +4032,7 @@ static bool writeGameFile(const char *fileName, SDWORD saveType)
 		// player 0 is always a human in campaign games
 		for (int i = 1; i < MAX_PLAYERS; i++)
 		{
-			if (saveGame.sGame.skDiff[i] == UBYTE_MAX)
+			if (saveGame.sGame.skDiff[i] == uint8_t_MAX)
 			{
 				ASSERT(!"savegame corruption!", "savegame corruption!");
 				debug(LOG_ERROR, "Savegame corruption detected, trying to salvage.  Please Report this issue @ wz2100.net");
@@ -4054,14 +4054,14 @@ static bool writeGameFile(const char *fileName, SDWORD saveType)
 // Process the droid initialisation file (dinit.bjo). Creates droids for
 // the scenario being loaded. This is *NEVER* called for a user save game
 //
-bool loadSaveDroidInit(char *pFileData, UDWORD filesize)
+bool loadSaveDroidInit(char *pFileData, uint32_t filesize)
 {
 	DROIDINIT_SAVEHEADER		*psHeader;
 	SAVE_DROIDINIT *pDroidInit;
 	DROID_TEMPLATE *psTemplate;
 	DROID *psDroid;
-	UDWORD i;
-	UDWORD NumberOfSkippedDroids = 0;
+	uint32_t i;
+	uint32_t NumberOfSkippedDroids = 0;
 
 	/* Check the file type */
 	psHeader = (DROIDINIT_SAVEHEADER *)pFileData;
@@ -4140,7 +4140,7 @@ bool loadSaveDroidInit(char *pFileData, UDWORD filesize)
 
 // -----------------------------------------------------------------------------------------
 // Remaps old player number based on position on map to new owner
-static UDWORD RemapPlayerNumber(UDWORD OldNumber)
+static uint32_t RemapPlayerNumber(uint32_t OldNumber)
 {
 	int i;
 
@@ -4329,7 +4329,7 @@ static void loadSaveObject(WzConfig &ini, BASE_OBJECT *psObj)
 	psObj->periodicalDamageStart = ini.value("periodicalDamageStart", 0).toInt();
 	psObj->timeAnimationStarted = ini.value("timeAnimationStarted", 0).toInt();
 	psObj->animationEvent = ini.value("animationEvent", 0).toInt();
-	psObj->timeLastHit = ini.value("timeLastHit", UDWORD_MAX).toInt();
+	psObj->timeLastHit = ini.value("timeLastHit", uint32_t_MAX).toInt();
 	psObj->lastEmission = ini.value("lastEmission", 0).toInt();
 	psObj->selected = ini.value("selected", false).toBool();
 	psObj->born = ini.value("born", 2).toInt();
@@ -4368,7 +4368,7 @@ static void writeSaveObject(WzConfig &ini, BASE_OBJECT *psObj)
 	{
 		ini.setValue("died", psObj->died);
 	}
-	if (psObj->timeLastHit != UDWORD_MAX)
+	if (psObj->timeLastHit != uint32_t_MAX)
 	{
 		ini.setValue("timeLastHit", psObj->timeLastHit);
 	}
@@ -4506,7 +4506,7 @@ static bool loadSaveDroid(const char *pFileName, DROID **ppsCurrentDroidLists)
 			}
 		}
 
-		psDroid->group = ini.value("group", UBYTE_MAX).toInt();
+		psDroid->group = ini.value("group", uint8_t_MAX).toInt();
 		int aigroup = ini.value("aigroup", -1).toInt();
 		if (aigroup >= 0)
 		{
@@ -4638,7 +4638,7 @@ static bool writeDroid(WzConfig &ini, DROID *psCurr, bool onMission, int &counte
 	{
 		setIniDroidOrder(ini, "orderList/" + QString::number(i), psCurr->asOrderList[i]);
 	}
-	if (psCurr->timeLastHit != UDWORD_MAX)
+	if (psCurr->timeLastHit != uint32_t_MAX)
 	{
 		ini.setValue("timeLastHit", psCurr->timeLastHit);
 	}
@@ -4744,16 +4744,16 @@ static bool writeDroidFile(const char *pFileName, DROID **ppsCurrentDroidLists)
 
 
 // -----------------------------------------------------------------------------------------
-bool loadSaveStructure(char *pFileData, UDWORD filesize)
+bool loadSaveStructure(char *pFileData, uint32_t filesize)
 {
 	STRUCT_SAVEHEADER		*psHeader;
 	SAVE_STRUCTURE_V2		*psSaveStructure, sSaveStructure;
 	STRUCTURE			*psStructure;
 	STRUCTURE_STATS			*psStats = NULL;
-	UDWORD				count, statInc;
+	uint32_t				count, statInc;
 	int32_t				found;
-	UDWORD				NumberOfSkippedStructures = 0;
-	UDWORD				periodicalDamageTime;
+	uint32_t				NumberOfSkippedStructures = 0;
+	uint32_t				periodicalDamageTime;
 
 	/* Check the file type */
 	psHeader = (STRUCT_SAVEHEADER *)pFileData;
@@ -4909,7 +4909,7 @@ bool loadSaveStructure(char *pFileData, UDWORD filesize)
 
 // -----------------------------------------------------------------------------------------
 //return id of a research topic based on the name
-static UDWORD getResearchIdFromName(const char *pName)
+static uint32_t getResearchIdFromName(const char *pName)
 {
 	for (int inc = 0; inc < asResearch.size(); inc++)
 	{
@@ -5444,15 +5444,15 @@ bool loadSaveStructurePointers(QString filename, STRUCTURE **ppList)
 }
 
 // -----------------------------------------------------------------------------------------
-bool loadSaveFeature(char *pFileData, UDWORD filesize)
+bool loadSaveFeature(char *pFileData, uint32_t filesize)
 {
 	FEATURE_SAVEHEADER		*psHeader;
 	SAVE_FEATURE_V14			*psSaveFeature;
 	FEATURE					*pFeature;
-	UDWORD					count, i, statInc;
+	uint32_t					count, i, statInc;
 	FEATURE_STATS			*psStats = NULL;
 	bool					found;
-	UDWORD					sizeOfSaveFeature;
+	uint32_t					sizeOfSaveFeature;
 
 	/* Check the file type */
 	psHeader = (FEATURE_SAVEHEADER *)pFileData;
@@ -5745,11 +5745,11 @@ bool writeTemplateFile(const char *pFileName)
 
 // -----------------------------------------------------------------------------------------
 // load up a terrain tile type map file
-bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize)
+bool loadTerrainTypeMap(const char *pFileData, uint32_t filesize)
 {
 	TILETYPE_SAVEHEADER	*psHeader;
-	UDWORD				i;
-	UWORD				*pType;
+	uint32_t				i;
+	uint16_t				*pType;
 
 	if (filesize < TILETYPE_HEADER_SIZE)
 	{
@@ -5775,7 +5775,7 @@ bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize)
 	memset(terrainTypes, 0, sizeof(terrainTypes));
 
 	// Load the terrain type mapping
-	pType = (UWORD *)(pFileData + TILETYPE_HEADER_SIZE);
+	pType = (uint16_t *)(pFileData + TILETYPE_HEADER_SIZE);
 	endian_uword(pType);
 	if (psHeader->quantity >= MAX_TILE_TEXTURES)
 	{
@@ -5791,7 +5791,7 @@ bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize)
 			return false;
 		}
 
-		terrainTypes[i] = (UBYTE) * pType;
+		terrainTypes[i] = (uint8_t) * pType;
 		pType++;
 		endian_uword(pType);
 	}
@@ -5805,11 +5805,11 @@ static bool writeTerrainTypeMapFile(char *pFileName)
 {
 	TILETYPE_SAVEHEADER		*psHeader;
 	char *pFileData;
-	UDWORD					fileSize, i;
-	UWORD					*pType;
+	uint32_t					fileSize, i;
+	uint16_t					*pType;
 
 	// Calculate the file size
-	fileSize = TILETYPE_HEADER_SIZE + sizeof(UWORD) * MAX_TILE_TEXTURES;
+	fileSize = TILETYPE_HEADER_SIZE + sizeof(uint16_t) * MAX_TILE_TEXTURES;
 	pFileData = (char *)malloc(fileSize);
 	if (!pFileData)
 	{
@@ -5827,7 +5827,7 @@ static bool writeTerrainTypeMapFile(char *pFileName)
 	psHeader->version = CURRENT_VERSION_NUM;
 	psHeader->quantity = MAX_TILE_TEXTURES;
 
-	pType = (UWORD *)(pFileData + TILETYPE_HEADER_SIZE);
+	pType = (uint16_t *)(pFileData + TILETYPE_HEADER_SIZE);
 	for (i = 0; i < MAX_TILE_TEXTURES; i++)
 	{
 		*pType = terrainTypes[i];
@@ -6117,7 +6117,7 @@ static bool writeResearchFile(char *pFileName)
 
 // -----------------------------------------------------------------------------------------
 // load up saved message file
-bool loadSaveMessage(const char *pFileName, SWORD levelType)
+bool loadSaveMessage(const char *pFileName, int16_t levelType)
 {
 	// Only clear the messages if its a mid save game
 	if (gameType == GTYPE_SAVE_MIDMISSION)
@@ -6495,12 +6495,12 @@ static void setMapScroll(void)
 	scrollMaxX = startX + width;
 	scrollMaxY = startY + height;
 	//check not going beyond width/height of map
-	if (scrollMaxX > (SDWORD)mapWidth)
+	if (scrollMaxX > (int32_t)mapWidth)
 	{
 		scrollMaxX = mapWidth;
 		debug(LOG_NEVER, "scrollMaxX was too big It has been set to map width");
 	}
-	if (scrollMaxY > (SDWORD)mapHeight)
+	if (scrollMaxY > (int32_t)mapHeight)
 	{
 		scrollMaxY = mapHeight;
 		debug(LOG_NEVER, "scrollMaxY was too big It has been set to map height");
@@ -6510,7 +6510,7 @@ static void setMapScroll(void)
 
 // -----------------------------------------------------------------------------------------
 /*returns the current type of save game being loaded*/
-UDWORD getSaveGameType(void)
+uint32_t getSaveGameType(void)
 {
 	return gameType;
 }
@@ -6547,8 +6547,8 @@ bool plotStructurePreview16(char *backDropSprite, Vector2i playeridpos[])
 
 	STRUCT_SAVEHEADER *psHeader;
 	char aFileName[256];
-	UDWORD xx, yy, count, fileSize, sizeOfSaveStructure = sizeof(SAVE_STRUCTURE);
-	UDWORD playerid = 0;
+	uint32_t xx, yy, count, fileSize, sizeOfSaveStructure = sizeof(SAVE_STRUCTURE);
+	uint32_t playerid = 0;
 	char *pFileData = NULL;
 	LEVEL_DATASET *psLevel;
 	PIELIGHT color = WZCOL_BLACK ;
@@ -6747,8 +6747,8 @@ static void plotFeature(char *backDropSprite)
 	FEATURE_SAVEHEADER	*psHeader;
 	SAVE_FEATURE_V2	*psSaveFeature;
 	LEVEL_DATASET *psLevel;
-	UDWORD xx, yy, count, fileSize;
-	UDWORD sizeOfSaveFeature = 0;
+	uint32_t xx, yy, count, fileSize;
+	uint32_t sizeOfSaveFeature = 0;
 	char *pFileData = NULL;
 	char aFileName[256];
 	const PIELIGHT colourOil = WZCOL_MAP_PREVIEW_OIL;

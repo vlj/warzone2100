@@ -116,7 +116,7 @@ extern void intAddFactoryInc(WIDGET *psWidget, W_CONTEXT *psContext);
 //callback to display the production quantity number for a template
 extern void intAddProdQuantity(WIDGET *psWidget, W_CONTEXT *psContext);
 
-void intDisplayPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayPowerBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 class IntFancyButton : public W_CLICKFORM
 {
@@ -225,17 +225,17 @@ private:
 	int             currentAction;          ///< Opening/open/closing/closed.
 };
 
-void intDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayImage(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
-void intDisplayImageHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayImageHilight(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
-void intDisplayButtonHilight(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayButtonHilight(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
-void intDisplayButtonFlash(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayButtonFlash(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 void intAddLoopQuantity(WIDGET *psWidget, W_CONTEXT *psContext);
 
-void intDisplayEditBox(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayEditBox(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 bool DroidIsBuilding(DROID *Droid);
 STRUCTURE *DroidGetBuildStructure(DROID *Droid);
@@ -252,24 +252,24 @@ RESEARCH_FACILITY *StructureGetResearch(STRUCTURE *Structure);
 FACTORY *StructureGetFactory(STRUCTURE *Structure);
 
 bool StatIsStructure(BASE_STATS const *Stat);
-iIMDShape *StatGetStructureIMD(BASE_STATS *Stat, UDWORD Player);
+iIMDShape *StatGetStructureIMD(BASE_STATS *Stat, uint32_t Player);
 bool StatIsTemplate(BASE_STATS *Stat);
 bool StatIsFeature(BASE_STATS const *Stat);
 
-SDWORD StatIsComponent(BASE_STATS *Stat);
-bool StatGetComponentIMD(BASE_STATS *Stat, SDWORD compID, iIMDShape **CompIMD, iIMDShape **MountIMD);
+int32_t StatIsComponent(BASE_STATS *Stat);
+bool StatGetComponentIMD(BASE_STATS *Stat, int32_t compID, iIMDShape **CompIMD, iIMDShape **MountIMD);
 
 bool StatIsResearch(BASE_STATS *Stat);
 
 /* Draws a stats bar for the design screen */
-void intDisplayStatsBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayStatsBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 /* Draws a Template Power Bar for the Design Screen */
-void intDisplayDesignPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayDesignPowerBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 // Widget callback function to play an audio track.
 extern void WidgetAudioCallback(int AudioID);
 
-//void intDisplayTransportButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+//void intDisplayTransportButton(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 class IntTransportButton : public IntFancyButton
 {
 public:
@@ -290,16 +290,16 @@ protected:
 extern void drawRadarBlips(int radarX, int radarY, float pixSizeH, float pixSizeV);
 
 /*Displays the proximity messages blips over the world*/
-void intDisplayProximityBlips(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayProximityBlips(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 extern void intUpdateQuantitySlider(WIDGET *psWidget, W_CONTEXT *psContext);
 
-void intDisplayResSubGroup(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayResSubGroup(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
-void intDisplayMissionClock(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayMissionClock(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
-void intDisplayAllyIcon(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-void intDisplayAllyBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+void intDisplayAllyIcon(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+void intDisplayAllyBar(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 void intSetShadowPower(int quantity);
 

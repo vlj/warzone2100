@@ -57,9 +57,9 @@ extern void setViewDistance(float dist);
 extern bool	radarOnScreen;
 extern bool	radarPermitted;
 extern bool rangeOnScreen; // Added to get sensor/gun range on screen.  -Q 5-10-05
-extern void setViewPos(UDWORD x, UDWORD y, bool Pan);
+extern void setViewPos(uint32_t x, uint32_t y, bool Pan);
 Vector2i    getPlayerPos();
-extern void setPlayerPos(SDWORD x, SDWORD y);
+extern void setPlayerPos(int32_t x, int32_t y);
 extern void disp3d_setView(iView *newView);
 extern void disp3d_resetView(void);
 extern void disp3d_getView(iView *newView);
@@ -79,26 +79,26 @@ extern bool doWeDrawProximitys(void);
 extern void setProximityDraw(bool val);
 extern void renderShadow(DROID *psDroid, iIMDShape *psShadowIMD);
 
-extern bool	clipXY(SDWORD x, SDWORD y);
+extern bool	clipXY(int32_t x, int32_t y);
 
 extern bool init3DView(void);
 extern iView player;
 extern bool selectAttempt;
 
-extern SDWORD scrollSpeed;
+extern int32_t scrollSpeed;
 extern void assignSensorTarget(BASE_OBJECT *psObj);
 extern void assignDestTarget(void);
-extern UDWORD getWaterTileNum(void);
-extern void setUnderwaterTile(UDWORD num);
-extern UDWORD getRubbleTileNum(void);
-extern void setRubbleTile(UDWORD num);
+extern uint32_t getWaterTileNum(void);
+extern void setUnderwaterTile(uint32_t num);
+extern uint32_t getRubbleTileNum(void);
+extern void setRubbleTile(uint32_t num);
 
 STRUCTURE *getTileBlueprintStructure(int mapX, int mapY);  ///< Gets the blueprint at those coordinates, if any. Previous return value becomes invalid.
 STRUCTURE_STATS const *getTileBlueprintStats(int mapX, int mapY);  ///< Gets the structure stats of the blueprint at those coordinates, if any.
 bool anyBlueprintTooClose(STRUCTURE_STATS const *stats, Vector2i pos, uint16_t dir);  ///< Checks if any blueprint is too close to the given structure.
 void clearBlueprints();
 
-extern SDWORD mouseTileX, mouseTileY;
+extern int32_t mouseTileX, mouseTileY;
 extern Vector2i mousePos;
 
 extern bool bRender3DOnly;
@@ -107,17 +107,17 @@ extern bool showPath;
 extern const Vector2i visibleTiles;
 
 /*returns the graphic ID for a droid rank*/
-extern UDWORD  getDroidRankGraphic(DROID *psDroid);
+extern uint32_t  getDroidRankGraphic(DROID *psDroid);
 
 /* Visualize radius at position */
-extern void showRangeAtPos(SDWORD centerX, SDWORD centerY, SDWORD radius);
+extern void showRangeAtPos(int32_t centerX, int32_t centerY, int32_t radius);
 
 void setSkyBox(const char *page, float mywind, float myscale);
 
 #define	BASE_MUZZLE_FLASH_DURATION	(GAME_TICKS_PER_SEC/10)
 #define	EFFECT_MUZZLE_ADDITIVE		128
 
-extern UWORD barMode;
+extern uint16_t barMode;
 
 extern bool CauseCrash;
 

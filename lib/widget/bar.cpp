@@ -73,7 +73,7 @@ W_BARGRAPH::W_BARGRAPH(W_BARINIT const *init)
 }
 
 /* Set the current size of a bar graph */
-void widgSetBarSize(W_SCREEN *psScreen, UDWORD id, UDWORD iValue)
+void widgSetBarSize(W_SCREEN *psScreen, uint32_t id, uint32_t iValue)
 {
 	W_BARGRAPH *psBGraph = (W_BARGRAPH *)widgGetFromID(psScreen, id);
 	ASSERT_OR_RETURN(, psBGraph != NULL, "Could not find widget from ID");
@@ -95,7 +95,7 @@ void widgSetBarSize(W_SCREEN *psScreen, UDWORD id, UDWORD iValue)
 
 
 /* Set the current size of a minor bar on a double graph */
-void widgSetMinorBarSize(W_SCREEN *psScreen, UDWORD id, UDWORD iValue)
+void widgSetMinorBarSize(W_SCREEN *psScreen, uint32_t id, uint32_t iValue)
 {
 	W_BARGRAPH *psBGraph = (W_BARGRAPH *)widgGetFromID(psScreen, id);
 	ASSERT_OR_RETURN(, psBGraph != NULL, "Could not find widget from ID");
@@ -143,9 +143,9 @@ static void barGraphDisplayText(W_BARGRAPH *barGraph, int x0, int x1, int y1)
 }
 
 /* The simple bar graph display function */
-static void barGraphDisplay(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void barGraphDisplay(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
-	SDWORD		x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+	int32_t		x0 = 0, y0 = 0, x1 = 0, y1 = 0;
 	W_BARGRAPH	*psBGraph;
 
 	psBGraph = (W_BARGRAPH *)psWidget;
@@ -187,9 +187,9 @@ static void barGraphDisplay(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 
 
 /* The double bar graph display function */
-static void barGraphDisplayDouble(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void barGraphDisplayDouble(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
-	SDWORD		x0 = 0, y0 = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0;
+	int32_t		x0 = 0, y0 = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0;
 	W_BARGRAPH	*psBGraph = (W_BARGRAPH *)psWidget;
 
 	/* figure out which way the bar graph fills */
@@ -263,10 +263,10 @@ static void barGraphDisplayDouble(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffs
 
 
 /* The trough bar graph display function */
-void barGraphDisplayTrough(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+void barGraphDisplayTrough(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
-	SDWORD		x0 = 0, y0 = 0, x1 = 0, y1 = 0;		// Position of the bar
-	SDWORD		tx0 = 0, ty0 = 0, tx1 = 0, ty1 = 0;	// Position of the trough
+	int32_t		x0 = 0, y0 = 0, x1 = 0, y1 = 0;		// Position of the bar
+	int32_t		tx0 = 0, ty0 = 0, tx1 = 0, ty1 = 0;	// Position of the trough
 	bool		showBar = true, showTrough = true;
 	W_BARGRAPH	*psBGraph = (W_BARGRAPH *)psWidget;
 

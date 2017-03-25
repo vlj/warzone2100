@@ -39,13 +39,13 @@
 #define EXT_SIZE		10	//2
 
 char STRSTACK[MAXSTACKLEN][MAXSTRLEN]; //simple string 'stack'
-UDWORD CURSTACKSTR = 0;    //Points to the top of the string stack
+uint32_t CURSTACKSTR = 0;    //Points to the top of the string stack
 
 /* store for a 'chunk' of the stack */
 struct STACK_CHUNK
 {
 	INTERP_VAL	*aVals;
-	UDWORD		size;
+	uint32_t		size;
 
 	STACK_CHUNK    *psNext, *psPrev;
 };
@@ -57,7 +57,7 @@ static STACK_CHUNK		*psStackBase = NULL;
 static STACK_CHUNK		*psCurrChunk = NULL;
 
 /* The current free entry on the current stack chunk */
-static UDWORD			currEntry = 0;
+static uint32_t			currEntry = 0;
 
 /* Get rid of the top value without returning it */
 static inline bool stackRemoveTop(void);
@@ -71,7 +71,7 @@ bool stackEmpty(void)
 
 
 /* Allocate a new chunk for the stack */
-static bool stackNewChunk(UDWORD size)
+static bool stackNewChunk(uint32_t size)
 {
 	/* see if a chunk has already been allocated */
 	if (psCurrChunk->psNext != NULL)
@@ -468,7 +468,7 @@ bool stackPushResult(INTERP_TYPE type, INTERP_VAL *result)
  * index is how far down the stack to look.
  * Index 0 is the top entry on the stack.
  */
-bool stackPeek(INTERP_VAL *psVal, UDWORD index)
+bool stackPeek(INTERP_VAL *psVal, uint32_t index)
 {
 	STACK_CHUNK		*psCurr;
 
@@ -1015,7 +1015,7 @@ bool stackInitialise(void)
 void stackShutDown(void)
 {
 	STACK_CHUNK		*psCurr, *psNext;
-	UDWORD				i;
+	uint32_t				i;
 
 	if ((psCurrChunk != psStackBase) && (currEntry != 0))
 	{

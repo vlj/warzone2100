@@ -46,13 +46,13 @@ struct PLAYERSTATS
 
 bool saveMultiStats(const char *sFName, const char *sPlayerName, const PLAYERSTATS *playerStats);	// to disk
 bool loadMultiStats(char *sPlayerName, PLAYERSTATS *playerStats);					// form disk
-PLAYERSTATS const &getMultiStats(UDWORD player);									// get from net
+PLAYERSTATS const &getMultiStats(uint32_t player);									// get from net
 bool setMultiStats(uint32_t player, PLAYERSTATS plStats, bool bLocal);  // send to net.
-void updateMultiStatsDamage(UDWORD attacker, UDWORD defender, UDWORD inflicted);
+void updateMultiStatsDamage(uint32_t attacker, uint32_t defender, uint32_t inflicted);
 void updateMultiStatsGames(void);
 void updateMultiStatsWins(void);
 void updateMultiStatsLoses(void);
-void updateMultiStatsKills(BASE_OBJECT *psKilled, UDWORD player);
+void updateMultiStatsKills(BASE_OBJECT *psKilled, uint32_t player);
 void recvMultiStats(NETQUEUE queue);
 
 std::map<std::string, EcKey::Key> const &getKnownPlayers();

@@ -74,7 +74,7 @@ bool proj_Direct(const WEAPON_STATS *psStats);
 /** Return the maximum range for a weapon. */
 int proj_GetLongRange(const WEAPON_STATS *psStats, int player);
 
-extern UDWORD calcDamage(UDWORD baseDamage, WEAPON_EFFECT weaponEffect, BASE_OBJECT *psTarget);
+extern uint32_t calcDamage(uint32_t baseDamage, WEAPON_EFFECT weaponEffect, BASE_OBJECT *psTarget);
 extern bool gfxVisible(PROJECTILE *psObj);
 
 /***************************************************************************/

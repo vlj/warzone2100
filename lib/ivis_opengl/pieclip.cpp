@@ -20,21 +20,21 @@
 
 #include "pieclip.h"
 
-static UDWORD videoBufferDepth = 32, videoBufferWidth = 0, videoBufferHeight = 0;
+static uint32_t videoBufferDepth = 32, videoBufferWidth = 0, videoBufferHeight = 0;
 
-bool pie_SetVideoBufferDepth(UDWORD depth)
+bool pie_SetVideoBufferDepth(uint32_t depth)
 {
 	videoBufferDepth = depth;
 	return (true);
 }
 
-bool pie_SetVideoBufferWidth(UDWORD width)
+bool pie_SetVideoBufferWidth(uint32_t width)
 {
 	videoBufferWidth = width;
 	return (true);
 }
 
-bool pie_SetVideoBufferHeight(UDWORD height)
+bool pie_SetVideoBufferHeight(uint32_t height)
 {
 	videoBufferHeight = height;
 	return (true);

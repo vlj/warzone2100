@@ -179,7 +179,7 @@ typedef std::vector<MousePress> MousePresses;
 void inputLoseFocus();
 void StopTextInput();
 /** Converts the key code into an ascii string. */
-WZ_DECL_NONNULL(2) void keyScanToString(KEY_CODE code, char *ascii, UDWORD maxStringSize);
+WZ_DECL_NONNULL(2) void keyScanToString(KEY_CODE code, char *ascii, uint32_t maxStringSize);
 
 /** Initialise the input module. */
 void inputInitialise();
@@ -221,7 +221,7 @@ bool mousePressed(MOUSE_KEY_CODE code);
 bool mouseReleased(MOUSE_KEY_CODE code);
 
 /** Check for a mouse drag, return the drag start coords if dragging. */
-WZ_DECL_NONNULL(2, 3) bool mouseDrag(MOUSE_KEY_CODE code, UDWORD *px, UDWORD *py);
+WZ_DECL_NONNULL(2, 3) bool mouseDrag(MOUSE_KEY_CODE code, uint32_t *px, uint32_t *py);
 
 void setMouseWarp(bool value);
 bool getMouseWarp();
@@ -251,7 +251,7 @@ bool getMouseWarp();
  * @param unicode is filled (unless NULL) with the unicode character corresponding
  * to the key press (using the user's native layout).
  */
-UDWORD inputGetKey(utf_32_char *unicode);
+uint32_t inputGetKey(utf_32_char *unicode);
 
 /// Returns all clicks/releases since last update.
 MousePresses const &inputGetClicks();

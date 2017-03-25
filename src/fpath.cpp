@@ -53,7 +53,7 @@ static volatile bool fpathQuit = false;
 
 struct PATHRESULT
 {
-	UDWORD		droidID;	///< Unique droid ID.
+	uint32_t		droidID;	///< Unique droid ID.
 	MOVE_CONTROL	sMove;		///< New movement values for the droid.
 	FPATH_RETVAL	retval;		///< Result value from path-finding.
 	Vector2i        originalDest;   ///< Used to check if the pathfinding job is to the right destination.
@@ -218,7 +218,7 @@ static uint8_t prop2bits(PROPULSION_TYPE propulsion)
 }
 
 // Check if the map tile at a location blocks a droid
-bool fpathBaseBlockingTile(SDWORD x, SDWORD y, PROPULSION_TYPE propulsion, int mapIndex, FPATH_MOVETYPE moveType)
+bool fpathBaseBlockingTile(int32_t x, int32_t y, PROPULSION_TYPE propulsion, int mapIndex, FPATH_MOVETYPE moveType)
 {
 	/* All tiles outside of the map and on map border are blocking. */
 	if (x < 1 || y < 1 || x > mapWidth - 1 || y > mapHeight - 1)
@@ -258,7 +258,7 @@ bool fpathDroidBlockingTile(DROID *psDroid, int x, int y, FPATH_MOVETYPE moveTyp
 }
 
 // Check if the map tile at a location blocks a droid
-bool fpathBlockingTile(SDWORD x, SDWORD y, PROPULSION_TYPE propulsion)
+bool fpathBlockingTile(int32_t x, int32_t y, PROPULSION_TYPE propulsion)
 {
 	return fpathBaseBlockingTile(x, y, propulsion, 0, FMT_BLOCK);  // with FMT_BLOCK, it is irrelevant which player is passed in
 }
@@ -297,7 +297,7 @@ static Position findNonblockingPosition(Position pos, PROPULSION_TYPE propulsion
 
 
 
-static void fpathSetMove(MOVE_CONTROL *psMoveCntl, SDWORD targetX, SDWORD targetY)
+static void fpathSetMove(MOVE_CONTROL *psMoveCntl, int32_t targetX, int32_t targetY)
 {
 	psMoveCntl->asPath = (Vector2i *)realloc(psMoveCntl->asPath, sizeof(*psMoveCntl->asPath));
 	psMoveCntl->destination = Vector2i(targetX, targetY);
@@ -306,7 +306,7 @@ static void fpathSetMove(MOVE_CONTROL *psMoveCntl, SDWORD targetX, SDWORD target
 }
 
 
-void fpathSetDirectRoute(DROID *psDroid, SDWORD targetX, SDWORD targetY)
+void fpathSetDirectRoute(DROID *psDroid, int32_t targetX, int32_t targetY)
 {
 	fpathSetMove(&psDroid->sMove, targetX, targetY);
 }
@@ -418,7 +418,7 @@ queuePathfinding:
 
 
 // Find a route for an DROID to a location in world coordinates
-FPATH_RETVAL fpathDroidRoute(DROID *psDroid, SDWORD tX, SDWORD tY, FPATH_MOVETYPE moveType)
+FPATH_RETVAL fpathDroidRoute(DROID *psDroid, int32_t tX, int32_t tY, FPATH_MOVETYPE moveType)
 {
 	bool acceptNearest;
 	PROPULSION_STATS *psPropStats = getPropulsionStats(psDroid);

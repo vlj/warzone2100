@@ -51,9 +51,9 @@ bool mechanicsShutdown(void)
 
 
 // Allocate the list for a component
-bool allocComponentList(COMPONENT_TYPE	type, SDWORD number)
+bool allocComponentList(COMPONENT_TYPE	type, int32_t number)
 {
-	SDWORD	inc, comp;
+	int32_t	inc, comp;
 
 	//allocate the space for the Players' component lists
 	for (inc = 0; inc < MAX_PLAYERS; inc++)
@@ -63,7 +63,7 @@ bool allocComponentList(COMPONENT_TYPE	type, SDWORD number)
 			free(apCompLists[inc][type]);
 		}
 
-		apCompLists[inc][type] = (UBYTE *) malloc(sizeof(UBYTE) * number);
+		apCompLists[inc][type] = (uint8_t *) malloc(sizeof(uint8_t) * number);
 
 		//initialise the players' lists
 		for (comp = 0; comp < number; comp++)
@@ -78,7 +78,7 @@ bool allocComponentList(COMPONENT_TYPE	type, SDWORD number)
 // release all the component lists
 void freeComponentLists(void)
 {
-	UDWORD	inc;
+	uint32_t	inc;
 
 	for (inc = 0; inc < MAX_PLAYERS; inc++)
 	{
@@ -129,14 +129,14 @@ void freeComponentLists(void)
 //allocate the space for the Players' structure lists
 bool allocStructLists(void)
 {
-	SDWORD	inc, stat;
+	int32_t	inc, stat;
 
 	for (inc = 0; inc < MAX_PLAYERS; inc++)
 	{
 		if (numStructureStats)
 		{
-			apStructTypeLists[inc] = (UBYTE *) malloc(sizeof(UBYTE) * numStructureStats);
-			for (stat = 0; stat < (SDWORD)numStructureStats; stat++)
+			apStructTypeLists[inc] = (uint8_t *) malloc(sizeof(uint8_t) * numStructureStats);
+			for (stat = 0; stat < (int32_t)numStructureStats; stat++)
 			{
 				apStructTypeLists[inc][stat] = UNAVAILABLE;
 			}
@@ -154,7 +154,7 @@ bool allocStructLists(void)
 // release the structure lists
 void freeStructureLists(void)
 {
-	UDWORD	inc;
+	uint32_t	inc;
 
 	for (inc = 0; inc < MAX_PLAYERS; inc++)
 	{
@@ -171,7 +171,7 @@ void freeStructureLists(void)
 //TEST FUNCTION - MAKE EVERYTHING AVAILABLE
 void makeAllAvailable(void)
 {
-	UDWORD	comp, i;
+	uint32_t	comp, i;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{

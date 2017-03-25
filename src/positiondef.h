@@ -37,11 +37,11 @@ enum POSITION_TYPE
 struct OBJECT_POSITION
 {
 	POSITION_TYPE   type;                   ///< the type of position obj - FlagPos or ProxDisp
-	UDWORD          frameNumber;            ///< when the Position was last drawn
-	UDWORD          screenX;                ///< screen coords and radius of Position imd
-	UDWORD          screenY;
-	UDWORD          screenR;
-	UDWORD          player;                 ///< which player the Position belongs to
+	uint32_t          frameNumber;            ///< when the Position was last drawn
+	uint32_t          screenX;                ///< screen coords and radius of Position imd
+	uint32_t          screenY;
+	uint32_t          screenR;
+	uint32_t          player;                 ///< which player the Position belongs to
 	bool            selected;               ///< flag to indicate whether the Position is to be highlighted
 };
 

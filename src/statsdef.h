@@ -248,7 +248,7 @@ struct BASE_STATS
 {
 	BASE_STATS(unsigned ref = 0) : ref(ref), index(0) {}
 
-	UDWORD	ref;    /**< Unique ID of the item */
+	uint32_t	ref;    /**< Unique ID of the item */
 	QString id;     /**< Text id (i.e. short language-independant name) */
 	QString name;   /**< Full / real name of the item */
 	int	index;	///< Index into containing array
@@ -263,10 +263,10 @@ struct COMPONENT_STATS : public BASE_STATS
 	COMPONENT_STATS() : buildPower(0), buildPoints(0), weight(0), body(0), designable(false), pIMD(NULL),
 		compType(COMP_NUMCOMPONENTS) {}
 
-	UDWORD		buildPower;			/**< Power required to build the component */
-	UDWORD		buildPoints;		/**< Time required to build the component */
-	UDWORD		weight;				/**< Component's weight */
-	UDWORD		body;				/**< Component's body points */
+	uint32_t		buildPower;			/**< Power required to build the component */
+	uint32_t		buildPoints;		/**< Time required to build the component */
+	uint32_t		weight;				/**< Component's weight */
+	uint32_t		body;				/**< Component's body points */
 	bool		designable;			/**< flag to indicate whether this component can be used in the design screen */
 	iIMDShape	*pIMD;				/**< The IMD to draw for this component */
 	COMPONENT_TYPE	compType;
@@ -277,14 +277,14 @@ struct PROPULSION_STATS : public COMPONENT_STATS
 	PROPULSION_STATS() : maxSpeed(0), propulsionType(PROPULSION_TYPE_NUM), turnSpeed(0), spinSpeed(0),
 		spinAngle(0), skidDeceleration(0), deceleration(0), acceleration(0) {}
 
-	UDWORD			maxSpeed;		///< Max speed for the droid
+	uint32_t			maxSpeed;		///< Max speed for the droid
 	PROPULSION_TYPE propulsionType; ///< Type of propulsion used - index into PropulsionTable
-	UDWORD		turnSpeed;
-	UDWORD		spinSpeed;
-	UDWORD		spinAngle;
-	UDWORD		skidDeceleration;
-	UDWORD		deceleration;
-	UDWORD		acceleration;
+	uint32_t		turnSpeed;
+	uint32_t		spinSpeed;
+	uint32_t		spinAngle;
+	uint32_t		skidDeceleration;
+	uint32_t		deceleration;
+	uint32_t		acceleration;
 };
 
 struct SENSOR_STATS : public COMPONENT_STATS
@@ -295,9 +295,9 @@ struct SENSOR_STATS : public COMPONENT_STATS
 		memset(&base, 0, sizeof(base));
 	}
 
-	UDWORD		location;		///< specifies whether the Sensor is default or for the Turret
+	uint32_t		location;		///< specifies whether the Sensor is default or for the Turret
 	SENSOR_TYPE type;			///< used for combat
-	UDWORD		time;			///< time delay before associated weapon droids 'know' where the attack is from
+	uint32_t		time;			///< time delay before associated weapon droids 'know' where the attack is from
 	iIMDShape	*pMountGraphic; ///< The turret mount to use
 
 	struct
@@ -314,7 +314,7 @@ struct ECM_STATS : public COMPONENT_STATS
 		memset(&base, 0, sizeof(base));
 	}
 
-	UDWORD location;          ///< specifies whether the ECM is default or for the Turret
+	uint32_t location;          ///< specifies whether the ECM is default or for the Turret
 	iIMDShape *pMountGraphic; ///< The turret mount to use
 
 	struct
@@ -331,8 +331,8 @@ struct REPAIR_STATS : public COMPONENT_STATS
 		memset(&base, 0, sizeof(base));
 	}
 
-	UDWORD		location;		///< specifies whether the Repair is default or for the Turret
-	UDWORD		time;			///< time delay for repair cycle
+	uint32_t		location;		///< specifies whether the Repair is default or for the Turret
+	uint32_t		time;			///< time delay for repair cycle
 	iIMDShape	*pMountGraphic; ///< The turret mount to use
 
 	struct
@@ -372,29 +372,29 @@ struct WEAPON_STATS : public COMPONENT_STATS
 	WEAPON_SUBCLASS	periodicalDamageWeaponSubClass;	///< Periodical damage weapon subclass (research class)
 	WEAPON_EFFECT	periodicalDamageWeaponEffect;	///< Periodical damage weapon effect (propulsion/body damage modifier)
 
-	UDWORD			flightSpeed;			///< speed ammo travels at
+	uint32_t			flightSpeed;			///< speed ammo travels at
 	bool			fireOnMove;				///< indicates whether the droid has to stop before firing
 	WEAPON_CLASS	weaponClass;			///< the class of weapon  (KINETIC, HEAT)
 	WEAPON_SUBCLASS weaponSubClass;			///< the subclass to which the weapon belongs (research class)
 	MOVEMENT_MODEL	movementModel;			///< which projectile model to use for the bullet
 	WEAPON_EFFECT	weaponEffect;			///< which type of warhead is associated with the weapon (propulsion/body damage modifier)
 	WEAPON_SIZE		weaponSize;				///< eg light weapons can be put on light bodies or as sidearms
-	UDWORD			recoilValue;			///< used to compare with weight to see if recoils or not
+	uint32_t			recoilValue;			///< used to compare with weight to see if recoils or not
 	short			rotate;					///< amount the weapon(turret) can rotate 0	= none
 	short			maxElevation;			///< max amount the	turret can be elevated up
 	short			minElevation;			///< min amount the	turret can be elevated down
-	UBYTE			facePlayer;				///< flag to make the (explosion) effect face the	player when	drawn
-	UBYTE			faceInFlight;			///< flag to make the inflight effect	face the player when drawn
+	uint8_t			facePlayer;				///< flag to make the (explosion) effect face the	player when	drawn
+	uint8_t			faceInFlight;			///< flag to make the inflight effect	face the player when drawn
 	uint16_t		effectSize;				///< size of the effect 100 = normal,	50 = half etc
 	bool			lightWorld;				///< flag to indicate whether the effect lights up the world
-	UBYTE			surfaceToAir;			///< indicates how good in the air - SHOOT_ON_GROUND, SHOOT_IN_AIR or both
+	uint8_t			surfaceToAir;			///< indicates how good in the air - SHOOT_ON_GROUND, SHOOT_IN_AIR or both
 	short			vtolAttackRuns;			///< number of attack runs a VTOL droid can	do with this weapon
 	bool			penetrate;				///< flag to indicate whether pentrate droid or not
 	int			distanceExtensionFactor;	///< max extra distance a projectile can travel if misses target
 
 	/* Graphics control stats */
-	UDWORD			radiusLife;				///< How long a blast radius is visible
-	UDWORD			numExplosions;			///< The number of explosions per shot
+	uint32_t			radiusLife;				///< How long a blast radius is visible
+	uint32_t			numExplosions;			///< The number of explosions per shot
 
 	/* Graphics used for the weapon */
 	iIMDShape		*pMountGraphic;			///< The turret mount to use
@@ -406,8 +406,8 @@ struct WEAPON_STATS : public COMPONENT_STATS
 	iIMDShape		*pTrailGraphic;			///< The trail used for in flight
 
 	/* Audio */
-	SDWORD			iAudioFireID;
-	SDWORD			iAudioImpactID;
+	int32_t			iAudioFireID;
+	int32_t			iAudioImpactID;
 };
 
 struct CONSTRUCT_STATS : public COMPONENT_STATS
@@ -431,8 +431,8 @@ struct BRAIN_STATS : public COMPONENT_STATS
 	BRAIN_STATS() : psWeaponStat(NULL), maxDroids(0), maxDroidsMult(0) {}
 
 	WEAPON_STATS	*psWeaponStat;	///< weapon stats associated with this brain - for Command Droids
-	UDWORD          maxDroids;       ///< base maximum number of droids that the commander can control
-	UDWORD          maxDroidsMult;   ///< maximum number of controlled droids multiplied by level
+	uint32_t          maxDroids;       ///< base maximum number of droids that the commander can control
+	uint32_t          maxDroidsMult;   ///< maximum number of controlled droids multiplied by level
 };
 
 /*
@@ -450,7 +450,7 @@ struct BODY_STATS : public COMPONENT_STATS
 	}
 
 	BODY_SIZE	size;			///< How big the body is - affects how hit
-	UDWORD		weaponSlots;	///< The number of weapon slots on the body
+	uint32_t		weaponSlots;	///< The number of weapon slots on the body
 	DROID_TYPE	droidTypeOverride; // if not DROID_ANY, sets droid type
 
 	std::vector<iIMDShape *> ppIMDList;	///< list of IMDs to use for propulsion unit - up to numPropulsionStats
@@ -473,16 +473,16 @@ struct BODY_STATS : public COMPONENT_STATS
 ************************************************************************************/
 struct PROPULSION_TYPES
 {
-	UWORD	powerRatioMult; ///< Multiplier for the calculated power ratio of the droid
-	UDWORD	travel;			///< Which medium the propulsion travels in
-	SWORD	startID;		///< sound to play when this prop type starts
-	SWORD	idleID;			///< sound to play when this prop type is idle
-	SWORD	moveOffID;		///< sound to link moveID and idleID
-	SWORD	moveID;			///< sound to play when this prop type is moving
-	SWORD	hissID;			///< sound to link moveID and idleID
-	SWORD	shutDownID;		///< sound to play when this prop type shuts down
+	uint16_t	powerRatioMult; ///< Multiplier for the calculated power ratio of the droid
+	uint32_t	travel;			///< Which medium the propulsion travels in
+	int16_t	startID;		///< sound to play when this prop type starts
+	int16_t	idleID;			///< sound to play when this prop type is idle
+	int16_t	moveOffID;		///< sound to link moveID and idleID
+	int16_t	moveID;			///< sound to play when this prop type is moving
+	int16_t	hissID;			///< sound to link moveID and idleID
+	int16_t	shutDownID;		///< sound to play when this prop type shuts down
 };
 
-typedef UWORD	WEAPON_MODIFIER;
+typedef uint16_t	WEAPON_MODIFIER;
 
 #endif // __INCLUDED_STATSDEF_H__

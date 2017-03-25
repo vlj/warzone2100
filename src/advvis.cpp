@@ -42,7 +42,7 @@ void	avUpdateTiles(void)
 {
 	const int len = mapHeight * mapWidth;
 	const int playermask = 1 << selectedPlayer;
-	UDWORD i = 0;
+	uint32_t i = 0;
 	float maxLevel, increment = graphicsTimeAdjustedIncrement(FADE_IN_TIME);	// call once per frame
 	MAPTILE *psTile;
 
@@ -72,7 +72,7 @@ void	avUpdateTiles(void)
 }
 
 // ------------------------------------------------------------------------------------
-UDWORD	avGetObjLightLevel(BASE_OBJECT *psObj, UDWORD origLevel)
+uint32_t	avGetObjLightLevel(BASE_OBJECT *psObj, uint32_t origLevel)
 {
 	float div = (float)psObj->visible[selectedPlayer] / 255.f;
 	unsigned int lowest = origLevel / START_DIVIDE;

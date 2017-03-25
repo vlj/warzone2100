@@ -28,7 +28,7 @@ PIELIGHT psPalette[WZCOL_MAX];
 void pal_Init(void)
 {
 	char *pFileData, *ptr;
-	UDWORD fileSize;
+	uint32_t fileSize;
 	int i, lenLeft;
 
 	// Read these from file so that mod-makers can change them

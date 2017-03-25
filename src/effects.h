@@ -148,8 +148,8 @@ struct EFFECT
 
 /* Maximum number of effects in the world - need to investigate what this should be */
 /* EXTERNAL REFERENCES */
-void	effectGiveAuxVar(UDWORD var);		// naughty
-void	effectGiveAuxVarSec(UDWORD var);	// and so's this
+void	effectGiveAuxVar(uint32_t var);		// naughty
+void	effectGiveAuxVarSec(uint32_t var);	// and so's this
 
 void	initEffectsSystem(void);
 void	shutdownEffectsSystem(void);
@@ -165,7 +165,7 @@ void	initPerimeterSmoke(iIMDShape *pImd, Vector3i base);
 
 bool	readFXData(const char *fileName);
 bool	writeFXData(const char *fileName);
-void	effectSetSize(UDWORD size);
+void	effectSetSize(uint32_t size);
 void	effectSetLandLightSpec(LAND_LIGHT_SPEC spec);
 void	SetEffectForPlayer(uint8_t player);
 

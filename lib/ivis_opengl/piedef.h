@@ -52,8 +52,8 @@ struct PIELIGHTBYTES
 union PIELIGHT
 {
 	PIELIGHTBYTES byte;
-	UDWORD rgba;
-	UBYTE vector[4];
+	uint32_t rgba;
+	uint8_t vector[4];
 };
 
 /***************************************************************************/

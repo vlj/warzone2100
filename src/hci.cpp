@@ -111,15 +111,15 @@ enum  				  // Reticule button indecies.
 
 struct BUTSTATE
 {
-	UDWORD id;
+	uint32_t id;
 	bool Enabled;
 	bool Hidden;
 };
 
 struct BUTOFFSET
 {
-	SWORD x;
-	SWORD y;
+	int16_t x;
+	int16_t y;
 };
 
 static BUTOFFSET ReticuleOffsets[NUMRETBUTS] =  	// Reticule button form relative positions.
@@ -144,7 +144,7 @@ static BUTSTATE ReticuleEnabled[NUMRETBUTS] =  	// Reticule button enable states
 	{IDRET_COMMAND, false, false},
 };
 
-static UDWORD	keyButtonMapping = 0;
+static uint32_t	keyButtonMapping = 0;
 static bool ReticuleUp = false;
 static bool Refreshing = false;
 
@@ -231,7 +231,7 @@ static const char	*apPlayerTip[] =
 W_SCREEN		*psWScreen;
 
 // The last widget ID from widgRunScreen
-UDWORD				intLastWidget;
+uint32_t				intLastWidget;
 
 INTMODE intMode;
 
@@ -275,16 +275,16 @@ static bool				objectsChanged;
 
 /* The current stats list being used by the stats screen */
 static BASE_STATS		**ppsStatsList;
-static UDWORD			numStatsListEntries;
+static uint32_t			numStatsListEntries;
 
 /* The selected object on the object screen when the stats screen is displayed */
 static BASE_OBJECT		*psObjSelected;
 
 /* The button ID of the objects stat when the stat screen is displayed */
-UDWORD			objStatID;
+uint32_t			objStatID;
 
 /* The button ID of an objects stat on the stat screen if it is locked down */
-static UDWORD			statID;
+static uint32_t			statID;
 
 /* The stats for the current getStructPos */
 static BASE_STATS		*psPositionStats;
@@ -303,13 +303,13 @@ std::list<DROID_TEMPLATE>       localTemplates;
 static FEATURE_STATS	**apsFeatureList;
 
 /*Store a list of research indices which can be performed*/
-static UWORD			*pList;
-static UWORD			*pSList;
+static uint16_t			*pList;
+static uint16_t			*pSList;
 
 /* Store a list of component stats pointers for the design screen */
-UDWORD			numComponent;
+uint32_t			numComponent;
 COMPONENT_STATS	**apsComponentList;
-UDWORD			numExtraSys;
+uint32_t			numExtraSys;
 COMPONENT_STATS	**apsExtraSysList;
 
 // store the objects that are being used for the object bar
@@ -333,22 +333,22 @@ static bool intUpdateObject(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, boo
 void intRemoveObject(void);
 static void intRemoveObjectNoAnim(void);
 /* Process the object widgets */
-static void intProcessObject(UDWORD id);
+static void intProcessObject(uint32_t id);
 /* Get the object refered to by a button ID on the object screen.
  * This works for droid or structure buttons
  */
-static BASE_OBJECT *intGetObject(UDWORD id);
+static BASE_OBJECT *intGetObject(uint32_t id);
 /* Reset the stats button for an object */
-static void intSetStats(UDWORD id, BASE_STATS *psStats);
+static void intSetStats(uint32_t id, BASE_STATS *psStats);
 
 /* Add the stats widgets to the widget screen */
 /* If psSelected != NULL it specifies which stat should be hilited */
-static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
+static bool intAddStats(BASE_STATS **ppsStatsList, uint32_t numStats,
                         BASE_STATS *psSelected, BASE_OBJECT *psOwner);
 /* Process return codes from the stats screen */
-static void intProcessStats(UDWORD id);
+static void intProcessStats(uint32_t id);
 // clean up when an object dies
-static void intObjectDied(UDWORD objID);
+static void intObjectDied(uint32_t objID);
 
 /* Add the build widgets to the widget screen */
 /* If psSelected != NULL it specifies which droid should be hilited */
@@ -369,7 +369,7 @@ static void intStartStructPosition(BASE_STATS *psStats);
 static void intStopStructPosition(void);
 
 static STRUCTURE *CurrentStruct = NULL;
-static SWORD CurrentStructType = 0;
+static int16_t CurrentStructType = 0;
 static DROID *CurrentDroid = NULL;
 static DROID_TYPE CurrentDroidType = DROID_ANY;
 
@@ -381,24 +381,24 @@ static void intRunPower(void);
 static void intRunStats(void);
 
 /*Deals with the RMB click for the stats screen */
-static void intStatsRMBPressed(UDWORD id);
+static void intStatsRMBPressed(uint32_t id);
 
 /*Deals with the RMB click for the object screen */
-static void intObjectRMBPressed(UDWORD id);
+static void intObjectRMBPressed(uint32_t id);
 
 /*Deals with the RMB click for the Object Stats buttons */
-static void intObjStatRMBPressed(UDWORD id);
+static void intObjStatRMBPressed(uint32_t id);
 
 //proximity display stuff
-static void processProximityButtons(UDWORD id);
+static void processProximityButtons(uint32_t id);
 
-static DROID *intCheckForDroid(UDWORD droidType);
-static STRUCTURE *intCheckForStructure(UDWORD structType);
+static DROID *intCheckForDroid(uint32_t droidType);
+static STRUCTURE *intCheckForStructure(uint32_t structType);
 
 static void intCheckReticuleButtons(void);
 
 // count the number of selected droids of a type
-static SDWORD intNumSelectedDroids(UDWORD droidType);
+static int32_t intNumSelectedDroids(uint32_t droidType);
 
 
 /***************************GAME CODE ****************************/
@@ -424,15 +424,15 @@ void setReticuleStats(int ButId, QString tip, QString filename, QString filename
 	retbutstats[ButId].flashTime = 0;
 }
 
-static void intDisplayReticuleButton(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void intDisplayReticuleButton(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int     x = xOffset + psWidget->x();
 	int     y = yOffset + psWidget->y();
 	bool	Hilight = false;
 	bool	Down = false;
-	UBYTE	DownTime = retbutstats[psWidget->UserData].downTime;
-	UBYTE	flashing = retbutstats[psWidget->UserData].flashing;
-	UBYTE	flashTime = retbutstats[psWidget->UserData].flashTime;
+	uint8_t	DownTime = retbutstats[psWidget->UserData].downTime;
+	uint8_t	flashing = retbutstats[psWidget->UserData].flashing;
+	uint8_t	flashTime = retbutstats[psWidget->UserData].flashTime;
 	ASSERT_OR_RETURN(, psWidget->type == WIDG_BUTTON, "Not a button");
 	W_BUTTON *psButton = (W_BUTTON *)psWidget;
 
@@ -539,9 +539,9 @@ bool intInitialise(void)
 	ppResearchList = (RESEARCH **) malloc(sizeof(RESEARCH *) * MAXRESEARCH);
 
 	//create the list for the selected player
-	//needs to be UWORD sized for Patches
-	pList = (UWORD *) malloc(sizeof(UWORD) * MAXRESEARCH);
-	pSList = (UWORD *) malloc(sizeof(UWORD) * MAXRESEARCH);
+	//needs to be uint16_t sized for Patches
+	pList = (uint16_t *) malloc(sizeof(uint16_t) * MAXRESEARCH);
+	pSList = (uint16_t *) malloc(sizeof(uint16_t) * MAXRESEARCH);
 
 	/* Create storage for Templates that can be built */
 	apsTemplateList.clear();
@@ -679,7 +679,7 @@ static FLAG_POSITION *intFindSelectedDelivPoint(void)
 //
 static void intDoScreenRefresh(void)
 {
-	UWORD           objMajor = 0, statMajor = 0;
+	uint16_t           objMajor = 0, statMajor = 0;
 	FLAG_POSITION	*psFlag;
 
 	if (IntRefreshPending)
@@ -963,7 +963,7 @@ void intResetScreen(bool NoAnim)
 
 // calulate the center world coords for a structure stat given
 // top left tile coords
-static void intCalcStructCenter(STRUCTURE_STATS *psStats, UDWORD tilex, UDWORD tiley, uint16_t direction, UDWORD *pcx, UDWORD *pcy)
+static void intCalcStructCenter(STRUCTURE_STATS *psStats, uint32_t tilex, uint32_t tiley, uint16_t direction, uint32_t *pcx, uint32_t *pcy)
 {
 	unsigned width  = getStructureStatsWidth(psStats, direction) * TILE_UNITS;
 	unsigned height = getStructureStatsBreadth(psStats, direction) * TILE_UNITS;
@@ -974,7 +974,7 @@ static void intCalcStructCenter(STRUCTURE_STATS *psStats, UDWORD tilex, UDWORD t
 
 
 /* Process return codes from the Options screen */
-static void intProcessOptions(UDWORD id)
+static void intProcessOptions(uint32_t id)
 {
 	if (id >= IDOPT_PLAYERSTART && id <= IDOPT_PLAYEREND)
 	{
@@ -1051,7 +1051,7 @@ static void intProcessOptions(UDWORD id)
 
 
 /* Process return codes from the object placement stats screen */
-static void intProcessEditStats(UDWORD id)
+static void intProcessEditStats(uint32_t id)
 {
 	if (id >= IDSTAT_START && id <= IDSTAT_END)
 	{
@@ -1120,7 +1120,7 @@ void hciUpdate()
 INT_RETVAL intRunWidgets(void)
 {
 	bool			quitting = false;
-	UDWORD			structX, structY, structX2, structY2;
+	uint32_t			structX, structY, structX2, structY2;
 
 	intDoScreenRefresh();
 
@@ -1665,9 +1665,9 @@ INT_RETVAL intRunWidgets(void)
 /* Set the shadow for the PowerBar */
 static void intRunPower(void)
 {
-	UDWORD				statID;
+	uint32_t				statID;
 	BASE_STATS			*psStat;
-	UDWORD				quantity = 0;
+	uint32_t				quantity = 0;
 	RESEARCH			*psResearch;
 
 	/* Find out which button was hilited */
@@ -1738,13 +1738,13 @@ static void intRunStats(void)
 
 
 /* Add the stats screen for a given object */
-static void intAddObjectStats(BASE_OBJECT *psObj, UDWORD id)
+static void intAddObjectStats(BASE_OBJECT *psObj, uint32_t id)
 {
 	BASE_STATS		*psStats;
-	UWORD               statMajor = 0;
-	UDWORD			i, j, index;
-	UDWORD			count;
-	SDWORD			iconNumber, entryIN;
+	uint16_t               statMajor = 0;
+	uint32_t			i, j, index;
+	uint32_t			count;
+	int32_t			iconNumber, entryIN;
 
 	/* Clear a previous structure pos if there is one */
 	intStopStructPosition();
@@ -1800,7 +1800,7 @@ static void intAddObjectStats(BASE_OBJECT *psObj, UDWORD id)
 			index = ((RESEARCH *)psStats)->index;
 		}
 		//recalculate the list
-		numStatsListEntries = fillResearchList(pList, selectedPlayer, (UWORD)index, MAXRESEARCH);
+		numStatsListEntries = fillResearchList(pList, selectedPlayer, (uint16_t)index, MAXRESEARCH);
 
 		//	-- Alex's reordering of the list
 		// NOTE!  Do we even want this anymore, since we can have basically
@@ -1901,12 +1901,12 @@ static void intResetWindows(BASE_OBJECT *psObj)
 
 
 /* Process return codes from the object screen */
-static void intProcessObject(UDWORD id)
+static void intProcessObject(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStruct;
-	SDWORD			butIndex;
-	UDWORD			statButID;
+	int32_t			butIndex;
+	uint32_t			statButID;
 
 	ASSERT_OR_RETURN(, widgGetFromID(psWScreen, IDOBJ_TABFORM) != NULL, "intProcessObject, missing form");
 
@@ -1994,7 +1994,7 @@ static void intProcessObject(UDWORD id)
 				{
 					asJumpPos.resize(IDOBJ_OBJEND - IDOBJ_OBJSTART, Vector2i(0, 0));
 					if (((asJumpPos[butIndex].x == 0) && (asJumpPos[butIndex].y == 0)) ||
-					    !DrawnInLastFrame((SDWORD)psObj->sDisplay.frameNumber) ||
+					    !DrawnInLastFrame((int32_t)psObj->sDisplay.frameNumber) ||
 					    ((psObj->sDisplay.screenX > pie_GetVideoBufferWidth()) ||
 					     (psObj->sDisplay.screenY > pie_GetVideoBufferHeight())))
 					{
@@ -2097,7 +2097,7 @@ static void intProcessObject(UDWORD id)
 
 
 /* Process return codes from the stats screen */
-static void intProcessStats(UDWORD id)
+static void intProcessStats(uint32_t id)
 {
 	BASE_STATS		*psStats;
 	STRUCTURE		*psStruct;
@@ -2128,7 +2128,7 @@ static void intProcessStats(UDWORD id)
 				psStats = ppsStatsList[compIndex];
 				ASSERT_OR_RETURN(, psObjSelected != NULL, "Invalid structure pointer");
 				ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
-				if (productionPlayer == (SBYTE)selectedPlayer)
+				if (productionPlayer == (int8_t)selectedPlayer)
 				{
 					STRUCTURE *psStructure = (STRUCTURE *)psObjSelected;
 					FACTORY  *psFactory = &psStructure->pFunctionality->factory;
@@ -2327,7 +2327,7 @@ static void intProcessStats(UDWORD id)
 
 
 /* Set the map view point to the world coordinates x,y */
-void intSetMapPos(UDWORD x, UDWORD y)
+void intSetMapPos(uint32_t x, uint32_t y)
 {
 	setViewPos(map_coord(x), map_coord(y), true);
 }
@@ -2484,9 +2484,9 @@ void intNewObj(BASE_OBJECT *psObj)
 
 
 // clean up when an object dies
-static void intObjectDied(UDWORD objID)
+static void intObjectDied(uint32_t objID)
 {
-	UDWORD				statsID, gubbinsID;
+	uint32_t				statsID, gubbinsID;
 
 	// clear the object button
 	IntObjectButton *psBut = (IntObjectButton *)widgGetFromID(psWScreen, objID);
@@ -2790,8 +2790,8 @@ bool intAddPower()
 	sBarInit.id = IDPOW_POWERBAR_T;
 	//start the power bar off in view (default)
 	sBarInit.style = WBAR_TROUGH;
-	sBarInit.x = (SWORD)POW_X;
-	sBarInit.y = (SWORD)POW_Y;
+	sBarInit.x = (int16_t)POW_X;
+	sBarInit.y = (int16_t)POW_Y;
 	sBarInit.width = POW_BARWIDTH;
 	sBarInit.height = iV_GetImageHeight(IntImages, IMAGE_PBAR_EMPTY);
 	sBarInit.sCol = WZCOL_POWER_BAR;
@@ -2815,7 +2815,7 @@ bool intAddOptions(void)
 	W_FORMINIT	sFormInit;
 	W_BUTINIT	sButInit;
 	W_LABINIT	sLabInit;
-	UDWORD		player;
+	uint32_t		player;
 
 	/* Add the option form */
 
@@ -2994,7 +2994,7 @@ bool intAddOptions(void)
  */
 static bool intAddObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, bool bForceStats)
 {
-	UDWORD                  statID = 0;
+	uint32_t                  statID = 0;
 	BASE_OBJECT            *psFirst;
 	BASE_STATS		*psStats;
 	DROID			*Droid;
@@ -3248,7 +3248,7 @@ static bool intAddObjectWindow(BASE_OBJECT *psObjects, BASE_OBJECT *psSelected, 
 				ASSERT_OR_RETURN(false, Droid->asBits[COMP_CONSTRUCT], "Invalid droid type");
 				ASSERT_OR_RETURN(false, compIndex < numConstructStats, "Invalid range referenced for numConstructStats, %d > %d", compIndex, numConstructStats);
 				psStats = (BASE_STATS *)(asConstructStats + compIndex);
-				sBarInit2.size = (UWORD)constructorPoints((CONSTRUCT_STATS *)psStats, Droid->player);
+				sBarInit2.size = (uint16_t)constructorPoints((CONSTRUCT_STATS *)psStats, Droid->player);
 				if (sBarInit2.size > WBAR_SCALE)
 				{
 					sBarInit2.size = WBAR_SCALE;
@@ -3600,7 +3600,7 @@ void intRemoveStatsNoAnim(void)
 /**
  * Get the object refered to by a button ID on the object screen. This works for object or stats buttons.
  */
-static BASE_OBJECT *intGetObject(UDWORD id)
+static BASE_OBJECT *intGetObject(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 
@@ -3619,7 +3619,7 @@ static BASE_OBJECT *intGetObject(UDWORD id)
 
 
 /* Reset the stats button for an object */
-static void intSetStats(UDWORD id, BASE_STATS *psStats)
+static void intSetStats(uint32_t id, BASE_STATS *psStats)
 {
 	/* Update the button on the object screen */
 	IntStatusButton *statButton = (IntStatusButton *)widgGetFromID(psWScreen, id);
@@ -3710,7 +3710,7 @@ StateButton *makeObsoleteButton(WIDGET *parent)
 /* Add the stats widgets to the widget screen */
 /* If psSelected != NULL it specifies which stat should be hilited
    psOwner specifies which object is hilighted on the object bar for this stat*/
-static bool intAddStats(BASE_STATS **ppsStatsList, UDWORD numStats,
+static bool intAddStats(BASE_STATS **ppsStatsList, uint32_t numStats,
                         BASE_STATS *psSelected, BASE_OBJECT *psOwner)
 {
 	FACTORY				*psFactory;
@@ -4086,7 +4086,7 @@ static BASE_STATS *getConstructionStats(BASE_OBJECT *psObj)
 	DROID *psDroid = (DROID *)psObj;
 	BASE_STATS *Stats;
 	BASE_OBJECT *Structure;
-	UDWORD x, y;
+	uint32_t x, y;
 
 	ASSERT_OR_RETURN(NULL, psObj != NULL && psObj->type == OBJ_DROID, "Invalid droid pointer");
 
@@ -4190,7 +4190,7 @@ static bool setResearchStats(BASE_OBJECT *psObj, BASE_STATS *psStats)
 	STRUCTURE			*psBuilding;
 	RESEARCH               *pResearch = (RESEARCH *)psStats;
 	PLAYER_RESEARCH		*pPlayerRes;
-	UDWORD				count;
+	uint32_t				count;
 	RESEARCH_FACILITY	*psResFacilty;
 
 	ASSERT_OR_RETURN(false, psObj != NULL && psObj->type == OBJ_STRUCTURE, "Invalid Structure pointer");
@@ -4375,7 +4375,7 @@ static bool intAddCommand(DROID *psSelected)
 
 
 /*Deals with the RMB click for the stats screen */
-static void intStatsRMBPressed(UDWORD id)
+static void intStatsRMBPressed(uint32_t id)
 {
 	ASSERT_OR_RETURN(, id - IDSTAT_START < numStatsListEntries, "Invalid range referenced for numStatsListEntries, %d > %d", id - IDSTAT_START, numStatsListEntries);
 
@@ -4387,7 +4387,7 @@ static void intStatsRMBPressed(UDWORD id)
 
 		ASSERT_OR_RETURN(, psObjSelected != NULL, "Invalid structure pointer");
 		ASSERT_OR_RETURN(, psStats != NULL, "Invalid template pointer");
-		if (productionPlayer == (SBYTE)selectedPlayer)
+		if (productionPlayer == (int8_t)selectedPlayer)
 		{
 			STRUCTURE *psStructure = (STRUCTURE *)psObjSelected;
 			FACTORY  *psFactory = &psStructure->pFunctionality->factory;
@@ -4419,7 +4419,7 @@ static void intStatsRMBPressed(UDWORD id)
 }
 
 /*Deals with the RMB click for the Object screen */
-static void intObjectRMBPressed(UDWORD id)
+static void intObjectRMBPressed(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
@@ -4448,7 +4448,7 @@ static void intObjectRMBPressed(UDWORD id)
 }
 
 /*Deals with the RMB click for the Object Stats buttons */
-static void intObjStatRMBPressed(UDWORD id)
+static void intObjStatRMBPressed(uint32_t id)
 {
 	BASE_OBJECT		*psObj;
 	STRUCTURE		*psStructure;
@@ -4567,7 +4567,7 @@ STRUCTURE *interfaceStructList(void)
 
 
 /*causes a reticule button to start flashing*/
-void flashReticuleButton(UDWORD buttonID)
+void flashReticuleButton(uint32_t buttonID)
 {
 	//get the button for the id
 	WIDGET *psButton = widgGetFromID(psWScreen, buttonID);
@@ -4578,7 +4578,7 @@ void flashReticuleButton(UDWORD buttonID)
 }
 
 // stop a reticule button flashing
-void stopReticuleButtonFlash(UDWORD buttonID)
+void stopReticuleButtonFlash(uint32_t buttonID)
 {
 	WIDGET	*psButton = widgGetFromID(psWScreen, buttonID);
 	if (psButton)
@@ -4609,10 +4609,10 @@ void forceHidePowerBar(void)
 
 
 /* Add the Proximity message buttons */
-bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, UDWORD inc)
+bool intAddProximityButton(PROXIMITY_DISPLAY *psProxDisp, uint32_t inc)
 {
 	PROXIMITY_DISPLAY	*psProxDisp2;
-	UDWORD				cnt;
+	uint32_t				cnt;
 
 	W_FORMINIT sBFormInit;
 	sBFormInit.formID = 0;
@@ -4664,7 +4664,7 @@ void intRemoveProximityButton(PROXIMITY_DISPLAY *psProxDisp)
 }
 
 /*deals with the proximity message when clicked on*/
-void processProximityButtons(UDWORD id)
+void processProximityButtons(uint32_t id)
 {
 	PROXIMITY_DISPLAY	*psProxDisp;
 
@@ -4693,7 +4693,7 @@ void processProximityButtons(UDWORD id)
 }
 
 /*	Fools the widgets by setting a key value */
-void	setKeyButtonMapping(UDWORD	val)
+void	setKeyButtonMapping(uint32_t	val)
 {
 	keyButtonMapping = val;
 }
@@ -4702,7 +4702,7 @@ void	setKeyButtonMapping(UDWORD	val)
 /*Looks through the players list of structures to see if there is one selected
 of the required type. If there is more than one, they are all deselected and
 the first one reselected*/
-STRUCTURE *intCheckForStructure(UDWORD structType)
+STRUCTURE *intCheckForStructure(uint32_t structType)
 {
 	STRUCTURE	*psStruct, *psSel = NULL;
 
@@ -4727,7 +4727,7 @@ STRUCTURE *intCheckForStructure(UDWORD structType)
 of the required type. If there is more than one, they are all deselected and
 the first one reselected*/
 // no longer do this for constructor droids - (gleeful its-near-the-end-of-the-project hack - JOHN)
-DROID *intCheckForDroid(UDWORD droidType)
+DROID *intCheckForDroid(uint32_t droidType)
 {
 	DROID	*psDroid, *psSel = NULL;
 
@@ -4754,10 +4754,10 @@ DROID *intCheckForDroid(UDWORD droidType)
 
 
 // count the number of selected droids of a type
-static SDWORD intNumSelectedDroids(UDWORD droidType)
+static int32_t intNumSelectedDroids(uint32_t droidType)
 {
 	DROID	*psDroid;
-	SDWORD	num;
+	int32_t	num;
 
 	num = 0;
 	for (psDroid = apsDroidLists[selectedPlayer]; psDroid; psDroid = psDroid->psNext)
@@ -4915,7 +4915,7 @@ void intNotifyResearchButton(int prevState)
 }
 
 // see if a reticule button is enabled
-bool intCheckReticuleButEnabled(UDWORD id)
+bool intCheckReticuleButEnabled(uint32_t id)
 {
 	for (int i = 0; i < NUMRETBUTS; i++)
 	{
@@ -4929,15 +4929,15 @@ bool intCheckReticuleButEnabled(UDWORD id)
 
 // Look through the players structures and find the next one of type structType.
 //
-static STRUCTURE *intGotoNextStructureType(UDWORD structType)
+static STRUCTURE *intGotoNextStructureType(uint32_t structType)
 {
 	STRUCTURE	*psStruct;
 	bool Found = false;
 
-	if ((SWORD)structType != CurrentStructType)
+	if ((int16_t)structType != CurrentStructType)
 	{
 		CurrentStruct = NULL;
-		CurrentStructType = (SWORD)structType;
+		CurrentStructType = (int16_t)structType;
 	}
 
 	if (CurrentStruct != NULL)
@@ -5041,7 +5041,7 @@ DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGr
 	{
 		if ((psDroid->droidType == droidType
 		     || (droidType == DROID_ANY && !isTransporter(psDroid)))
-		    && (psDroid->group == UBYTE_MAX || AllowGroup))
+		    && (psDroid->group == uint8_t_MAX || AllowGroup))
 		{
 			if (psDroid != CurrentDroid)
 			{
@@ -5061,7 +5061,7 @@ DROID *intGotoNextDroidType(DROID *CurrDroid, DROID_TYPE droidType, bool AllowGr
 		{
 			if ((psDroid->droidType == droidType ||
 			     ((droidType == DROID_ANY) && !isTransporter(psDroid))) &&
-			    ((psDroid->group == UBYTE_MAX) || AllowGroup))
+			    ((psDroid->group == uint8_t_MAX) || AllowGroup))
 			{
 				if (psDroid != CurrentDroid)
 				{

@@ -67,8 +67,8 @@ enum STRUCTURE_TYPE
 struct FLAG_POSITION : public OBJECT_POSITION
 {
 	Vector3i coords;               //the world coords of the Position
-	UBYTE    factoryInc;           //indicates whether the first, second etc factory
-	UBYTE    factoryType;          //indicates whether standard, cyborg or vtol factory
+	uint8_t    factoryInc;           //indicates whether the first, second etc factory
+	uint8_t    factoryType;          //indicates whether standard, cyborg or vtol factory
 	FLAG_POSITION *psNext;
 };
 
@@ -82,7 +82,7 @@ enum STRUCT_STRENGTH
 	NUM_STRUCT_STRENGTH,
 };
 
-typedef UWORD STRUCTSTRENGTH_MODIFIER;
+typedef uint16_t STRUCTSTRENGTH_MODIFIER;
 
 #define SAS_OPEN_SPEED		(GAME_TICKS_PER_SEC)
 #define SAS_STAY_OPEN_TIME	(GAME_TICKS_PER_SEC * 6)
@@ -104,17 +104,17 @@ struct STRUCTURE_STATS : public BASE_STATS
 
 	STRUCTURE_TYPE type;            /* the type of structure */
 	STRUCT_STRENGTH strength;       /* strength against the weapon effects */
-	UDWORD baseWidth;               /*The width of the base in tiles*/
-	UDWORD baseBreadth;             /*The breadth of the base in tiles*/
-	UDWORD buildPoints;             /*The number of build points required to build the structure*/
-	UDWORD height;                  /*The height above/below the terrain - negative values denote below the terrain*/
-	UDWORD powerToBuild;            /*How much power the structure requires to build*/
+	uint32_t baseWidth;               /*The width of the base in tiles*/
+	uint32_t baseBreadth;             /*The breadth of the base in tiles*/
+	uint32_t buildPoints;             /*The number of build points required to build the structure*/
+	uint32_t height;                  /*The height above/below the terrain - negative values denote below the terrain*/
+	uint32_t powerToBuild;            /*How much power the structure requires to build*/
 	std::vector<iIMDShape *> pIMD;  // The IMDs to draw for this structure, for each possible number of modules.
 	iIMDShape *pBaseIMD;            /*The base IMD to draw for this structure */
 	struct ECM_STATS *pECM;         /*Which ECM is standard for the structure -if any*/
 	struct SENSOR_STATS *pSensor;   /*Which Sensor is standard for the structure -if any*/
-	UDWORD weaponSlots;             /*Number of weapons that can be attached to the building*/
-	UDWORD numWeaps;                /*Number of weapons for default */
+	uint32_t weaponSlots;             /*Number of weapons that can be attached to the building*/
+	uint32_t numWeaps;                /*Number of weapons for default */
 	struct WEAPON_STATS *psWeapStat[MAX_WEAPONS];
 	uint64_t flags;
 
@@ -162,7 +162,7 @@ struct RESEARCH_FACILITY
 	StatusPending statusPending;      ///< Pending = not yet synchronised.
 	unsigned pendingCount;            ///< Number of messages sent but not yet processed.
 	RESEARCH *psBestTopic;            // The topic with the most research points that was last performed
-	UDWORD timeStartHold;             /* The time the research facility was put on hold*/
+	uint32_t timeStartHold;             /* The time the research facility was put on hold*/
 };
 
 struct DROID_TEMPLATE;
@@ -170,14 +170,14 @@ struct DROID_TEMPLATE;
 struct FACTORY
 {
 	uint8_t productionLoops;          ///< Number of loops to perform. Not synchronised, and only meaningful for selectedPlayer.
-	UBYTE loopsPerformed;             /* how many times the loop has been performed*/
+	uint8_t loopsPerformed;             /* how many times the loop has been performed*/
 	DROID_TEMPLATE *psSubject;        ///< The subject the structure is working on.
 	DROID_TEMPLATE *psSubjectPending; ///< The subject the structure is going to working on. (Pending = not yet synchronised.)
 	StatusPending statusPending;      ///< Pending = not yet synchronised.
 	unsigned pendingCount;            ///< Number of messages sent but not yet processed.
-	UDWORD timeStarted;               /* The time the building started on the subject*/
+	uint32_t timeStarted;               /* The time the building started on the subject*/
 	int buildPointsRemaining;         ///< Build points required to finish building the droid.
-	UDWORD timeStartHold;             /* The time the factory was put on hold*/
+	uint32_t timeStartHold;             /* The time the factory was put on hold*/
 	FLAG_POSITION *psAssemblyPoint;   /* Place for the new droids to assemble at */
 	struct DROID *psCommander;        // command droid to produce droids for (if any)
 	uint32_t secondaryOrder;          ///< Secondary order state for all units coming out of the factory.
@@ -206,9 +206,9 @@ struct REPAIR_FACILITY
 
 struct REARM_PAD
 {
-	UDWORD timeStarted;            /* Time reArm started on current object */
+	uint32_t timeStarted;            /* Time reArm started on current object */
 	BASE_OBJECT *psObj;            /* Object being rearmed */
-	UDWORD timeLastUpdated;        /* Time rearm was last updated */
+	uint32_t timeLastUpdated;        /* Time rearm was last updated */
 };
 
 struct WALL
@@ -237,7 +237,7 @@ struct STRUCTURE : public BASE_OBJECT
 	STRUCT_STATES       status;                     /* defines whether the structure is being built, doing nothing or performing a function */
 	uint32_t            currentBuildPts;            /* the build points currently assigned to this structure */
 	int                 resistance;                 /* current resistance points, 0 = cannot be attacked electrically */
-	UDWORD              lastResistance;             /* time the resistance was last increased*/
+	uint32_t              lastResistance;             /* time the resistance was last increased*/
 	FUNCTIONALITY       *pFunctionality;            /* pointer to structure that contains fields necessary for functionality */
 	int                 buildRate;                  ///< Rate that this structure is being built, calculated each tick. Only meaningful if status == SS_BEING_BUILT. If construction hasn't started and build rate is 0, remove the structure.
 	int                 lastBuildRate;              ///< Needed if wanting the buildRate between buildRate being reset to 0 each tick and the trucks calculating it.
@@ -248,13 +248,13 @@ struct STRUCTURE : public BASE_OBJECT
 	int targetLine[MAX_WEAPONS];
 #endif
 
-	UDWORD expectedDamage;           ///< Expected damage to be caused by all currently incoming projectiles. This info is shared between all players,
+	uint32_t expectedDamage;           ///< Expected damage to be caused by all currently incoming projectiles. This info is shared between all players,
 	///< but shouldn't make a difference unless 3 mutual enemies happen to be fighting each other at the same time.
 	uint32_t prevTime;               ///< Time of structure's previous tick.
 	float foundationDepth;           ///< Depth of structure's foundation
 	uint8_t capacity;                ///< Number of module upgrades
 	STRUCT_ANIM_STATES	state;
-	UDWORD lastStateTime;
+	uint32_t lastStateTime;
 	iIMDShape *prebuiltImd;
 };
 
@@ -317,7 +317,7 @@ typedef std::vector<ProductionRunEntry> ProductionRun;
 
 struct UPGRADE
 {
-	UWORD modifier;      //% to increase the stat by
+	uint16_t modifier;      //% to increase the stat by
 };
 
 typedef UPGRADE REPAIR_FACILITY_UPGRADE;

@@ -90,12 +90,12 @@
 #define SAVEENTRY_EDIT			ID_LOADSAVE + totalslots + totalslots		// save edit box. must be highest value possible I guess. -Q
 
 // ////////////////////////////////////////////////////////////////////////////
-static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
-static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset);
+static void displayLoadBanner(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
+static void displayLoadSlot(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset);
 
 static	W_SCREEN	*psRequestScreen;					// Widget screen for requester
 static	bool		mode;
-static	UDWORD		chosenSlotId;
+static	uint32_t		chosenSlotId;
 
 bool				bLoadSaveUp = false;        // true when interface is up and should be run.
 char				saveGameName[256];          //the name of the save game to load from the front end
@@ -125,7 +125,7 @@ bool addLoadSave(LOADSAVE_MODE savemode, const char *title)
 	bool bLoad = true;
 	char NewSaveGamePath[PATH_MAX] = {'\0'};
 	bLoadSaveMode = savemode;
-	UDWORD			slotCount;
+	uint32_t			slotCount;
 	static char	sSlotCaps[totalslots][totalslotspace];
 	static char	sSlotTips[totalslots][totalslotspace];
 	char **i, **files;
@@ -256,19 +256,19 @@ bool addLoadSave(LOADSAVE_MODE savemode, const char *title)
 		if (slotCount < slotsInColumn)
 		{
 			sButInit.x	= 22 + LOADSAVE_HGAP;
-			sButInit.y	= (SWORD)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
+			sButInit.y	= (int16_t)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
 			                          slotCount * (LOADSAVE_VGAP + LOADENTRY_H)));
 		}
 		else if (slotCount >= slotsInColumn && (slotCount < (slotsInColumn * 2)))
 		{
 			sButInit.x	= 22 + (2 * LOADSAVE_HGAP + LOADENTRY_W);
-			sButInit.y	= (SWORD)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
+			sButInit.y	= (int16_t)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
 			                          (slotCount % slotsInColumn) * (LOADSAVE_VGAP + LOADENTRY_H)));
 		}
 		else
 		{
 			sButInit.x	= 22 + (3 * LOADSAVE_HGAP + (2 * LOADENTRY_W));
-			sButInit.y	= (SWORD)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
+			sButInit.y	= (int16_t)((LOADSAVE_BANNER_DEPTH + (2 * LOADSAVE_VGAP)) + (
 			                          (slotCount % slotsInColumn) * (LOADSAVE_VGAP + LOADENTRY_H)));
 		}
 		widgAddButton(psRequestScreen, &sButInit);
@@ -408,7 +408,7 @@ void deleteSaveGame(char *saveGameName)
 bool runLoadSave(bool bResetMissionWidgets)
 {
 	static char     sDelete[PATH_MAX];
-	UDWORD		i, campaign;
+	uint32_t		i, campaign;
 	W_CONTEXT		context;
 	char NewSaveGamePath[PATH_MAX] = {'\0'};
 
@@ -571,7 +571,7 @@ bool displayLoadSave(void)
 // char HANDLER, replaces dos wildcards in a string with harmless chars.
 void removeWildcards(char *pStr)
 {
-	UDWORD i;
+	uint32_t i;
 
 	// Remember never to allow: < > : " / \ | ? *
 
@@ -629,7 +629,7 @@ void removeWildcards(char *pStr)
 // ////////////////////////////////////////////////////////////////////////////
 // DISPLAY FUNCTIONS
 
-static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayLoadBanner(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	PIELIGHT col;
 	int x = xOffset + psWidget->x();
@@ -649,7 +649,7 @@ static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 }
 
 // ////////////////////////////////////////////////////////////////////////////
-static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayLoadSlot(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
@@ -674,7 +674,7 @@ static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	}
 }
 
-void drawBlueBox(UDWORD x, UDWORD y, UDWORD w, UDWORD h)
+void drawBlueBox(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
 	pie_BoxFill(x - 1, y - 1, x + w + 1, y + h + 1, WZCOL_MENU_BORDER);
 	pie_BoxFill(x, y , x + w, y + h, WZCOL_MENU_BACKGROUND);

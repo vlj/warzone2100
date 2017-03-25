@@ -64,36 +64,36 @@ struct floodtile
 };
 static struct floodtile *floodbucket = NULL;
 static int bucketcounter;
-static UDWORD lastDangerUpdate = 0;
+static uint32_t lastDangerUpdate = 0;
 static int lastDangerPlayer = -1;
 
 //scroll min and max values
-SDWORD		scrollMinX, scrollMaxX, scrollMinY, scrollMaxY;
+int32_t		scrollMinX, scrollMaxX, scrollMinY, scrollMaxY;
 
 /* Structure definitions for loading and saving map data */
 struct MAP_SAVEHEADER  // : public GAME_SAVEHEADER
 {
 	char		aFileType[4];
-	UDWORD		version;
-	UDWORD		width;
-	UDWORD		height;
+	uint32_t		version;
+	uint32_t		width;
+	uint32_t		height;
 };
 
 struct MAP_SAVETILE
 {
-	UWORD		texture;
-	UBYTE		height;
+	uint16_t		texture;
+	uint8_t		height;
 };
 
 struct GATEWAY_SAVEHEADER
 {
-	UDWORD		version;
-	UDWORD		numGateways;
+	uint32_t		version;
+	uint32_t		numGateways;
 };
 
 struct GATEWAY_SAVE
 {
-	UBYTE	x0, y0, x1, y1;
+	uint8_t	x0, y0, x1, y1;
 };
 
 /* Sanity check definitions for the save struct file sizes */
@@ -104,7 +104,7 @@ struct GATEWAY_SAVE
 #define	MAX_HEIGHT			(256 * ELEVATION_SCALE)
 
 /* The size and contents of the map */
-SDWORD	mapWidth = 0, mapHeight = 0;
+int32_t	mapWidth = 0, mapHeight = 0;
 MAPTILE	*psMapTiles = NULL;
 uint8_t *psBlockMap[AUX_MAX];
 uint8_t *psAuxMap[MAX_PLAYERS + AUX_MAX];        // yes, we waste one element... eyes wide open... makes API nicer
@@ -133,7 +133,7 @@ static bool *mapDecals;           // array that tells us what tile is a decal
 #define MAX_TERRAIN_TILES 0x0200  // max that we support (for now), see TILE_NUMMASK
 
 /* Look up table that returns the terrain type of a given tile texture */
-UBYTE terrainTypes[MAX_TILE_TEXTURES];
+uint8_t terrainTypes[MAX_TILE_TEXTURES];
 
 static void init_tileNames(int type)
 {
@@ -736,10 +736,10 @@ static void generateRiverbed(void)
 /* Initialise the map structure */
 bool mapLoad(char *filename, bool preview)
 {
-	UDWORD		numGw, width, height;
+	uint32_t		numGw, width, height;
 	char		aFileType[4];
-	UDWORD		version;
-	UDWORD		i, x, y;
+	uint32_t		version;
+	uint32_t		i, x, y;
 	PHYSFS_file	*fp = PHYSFS_openRead(filename);
 	MersenneTwister mt(12345);  // 12345 = random seed.
 
@@ -808,8 +808,8 @@ bool mapLoad(char *filename, bool preview)
 	/* Load in the map data */
 	for (i = 0; i < mapWidth * mapHeight; i++)
 	{
-		UWORD	texture;
-		UBYTE	height;
+		uint16_t	texture;
+		uint8_t	height;
 
 		if (!PHYSFS_readULE16(fp, &texture) || !PHYSFS_readULE8(fp, &height))
 		{
@@ -843,7 +843,7 @@ bool mapLoad(char *filename, bool preview)
 
 	for (i = 0; i < numGw; i++)
 	{
-		UBYTE	x0, y0, x1, y1;
+		uint8_t	x0, y0, x1, y1;
 
 		if (!PHYSFS_readULE8(fp, &x0) || !PHYSFS_readULE8(fp, &y0) || !PHYSFS_readULE8(fp, &x1) || !PHYSFS_readULE8(fp, &y1))
 		{
@@ -927,14 +927,14 @@ failure:
 }
 
 /* Save the map data */
-bool mapSave(char **ppFileData, UDWORD *pFileSize)
+bool mapSave(char **ppFileData, uint32_t *pFileSize)
 {
 	MAP_SAVEHEADER	*psHeader = NULL;
 	MAP_SAVETILE	*psTileData = NULL;
 	MAPTILE	*psTile = NULL;
 	GATEWAY_SAVEHEADER *psGateHeader = NULL;
 	GATEWAY_SAVE *psGate = NULL;
-	SDWORD	numGateways = gwNumGateways();
+	int32_t	numGateways = gwNumGateways();
 
 	/* Allocate the data buffer */
 	*pFileSize = SAVE_HEADER_SIZE + mapWidth * mapHeight * SAVE_TILE_SIZE;
@@ -982,7 +982,7 @@ bool mapSave(char **ppFileData, UDWORD *pFileSize)
 		/* MAP_SAVETILE */
 		endian_uword(&psTileData->texture);
 
-		psTileData = (MAP_SAVETILE *)((UBYTE *)psTileData + SAVE_TILE_SIZE);
+		psTileData = (MAP_SAVETILE *)((uint8_t *)psTileData + SAVE_TILE_SIZE);
 		psTile++;
 	}
 
@@ -1911,7 +1911,7 @@ static void threatUpdate(int player)
 
 		for (psDroid = apsDroidLists[i]; psDroid; psDroid = psDroid->psNext)
 		{
-			UBYTE mode = 0;
+			uint8_t mode = 0;
 
 			if (psDroid->droidType == DROID_CONSTRUCT || psDroid->droidType == DROID_CYBORG_CONSTRUCT
 			    || psDroid->droidType == DROID_REPAIR || psDroid->droidType == DROID_CYBORG_REPAIR)
@@ -1934,7 +1934,7 @@ static void threatUpdate(int player)
 
 		for (psStruct = apsStructLists[i]; psStruct; psStruct = psStruct->psNext)
 		{
-			UBYTE mode = 0;
+			uint8_t mode = 0;
 
 			for (weapon = 0; weapon < psStruct->numWeaps; weapon++)
 			{

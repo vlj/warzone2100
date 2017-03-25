@@ -111,7 +111,7 @@ struct MAPTILE
 };
 
 /* The size and contents of the map */
-extern SDWORD	mapWidth, mapHeight;
+extern int32_t	mapWidth, mapHeight;
 extern MAPTILE *psMapTiles;
 extern float waterLevel;
 extern GROUND_TYPE *psGroundTypes;
@@ -325,7 +325,7 @@ static inline bool TileHasSmallStructure(const MAPTILE *tile)
 /* Arbitrary maximum number of terrain textures - used in look up table for terrain type */
 #define MAX_TILE_TEXTURES	255
 
-extern UBYTE terrainTypes[MAX_TILE_TEXTURES];
+extern uint8_t terrainTypes[MAX_TILE_TEXTURES];
 
 static inline unsigned char terrainType(const MAPTILE *tile)
 {
@@ -343,7 +343,7 @@ static inline unsigned char terrainType(const MAPTILE *tile)
 #define TILE_MIN_HEIGHT 0
 
 /* The size and contents of the map */
-extern SDWORD	mapWidth, mapHeight;
+extern int32_t	mapWidth, mapHeight;
 extern MAPTILE *psMapTiles;
 
 extern GROUND_TYPE *psGroundTypes;
@@ -416,7 +416,7 @@ extern bool mapShutdown(void);
 extern bool mapLoad(char *filename, bool preview);
 
 /* Save the map data */
-extern bool mapSave(char **ppFileData, UDWORD *pFileSize);
+extern bool mapSave(char **ppFileData, uint32_t *pFileSize);
 
 /** Return a pointer to the tile structure at x,y in map coordinates */
 static inline WZ_DECL_PURE MAPTILE *mapTile(int32_t x, int32_t y)
@@ -492,9 +492,9 @@ static inline void setTileHeight(int32_t x, int32_t y, int32_t height)
 }
 
 /* Return whether a tile coordinate is on the map */
-WZ_DECL_ALWAYS_INLINE static inline bool tileOnMap(SDWORD x, SDWORD y)
+WZ_DECL_ALWAYS_INLINE static inline bool tileOnMap(int32_t x, int32_t y)
 {
-	return (x >= 0) && (x < (SDWORD)mapWidth) && (y >= 0) && (y < (SDWORD)mapHeight);
+	return (x >= 0) && (x < (int32_t)mapWidth) && (y >= 0) && (y < (int32_t)mapHeight);
 }
 
 WZ_DECL_ALWAYS_INLINE static inline bool tileOnMap(Vector2i pos)
@@ -505,8 +505,8 @@ WZ_DECL_ALWAYS_INLINE static inline bool tileOnMap(Vector2i pos)
 /* Return whether a world coordinate is on the map */
 WZ_DECL_ALWAYS_INLINE static inline bool worldOnMap(int x, int y)
 {
-	return (x >= 0) && (x < ((SDWORD)mapWidth << TILE_SHIFT)) &&
-	       (y >= 0) && (y < ((SDWORD)mapHeight << TILE_SHIFT));
+	return (x >= 0) && (x < ((int32_t)mapWidth << TILE_SHIFT)) &&
+	       (y >= 0) && (y < ((int32_t)mapHeight << TILE_SHIFT));
 }
 
 
@@ -547,7 +547,7 @@ extern bool readVisibilityData(const char *fileName);
 extern bool	writeVisibilityData(const char *fileName);
 
 //scroll min and max values
-extern SDWORD		scrollMinX, scrollMaxX, scrollMinY, scrollMaxY;
+extern int32_t		scrollMinX, scrollMaxX, scrollMinY, scrollMaxY;
 
 void mapFloodFillContinents(void);
 

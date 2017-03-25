@@ -550,7 +550,7 @@ void pie_SetFogStatus(bool val)
  *  \param num a number indicating the texture page to bind. If this is a
  *         negative value (doesn't matter what value) it will disable texturing.
  */
-void pie_SetTexturePage(SDWORD num)
+void pie_SetTexturePage(int32_t num)
 {
 	// Only bind textures when they're not bound already
 	if (num != rendStates.texPage)

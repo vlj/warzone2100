@@ -62,7 +62,7 @@ extern void videoLoop(void);
 extern void loop_SetVideoPlaybackMode(void);
 extern void loop_ClearVideoPlaybackMode(void);
 extern bool loop_GetVideoStatus(void);
-extern SDWORD loop_GetVideoMode(void);
+extern int32_t loop_GetVideoMode(void);
 extern bool	gamePaused(void);
 extern void	setGamePauseStatus(bool val);
 extern void loopFastExit(void);
@@ -82,16 +82,16 @@ extern void setConsolePause(bool state);
 extern void setAllPauseStates(bool state);
 
 // Number of units in the current list.
-extern UDWORD	getNumDroids(UDWORD	player);
+extern uint32_t	getNumDroids(uint32_t	player);
 // Number of units on transporters.
-extern UDWORD	getNumTransporterDroids(UDWORD player);
+extern uint32_t	getNumTransporterDroids(uint32_t player);
 // Number of units in the mission list.
-extern UDWORD	getNumMissionDroids(UDWORD player);
-UDWORD	getNumCommandDroids(UDWORD player);
-UDWORD	getNumConstructorDroids(UDWORD player);
+extern uint32_t	getNumMissionDroids(uint32_t player);
+uint32_t	getNumCommandDroids(uint32_t player);
+uint32_t	getNumConstructorDroids(uint32_t player);
 // increase the droid counts - used by update factory to keep the counts in sync
-void incNumDroids(UDWORD player);
-void incNumCommandDroids(UDWORD player);
-void incNumConstructorDroids(UDWORD player);
+void incNumDroids(uint32_t player);
+void incNumCommandDroids(uint32_t player);
+void incNumConstructorDroids(uint32_t player);
 
 #endif // __INCLUDED_SRC_LOOP_H__

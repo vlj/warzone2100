@@ -53,8 +53,8 @@ struct PROJECTILE : public SIMPLE_OBJECT
 	}
 
 
-	UBYTE           state;                  ///< current projectile state
-	UBYTE           bVisible;               ///< whether the selected player should see the projectile
+	uint8_t           state;                  ///< current projectile state
+	uint8_t           bVisible;               ///< whether the selected player should see the projectile
 	WEAPON_STATS   *psWStats;               ///< firing weapon stats
 	BASE_OBJECT    *psSource;               ///< what fired the projectile
 	BASE_OBJECT    *psDest;                 ///< target of this projectile
@@ -62,9 +62,9 @@ struct PROJECTILE : public SIMPLE_OBJECT
 
 	Vector3i        src;                    ///< Where projectile started
 	Vector3i        dst;                    ///< The target coordinates
-	SDWORD          vXY, vZ;                ///< axis velocities
+	int32_t          vXY, vZ;                ///< axis velocities
 	Spacetime       prevSpacetime;          ///< Location of projectile in previous tick.
-	UDWORD          expectedDamageCaused;   ///< Expected damage that this projectile will cause to the target.
+	uint32_t          expectedDamageCaused;   ///< Expected damage that this projectile will cause to the target.
 	int             partVisible;            ///< how much of target was visible on shooting (important for homing)
 };
 

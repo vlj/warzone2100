@@ -95,7 +95,7 @@ enum KEY_STATE
 struct INPUT_STATE
 {
 	KEY_STATE state; /// Last key/mouse state
-	UDWORD lastdown; /// last key/mouse button down timestamp
+	uint32_t lastdown; /// last key/mouse button down timestamp
 	Vector2i pressPos;    ///< Location of last mouse press event.
 	Vector2i releasePos;  ///< Location of last mouse release event.
 };
@@ -136,7 +136,7 @@ static MousePresses mousePresses;
 /* The input string buffer */
 struct InputKey
 {
-	UDWORD key;
+	uint32_t key;
 	utf_32_char unicode;
 };
 
@@ -705,7 +705,7 @@ static InputKey *inputPointerNext(InputKey *p)
 }
 
 /* add count copies of the characater code to the input buffer */
-static void inputAddBuffer(UDWORD key, utf_32_char unicode)
+static void inputAddBuffer(uint32_t key, utf_32_char unicode)
 {
 	/* Calculate what pEndBuffer will be set to next */
 	InputKey	*pNext = inputPointerNext(pEndBuffer);
@@ -721,7 +721,7 @@ static void inputAddBuffer(UDWORD key, utf_32_char unicode)
 	pEndBuffer = pNext;
 }
 
-void keyScanToString(KEY_CODE code, char *ascii, UDWORD maxStringSize)
+void keyScanToString(KEY_CODE code, char *ascii, uint32_t maxStringSize)
 {
 	if (code == KEY_LCTRL)
 	{
@@ -802,9 +802,9 @@ void inputClearBuffer(void)
  * windows key map.
  * All key presses are buffered up (including windows auto repeat).
  */
-UDWORD inputGetKey(utf_32_char *unicode)
+uint32_t inputGetKey(utf_32_char *unicode)
 {
-	UDWORD	 retVal;
+	uint32_t	 retVal;
 
 	if (pStartBuffer == pEndBuffer)
 	{
@@ -965,7 +965,7 @@ bool mouseReleased(MOUSE_KEY_CODE code)
 }
 
 /* Check for a mouse drag, return the drag start coords if dragging */
-bool mouseDrag(MOUSE_KEY_CODE code, UDWORD *px, UDWORD *py)
+bool mouseDrag(MOUSE_KEY_CODE code, uint32_t *px, uint32_t *py)
 {
 	if ((aMouseState[code].state == KEY_DRAG) ||
 	    // dragging LMB and RMB counts as dragging MMB
@@ -985,7 +985,7 @@ bool mouseDrag(MOUSE_KEY_CODE code, UDWORD *px, UDWORD *py)
  */
 static void inputHandleKeyEvent(SDL_KeyboardEvent *keyEvent)
 {
-	UDWORD code = 0, vk = 0;
+	uint32_t code = 0, vk = 0;
 	switch (keyEvent->type)
 	{
 	case SDL_KEYDOWN:

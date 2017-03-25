@@ -53,7 +53,7 @@ static const int VIS_LEVEL_INC = 255 * 2;
 static const int VIS_LEVEL_DEC = 50;
 
 // integer amount to change visiblility this turn
-static SDWORD			visLevelInc, visLevelDec;
+static int32_t			visLevelInc, visLevelDec;
 
 class SPOTTER
 {
@@ -136,7 +136,7 @@ uint32_t addSpotter(int x, int y, int player, int radius, bool radar, uint32_t e
 		MAPTILE *psTile = mapTile(mapX, mapY);
 		psTile->tileExploredBits |= alliancebits[player];
 		uint8_t *visionType = (!radar) ? psTile->watchers : psTile->sensors;
-		if (visionType[player] < UBYTE_MAX)
+		if (visionType[player] < uint8_t_MAX)
 		{
 			TILEPOS tilePos = {uint8_t(mapX), uint8_t(mapY), uint8_t(radar)};
 			visionType[player]++;          // we observe this tile
@@ -192,7 +192,7 @@ static void updateSpotters()
 			BASE_OBJECT *psObj = *gi;
 
 			// Tell system that this side can see this object
-			setSeenBy(psObj, psSpot->player, UBYTE_MAX);
+			setSeenBy(psObj, psSpot->player, uint8_t_MAX);
 		}
 	}
 }
@@ -224,7 +224,7 @@ static inline void visMarkTile(const BASE_OBJECT *psObj, int mapX, int mapY, MAP
 	const bool inRange = (distSq < 16);
 	uint8_t *visionType = inRange ? psTile->watchers : psTile->sensors;
 
-	if (visionType[rayPlayer] < UBYTE_MAX && *lastRecordTilePos < MAX_SEEN_TILES)
+	if (visionType[rayPlayer] < uint8_t_MAX && *lastRecordTilePos < MAX_SEEN_TILES)
 	{
 		TILEPOS tilePos = {uint8_t(mapX), uint8_t(mapY), uint8_t(inRange)};
 
@@ -402,9 +402,9 @@ void visTilesUpdate(BASE_OBJECT *psObj)
 }
 
 /*reveals all the terrain in the map*/
-void revealAll(UBYTE player)
+void revealAll(uint8_t player)
 {
-	UWORD   i, j;
+	uint16_t   i, j;
 	MAPTILE	*psTile;
 
 	//reveal all tiles
@@ -443,7 +443,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 			if (psDroid->order.psObj == psTarget && cbSensorDroid(psDroid))
 			{
 				// if it is targetted by a counter battery sensor, it is seen
-				return UBYTE_MAX;
+				return uint8_t_MAX;
 			}
 			break;
 		}
@@ -474,7 +474,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 			{
 				// if a unit is targetted by a counter battery sensor
 				// it is automatically seen
-				return UBYTE_MAX;
+				return uint8_t_MAX;
 			}
 			break;
 		}
@@ -488,7 +488,7 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 	int dist = iHypot((psTarget->pos - psViewer->pos).xy);
 	if (dist == 0)
 	{
-		return UBYTE_MAX;	// Should never be on top of each other, but ...
+		return uint8_t_MAX;	// Should never be on top of each other, but ...
 	}
 
 	MAPTILE *psTile = mapTile(map_coord(psTarget->pos.x), map_coord(psTarget->pos.y));
@@ -499,22 +499,22 @@ int visibleObject(const BASE_OBJECT *psViewer, const BASE_OBJECT *psTarget, bool
 	     || (psViewer->type == OBJ_DROID && isVtolDroid((DROID *)psViewer)))
 	    && dist < range)
 	{
-		return UBYTE_MAX;
+		return uint8_t_MAX;
 	}
 	// Show objects hidden by ECM jamming with radar blips
 	else if (psTile->watchers[psViewer->player] == 0 && psTile->sensors[psViewer->player] > 0 && jammed)
 	{
-		return UBYTE_MAX / 2;
+		return uint8_t_MAX / 2;
 	}
 	// Show objects that are seen directly or with unjammed sensors
 	else if (psTile->watchers[psViewer->player] > 0 || (psTile->sensors[psViewer->player] > 0 && !jammed))
 	{
-		return UBYTE_MAX;
+		return uint8_t_MAX;
 	}
 	// Show detected sensors as radar blips
 	else if (objRadarDetector(psViewer) && objActiveRadar(psTarget) && dist < range * 10)
 	{
-		return UBYTE_MAX / 2;
+		return uint8_t_MAX / 2;
 	}
 	// else not seen
 	return 0;
@@ -565,7 +565,7 @@ bool hasSharedVision(unsigned viewer, unsigned ally)
 	return viewer == ally || (bMultiPlayer && alliancesSharedVision(game.alliance) && aiCheckAlliances(viewer, ally));
 }
 
-static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= UBYTE_MAX*/)
+static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= uint8_t_MAX*/)
 {
 	//forward out vision to our allies
 	int ally;
@@ -578,7 +578,7 @@ static void setSeenBy(BASE_OBJECT *psObj, unsigned viewer, int val /*= UBYTE_MAX
 	}
 }
 
-static void setSeenByInstantly(BASE_OBJECT *psObj, unsigned viewer, int val /*= UBYTE_MAX*/)
+static void setSeenByInstantly(BASE_OBJECT *psObj, unsigned viewer, int val /*= uint8_t_MAX*/)
 {
 	//forward out vision to our allies
 	int ally;
@@ -598,7 +598,7 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	if (psObj->type != OBJ_FEATURE && objSensorRange(psObj) > 0)
 	{
 		// one can trivially see oneself
-		setSeenBy(psObj, psObj->player, UBYTE_MAX);
+		setSeenBy(psObj, psObj->player, uint8_t_MAX);
 	}
 
 	// if a player has a SAT_UPLINK structure, or has godMode enabled,
@@ -607,7 +607,7 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	{
 		if (getSatUplinkExists(viewer) || (viewer == selectedPlayer && godMode))
 		{
-			setSeenBy(psObj, viewer, UBYTE_MAX);
+			setSeenBy(psObj, viewer, uint8_t_MAX);
 		}
 	}
 
@@ -620,14 +620,14 @@ static void processVisibilitySelf(BASE_OBJECT *psObj)
 	// You have been warned!!
 	if (psStruct != NULL && (structCBSensor(psStruct) || structVTOLCBSensor(psStruct)) && psStruct->psTarget[0] != NULL)
 	{
-		setSeenByInstantly(psStruct->psTarget[0], psObj->player, UBYTE_MAX);
+		setSeenByInstantly(psStruct->psTarget[0], psObj->player, uint8_t_MAX);
 	}
 	DROID *psDroid = castDroid(psObj);
 	if (psDroid != NULL && psDroid->action == DACTION_OBSERVE && cbSensorDroid(psDroid))
 	{
 		// Anyone commenting this out will get a knee capping from John.
 		// You have been warned!!
-		setSeenByInstantly(psDroid->psActionTarget[0], psObj->player, UBYTE_MAX);
+		setSeenByInstantly(psDroid->psActionTarget[0], psObj->player, uint8_t_MAX);
 	}
 }
 
@@ -681,7 +681,7 @@ static void processVisibilityLevel(BASE_OBJECT *psObj)
 		if (player == psObj->player)
 		{
 			// owner can always see it fully
-			psObj->visible[player] = UBYTE_MAX;
+			psObj->visible[player] = uint8_t_MAX;
 			continue;
 		}
 
@@ -779,11 +779,11 @@ void processVisibility()
 		{
 			for (BASE_OBJECT *psTarget = apsSensorList[0]; psTarget != NULL; psTarget = psTarget->psNextFunc)
 			{
-				if (psObj != psTarget && psTarget->visible[psObj->player] < UBYTE_MAX / 2
+				if (psObj != psTarget && psTarget->visible[psObj->player] < uint8_t_MAX / 2
 				    && objActiveRadar(psTarget)
 				    && iHypot((psTarget->pos - psObj->pos).xy) < objSensorRange(psObj) * 10)
 				{
-					psTarget->visible[psObj->player] = UBYTE_MAX / 2;
+					psTarget->visible[psObj->player] = uint8_t_MAX / 2;
 				}
 			}
 		}
@@ -802,10 +802,10 @@ void processVisibility()
 	}
 }
 
-void	setUnderTilesVis(BASE_OBJECT *psObj, UDWORD player)
+void	setUnderTilesVis(BASE_OBJECT *psObj, uint32_t player)
 {
-	UDWORD		i, j;
-	UDWORD		mapX, mapY, width, breadth;
+	uint32_t		i, j;
+	uint32_t		mapX, mapY, width, breadth;
 	FEATURE		*psFeature;
 	STRUCTURE	*psStructure;
 	FEATURE_STATS const *psStats;

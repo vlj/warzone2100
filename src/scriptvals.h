@@ -42,7 +42,7 @@ enum INIT_TYPE
 struct VAR_INIT
 {
 	INIT_TYPE	type;
-	SDWORD		index;
+	int32_t		index;
 	char		*pString;
 };
 
@@ -50,8 +50,8 @@ struct VAR_INIT
 // store array access data
 struct ARRAY_INDEXES
 {
-	SDWORD		dimensions;
-	SDWORD		elements[VAR_MAX_DIMENSIONS];
+	int32_t		dimensions;
+	int32_t		elements[VAR_MAX_DIMENSIONS];
 };
 
 /* A simple error reporting routine */
@@ -62,10 +62,10 @@ extern void scrv_error(const char *fmt, ...);
 extern bool scrvLookUpType(const char *pIdent, INTERP_TYPE *pType);
 
 // Lookup a variable identifier
-extern bool scrvLookUpVar(const char *pIdent, UDWORD *pIndex);
+extern bool scrvLookUpVar(const char *pIdent, uint32_t *pIndex);
 
 // Lookup an array identifier
-extern bool scrvLookUpArray(const char *pIdent, UDWORD *pIndex);
+extern bool scrvLookUpArray(const char *pIdent, uint32_t *pIndex);
 
 // Whether the script is run immediately or stored for later use
 enum SCRV_TYPE

@@ -89,7 +89,7 @@ SIMPLE_OBJECT::~SIMPLE_OBJECT()
 	audio_RemoveObj(this);
 
 	const_cast<OBJECT_TYPE volatile &>(type) = (OBJECT_TYPE)(type + 1000000000);  // Hopefully this will trigger an assert              if someone uses the freed object.
-	const_cast<UBYTE volatile &>(player) += 100;                                  // Hopefully this will trigger an assert and/or crash if someone uses the freed object.
+	const_cast<uint8_t volatile &>(player) += 100;                                  // Hopefully this will trigger an assert and/or crash if someone uses the freed object.
 }
 
 BASE_OBJECT::BASE_OBJECT(OBJECT_TYPE type, uint32_t id, unsigned player)
@@ -99,7 +99,7 @@ BASE_OBJECT::BASE_OBJECT(OBJECT_TYPE type, uint32_t id, unsigned player)
 	, numWatchedTiles(0)
 	, lastEmission(0)
 	, lastHitWeapon(WSC_NUM_WEAPON_SUBCLASSES)  // No such weapon.
-	, timeLastHit(UDWORD_MAX)
+	, timeLastHit(uint32_t_MAX)
 	, body(0)
 	, periodicalDamageStart(0)
 	, periodicalDamage(0)

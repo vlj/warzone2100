@@ -122,7 +122,7 @@
 
 extern bool intAddDesign(bool bShowCentreScreen);
 extern void intRemoveDesign(void);
-extern void intProcessDesign(UDWORD id);
+extern void intProcessDesign(uint32_t id);
 extern void intRunDesign(void);
 
 extern const char *GetDefaultTemplateName(DROID_TEMPLATE *psTemplate);

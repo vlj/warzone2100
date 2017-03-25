@@ -68,14 +68,14 @@ void actionSanity(DROID *psDroid);
 void actionDroid(DROID *psDroid, DROID_ACTION action);
 
 /** Give a droid an action with a location target. */
-void actionDroid(DROID *psDroid, DROID_ACTION action, UDWORD x, UDWORD y);
+void actionDroid(DROID *psDroid, DROID_ACTION action, uint32_t x, uint32_t y);
 
 /** Give a droid an action with an object target. */
 void actionDroid(DROID *psDroid, DROID_ACTION action, BASE_OBJECT *psObj);
 
 /** Give a droid an action with an object target and a location. */
 void actionDroid(DROID *psDroid, DROID_ACTION action,
-                 BASE_OBJECT *psObj, UDWORD x, UDWORD y);
+                 BASE_OBJECT *psObj, uint32_t x, uint32_t y);
 
 /** Rotate turret toward  target return True if locked on (Droid and Structure). */
 bool actionTargetTurret(BASE_OBJECT *psAttacker, BASE_OBJECT *psTarget, WEAPON *psWeapon);

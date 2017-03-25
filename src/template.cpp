@@ -468,7 +468,7 @@ DROID_TEMPLATE *getTemplateFromTranslatedNameNoPlayer(char const *pName)
 }
 
 /*getTemplatefFromMultiPlayerID gets template for unique ID  searching all lists */
-DROID_TEMPLATE *getTemplateFromMultiPlayerID(UDWORD multiPlayerID)
+DROID_TEMPLATE *getTemplateFromMultiPlayerID(uint32_t multiPlayerID)
 {
 	for (int player = 0; player < MAX_PLAYERS; player++)
 	{

@@ -69,11 +69,11 @@ static inline void iV_Box(int x0, int y0, int x1, int y1, PIELIGHT first)
 }
 extern void pie_BoxFill(int x0, int y0, int x1, int y1, PIELIGHT colour, REND_MODE rendermode = REND_OPAQUE);
 extern void iV_DrawImage(GLuint TextureID, Vector2i position, Vector2i size, REND_MODE mode, PIELIGHT colour);
-extern void iV_DrawImage(IMAGEFILE *ImageFile, UWORD ID, int x, int y);
+extern void iV_DrawImage(IMAGEFILE *ImageFile, uint16_t ID, int x, int y);
 void iV_DrawImage2(const ImageDef &ImageFile, float x, float y, float width = -0.0f, float height = -0.0f);
 void iV_DrawImageTc(Image image, Image imageTc, int x, int y, PIELIGHT colour);
-void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width);
-void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Height);
+void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, uint16_t ID, int x, int y, int Width);
+void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, uint16_t ID, int x, int y, int Height);
 
 static inline void iV_DrawImage(Image image, int x, int y)
 {
@@ -89,7 +89,7 @@ extern void pie_UniTransBoxFill(float x0, float y0, float x1, float y1, PIELIGHT
 
 bool pie_InitRadar();
 bool pie_ShutdownRadar();
-void pie_DownLoadRadar(UDWORD *buffer);
+void pie_DownLoadRadar(uint32_t *buffer);
 void pie_RenderRadar();
 void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidth, int theight, bool filter);
 

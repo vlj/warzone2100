@@ -40,11 +40,11 @@
  */
 struct COMMAND_DROID : public COMPONENT_STATS
 {
-	UDWORD  died;		/**< Defines if the command has died or not.*/
-	SWORD   aggression;
-	SWORD   survival;
-	SWORD   nWeapStat;
-	UWORD   kills;
+	uint32_t  died;		/**< Defines if the command has died or not.*/
+	int16_t   aggression;
+	int16_t   survival;
+	int16_t   nWeapStat;
+	uint16_t   kills;
 	DROID  *psDroid;	/**< The droid where the command droid is living in.*/
 };
 

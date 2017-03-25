@@ -33,7 +33,7 @@ extern bool visInitialise(void);
 /* Check which tiles can be seen by an object */
 extern void visTilesUpdate(BASE_OBJECT *psObj);
 
-extern void revealAll(UBYTE player);
+extern void revealAll(uint8_t player);
 
 /* Check whether psViewer can see psTarget
  * psViewer should be an object that has some form of sensor,
@@ -61,13 +61,13 @@ extern void processVisibility(void);  ///< Calls processVisibilitySelf and proce
 // update the visibility reduction
 extern void visUpdateLevel(void);
 
-extern void setUnderTilesVis(BASE_OBJECT *psObj, UDWORD player);
+extern void setUnderTilesVis(BASE_OBJECT *psObj, uint32_t player);
 
 void visRemoveVisibilityOffWorld(BASE_OBJECT *psObj);
 void visRemoveVisibility(BASE_OBJECT *psObj);
 
 // fast test for whether obj2 is in range of obj1
-static inline bool visObjInRange(BASE_OBJECT *psObj1, BASE_OBJECT *psObj2, SDWORD range)
+static inline bool visObjInRange(BASE_OBJECT *psObj1, BASE_OBJECT *psObj2, int32_t range)
 {
 	int32_t xdiff = psObj1->pos.x - psObj2->pos.x, ydiff = psObj1->pos.y - psObj2->pos.y;
 

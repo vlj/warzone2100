@@ -47,13 +47,13 @@ uint16_t calcDirection(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   NB*****THIS WON'T PICK A VTOL DROID*****
 */
 
-DROID	*getNearestDroid(UDWORD x, UDWORD y, bool bSelected)
+DROID	*getNearestDroid(uint32_t x, uint32_t y, bool bSelected)
 {
 	DROID	*psDroid, *psBestUnit;
-	UDWORD	bestSoFar;
+	uint32_t	bestSoFar;
 
 	/* Go thru' all the droids  - how often have we seen this - a MACRO maybe? */
-	for (psDroid = apsDroidLists[selectedPlayer], psBestUnit = NULL, bestSoFar = UDWORD_MAX;
+	for (psDroid = apsDroidLists[selectedPlayer], psBestUnit = NULL, bestSoFar = uint32_t_MAX;
 	     psDroid; psDroid = psDroid->psNext)
 	{
 		if (!isVtolDroid(psDroid))
@@ -138,9 +138,9 @@ Vector2i positionInQuad(Vector2i const &pt, QUAD const &quad)
 }
 
 //-----------------------------------------------------------------------------------
-bool	droidOnScreen(DROID *psDroid, SDWORD tolerance)
+bool	droidOnScreen(DROID *psDroid, int32_t tolerance)
 {
-	SDWORD	dX, dY;
+	int32_t	dX, dY;
 
 	if (DrawnInLastFrame(psDroid->sDisplay.frameNumber) == true)
 	{
@@ -148,8 +148,8 @@ bool	droidOnScreen(DROID *psDroid, SDWORD tolerance)
 		dY = psDroid->sDisplay.screenY;
 		/* Is it on screen */
 		if (dX > (0 - tolerance) && dY > (0 - tolerance)
-		    && dX < (SDWORD)(pie_GetVideoBufferWidth() + tolerance)
-		    && dY < (SDWORD)(pie_GetVideoBufferHeight() + tolerance))
+		    && dX < (int32_t)(pie_GetVideoBufferWidth() + tolerance)
+		    && dY < (int32_t)(pie_GetVideoBufferHeight() + tolerance))
 		{
 			return (true);
 		}

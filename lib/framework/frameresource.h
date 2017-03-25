@@ -31,7 +31,7 @@
 
 
 /** Function pointer for a function that loads from a memory buffer. */
-typedef bool (*RES_BUFFERLOAD)(const char *pBuffer, UDWORD size, void **pData);
+typedef bool (*RES_BUFFERLOAD)(const char *pBuffer, uint32_t size, void **pData);
 
 /** Function pointer for a function that loads from a filename. */
 typedef bool (*RES_FILELOAD)(const char *pFile, void **pData);
@@ -45,11 +45,11 @@ typedef void (*RESLOAD_CALLBACK)();
 struct RES_DATA
 {
 	void		*pData;				// pointer to the acutal data
-	SDWORD		blockID;			// which of the blocks is it in (so we can clear some of them...)
+	int32_t		blockID;			// which of the blocks is it in (so we can clear some of them...)
 
-	UDWORD	HashedID;				// hashed version of the name of the id
+	uint32_t	HashedID;				// hashed version of the name of the id
 	RES_DATA       *psNext;                         // next entry - most likely to be following on!
-	UDWORD		usage; // Reference count
+	uint32_t		usage; // Reference count
 
 	// ID of the resource - filename from the .wrf - e.g. "TRON.PIE"
 	const char *aID;
@@ -68,7 +68,7 @@ struct RES_TYPE
 
 	// we must have a pointer to the data here so that we can do a resGetData();
 	RES_DATA		*psRes;		// Linked list of data items of this type
-	UDWORD	HashedType;				// hashed version of the name of the id - // a null hashedtype indicates end of list
+	uint32_t	HashedType;				// hashed version of the name of the id - // a null hashedtype indicates end of list
 
 	RES_FILELOAD	fileLoad;		// This isn't really used any more ?
 	RES_TYPE       *psNext;
@@ -89,13 +89,13 @@ WZ_DECL_NONNULL(1) void resSetBaseDir(const char *pResDir);
 WZ_DECL_NONNULL(1) void resForceBaseDir(const char *pResDir);
 
 /** Parse the res file. */
-WZ_DECL_NONNULL(1) bool resLoad(const char *pResFile, SDWORD blockID);
+WZ_DECL_NONNULL(1) bool resLoad(const char *pResFile, int32_t blockID);
 
 /** Release all the resources currently loaded and the resource load functions. */
 void resReleaseAll();
 
 /** Release the data for a particular block ID. */
-void resReleaseBlockData(SDWORD blockID);
+void resReleaseBlockData(int32_t blockID);
 
 /** Release all the resources currently loaded but keep the resource load functions. */
 void resReleaseAllData();
@@ -110,13 +110,13 @@ WZ_DECL_NONNULL(1) bool resAddFileLoad(const char *pType, RES_FILELOAD fileLoad,
 WZ_DECL_NONNULL(1, 2) bool resLoadFile(const char *pType, const char *pFile);
 
 /** Return the resource for a type and ID */
-WZ_DECL_NONNULL(1) void *resGetDataFromHash(const char *pType, UDWORD HashedID);
+WZ_DECL_NONNULL(1) void *resGetDataFromHash(const char *pType, uint32_t HashedID);
 WZ_DECL_NONNULL(1, 2) void *resGetData(const char *pType, const char *pID);
 WZ_DECL_NONNULL(1, 2) bool resPresent(const char *pType, const char *pID);
 WZ_DECL_NONNULL(1) void resToLower(char *pStr);
 
 /** Return the HashedID string for a piece of data. */
-WZ_DECL_NONNULL(1, 3) bool resGetHashfromData(const char *pType, const void *pData, UDWORD *pHash);
+WZ_DECL_NONNULL(1, 3) bool resGetHashfromData(const char *pType, const void *pData, uint32_t *pHash);
 
 /** Retrieve the resource ID string
  *  \param type the resource type string (e.g. "IMG", "IMD", "TEXPAGE", "WAV", etc.)

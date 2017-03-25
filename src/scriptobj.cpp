@@ -57,7 +57,7 @@ static const int UNALLOCATED_OBJECT = -1;
 static INTERP_VAL	scrFunctionResult;	//function return value to be pushed to stack
 
 // Get values from a base object
-bool scrBaseObjGet(UDWORD index)
+bool scrBaseObjGet(uint32_t index)
 {
 	INTERP_TYPE		type = VAL_VOID;
 	BASE_OBJECT		*psObj;
@@ -81,27 +81,27 @@ bool scrBaseObjGet(UDWORD index)
 	{
 	case OBJID_POSX:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->pos.x;
+		scrFunctionResult.v.ival = (int32_t)psObj->pos.x;
 		break;
 	case OBJID_POSY:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->pos.y;
+		scrFunctionResult.v.ival = (int32_t)psObj->pos.y;
 		break;
 	case OBJID_POSZ:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->pos.z;
+		scrFunctionResult.v.ival = (int32_t)psObj->pos.z;
 		break;
 	case OBJID_ID:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->id;
+		scrFunctionResult.v.ival = (int32_t)psObj->id;
 		break;
 	case OBJID_PLAYER:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->player;
+		scrFunctionResult.v.ival = (int32_t)psObj->player;
 		break;
 	case OBJID_TYPE:
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)psObj->type;
+		scrFunctionResult.v.ival = (int32_t)psObj->type;
 		break;
 	case OBJID_ORDER:
 		if (psObj->type != OBJ_DROID)
@@ -124,7 +124,7 @@ bool scrBaseObjGet(UDWORD index)
 			return false;
 		}
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->action;
+		scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->action;
 		break;
 	//new member variable - if droid is selected (humans only)
 	case OBJID_SELECTED:
@@ -134,7 +134,7 @@ bool scrBaseObjGet(UDWORD index)
 			return false;
 		}
 		type = VAL_BOOL;
-		scrFunctionResult.v.bval = (SDWORD)((DROID *)psObj)->selected;
+		scrFunctionResult.v.bval = (int32_t)((DROID *)psObj)->selected;
 		break;
 	case OBJID_STRUCTSTATTYPE:
 		if (psObj->type == OBJ_STRUCTURE)
@@ -173,7 +173,7 @@ bool scrBaseObjGet(UDWORD index)
 			return false;
 		}
 		type = VAL_INT;
-		scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->droidType;
+		scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->droidType;
 		break;
 	case OBJID_CLUSTERID:
 		if (psObj->type == OBJ_FEATURE)
@@ -221,7 +221,7 @@ bool scrBaseObjGet(UDWORD index)
 			return false;
 		}
 		type = (INTERP_TYPE)ST_BODY;
-		scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->asBits[COMP_BODY];
+		scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->asBits[COMP_BODY];
 		break;
 	case OBJID_PROPULSION:
 		if (psObj->type != OBJ_DROID)
@@ -230,7 +230,7 @@ bool scrBaseObjGet(UDWORD index)
 			return false;
 		}
 		type = (INTERP_TYPE)ST_PROPULSION;
-		scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->asBits[COMP_PROPULSION];
+		scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->asBits[COMP_PROPULSION];
 		break;
 	case OBJID_WEAPON:		//TODO: only returns first weapon now
 		type = (INTERP_TYPE)ST_WEAPON;
@@ -243,7 +243,7 @@ bool scrBaseObjGet(UDWORD index)
 			}
 			else
 			{
-				scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->asWeaps[0].nStat;
+				scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->asWeaps[0].nStat;
 			}
 			break;
 		case OBJ_STRUCTURE:
@@ -253,7 +253,7 @@ bool scrBaseObjGet(UDWORD index)
 			}
 			else
 			{
-				scrFunctionResult.v.ival = (SDWORD)((STRUCTURE *)psObj)->asWeaps[0].nStat;
+				scrFunctionResult.v.ival = (int32_t)((STRUCTURE *)psObj)->asWeaps[0].nStat;
 			}
 			break;
 		default:		//only droids and structures can have a weapon
@@ -313,15 +313,15 @@ bool scrBaseObjGet(UDWORD index)
 		switch (psObj->type)
 		{
 		case OBJ_DROID:
-			scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->body;
+			scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->body;
 			break;
 
 		case OBJ_STRUCTURE:
-			scrFunctionResult.v.ival = (SDWORD)((STRUCTURE *)psObj)->body;
+			scrFunctionResult.v.ival = (int32_t)((STRUCTURE *)psObj)->body;
 			break;
 
 		case OBJ_FEATURE:
-			scrFunctionResult.v.ival = (SDWORD)((FEATURE *)psObj)->body;
+			scrFunctionResult.v.ival = (int32_t)((FEATURE *)psObj)->body;
 			break;
 
 		default:
@@ -335,10 +335,10 @@ bool scrBaseObjGet(UDWORD index)
 		switch (psObj->type)
 		{
 		case OBJ_DROID:
-			scrFunctionResult.v.ival = (SDWORD)((DROID *)psObj)->originalBody;
+			scrFunctionResult.v.ival = (int32_t)((DROID *)psObj)->originalBody;
 			break;
 		case OBJ_STRUCTURE:
-			scrFunctionResult.v.ival = (SDWORD)structureBody((STRUCTURE *)psObj);
+			scrFunctionResult.v.ival = (int32_t)structureBody((STRUCTURE *)psObj);
 			break;
 		case OBJ_FEATURE:
 			scrFunctionResult.v.ival = ((FEATURE *)psObj)->psStats->body;
@@ -446,13 +446,13 @@ bool scrObjToFeature(void)
 
 // cache all the possible values for the last group to try
 // to speed up access
-static SDWORD		lgX, lgY, lgMembers, lgHealth;
+static int32_t		lgX, lgY, lgMembers, lgHealth;
 
 // Get values from a weapon
-bool scrWeaponObjGet(UDWORD index)
+bool scrWeaponObjGet(uint32_t index)
 {
 	INTERP_TYPE		type;
-	SDWORD			weapIndex;
+	int32_t			weapIndex;
 
 	if (!stackPopParams(1, ST_WEAPON, &weapIndex))
 	{
@@ -501,7 +501,7 @@ bool scrWeaponObjGet(UDWORD index)
 }
 
 // Get values from a group
-bool scrGroupObjGet(UDWORD index)
+bool scrGroupObjGet(uint32_t index)
 {
 	INTERP_TYPE		type;
 	DROID_GROUP		*psGroup;
@@ -520,7 +520,7 @@ bool scrGroupObjGet(UDWORD index)
 		for (psCurr = psGroup->psList; psCurr; psCurr = psCurr->psGrpNext)
 		{
 			lgMembers += 1;
-			lgX += (SDWORD)psCurr->pos.x;
+			lgX += (int32_t)psCurr->pos.x;
 		}
 
 		if (lgMembers > 0)
@@ -536,7 +536,7 @@ bool scrGroupObjGet(UDWORD index)
 		for (psCurr = psGroup->psList; psCurr; psCurr = psCurr->psGrpNext)
 		{
 			lgMembers += 1;
-			lgY += (SDWORD)psCurr->pos.y;
+			lgY += (int32_t)psCurr->pos.y;
 		}
 
 		if (lgMembers > 0)
@@ -563,7 +563,7 @@ bool scrGroupObjGet(UDWORD index)
 		for (psCurr = psGroup->psList; psCurr; psCurr = psCurr->psGrpNext)
 		{
 			lgMembers += 1;
-			lgHealth += (SDWORD)((100 * psCurr->body) / psCurr->originalBody);
+			lgHealth += (int32_t)((100 * psCurr->body) / psCurr->originalBody);
 		}
 
 		if (lgMembers > 0)
@@ -598,7 +598,7 @@ bool scrGroupObjGet(UDWORD index)
 
 
 // get the name from a stat pointer
-static const QString scrGetStatName(INTERP_TYPE type, UDWORD data)
+static const QString scrGetStatName(INTERP_TYPE type, uint32_t data)
 {
 	QString pName;
 
@@ -781,7 +781,7 @@ bool scrValDefSave(INTERP_VAL *psVal, WzConfig &ini)
 		if (psVal->v.ival)
 		{
 			// can also return NULL
-			pName = sound_GetTrackName((UDWORD)psVal->v.ival);
+			pName = sound_GetTrackName((uint32_t)psVal->v.ival);
 		}
 		if (pName.isEmpty())
 		{
@@ -807,8 +807,8 @@ bool scrValDefSave(INTERP_VAL *psVal, WzConfig &ini)
 bool scrValDefLoad(INTERP_VAL *psVal, WzConfig &ini)
 {
 	DROID			*psCDroid;
-	SDWORD			index, members;
-	UDWORD			id;
+	int32_t			index, members;
+	uint32_t			id;
 	LEVEL_DATASET	*psLevel;
 	DROID_GROUP		*psGroup = NULL;
 

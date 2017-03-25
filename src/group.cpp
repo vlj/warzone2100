@@ -262,7 +262,7 @@ void DROID_GROUP::orderGroup(DROID_ORDER order)
 }
 
 // Give a group of droids an order (using a Location)
-void DROID_GROUP::orderGroup(DROID_ORDER order, UDWORD x, UDWORD y)
+void DROID_GROUP::orderGroup(DROID_ORDER order, uint32_t x, uint32_t y)
 {
 	DROID	*psCurr;
 

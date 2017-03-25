@@ -93,7 +93,7 @@ void killFeature(FEATURE *psDel);
 extern void freeAllFeatures(void);
 
 /* Create a new Flag Position */
-extern bool createFlagPosition(FLAG_POSITION **ppsNew, UDWORD player);
+extern bool createFlagPosition(FLAG_POSITION **ppsNew, uint32_t player);
 /* add the Flag Position to the Flag Position Lists */
 extern void addFlagPosition(FLAG_POSITION *psFlagPosToAdd);
 /* Remove a Flag Position from the Lists */
@@ -104,10 +104,10 @@ extern void freeAllAssemblyPoints(void);
 
 // Find a base object from it's id
 extern BASE_OBJECT *getBaseObjFromData(unsigned id, unsigned player, OBJECT_TYPE type);
-extern BASE_OBJECT *getBaseObjFromId(UDWORD id);
-extern bool checkValidId(UDWORD id);
+extern BASE_OBJECT *getBaseObjFromId(uint32_t id);
+extern bool checkValidId(uint32_t id);
 
-extern UDWORD getRepairIdFromFlag(FLAG_POSITION *psFlag);
+extern uint32_t getRepairIdFromFlag(FLAG_POSITION *psFlag);
 
 void objCount(int *droids, int *structures, int *features);
 

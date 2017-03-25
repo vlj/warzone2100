@@ -50,7 +50,7 @@
  */
 struct SDMATRIX
 {
-	SDWORD a, b, c,
+	int32_t a, b, c,
 	       d, e, f,
 	       g, h, i,
 	       j, k, l;
@@ -64,7 +64,7 @@ static SDMATRIX *psMatrix = &aMatrixStack[0];
 
 //*************************************************************************
 
-static SDWORD _MATRIX_INDEX;
+static int32_t _MATRIX_INDEX;
 
 //*************************************************************************
 //*** create new matrix from current transformation matrix and make current

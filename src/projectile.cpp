@@ -79,7 +79,7 @@ struct INTERVAL
 /* The range for neighbouring objects */
 #define PROJ_NEIGHBOUR_RANGE (TILE_UNITS*4)
 // used to create a specific ID for projectile objects to facilitate tracking them.
-static const UDWORD ProjectileTrackerID =	0xdead0000;
+static const uint32_t ProjectileTrackerID =	0xdead0000;
 
 /* The list of projectiles in play */
 static std::vector<PROJECTILE *> psProjectileList;
@@ -951,7 +951,7 @@ static void proj_InFlightFunc(PROJECTILE *psProj)
 static void proj_ImpactFunc(PROJECTILE *psObj)
 {
 	WEAPON_STATS    *psStats;
-	SDWORD          iAudioImpactID;
+	int32_t          iAudioImpactID;
 	int32_t         relativeDamage;
 	Vector3i        position, scatter;
 	iIMDShape       *imd;
@@ -1459,9 +1459,9 @@ static ObjectShape establishTargetShape(BASE_OBJECT *psTarget)
 
 /*the damage depends on the weapon effect and the target propulsion type or
 structure strength*/
-UDWORD	calcDamage(UDWORD baseDamage, WEAPON_EFFECT weaponEffect, BASE_OBJECT *psTarget)
+uint32_t	calcDamage(uint32_t baseDamage, WEAPON_EFFECT weaponEffect, BASE_OBJECT *psTarget)
 {
-	UDWORD	damage = baseDamage * 100;
+	uint32_t	damage = baseDamage * 100;
 
 	if (psTarget->type == OBJ_STRUCTURE)
 	{

@@ -48,10 +48,10 @@ public:
 	void setTip(QString string);
 
 	WSLD_ORIENTATION orientation;                   // The orientation of the slider
-	UWORD		numStops;			// Number of stop positions on the slider
-	UWORD		barSize;			// Thickness of slider bar
-	UWORD		pos;				// Current stop position of the slider
-	UWORD		state;				// Slider state
+	uint16_t		numStops;			// Number of stop positions on the slider
+	uint16_t		barSize;			// Thickness of slider bar
+	uint16_t		pos;				// Current stop position of the slider
+	uint16_t		state;				// Slider state
 	QString         pTip;                           // Tool tip
 };
 

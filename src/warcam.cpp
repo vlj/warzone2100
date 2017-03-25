@@ -65,7 +65,7 @@
 static	WARCAM	trackingCamera;
 
 /* Present rotation for the 3d camera logo */
-static	SDWORD	warCamLogoRotation;
+static	int32_t	warCamLogoRotation;
 
 /* The fake target that we track when jumping to a new location on the radar */
 static BASE_OBJECT radarTarget(OBJ_TARGET, 0, 0);
@@ -73,7 +73,7 @@ static BASE_OBJECT radarTarget(OBJ_TARGET, 0, 0);
 /* Do we trun to face when doing a radar jump? */
 static	bool	bRadarAllign;
 
-static SDWORD	presAvAngle = 0;
+static int32_t	presAvAngle = 0;
 
 /*	These are the DEFAULT offsets that make us track _behind_ a droid and allow
 	it to be pretty far _down_ the screen, so we can see more
@@ -135,10 +135,10 @@ static void processLeaderSelection(void)
 	DROID *psDroid;
 	DROID *psPresent;
 	DROID *psNew = NULL;
-	UDWORD leaderClass;
+	uint32_t leaderClass;
 	bool bSuccess;
-	UDWORD dif;
-	UDWORD bestSoFar;
+	uint32_t dif;
+	uint32_t bestSoFar;
 
 	if (getWarCamStatus())
 	{
@@ -180,7 +180,7 @@ static void processLeaderSelection(void)
 	}
 
 	bSuccess = false;
-	bestSoFar = UDWORD_MAX;
+	bestSoFar = uint32_t_MAX;
 
 	switch (leaderClass)
 	{
@@ -271,7 +271,7 @@ static void processLeaderSelection(void)
 
 
 /* Sets up the dummy target for the camera */
-static void setUpRadarTarget(SDWORD x, SDWORD y)
+static void setUpRadarTarget(int32_t x, int32_t y)
 {
 	radarTarget.pos.x = x;
 	radarTarget.pos.y = y;
@@ -523,11 +523,11 @@ static uint16_t getAverageTrackAngle(unsigned groupNumber, bool bCheckOnScreen)
 
 
 //-----------------------------------------------------------------------------------
-static void getTrackingConcerns(SDWORD *x, SDWORD *y, SDWORD *z, UDWORD groupNumber, bool bOnScreen)
+static void getTrackingConcerns(int32_t *x, int32_t *y, int32_t *z, uint32_t groupNumber, bool bOnScreen)
 {
-	SDWORD xTotals = 0, yTotals = 0, zTotals = 0;
+	int32_t xTotals = 0, yTotals = 0, zTotals = 0;
 	DROID *psDroid;
-	UDWORD count;
+	uint32_t count;
 
 	for (count = 0, psDroid = apsDroidLists[selectedPlayer]; psDroid; psDroid = psDroid->psNext)
 	{
@@ -592,7 +592,7 @@ in the case of location and degrees of arc in the case of rotation.
 //-----------------------------------------------------------------------------------
 
 
-static void updateCameraAcceleration(UBYTE update)
+static void updateCameraAcceleration(uint8_t update)
 {
 	Vector3i concern = trackingCamera.target->pos.xzy;
 	Vector2i behind(0, 0); /* Irrelevant for normal radar tracking */
@@ -673,7 +673,7 @@ static void updateCameraAcceleration(UBYTE update)
 
 //-----------------------------------------------------------------------------------
 
-static void updateCameraVelocity(UBYTE update)
+static void updateCameraVelocity(uint8_t update)
 {
 	if (update & X_UPDATE)
 	{
@@ -693,7 +693,7 @@ static void updateCameraVelocity(UBYTE update)
 
 //-----------------------------------------------------------------------------------
 
-static void	updateCameraPosition(UBYTE update)
+static void	updateCameraPosition(uint8_t update)
 {
 	if (update & X_UPDATE)
 	{
@@ -716,15 +716,15 @@ static void	updateCameraPosition(UBYTE update)
 
 //-----------------------------------------------------------------------------------
 /* Calculate the acceleration that the camera spins around at */
-static void updateCameraRotationAcceleration(UBYTE update)
+static void updateCameraRotationAcceleration(uint8_t update)
 {
-	SDWORD	worldAngle;
+	int32_t	worldAngle;
 	float	separation;
-	SDWORD	xConcern, yConcern, zConcern;
+	int32_t	xConcern, yConcern, zConcern;
 	bool	bTooLow;
 	PROPULSION_STATS *psPropStats;
 	bool	bGotFlying = false;
-	SDWORD	xPos = 0, yPos = 0, zPos = 0;
+	int32_t	xPos = 0, yPos = 0, zPos = 0;
 
 	bTooLow = false;
 	if (trackingCamera.target->type == OBJ_DROID)
@@ -840,7 +840,7 @@ static void updateCameraRotationAcceleration(UBYTE update)
 //-----------------------------------------------------------------------------------
 /*	Calculate the velocity that the camera spins around at - just add previously
 	calculated acceleration */
-static void updateCameraRotationVelocity(UBYTE update)
+static void updateCameraRotationVelocity(uint8_t update)
 {
 	if (update & Y_UPDATE)
 	{
@@ -858,7 +858,7 @@ static void updateCameraRotationVelocity(UBYTE update)
 
 //-----------------------------------------------------------------------------------
 /* Move the camera around by adding the velocity */
-static void updateCameraRotationPosition(UBYTE update)
+static void updateCameraRotationPosition(uint8_t update)
 {
 	if (update & Y_UPDATE)
 	{
@@ -993,7 +993,7 @@ DROID *getTrackingDroid(void)
 }
 
 //-----------------------------------------------------------------------------------
-SDWORD	getPresAngle(void)
+int32_t	getPresAngle(void)
 {
 	return (presAvAngle);
 }
@@ -1001,7 +1001,7 @@ SDWORD	getPresAngle(void)
 
 
 //-----------------------------------------------------------------------------------
-UDWORD	getNumDroidsSelected(void)
+uint32_t	getNumDroidsSelected(void)
 {
 	return (selNumSelected(selectedPlayer));
 }
@@ -1050,10 +1050,10 @@ void	camToggleInfo(void)
 }
 
 /* Informs the tracking camera that we want to start tracking to a new radar target */
-void	requestRadarTrack(SDWORD x, SDWORD y)
+void	requestRadarTrack(int32_t x, int32_t y)
 {
-	radarX = (SWORD)x;
-	radarY = (SWORD)y;
+	radarX = (int16_t)x;
+	radarY = (int16_t)y;
 	bRadarTrackingRequested = true;
 	trackingCamera.status = CAM_REQUEST;
 	processWarCam();

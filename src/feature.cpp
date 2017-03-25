@@ -26,7 +26,7 @@
 #include "lib/framework/frame.h"
 #include "lib/framework/frameresource.h"
 #include "lib/framework/strres.h"
-#include "lib/framework/wzconfig.h"
+#include "lib/gamelib/wzconfig.h"
 
 #include "lib/gamelib/gtime.h"
 #include "lib/sound/audio.h"
@@ -58,7 +58,7 @@
 
 /* The statistics for the features */
 FEATURE_STATS	*asFeatureStats;
-UDWORD			numFeatureStats;
+uint32_t			numFeatureStats;
 
 //Value is stored for easy access to this feature in destroyDroid()/destroyStruct()
 FEATURE_STATS *oilResFeature = NULL;
@@ -186,7 +186,7 @@ int32_t featureDamage(FEATURE *psFeature, unsigned damage, WEAPON_CLASS weaponCl
 
 
 /* Create a feature on the map */
-FEATURE *buildFeature(FEATURE_STATS *psStats, UDWORD x, UDWORD y, bool FromSave)
+FEATURE *buildFeature(FEATURE_STATS *psStats, uint32_t x, uint32_t y, bool FromSave)
 {
 	//try and create the Feature
 	FEATURE *psFeature = new FEATURE(generateSynchronisedObjectId(), psStats);
@@ -417,7 +417,7 @@ bool removeFeature(FEATURE *psDel)
 /* Remove a Feature and free it's memory */
 bool destroyFeature(FEATURE *psDel, unsigned impactTime)
 {
-	UDWORD			widthScatter, breadthScatter, heightScatter, i;
+	uint32_t			widthScatter, breadthScatter, heightScatter, i;
 	EFFECT_TYPE		explosionSize;
 	Vector3i pos;
 
@@ -517,7 +517,7 @@ bool destroyFeature(FEATURE *psDel, unsigned impactTime)
 }
 
 
-SDWORD getFeatureStatFromName(const char *pName)
+int32_t getFeatureStatFromName(const char *pName)
 {
 	FEATURE_STATS *psStat;
 

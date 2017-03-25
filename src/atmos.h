@@ -26,9 +26,9 @@
 
 struct ATPART
 {
-	UBYTE		status;
-	UBYTE		type;
-	UDWORD		size;
+	uint8_t		status;
+	uint8_t		type;
+	uint32_t		size;
 	Vector3f	position;
 	Vector3f	velocity;
 	iIMDShape	*imd;

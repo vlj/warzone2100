@@ -70,7 +70,7 @@ struct DROID_TEMPLATE : public BASE_STATS
 	int8_t          numWeaps;                   ///< Number of weapons
 	uint8_t         asWeaps[MAX_WEAPONS];       ///< weapon indices
 	DROID_TYPE      droidType;                  ///< The type of droid
-	UDWORD          multiPlayerID;              ///< multiplayer unique descriptor(cant use id's for templates). Used for save games as well now - AB 29/10/98
+	uint32_t          multiPlayerID;              ///< multiplayer unique descriptor(cant use id's for templates). Used for save games as well now - AB 29/10/98
 	bool            prefab;                     ///< Not player designed, not saved, never delete or change
 	bool            stored;                     ///< Stored template
 	bool            enabled;                    ///< Has been enabled
@@ -96,18 +96,18 @@ struct DROID : public BASE_OBJECT
 	/* The other droid data.  These are all derived from the components
 	 * but stored here for easy access
 	 */
-	UDWORD          weight;
-	UDWORD          baseSpeed;                      ///< the base speed dependant on propulsion type
-	UDWORD          originalBody;                   ///< the original body points
+	uint32_t          weight;
+	uint32_t          baseSpeed;                      ///< the base speed dependant on propulsion type
+	uint32_t          originalBody;                   ///< the original body points
 	uint32_t        experience;
-	UDWORD          lastFrustratedTime;             ///< Set when eg being stuck; used for eg firing indiscriminately at map features to clear the way
-	SWORD           resistance;                     ///< used in Electronic Warfare
+	uint32_t          lastFrustratedTime;             ///< Set when eg being stuck; used for eg firing indiscriminately at map features to clear the way
+	int16_t           resistance;                     ///< used in Electronic Warfare
 	// The group the droid belongs to
 	DROID_GROUP    *psGroup;
 	DROID          *psGrpNext;
 	STRUCTURE      *psBaseStruct;                   ///< a structure that this droid might be associated with. For VTOLs this is the rearming pad
 	// queued orders
-	SDWORD          listSize;                       ///< Gives the number of synchronised orders. Orders from listSize to the real end of the list may not affect game state.
+	int32_t          listSize;                       ///< Gives the number of synchronised orders. Orders from listSize to the real end of the list may not affect game state.
 	OrderList       asOrderList;                    ///< The range [0; listSize - 1] corresponds to synchronised orders, and the range [listPendingBegin; listPendingEnd - 1] corresponds to the orders that will remain, once all orders are synchronised.
 	unsigned        listPendingBegin;               ///< Index of first order which will not be erased by a pending order. After all messages are processed, the orders in the range [listPendingBegin; listPendingEnd - 1] will remain.
 	/* Order data */
@@ -124,7 +124,7 @@ struct DROID : public BASE_OBJECT
 #endif
 
 	// secondary order data
-	UDWORD          secondaryOrder;
+	uint32_t          secondaryOrder;
 	uint32_t        secondaryOrderPending;          ///< What the secondary order will be, after synchronisation.
 	int             secondaryOrderPendingCount;     ///< Number of pending secondary order changes.
 
@@ -132,18 +132,18 @@ struct DROID : public BASE_OBJECT
 	DROID_ACTION    action;
 	Vector2i        actionPos;
 	BASE_OBJECT    *psActionTarget[MAX_WEAPONS]; ///< Action target object
-	UDWORD          actionStarted;                  ///< Game time action started
-	UDWORD          actionPoints;                   ///< number of points done by action since start
-	UDWORD          expectedDamageDirect;                 ///< Expected damage to be caused by all currently incoming direct projectiles. This info is shared between all players,
-	UDWORD          expectedDamageIndirect;                 ///< Expected damage to be caused by all currently incoming indirect projectiles. This info is shared between all players,
+	uint32_t          actionStarted;                  ///< Game time action started
+	uint32_t          actionPoints;                   ///< number of points done by action since start
+	uint32_t          expectedDamageDirect;                 ///< Expected damage to be caused by all currently incoming direct projectiles. This info is shared between all players,
+	uint32_t          expectedDamageIndirect;                 ///< Expected damage to be caused by all currently incoming indirect projectiles. This info is shared between all players,
 	///< but shouldn't make a difference unless 3 mutual enemies happen to be fighting each other at the same time.
-	UBYTE           illumination;
+	uint8_t           illumination;
 	/* Movement control data */
 	MOVE_CONTROL    sMove;
 	Spacetime       prevSpacetime;                  ///< Location of droid in previous tick.
 	uint8_t         blockedBits;                    ///< Bit set telling which tiles block this type of droid (TODO)
 	/* anim data */
-	SDWORD          iAudioID;
+	int32_t          iAudioID;
 };
 
 #endif // __INCLUDED_DROIDDEF_H__

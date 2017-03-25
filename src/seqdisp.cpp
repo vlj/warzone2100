@@ -68,8 +68,8 @@ static int D_H2 = 0;	// Text height offset
 struct SEQTEXT
 {
 	char pText[MAX_STR_LENGTH];
-	UDWORD x;
-	UDWORD y;
+	uint32_t x;
+	uint32_t y;
 	double startTime;
 	double endTime;
 	bool	bSubtitle;
@@ -108,8 +108,8 @@ static bool bSeqSubtitles = true;
 static bool bSeqPlaying = false;
 static QString aVideoName;
 static SEQLIST aSeqList[MAX_SEQ_LIST];
-static SDWORD currentSeq = -1;
-static SDWORD currentPlaySeq = -1;
+static int32_t currentSeq = -1;
+static int32_t currentPlaySeq = -1;
 
 /***************************************************************************/
 /*
@@ -398,11 +398,11 @@ bool seq_StopFullScreenVideo(void)
 }
 
 // add a string at x,y or add string below last line if x and y are 0
-bool seq_AddTextForVideo(const char *pText, SDWORD xOffset, SDWORD yOffset, double startTime, double endTime, SEQ_TEXT_POSITIONING textJustification)
+bool seq_AddTextForVideo(const char *pText, int32_t xOffset, int32_t yOffset, double startTime, double endTime, SEQ_TEXT_POSITIONING textJustification)
 {
-	SDWORD sourceLength, currentLength;
+	int32_t sourceLength, currentLength;
 	char *currentText;
-	static SDWORD lastX;
+	static int32_t lastX;
 	// make sure we take xOffset into account, we don't always start at 0
 	const unsigned int buffer_width = pie_GetVideoBufferWidth() - xOffset;
 
@@ -502,8 +502,8 @@ static bool seq_AddTextFromFile(const char *pTextName, SEQ_TEXT_POSITIONING text
 {
 	char aTextName[MAX_STR_LENGTH];
 	char *pTextBuffer, *pCurrentLine, *pText;
-	UDWORD fileSize;
-	SDWORD xOffset, yOffset;
+	uint32_t fileSize;
+	int32_t xOffset, yOffset;
 	double startTime, endTime;
 	const char *seps = "\n";
 
@@ -538,7 +538,7 @@ static bool seq_AddTextFromFile(const char *pTextName, SEQ_TEXT_POSITIONING text
 				ASSERT(pText != NULL, "error parsing text file");
 				if (pText != NULL)
 				{
-					*pText = (UBYTE)0;
+					*pText = (uint8_t)0;
 				}
 				pText = strchr(pCurrentLine, '"');
 				ASSERT(pText != NULL, "error parsing text file");

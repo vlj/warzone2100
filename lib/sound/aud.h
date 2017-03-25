@@ -28,9 +28,9 @@
 
 struct SIMPLE_OBJECT;
 
-void     audio_GetObjectPos(SIMPLE_OBJECT *psObj, SDWORD *piX, SDWORD *piY, SDWORD *piZ);
-void	audio_GetStaticPos(SDWORD iWorldX, SDWORD iWorldY,
-                           SDWORD *piX, SDWORD *piY, SDWORD *piZ);
+void     audio_GetObjectPos(SIMPLE_OBJECT *psObj, int32_t *piX, int32_t *piY, int32_t *piZ);
+void	audio_GetStaticPos(int32_t iWorldX, int32_t iWorldY,
+                           int32_t *piX, int32_t *piY, int32_t *piZ);
 bool     audio_ObjectDead(SIMPLE_OBJECT *psObj);
 Vector3f audio_GetPlayerPos(void);
 void audio_Get3DPlayerRotAboutVerticalAxis(float *angle);

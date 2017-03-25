@@ -36,10 +36,10 @@
 
 #include <algorithm>
 
-#define CLIP_LEFT	((SDWORD)0)
-#define CLIP_RIGHT	((SDWORD)pie_GetVideoBufferWidth())
-#define CLIP_TOP	((SDWORD)0)
-#define CLIP_BOTTOM ((SDWORD)pie_GetVideoBufferHeight())
+#define CLIP_LEFT	((int32_t)0)
+#define CLIP_RIGHT	((int32_t)pie_GetVideoBufferWidth())
+#define CLIP_TOP	((int32_t)0)
+#define CLIP_BOTTOM ((int32_t)pie_GetVideoBufferHeight())
 // Gerard - HACK Multiplied by 7 to fix clipping
 // someone needs to take a good look at the radius calculation
 #define SCALE_DEPTH (FP12_MULTIPLIER*7)
@@ -58,12 +58,12 @@ struct BUCKET_TAG
 
 static std::vector<BUCKET_TAG> bucketArray;
 
-static SDWORD bucketCalculateZ(RENDER_TYPE objectType, void *pObject)
+static int32_t bucketCalculateZ(RENDER_TYPE objectType, void *pObject)
 {
-	SDWORD				z = 0, radius;
+	int32_t				z = 0, radius;
 	Vector2i				pixel;
 	Vector3i				position;
-	UDWORD				droidSize;
+	uint32_t				droidSize;
 	DROID				*psDroid;
 	BODY_STATS			*psBStats;
 	SIMPLE_OBJECT		*psSimpObj;

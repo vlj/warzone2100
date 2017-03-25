@@ -55,17 +55,17 @@
 
 struct CONSOLE
 {
-	UDWORD	topX;
-	UDWORD	topY;
-	UDWORD	width;
-	UDWORD	textDepth;
+	uint32_t	topX;
+	uint32_t	topY;
+	uint32_t	width;
+	uint32_t	textDepth;
 	bool	permanent;
 };
 
 struct CONSOLE_MESSAGE
 {
 	std::string text;
-	UDWORD	timeAdded;		// When was it added to our list?
+	uint32_t	timeAdded;		// When was it added to our list?
 	int		JustifyType;	// text justification
 	int		player;			// Player who sent this message or SYSTEM_MESSAGE
 	bool	team;			// team message or not
@@ -83,10 +83,10 @@ static int linePitch = 0;						// the pitch of a line
 static bool showBackgroundColor = false;		// if user wants to add more contrast to the history display
 static CONSOLE mainConsole;						// Stores the console dimensions and states
 static CONSOLE historyConsole;					// Stores the History console dimensions and states
-static UDWORD	messageDuration;				/** How long do messages last for? */
+static uint32_t	messageDuration;				/** How long do messages last for? */
 static bool	bTextBoxActive = false;				/** Is there a box under the console text? */
 static bool	bConsoleDisplayEnabled = false;		/** Is the console being displayed? */
-static UDWORD	consoleVisibleLines;			/** How many lines are displayed? */
+static uint32_t	consoleVisibleLines;			/** How many lines are displayed? */
 static int allowNewMessages;					/** Whether new messages are allowed to be added */
 
 char ConsoleString[MAX_CONSOLE_TMP_STRING_LENGTH];	/// Globally available string for new console messages.
@@ -94,7 +94,7 @@ char ConsoleString[MAX_CONSOLE_TMP_STRING_LENGTH];	/// Globally available string
 /**
 	Specify how long messages will stay on screen.
 */
-static void	setConsoleMessageDuration(UDWORD time)
+static void	setConsoleMessageDuration(uint32_t time)
 {
 	messageDuration = time;
 }
@@ -142,7 +142,7 @@ void	toggleConsoleDrop(void)
 }
 
 /** Add a string to the console. */
-bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, SDWORD player, bool team)
+bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, int32_t player, bool team)
 {
 	CONSOLE_MESSAGE	consoleStorage;
 
@@ -286,7 +286,7 @@ void	flushConsoleMessages(void)
 }
 
 /** Sets console text color depending on message type */
-static void setConsoleTextColor(SDWORD player)
+static void setConsoleTextColor(int32_t player)
 {
 	// System messages
 	if (player == SYSTEM_MESSAGE)
@@ -464,7 +464,7 @@ void	enableConsoleDisplay(bool state)
 }
 
 /** Allows positioning of the console on screen */
-void	setConsoleSizePos(UDWORD x, UDWORD y, UDWORD width)
+void	setConsoleSizePos(uint32_t x, uint32_t y, uint32_t width)
 {
 	mainConsole.topX = x;
 	mainConsole.topY = y;
@@ -501,10 +501,10 @@ bool mouseOverConsoleBox(void)
 {
 	int gotMessages = getNumberConsoleMessages();
 	if (gotMessages &&
-		((UDWORD)mouseX() > mainConsole.topX)
-		&& ((UDWORD)mouseY() > mainConsole.topY)
-		&& ((UDWORD)mouseX() < mainConsole.topX + mainConsole.width)
-		&& ((UDWORD)mouseY() < (mainConsole.topY + 4 + linePitch * gotMessages)))
+		((uint32_t)mouseX() > mainConsole.topX)
+		&& ((uint32_t)mouseY() > mainConsole.topY)
+		&& ((uint32_t)mouseX() < mainConsole.topX + mainConsole.width)
+		&& ((uint32_t)mouseY() < (mainConsole.topY + 4 + linePitch * gotMessages)))
 	{
 		return true;
 	}
@@ -533,10 +533,10 @@ bool	mouseOverHistoryConsoleBox(void)
 #endif
 	// check to see if mouse is in the area when console is enabled
 	if	(bConsoleDropped &&
-	     ((UDWORD)mouseX() > historyConsole.topX + nudgeright)
-	     && ((UDWORD)mouseY() > historyConsole.topY)
-	     && ((UDWORD)mouseX() < historyConsole.topX + historyConsole.width)
-	     && ((UDWORD)mouseY() < (historyConsole.topY + 4 + linePitch * NumDisplayLines)))
+	     ((uint32_t)mouseX() > historyConsole.topX + nudgeright)
+	     && ((uint32_t)mouseY() > historyConsole.topY)
+	     && ((uint32_t)mouseX() < historyConsole.topX + historyConsole.width)
+	     && ((uint32_t)mouseY() < (historyConsole.topY + 4 + linePitch * NumDisplayLines)))
 	{
 		if (mousePressed(MOUSE_WUP))
 		{
@@ -563,14 +563,14 @@ bool	mouseOverHistoryConsoleBox(void)
 }
 
 /** Sets up how many lines are allowed and how many are visible */
-void	setConsoleLineInfo(UDWORD vis)
+void	setConsoleLineInfo(uint32_t vis)
 {
 	ASSERT(vis <= MAX_CONSOLE_MESSAGES, "Request for more visible lines in the console than exist");
 	consoleVisibleLines = vis;
 }
 
 /** get how many lines are allowed and how many are visible */
-UDWORD getConsoleLineInfo(void)
+uint32_t getConsoleLineInfo(void)
 {
 	return consoleVisibleLines;
 }

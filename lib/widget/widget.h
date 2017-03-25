@@ -107,16 +107,16 @@ struct W_INIT
 {
 	W_INIT();
 
-	UDWORD                  formID;                 ///< ID number of form to put widget on. ID == 0 specifies the default form for the screen
-	UWORD                   majorID;                ///< Which tab to put the widget on for a tabbed form
-	UDWORD                  id;                     ///< Unique id number (chosen by user)
-	UDWORD                  style;                  ///< widget style
-	SWORD                   x, y;                   ///< screen location
-	UWORD                   width, height;          ///< widget size
+	uint32_t                  formID;                 ///< ID number of form to put widget on. ID == 0 specifies the default form for the screen
+	uint16_t                   majorID;                ///< Which tab to put the widget on for a tabbed form
+	uint32_t                  id;                     ///< Unique id number (chosen by user)
+	uint32_t                  style;                  ///< widget style
+	int16_t                   x, y;                   ///< screen location
+	uint16_t                   width, height;          ///< widget size
 	WIDGET_DISPLAY          pDisplay;               ///< Optional display function
 	WIDGET_CALLBACK         pCallback;              ///< Optional callback function
 	void                   *pUserData;              ///< Optional user data pointer
-	UDWORD                  UserData;               ///< User data (if any)
+	uint32_t                  UserData;               ///< User data (if any)
 };
 
 /** Form initialisation structure */
@@ -173,9 +173,9 @@ struct W_BARINIT : public W_INIT
 	W_BARINIT();
 
 	WBAR_ORIENTATION orientation;           ///< Orientation of the bar on the widget
-	UWORD		size;			///< Initial percentage of the graph that is filled
-	UWORD		minorSize;		///< Percentage of second bar graph if there is one
-	UWORD		iRange;			///< Maximum range
+	uint16_t		size;			///< Initial percentage of the graph that is filled
+	uint16_t		minorSize;		///< Percentage of second bar graph if there is one
+	uint16_t		iRange;			///< Maximum range
 	int             denominator;            ///< Denominator, 1 by default.
 	int             precision;              ///< Number of places after the decimal point to display, 0 by default.
 	PIELIGHT	sCol;			///< Bar colour
@@ -199,9 +199,9 @@ struct W_SLDINIT : public W_INIT
 	W_SLDINIT();
 
 	WSLD_ORIENTATION orientation;           ///< Orientation of the slider
-	UWORD		numStops;		///< Number of stops on the slider
-	UWORD		barSize;		///< Size of the bar
-	UWORD		pos;			///< Initial position of the slider bar
+	uint16_t		numStops;		///< Number of stops on the slider
+	uint16_t		barSize;		///< Size of the bar
+	uint16_t		pos;			///< Initial position of the slider bar
 	QString         pTip;			///< Tip string
 };
 
@@ -238,58 +238,58 @@ WZ_DECL_NONNULL(1, 2) W_BARGRAPH *widgAddBarGraph(W_SCREEN *psScreen, const W_BA
 WZ_DECL_NONNULL(1, 2) W_SLIDER *widgAddSlider(W_SCREEN *psScreen, const W_SLDINIT *psInit);
 
 /** Delete a widget from the screen */
-WZ_DECL_NONNULL(1) void widgDelete(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) void widgDelete(W_SCREEN *psScreen, uint32_t id);
 
 /** Hide a widget */
-WZ_DECL_NONNULL(1) void widgHide(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) void widgHide(W_SCREEN *psScreen, uint32_t id);
 
 /** Reveal a widget */
-WZ_DECL_NONNULL(1) void widgReveal(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) void widgReveal(W_SCREEN *psScreen, uint32_t id);
 
 /** Return a pointer to a buffer containing the current string of a widget if any.
  * This will always return a valid string pointer.
  * NOTE: The string must be copied out of the buffer
  */
-WZ_DECL_NONNULL(1) const char *widgGetString(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) const char *widgGetString(W_SCREEN *psScreen, uint32_t id);
 
 /** Set the text in a widget */
-WZ_DECL_NONNULL(1) void widgSetString(W_SCREEN *psScreen, UDWORD id, const char *pText);
+WZ_DECL_NONNULL(1) void widgSetString(W_SCREEN *psScreen, uint32_t id, const char *pText);
 
 /** Get the current position of a widget */
-WZ_DECL_NONNULL(1, 3, 4) void widgGetPos(W_SCREEN *psScreen, UDWORD id, SWORD *pX, SWORD *pY);
+WZ_DECL_NONNULL(1, 3, 4) void widgGetPos(W_SCREEN *psScreen, uint32_t id, int16_t *pX, int16_t *pY);
 
 /** Get the current position of a slider bar */
-WZ_DECL_NONNULL(1) UDWORD widgGetSliderPos(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) uint32_t widgGetSliderPos(W_SCREEN *psScreen, uint32_t id);
 
 /** Set the current position of a slider bar */
-WZ_DECL_NONNULL(1) void widgSetSliderPos(W_SCREEN *psScreen, UDWORD id, UWORD pos);
+WZ_DECL_NONNULL(1) void widgSetSliderPos(W_SCREEN *psScreen, uint32_t id, uint16_t pos);
 
 /** Set the current size of a bar graph */
-WZ_DECL_NONNULL(1) void widgSetBarSize(W_SCREEN *psScreen, UDWORD id, UDWORD size);
+WZ_DECL_NONNULL(1) void widgSetBarSize(W_SCREEN *psScreen, uint32_t id, uint32_t size);
 
 /** Set the current size of a minor bar on a double graph */
-WZ_DECL_NONNULL(1) void widgSetMinorBarSize(W_SCREEN *psScreen, UDWORD id, UDWORD size);
+WZ_DECL_NONNULL(1) void widgSetMinorBarSize(W_SCREEN *psScreen, uint32_t id, uint32_t size);
 
 /** Return the ID of the widget the mouse was over this frame */
-WZ_DECL_NONNULL(1) UDWORD widgGetMouseOver(W_SCREEN *psScreen);
+WZ_DECL_NONNULL(1) uint32_t widgGetMouseOver(W_SCREEN *psScreen);
 
 /** Return the user data for a widget */
-WZ_DECL_NONNULL(1) void *widgGetUserData(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) void *widgGetUserData(W_SCREEN *psScreen, uint32_t id);
 
 /** Set the user data for a widget */
-WZ_DECL_NONNULL(1) void widgSetUserData(W_SCREEN *psScreen, UDWORD id, void *UserData);
+WZ_DECL_NONNULL(1) void widgSetUserData(W_SCREEN *psScreen, uint32_t id, void *UserData);
 
 /** Return the user data for a widget */
-WZ_DECL_NONNULL(1) UDWORD widgGetUserData2(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) uint32_t widgGetUserData2(W_SCREEN *psScreen, uint32_t id);
 
 /** Set the user data for a widget */
-WZ_DECL_NONNULL(1) void widgSetUserData2(W_SCREEN *psScreen, UDWORD id, UDWORD UserData);
+WZ_DECL_NONNULL(1) void widgSetUserData2(W_SCREEN *psScreen, uint32_t id, uint32_t UserData);
 
 /** Get widget structure */
-WZ_DECL_NONNULL(1) WIDGET *widgGetFromID(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) WIDGET *widgGetFromID(W_SCREEN *psScreen, uint32_t id);
 
 /** Set tip string for a widget */
-WZ_DECL_NONNULL(1) void widgSetTip(W_SCREEN *psScreen, UDWORD id, QString pTip);
+WZ_DECL_NONNULL(1) void widgSetTip(W_SCREEN *psScreen, uint32_t id, QString pTip);
 
 /** Colour numbers */
 enum _w_colour
@@ -321,18 +321,18 @@ enum ButtonState
 };
 
 
-WZ_DECL_NONNULL(1) void widgSetButtonFlash(W_SCREEN *psScreen, UDWORD id);
-WZ_DECL_NONNULL(1) void widgClearButtonFlash(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) void widgSetButtonFlash(W_SCREEN *psScreen, uint32_t id);
+WZ_DECL_NONNULL(1) void widgClearButtonFlash(W_SCREEN *psScreen, uint32_t id);
 
 /** Get a button or clickable form's state */
-WZ_DECL_NONNULL(1) UDWORD widgGetButtonState(W_SCREEN *psScreen, UDWORD id);
+WZ_DECL_NONNULL(1) uint32_t widgGetButtonState(W_SCREEN *psScreen, uint32_t id);
 
 /** Set a button or clickable form's state */
-WZ_DECL_NONNULL(1) void widgSetButtonState(W_SCREEN *psScreen, UDWORD id, UDWORD state);
+WZ_DECL_NONNULL(1) void widgSetButtonState(W_SCREEN *psScreen, uint32_t id, uint32_t state);
 
 
 /** Return which key was used to press the last returned widget */
-WZ_DECL_NONNULL(1) UDWORD widgGetButtonKey_DEPRECATED(W_SCREEN *psScreen);
+WZ_DECL_NONNULL(1) uint32_t widgGetButtonKey_DEPRECATED(W_SCREEN *psScreen);
 
 /** Execute a set of widgets for one cycle.
  * Return the id of the widget that was activated, or 0 for none.
@@ -347,19 +347,19 @@ WZ_DECL_NONNULL(1) void widgDisplayScreen(W_SCREEN *psScreen);
 
 
 /** Set the current audio callback function and audio id's. */
-void WidgSetAudio(WIDGET_AUDIOCALLBACK Callback, SWORD HilightID, SWORD ClickedID, SWORD ErrorID);
+void WidgSetAudio(WIDGET_AUDIOCALLBACK Callback, int16_t HilightID, int16_t ClickedID, int16_t ErrorID);
 
 /** Get pointer to current audio callback function. */
 WIDGET_AUDIOCALLBACK WidgGetAudioCallback();
 
 /** Get current audio ID for hilight. */
-SWORD WidgGetHilightAudioID();
+int16_t WidgGetHilightAudioID();
 
 /** Get current audio ID for clicked. */
-SWORD WidgGetClickedAudioID();
+int16_t WidgGetClickedAudioID();
 
 // error ID
-SWORD WidgGetErrorAudioID();
+int16_t WidgGetErrorAudioID();
 
 /** Enable or disable all sliders. */
 void sliderEnableDrag(bool Enable);

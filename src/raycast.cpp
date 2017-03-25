@@ -188,7 +188,7 @@ static bool getTileHeightCallback(Vector2i pos, int32_t dist, void *data)
 	return false;
 }
 
-void getBestPitchToEdgeOfGrid(UDWORD x, UDWORD y, uint16_t direction, uint16_t *pitch)
+void getBestPitchToEdgeOfGrid(uint32_t x, uint32_t y, uint16_t direction, uint16_t *pitch)
 {
 	HeightCallbackHelp_t help = {map_Height(x, y), 0};
 

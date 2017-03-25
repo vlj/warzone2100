@@ -1405,7 +1405,7 @@ yyreduce:
 /* Line 1806 of yacc.c  */
 #line 85 "resource_parser.ypp"
     {
-					UDWORD len;
+					uint32_t len;
 
 					// set a new input directory
 					debug(LOG_NEVER, "directory: %s", (yyvsp[(2) - (2)].sval));

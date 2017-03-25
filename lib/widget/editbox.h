@@ -57,7 +57,7 @@ public:
 
 	void setBoxColours(PIELIGHT first, PIELIGHT second, PIELIGHT background);
 
-	UDWORD		state;						// The current edit box state
+	uint32_t		state;						// The current edit box state
 	QString		aText;						// The text in the edit box
 	iV_fonts	FontID;
 	int			blinkOffset;				// Cursor should be visible at time blinkOffset.
@@ -67,9 +67,9 @@ public:
 	int			printChars;					// The number of characters appearing in the box
 	int			printWidth;					// The pixel width of the characters in the box
 	WIDGET_DISPLAY	pBoxDisplay;			// Optional callback to display the edit box background.
-	SWORD HilightAudioID;					// Audio ID for form clicked sound
-	SWORD ClickedAudioID;					// Audio ID for form hilighted sound
-	SWORD ErrorAudioID;						// Audio ID for error sound
+	int16_t HilightAudioID;					// Audio ID for form clicked sound
+	int16_t ClickedAudioID;					// Audio ID for form hilighted sound
+	int16_t ErrorAudioID;						// Audio ID for error sound
 	WIDGET_AUDIOCALLBACK AudioCallback;		// Pointer to audio callback function
 
 private:

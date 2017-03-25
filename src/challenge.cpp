@@ -80,11 +80,11 @@ static	W_SCREEN	*psRequestScreen;					// Widget screen for requester
 bool		challengesUp = false;		///< True when interface is up and should be run.
 bool		challengeActive = false;	///< Whether we are running a challenge
 
-static void displayLoadBanner(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayLoadBanner(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 	PIELIGHT col = WZCOL_GREEN;
-	UDWORD	x = xOffset + psWidget->x();
-	UDWORD	y = yOffset + psWidget->y();
+	uint32_t	x = xOffset + psWidget->x();
+	uint32_t	y = yOffset + psWidget->y();
 
 	pie_BoxFill(x, y, x + psWidget->width(), y + psWidget->height(), col);
 	pie_BoxFill(x + 2, y + 2, x + psWidget->width() - 2, y + psWidget->height() - 2, WZCOL_MENU_BACKGROUND);
@@ -126,11 +126,11 @@ void updateChallenge(bool gameWon)
 }
 
 // ////////////////////////////////////////////////////////////////////////////
-static void displayLoadSlot(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
+static void displayLoadSlot(WIDGET *psWidget, uint32_t xOffset, uint32_t yOffset)
 {
 
-	UDWORD	x = xOffset + psWidget->x();
-	UDWORD	y = yOffset + psWidget->y();
+	uint32_t	x = xOffset + psWidget->x();
+	uint32_t	y = yOffset + psWidget->y();
 	char  butString[64];
 
 	drawBlueBox(x, y, psWidget->width(), psWidget->height());	//draw box
@@ -159,7 +159,7 @@ bool addChallenges()
 {
 	char			sPath[PATH_MAX];
 	const char *sSearchPath	= "challenges";
-	UDWORD			slotCount;
+	uint32_t			slotCount;
 	static char		sSlotCaps[totalslots][totalslotspace];
 	static char		sSlotTips[totalslots][totalslotspace];
 	static char		sSlotFile[totalslots][totalslotspace];
@@ -229,19 +229,19 @@ bool addChallenges()
 		if (slotCount < slotsInColumn)
 		{
 			sButInit.x	= 22 + CHALLENGE_HGAP;
-			sButInit.y	= (SWORD)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
+			sButInit.y	= (int16_t)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
 			                          slotCount * (CHALLENGE_VGAP + CHALLENGE_ENTRY_H)));
 		}
 		else if (slotCount >= slotsInColumn && (slotCount < (slotsInColumn * 2)))
 		{
 			sButInit.x	= 22 + (2 * CHALLENGE_HGAP + CHALLENGE_ENTRY_W);
-			sButInit.y	= (SWORD)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
+			sButInit.y	= (int16_t)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
 			                          (slotCount % slotsInColumn) * (CHALLENGE_VGAP + CHALLENGE_ENTRY_H)));
 		}
 		else
 		{
 			sButInit.x	= 22 + (3 * CHALLENGE_HGAP + (2 * CHALLENGE_ENTRY_W));
-			sButInit.y	= (SWORD)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
+			sButInit.y	= (int16_t)((CHALLENGE_BANNER_DEPTH + (2 * CHALLENGE_VGAP)) + (
 			                          (slotCount % slotsInColumn) * (CHALLENGE_VGAP + CHALLENGE_ENTRY_H)));
 		}
 		widgAddButton(psRequestScreen, &sButInit);

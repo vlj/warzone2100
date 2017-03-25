@@ -78,12 +78,12 @@ signals:
 	void clicked();
 
 public:
-	UDWORD		state;				// The current button state
+	uint32_t		state;				// The current button state
 	QString         pText;                          // The text for the button
 	Images          images;                         ///< The images for the button.
 	QString         pTip;                           // The tool tip for the button
-	SWORD HilightAudioID;				// Audio ID for form clicked sound
-	SWORD ClickedAudioID;				// Audio ID for form hilighted sound
+	int16_t HilightAudioID;				// Audio ID for form clicked sound
+	int16_t ClickedAudioID;				// Audio ID for form hilighted sound
 	WIDGET_AUDIOCALLBACK AudioCallback;	// Pointer to audio callback function
 	iV_fonts        FontID;
 };

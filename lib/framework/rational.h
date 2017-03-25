@@ -26,7 +26,7 @@
 #define RATIONAL_H
 
 #include <algorithm>
-
+#include <numeric>
 
 static inline int gcd(int a, int b)
 {

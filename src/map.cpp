@@ -50,7 +50,7 @@
 #include "fpath.h"
 #include "levels.h"
 #include "scriptfuncs.h"
-#include "lib/framework/wzapp.h"
+#include "lib/framework/threading.h"
 
 #define GAME_TICKS_FOR_DANGER (GAME_TICKS_PER_SEC * 2)
 

@@ -19,6 +19,7 @@
 */
 
 #include "dumpinfo.h"
+#include "lib/framework/debug.h"
 #include <cerrno>
 #include <climits>
 #include <ctime>
@@ -29,8 +30,8 @@
 #include <sstream>
 #include <physfs.h>
 #include "lib/framework/stdio_ext.h"
-#include "lib/framework/wzglobal.h" // required for config.h
-#include "lib/framework/wzapp.h"
+#include "lib/framework/string_ext.h"
+#include "lib/framework/threading.h"
 
 #if defined(WZ_OS_UNIX)
 # include <sys/utsname.h>

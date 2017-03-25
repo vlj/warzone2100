@@ -31,7 +31,7 @@
 #include "lib/framework/crc.h"
 #include "lib/netplay/netplay.h"
 
-#include "lib/framework/wzapp.h"
+#include "lib/framework/threading.h"
 
 #include "objects.h"
 #include "map.h"

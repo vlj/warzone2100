@@ -72,12 +72,12 @@ extern char* res_get_text(void);
 /* Allow frame header files to be singly included */
 #define FRAME_LIB_INCLUDE
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include <string.h>
 #include <stdlib.h>
 
 #include "lib/framework/string_ext.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/resly.h"
 
 extern void yyerror(const char* msg);

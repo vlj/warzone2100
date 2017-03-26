@@ -25,11 +25,11 @@
  */
 #include "frameresource.h"
 
-#include "string_ext.h"
-#include "stdio_ext.h"
+#include "lib/framework/string_ext.h"
+#include "lib/framework/stdio_ext.h"
 
-#include "file.h"
-#include "resly.h"
+#include "lib/framework/file.h"
+#include "lib/framework/resly.h"
 
 // Local prototypes
 static RES_TYPE *psResTypes = NULL;

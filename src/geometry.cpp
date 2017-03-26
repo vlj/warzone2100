@@ -20,7 +20,7 @@
 /* Geometry.c - holds trig/vector deliverance specific stuff for 3D */
 /* Alex McLean, Pumpkin Studios, EIDOS Interactive */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "lib/ivis_opengl/ivisdef.h"
 #include "lib/ivis_opengl/piematrix.h"

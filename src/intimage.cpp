@@ -24,8 +24,8 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/ivis_opengl/piepalette.h"

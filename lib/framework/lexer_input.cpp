@@ -17,7 +17,7 @@
 	along with Warzone 2100; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#include "frame.h"
+#include "lib/gamelib/frame.h"
 #include "lexer_input.h"
 
 int lexer_input(lexerinput_t *input, char *buf, size_t max_size, int nullvalue)

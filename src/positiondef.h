@@ -24,7 +24,7 @@
 #ifndef __INCLUDED_POSITIONDEF_H__
 #define __INCLUDED_POSITIONDEF_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 enum POSITION_TYPE
 {

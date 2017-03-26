@@ -23,7 +23,7 @@
 #include <QString>
 #include <string.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/utf.h"
 #include "lib/framework/wzapp.h"
 #include "widget.h"

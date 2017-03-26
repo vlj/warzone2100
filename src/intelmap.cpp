@@ -26,7 +26,7 @@
 #include <QString>
 #include <string.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/widget/widget.h"
 #include "lib/widget/button.h"

@@ -24,7 +24,7 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "action.h"
 #include "cmddroid.h"

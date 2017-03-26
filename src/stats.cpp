@@ -28,9 +28,9 @@
 #include <algorithm>
 #include <QtCore/QHash>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/strres.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/gamelib/gtime.h"
 #include "objects.h"
 #include "stats.h"

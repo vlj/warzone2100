@@ -26,8 +26,8 @@
 #include <QString>
 #include <physfs.h>
 
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/crc.h"
 #include "lib/framework/resly.h"

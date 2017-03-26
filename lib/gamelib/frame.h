@@ -23,7 +23,7 @@
 #ifndef _frame_h
 #define _frame_h
 
-#include "wzglobal.h"
+#include "lib/framework/wzglobal.h"
 #include <stdlib.h>
 
 // Workaround X11 headers #defining Status
@@ -35,20 +35,20 @@
 # define nullptr NULL
 #endif
 
-#include "types.h"
+#include "lib/framework/types.h"
 /**
 * NOTE: the next two #include lines are needed by MSVC to override the default,
 * non C99 compliant routines, and redefinition; different linkage errors
 */
-#include "stdio_ext.h"
-#include "string_ext.h"
+#include "lib/framework/stdio_ext.h"
+#include "lib/framework/string_ext.h"
 
-#include "macros.h"
-#include "debug.h"
+#include "lib/framework/macros.h"
+#include "lib/framework/debug.h"
 
-#include "i18n.h"
-#include "trig.h"
-#include "cursors.h"
+#include "lib/framework/i18n.h"
+#include "lib/framework/trig.h"
+#include "lib/framework/cursors.h"
 
 #define REALCONCAT(x, y) x ## y
 #define CONCAT(x, y) REALCONCAT(x, y)

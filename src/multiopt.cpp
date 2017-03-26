@@ -25,7 +25,7 @@
  * Routines for setting the game options and starting the init process.
  */
 #include <QString>
-#include "lib/framework/frame.h"			// for everything
+#include "lib/gamelib/frame.h"			// for everything
 
 #include "lib/framework/file.h"
 #include "lib/framework/threading.h"

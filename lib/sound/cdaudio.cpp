@@ -21,7 +21,7 @@
 #include <string.h>
 #include <physfs.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "audio.h"
 #include "track.h"

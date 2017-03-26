@@ -23,7 +23,7 @@
  * Pumpkin Studios, Eidos Interactive 1996.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "lib/gamelib/gtime.h"
 #include "lib/sound/audio.h"

@@ -23,7 +23,7 @@
  * Warzone audio wrapper functions.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/sound/aud.h"
 #include "lib/sound/tracklib.h"
 

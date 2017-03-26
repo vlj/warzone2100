@@ -21,7 +21,7 @@
  *
  * Basic netqueue.
  */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "netqueue.h"
 
 // See comments in netqueue.h.

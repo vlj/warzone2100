@@ -18,7 +18,7 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/debug.h"
 #include "lib/framework/string_ext.h"
 #include "lib/framework/stdio_ext.h"

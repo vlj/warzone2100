@@ -25,11 +25,11 @@
  *
  */
 #include "frame.h"
-#include "file.h"
-#include "wzapp.h"
+#include "lib/framework/file.h"
+#include "lib/framework/wzapp.h"
 
-#include "frameresource.h"
-#include "input.h"
+#include "lib/gamelib/frameresource.h"
+#include "lib/framework/input.h"
 
 /************************************************************************************
  *

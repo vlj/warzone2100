@@ -21,7 +21,7 @@
 #ifndef __INCLUDED_LIB_SOUND_OPENAL_ERROR_H__
 #define __INCLUDED_LIB_SOUND_OPENAL_ERROR_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #ifdef WZ_OS_MAC
 # include <OpenAL/al.h>

@@ -23,7 +23,7 @@
 #include <QString>
 #include <string.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "widget.h"
 #include "widgint.h"
 #include "form.h"

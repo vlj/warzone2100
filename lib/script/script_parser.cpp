@@ -66,8 +66,8 @@
  * The yacc grammar for the scipt files.
  */
 
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/string_ext.h"
 #include "lib/script/interpreter.h"
 #include "lib/script/parse.h"

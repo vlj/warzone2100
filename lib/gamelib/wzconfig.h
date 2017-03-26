@@ -30,7 +30,7 @@
 
 // Get platform defines before checking for them.
 // Qt headers MUST come before platform specific stuff!
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/vector.h"
 
 class WzConfig

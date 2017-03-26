@@ -23,7 +23,7 @@
  * This is where we do texture atlas generation.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/opengl.h"
 
 #include <string.h>

@@ -24,7 +24,7 @@
 #ifndef _NET_QUEUE_H_
 #define _NET_QUEUE_H_
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include <vector>
 #include <list>
 #include <deque>

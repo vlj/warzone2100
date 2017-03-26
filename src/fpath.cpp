@@ -27,7 +27,7 @@
 #include <future>
 #include <unordered_map>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/crc.h"
 #include "lib/netplay/netplay.h"
 

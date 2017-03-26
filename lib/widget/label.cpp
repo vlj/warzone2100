@@ -21,7 +21,7 @@
  *  Functions for the label widget.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "widget.h"
 #include "widgint.h"
 #include "label.h"

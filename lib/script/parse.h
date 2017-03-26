@@ -25,7 +25,7 @@
 #ifndef _parse_h
 #define _parse_h
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include <physfs.h>
 
 class WzConfig;

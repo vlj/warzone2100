@@ -27,7 +27,7 @@
 #include <QString>
 #include <physfs.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/math_ext.h"
 

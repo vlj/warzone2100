@@ -24,11 +24,11 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include <string.h>
 
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/input.h"
 #include "lib/framework/file.h"
 #include "lib/framework/physfs_ext.h"

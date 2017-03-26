@@ -24,7 +24,7 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/opengl.h"
 #include "lib/ivis_opengl/screen.h"
 #include "lib/netplay/netplay.h"

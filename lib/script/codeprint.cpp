@@ -23,7 +23,7 @@
  * Routines for displaying compiled scripts
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "interpreter.h"
 #include "parse.h"
 #include "codeprint.h"

@@ -24,11 +24,11 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/gamelib/wzconfig.h"
 #include <string.h>
 
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/endian_hack.h"
 #include "lib/framework/string_ext.h"
 #include "script.h"

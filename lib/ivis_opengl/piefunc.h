@@ -29,7 +29,7 @@
 #ifndef _piefunc_h
 #define _piefunc_h
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piedef.h"
 #include "lib/ivis_opengl/pieclip.h"
 

@@ -21,7 +21,7 @@
  *  Matrix manipulation functions.
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/opengl.h"
 
 #include "lib/framework/fixedpoint.h"

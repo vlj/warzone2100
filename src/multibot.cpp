@@ -24,7 +24,7 @@
  * Multiplay stuff relevant to droids only.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "droid.h"						// for droid sending and ordering.
 #include "droiddef.h"

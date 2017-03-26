@@ -27,7 +27,7 @@
 	and overlays and needs to render to a specified buffer for later use.
 */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piematrix.h"
 
 #include "component.h"

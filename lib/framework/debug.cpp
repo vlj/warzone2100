@@ -24,7 +24,7 @@
  *
  */
 
-#include "frame.h"
+#include "lib/gamelib/frame.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -458,9 +458,9 @@ void Logger::registerMsg(int line, code_part part, const char *function, const s
 		// Throw up a dialog box for users since most don't have a clue to check the dump file for information. Use for (duh) Fatal errors, that force us to terminate the game.
 		if (part == LOG_FATAL)
 		{
-			if (wzIsFullscreen())
+			//if (wzIsFullscreen())
 			{
-				wzToggleFullscreen();
+				//wzToggleFullscreen();
 			}
 #if defined(WZ_OS_WIN)
 			char wbuf[512];

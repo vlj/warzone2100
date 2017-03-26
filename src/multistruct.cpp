@@ -27,7 +27,7 @@
 #include <QString>
 #include <string.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "design.h"
 #include "template.h"
 #include "droid.h"

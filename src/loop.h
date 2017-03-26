@@ -24,7 +24,7 @@
 #ifndef __INCLUDED_SRC_LOOP_H__
 #define __INCLUDED_SRC_LOOP_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "levels.h"
 
 enum GAMECODE

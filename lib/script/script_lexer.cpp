@@ -53,7 +53,7 @@
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 /* begin standard C headers. */
 #include <stdio.h>
 #include <string.h>
@@ -721,7 +721,7 @@ char *scr_text;
  * Script file lexer.
  */
 #include <physfs.h>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/string_ext.h"
 #include "lib/script/interpreter.h"
 #include "lib/script/parse.h"

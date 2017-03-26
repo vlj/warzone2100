@@ -23,7 +23,7 @@
  * Handles atmospherics such as snow and rain.
 */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piematrix.h"
 
 #include "atmos.h"

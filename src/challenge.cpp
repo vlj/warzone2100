@@ -33,7 +33,7 @@
 #endif
 
 #include <QtCore/QTime>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/netplay/netplay.h"

@@ -20,8 +20,8 @@
 #include <QString>
 #include <assert.h>
 #include <string.h>
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 #include "effects.h"
 #include "structure.h"
 #include "messagedef.h"

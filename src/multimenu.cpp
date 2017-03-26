@@ -23,7 +23,7 @@
  *  Also the selection of disk files..
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/wzapp.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/physfs_ext.h"

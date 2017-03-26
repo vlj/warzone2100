@@ -27,7 +27,7 @@
 #include <string.h>
 #include <list>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/script/script.h"
 #include "objects.h"
 #include "basedef.h"

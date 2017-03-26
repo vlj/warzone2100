@@ -23,8 +23,8 @@
  * AlexL. Pumpkin Studios, EIDOS Interactive, 1997
  */
 #include <QString>
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 // FIXME Direct iVis implementation include!
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/ivis_opengl/piemode.h"

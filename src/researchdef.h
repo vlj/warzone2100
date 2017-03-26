@@ -26,7 +26,7 @@
 
 #include <QtCore/QStringList>
 #include <QtCore/QJsonValue>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "statsdef.h"
 
 /* Research struct type definitions */

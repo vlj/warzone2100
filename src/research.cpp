@@ -29,9 +29,9 @@
 #include <map>
 #include <QtCore/QJsonArray>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/strres.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/netplay/netplay.h"
 #include "objects.h"

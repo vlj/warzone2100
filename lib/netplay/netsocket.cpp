@@ -23,7 +23,7 @@
  * Basic raw socket handling code.
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/threading.h"
 #include "netsocket.h"
 

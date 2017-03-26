@@ -52,7 +52,7 @@
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 /* begin standard C headers. */
 #include <stdio.h>
 #include <string.h>
@@ -555,7 +555,7 @@ char *strres_text;
  *  Lexical analyser resource files
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 /* Allow frame header files to be singly included */
 #define FRAME_LIB_INCLUDE

@@ -21,7 +21,7 @@
  *  The main interface functions to the widget library
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/string_ext.h"
 #include "lib/framework/utf.h"
 #include "lib/ivis_opengl/textdraw.h"

@@ -24,7 +24,7 @@
  * - Alex McLean, Pumpkin Studios, EIDOS Interactive.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/math_ext.h"
 
 #include "lib/ivis_opengl/piestate.h"

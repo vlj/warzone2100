@@ -24,7 +24,7 @@
 #ifndef __INCLUDE_LIB_NETPLAY_NETTYPES_H__
 #define __INCLUDE_LIB_NETPLAY_NETTYPES_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/vector.h"
 #include "lib/netplay/netqueue.h"
 

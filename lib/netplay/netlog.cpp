@@ -19,7 +19,7 @@
 */
 // ////////////////////////////////////////////////////////////////////////
 // Includes
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include <time.h>
 #include <physfs.h>

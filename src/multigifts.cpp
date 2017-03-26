@@ -23,7 +23,7 @@
  * Also home to Deathmatch hardcoded RULES.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/widget/widget.h"
 #include "objmem.h"

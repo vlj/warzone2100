@@ -24,7 +24,7 @@
  *
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
 #include "lib/framework/strres.h"
 #include "lib/ivis_opengl/piestate.h"

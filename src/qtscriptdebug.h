@@ -21,7 +21,7 @@
 #define __INCLUDED_QTSCRIPTDEBUG_H__
 
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "basedef.h"
 #include "droiddef.h"
 #include "structuredef.h"

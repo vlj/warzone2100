@@ -22,7 +22,7 @@
  *
  * The event management system.
  */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "event.h"
 #include "script.h"

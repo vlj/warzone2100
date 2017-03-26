@@ -53,7 +53,7 @@
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 /* begin standard C headers. */
 #include <stdio.h>
 #include <string.h>
@@ -617,7 +617,7 @@ char *lev_text;
  * lexer for loading level description files
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/string_ext.h"
 
 #include "src/levels.h"

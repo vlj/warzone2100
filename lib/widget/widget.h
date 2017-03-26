@@ -31,7 +31,7 @@
 #define __INCLUDED_LIB_WIDGET_WIDGET_H__
 
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piepalette.h"
 #include "widgbase.h"
 

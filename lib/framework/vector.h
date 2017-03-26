@@ -32,7 +32,7 @@
 
 
 #include "fixedpoint.h"
-#include "frame.h"
+#include "lib/gamelib/frame.h"
 #include "math_ext.h"
 
 using Vector3i = glm::ivec3;

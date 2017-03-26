@@ -53,7 +53,7 @@
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 /* begin standard C headers. */
 #include <stdio.h>
 #include <string.h>
@@ -571,7 +571,7 @@ char *res_text;
  *  Lexical analyser for resource (*.wrf) files
  */
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "lib/framework/resly.h"
 

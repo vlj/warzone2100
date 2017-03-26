@@ -21,7 +21,7 @@
 #ifndef __INCLUDED_LIB_SOUND_TRACK_H__
 #define __INCLUDED_LIB_SOUND_TRACK_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include <physfs.h>
 
 #ifdef WZ_OS_MAC

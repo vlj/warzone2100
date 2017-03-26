@@ -31,7 +31,7 @@
 
 /***************************************************************************/
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "piedef.h"
 #include "lib/framework/vector.h"
 #include <glm/gtc/type_ptr.hpp>

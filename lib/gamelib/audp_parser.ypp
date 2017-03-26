@@ -20,7 +20,7 @@
 %defines
 %{
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/gamelib/parser.h"
 #include "lib/sound/audio.h"
 #include "lib/framework/lexer_input.h"

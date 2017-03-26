@@ -519,7 +519,7 @@ char *audp_text;
 #line 21 "../lib/gamelib/audp_lexer.lpp"
 
 /* include framework */
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include <physfs.h>
 

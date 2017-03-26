@@ -21,7 +21,7 @@
 #ifndef __INCLUDED_WZAPP_C_H__
 #define __INCLUDED_WZAPP_C_H__
 
-#include "frame.h"
+#include "lib/gamelib/frame.h"
 #include <vector>
 
 struct screeninfo

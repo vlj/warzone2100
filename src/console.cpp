@@ -22,7 +22,7 @@
 	Functions for the in-game console.
 */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
 #include "lib/framework/threading.h"
 #include "lib/gamelib/gtime.h"

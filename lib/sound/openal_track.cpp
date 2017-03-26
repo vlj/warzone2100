@@ -22,9 +22,9 @@
  */
 
 // this has to be first
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/math_ext.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/exceptionhandler/dumpinfo.h"
 
 #ifdef WZ_OS_MAC

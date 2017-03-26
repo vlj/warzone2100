@@ -25,7 +25,7 @@
  */
 
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/widget/widget.h"
 #include "objects.h"
 #include "lib/script/script.h"

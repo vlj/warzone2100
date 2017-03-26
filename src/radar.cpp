@@ -20,7 +20,7 @@
 #include <QString>
 #include <string.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/fixedpoint.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 // FIXME Direct iVis implementation include!

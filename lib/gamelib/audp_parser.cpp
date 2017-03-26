@@ -73,7 +73,7 @@
 #line 21 "../lib/gamelib/audp_parser.ypp" /* yacc.c:339  */
 
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/gamelib/parser.h"
 #include "lib/sound/audio.h"
 #include "lib/framework/lexer_input.h"

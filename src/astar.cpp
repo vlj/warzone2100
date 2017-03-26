@@ -41,7 +41,7 @@
  */
 #include <QString>
 #ifndef WZ_TESTING
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 
 #include "astar.h"
 #include "map.h"

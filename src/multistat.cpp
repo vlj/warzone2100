@@ -25,7 +25,7 @@
  * load / update / store multiplayer statistics for league tables etc...
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/file.h"
 #include "lib/netplay/nettypes.h"
 

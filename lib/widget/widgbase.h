@@ -25,7 +25,7 @@
 #define __INCLUDED_LIB_WIDGET_WIDGBASE_H__
 
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piedef.h"
 #include "lib/ivis_opengl/textdraw.h"
 #include <QtCore/QRect>

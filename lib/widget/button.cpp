@@ -21,7 +21,7 @@
  *  Functions for the button widget
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "widget.h"
 #include "widgint.h"
 #include "button.h"

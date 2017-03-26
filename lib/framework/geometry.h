@@ -20,7 +20,7 @@
 #ifndef _LIB_FRAMEWORK_GEOMETRY_H
 #define _LIB_FRAMEWORK_GEOMETRY_H
 
-#include "frame.h"
+#include "lib/gamelib/frame.h"
 #include "vector.h"
 #include <limits>
 

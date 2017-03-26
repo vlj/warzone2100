@@ -20,7 +20,7 @@
 #ifndef __INCLUDED_QTSCRIPTFUNCS_H__
 #define __INCLUDED_QTSCRIPTFUNCS_H__
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "qtscript.h"
 #include "featuredef.h"
 

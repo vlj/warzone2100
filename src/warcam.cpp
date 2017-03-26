@@ -29,7 +29,7 @@
 	I really hope that no further changes are needed here...:-(
 	Alex M. */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/trig.h"
 #include "lib/framework/input.h"
 

@@ -27,8 +27,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "lib/framework/frame.h"
-#include "lib/framework/frameresource.h"
+#include "lib/gamelib/frame.h"
+#include "lib/gamelib/frameresource.h"
 #include "lib/framework/file.h"
 #include "lib/framework/crc.h"
 #include "lib/framework/physfs_ext.h"

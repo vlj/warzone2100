@@ -31,7 +31,7 @@
 
 /***************************************************************************/
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/string_ext.h"
 #include "piedef.h"
 #include "piepalette.h"

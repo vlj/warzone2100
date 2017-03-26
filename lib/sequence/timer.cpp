@@ -18,7 +18,7 @@
 */
 
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "timer.h"
 
 #if defined(WZ_OS_UNIX)

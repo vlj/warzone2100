@@ -23,7 +23,7 @@
  * Stores object render calls in a linked list renders after bucket sorting objects.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/piematrix.h"
 
 #include "atmos.h"

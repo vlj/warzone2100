@@ -21,7 +21,7 @@
  *  The tool tip display system.
  */
 #include <QString>
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/framework/wzapp.h"
 #include "lib/ivis_opengl/screen.h"
 #include "widget.h"

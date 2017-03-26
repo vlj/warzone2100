@@ -29,7 +29,7 @@
 #include <string.h>
 #include <physfs.h>
 
-#include "lib/framework/frame.h"
+#include "lib/gamelib/frame.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/sound/audio.h"

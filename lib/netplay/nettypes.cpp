@@ -35,7 +35,7 @@
 #include <winsock2.h>
 #endif
 
-#include "../framework/frame.h"
+#include "../gamelib/frame.h"
 #include "netplay.h"
 #include "nettypes.h"
 #include "netqueue.h"

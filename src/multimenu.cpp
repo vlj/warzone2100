@@ -24,7 +24,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/physfs_ext.h"
 #include "lib/widget/button.h"

@@ -26,7 +26,7 @@
  */
 #include "frame.h"
 #include "lib/framework/file.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 
 #include "lib/gamelib/frameresource.h"
 #include "lib/framework/input.h"

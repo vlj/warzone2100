@@ -25,7 +25,7 @@
  * along with connection and game options.
  */
 #include <QString>
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 
 #include <time.h>

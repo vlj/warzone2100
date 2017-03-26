@@ -40,7 +40,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtGui/QStandardItemModel>
 
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 
 #include "qtscript.h"

@@ -24,7 +24,7 @@
 
 // Get platform defines before checking for them!
 #include <QtCore/QString>
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 
 // Needed for cross compiler static builds
 #if defined(WZ_CC_MINGW) && !defined(QT_STATICPLUGIN)

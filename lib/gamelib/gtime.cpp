@@ -26,7 +26,7 @@
 
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/framework/rational.h"
 #include "gtime.h"
 #include "src/multiplay.h"

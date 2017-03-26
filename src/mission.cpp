@@ -28,7 +28,7 @@
 #include "mission.h"
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/framework/math_ext.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/pieblitfunc.h"

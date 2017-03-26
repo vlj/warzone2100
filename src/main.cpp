@@ -22,7 +22,7 @@
  */
 #include <QString>
 // Get platform defines before checking for them!
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include <QtCore/QTextCodec>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>

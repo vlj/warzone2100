@@ -29,7 +29,7 @@
 
 #include "lib/framework/file.h"
 #include "lib/framework/threading.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 
 #include "lib/ivis_opengl/piestate.h"
 

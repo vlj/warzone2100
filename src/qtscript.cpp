@@ -39,7 +39,7 @@
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QFileDialog>
 
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/framework/file.h"
 #include "lib/gamelib/gtime.h"

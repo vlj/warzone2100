@@ -25,7 +25,7 @@
 
 #include "lib/gamelib/frame.h"
 #include "lib/framework/utf.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "widget.h"
 #include "widgint.h"
 #include "editbox.h"

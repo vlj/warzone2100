@@ -24,7 +24,7 @@
  */
 
 #include <QtCore/QSettings>
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/framework/input.h"
 #include "lib/netplay/netplay.h"

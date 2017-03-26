@@ -22,7 +22,7 @@
  * New scripting system -- script functions
  */
 #include <QString>
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/sound/audio.h"
 #include "lib/netplay/netplay.h"

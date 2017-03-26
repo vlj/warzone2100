@@ -18,7 +18,7 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include <QString>
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include <QtCore/QMap>
 
 /* Standard library headers */

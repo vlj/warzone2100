@@ -25,7 +25,7 @@
 
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/framework/threading.h"
 #include "lib/framework/string_ext.h"
 #include "lib/framework/crc.h"

@@ -22,7 +22,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 #include "lib/ivis_opengl/screen.h"
 #include "widget.h"
 #include "widgint.h"

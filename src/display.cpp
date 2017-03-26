@@ -30,7 +30,7 @@
 #include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/piedef.h"
 #include "lib/framework/fixedpoint.h"
-#include "lib/framework/wzapp.h"
+#include "lib/gamelib/wzapp.h"
 
 #include "action.h"
 #include "display.h"

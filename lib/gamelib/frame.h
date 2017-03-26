@@ -48,7 +48,7 @@
 
 #include "lib/framework/i18n.h"
 #include "lib/framework/trig.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 
 #define REALCONCAT(x, y) x ## y
 #define CONCAT(x, y) REALCONCAT(x, y)

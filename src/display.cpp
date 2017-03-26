@@ -38,7 +38,7 @@
 #include "loop.h"
 #include "component.h"
 #include "display3d.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include "hci.h"
 #include "text.h"
 #include "edit3d.h"

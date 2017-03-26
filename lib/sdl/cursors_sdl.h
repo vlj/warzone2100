@@ -24,7 +24,7 @@
 #ifndef __INCLUDED_LIB_SDL_CURSORS_SDL_H__
 #define __INCLUDED_LIB_SDL_CURSORS_SDL_H__
 
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include <SDL_mouse.h>
 
 void sdlInitCursors(void);

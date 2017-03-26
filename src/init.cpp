@@ -82,7 +82,7 @@
 #include "projectile.h"
 #include "radar.h"
 #include "research.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include "scriptextern.h"
 #include "scriptfuncs.h"
 #include "scripttabs.h"

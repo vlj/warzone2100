@@ -39,7 +39,7 @@
 #include "lib/ivis_opengl/piemode.h"
 
 #include "display3d.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include "map.h"
 #include "intdisplay.h"
 #include "objects.h"

@@ -40,7 +40,7 @@
 #include "intdisplay.h"
 #include "hci.h"			// for wFont def.& intmode.
 #include "loop.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include "frontend.h"		// for textdisplay function
 #include "loadsave.h"		// for textdisplay function
 #include "console.h"		// to add console message

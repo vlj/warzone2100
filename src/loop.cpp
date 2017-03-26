@@ -71,7 +71,7 @@
 #include "multijoin.h"
 #include "lighting.h"
 #include "intimage.h"
-#include "lib/framework/cursors.h"
+#include "lib/gamelib/cursors.h"
 #include "seqdisp.h"
 #include "mission.h"
 #include "warcam.h"

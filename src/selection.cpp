@@ -27,7 +27,7 @@
 #include <QString>
 #include "lib/gamelib/frame.h"
 #include "lib/framework/math_ext.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 
 #include "objects.h"
 #include "basedef.h"

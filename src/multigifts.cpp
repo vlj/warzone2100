@@ -24,7 +24,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/widget/widget.h"
 #include "objmem.h"
 #include "console.h"

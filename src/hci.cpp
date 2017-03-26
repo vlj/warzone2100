@@ -31,7 +31,7 @@
 #include <algorithm>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/stdio_ext.h"
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/bitimage.h"

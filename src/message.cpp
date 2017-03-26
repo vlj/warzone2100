@@ -28,7 +28,7 @@
 #include "lib/gamelib/frame.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/gamelib/frameresource.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/sound/audio.h"
 #include "lib/sound/audio_id.h"
 

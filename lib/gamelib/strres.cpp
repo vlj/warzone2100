@@ -30,9 +30,9 @@
 /* Allow frame header files to be singly included */
 #define FRAME_LIB_INCLUDE
 
-#include "types.h"
-#include "debug.h"
-#include "treap.h"
+#include "lib/framework/types.h"
+#include "lib/framework/debug.h"
+#include "lib/framework/treap.h"
 #include "strres.h"
 #include "strresly.h"
 

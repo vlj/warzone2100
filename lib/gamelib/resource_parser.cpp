@@ -78,7 +78,7 @@ extern char* res_get_text(void);
 
 #include "lib/framework/string_ext.h"
 #include "lib/gamelib/frameresource.h"
-#include "lib/framework/resly.h"
+#include "resly.h"
 
 extern void yyerror(const char* msg);
 void yyerror(const char* msg)

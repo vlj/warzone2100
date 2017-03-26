@@ -28,9 +28,9 @@
 
 #include "lib/gamelib/frame.h"
 #include "lib/gamelib/frameresource.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/crc.h"
-#include "lib/framework/resly.h"
+#include "lib/gamelib/resly.h"
 #include "lib/gamelib/parser.h"
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/png_util.h"

@@ -29,7 +29,7 @@
 #include <QtCore/QHash>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/gamelib/frameresource.h"
 #include "lib/gamelib/gtime.h"
 #include "objects.h"

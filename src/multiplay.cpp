@@ -29,7 +29,7 @@
 
 #include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "map.h"
 
 #include "game.h"									// for loading maps

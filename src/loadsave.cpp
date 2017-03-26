@@ -30,7 +30,7 @@
 #include <time.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/input.h"
 #include "lib/framework/stdio_ext.h"
 #include "lib/widget/button.h"

@@ -29,7 +29,7 @@
 #include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/framework/endian_hack.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "objects.h"
 
 #include "lib/script/script.h"

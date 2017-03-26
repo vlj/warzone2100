@@ -26,7 +26,7 @@
 #include <QString>
 #include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/gamelib/wzapp.h"
 #include "lib/framework/rational.h"
 

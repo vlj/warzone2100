@@ -30,7 +30,7 @@
 #include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/framework/math_ext.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/rational.h"
 #include "lib/gamelib/gtime.h"
 #include "console.h"

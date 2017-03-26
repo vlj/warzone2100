@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/stdio_ext.h"
 #include "lib/framework/utf.h"
 #include "lib/gamelib/wzapp.h"

@@ -30,7 +30,7 @@
 #include <QtCore/QJsonArray>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/gamelib/frameresource.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/netplay/netplay.h"

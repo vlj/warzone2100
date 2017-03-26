@@ -30,7 +30,7 @@
 #include "lib/gamelib/wzconfig.h"
 #include "lib/framework/file.h"
 #include "lib/framework/physfs_ext.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/opengl.h"
 
 #include "lib/gamelib/gtime.h"

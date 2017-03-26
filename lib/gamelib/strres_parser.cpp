@@ -66,8 +66,8 @@
  */
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
-#include "lib/framework/strresly.h"
+#include "strres.h"
+#include "strresly.h"
 
 extern int strres_lex(void);
 extern int strres_get_lineno(void);

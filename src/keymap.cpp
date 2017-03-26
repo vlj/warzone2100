@@ -31,7 +31,7 @@
 
 #include "lib/gamelib/frame.h"
 #include "lib/framework/input.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/netplay/netplay.h"
 #include "lib/gamelib/gtime.h"
 #include "keymap.h"

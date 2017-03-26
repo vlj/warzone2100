@@ -29,7 +29,7 @@
 #include "lib/framework/stdio_ext.h"
 
 #include "lib/framework/file.h"
-#include "lib/framework/resly.h"
+#include "lib/gamelib/resly.h"
 
 // Local prototypes
 static RES_TYPE *psResTypes = NULL;

@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/strres.h"
+#include "lib/gamelib/strres.h"
 #include "lib/framework/math_ext.h"
 #include "lib/widget/label.h"
 #include "lib/widget/widget.h"

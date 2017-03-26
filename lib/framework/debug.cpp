@@ -24,18 +24,13 @@
  *
  */
 
-#include "lib/gamelib/frame.h"
-
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
 #include "string_ext.h"
-#include "wzapp.h"
-#include "lib/gamelib/gtime.h"
 #include <map>
 #include <string>
 #include <regex>
-#include "src/warzoneconfig.h"	// for checking FS or not
 
 #ifdef WZ_OS_LINUX
 #include <execinfo.h>  // Nonfatal runtime backtraces.

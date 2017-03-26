@@ -40,50 +40,29 @@
 
 #include <math.h>
 
-static uint16_t trigSinTable[0x4001];
-static uint16_t trigAtanTable[0x2001];
+static const auto trigSinTable = []()
+{
+	auto&& table = std::array<uint16_t, 0x4001>{};
+	for (auto i = 0; i != 0x4001; ++i)
+	{
+		table[i] = static_cast<int>(0x10000 * sin(i * (M_PI / 0x8000)) + 0.5) - !!i; // -!!i = subtract 1, unless i == 0.
+	}
+	return table;
+}();
+
+static const auto trigAtanTable = []()
+{
+	auto&& table = std::array<uint16_t, 0x2001>{};
+	for (auto i = 0; i != 0x2001; ++i)
+	{
+		table[i] = static_cast<int>(0x8000 / M_PI * atan(static_cast<double>(i) / 0x2000) + 0.5);
+	}
+	return table;
+}();
 
 /* Initialise the Trig tables */
 bool trigInitialise(void)
 {
-	uint64_t test;
-	uint32_t crc;
-	uint32_t i;
-
-	// Generate tables.
-	static_assert(sizeof(trigSinTable) / sizeof(*trigSinTable) == 0x4001, "Wrong sin table size");
-	for (i = 0; i != 0x4001; ++i)
-	{
-		trigSinTable[i] = (int)(0x10000 * sin(i * (M_PI / 0x8000)) + 0.5) - !!i; // -!!i = subtract 1, unless i == 0.
-	}
-	static_assert(sizeof(trigAtanTable) / sizeof(*trigAtanTable) == 0x2001, "Wrong atan table size");
-	for (i = 0; i != 0x2001; ++i)
-	{
-		trigAtanTable[i] = (int)(0x8000 / M_PI * atan((double)i / 0x2000) + 0.5);
-	}
-
-	// Check tables are correct.
-	crc = ~crcSumU16(0, trigSinTable, sizeof(trigSinTable) / sizeof(*trigSinTable));
-	ASSERT(crc == 0x6D3C8DB5, "Bad trigSinTable CRC = 0x%08X, sin function is broken.", crc);
-	crc = ~crcSumU16(0, trigAtanTable, sizeof(trigAtanTable) / sizeof(*trigAtanTable));
-	ASSERT(crc == 0xD2797F85, "Bad trigAtanTable CRC = 0x%08X, atan function is broken.", crc);
-
-	// Test large and small square roots.
-	for (test = 0x0000; test != 0x10000; ++test)
-	{
-		uint64_t lower = test * test;
-		uint64_t upper = (test + 1) * (test + 1) - 1;
-		ASSERT((uint32_t)iSqrt(lower) == test, "Sanity check failed, sqrt(%" PRIu64") gave %" PRIu32" instead of %" PRIu64"!", lower, i64Sqrt(lower), test);
-		ASSERT((uint32_t)iSqrt(upper) == test, "Sanity check failed, sqrt(%" PRIu64") gave %" PRIu32" instead of %" PRIu64"!", upper, i64Sqrt(upper), test);
-	}
-	for (test = 0xFFFE0000; test != 0x00020000; test = (test + 1) & 0xFFFFFFFF)
-	{
-		uint64_t lower = test * test;
-		uint64_t upper = (test + 1) * (test + 1) - 1;
-		ASSERT((uint32_t)i64Sqrt(lower) == test, "Sanity check failed, sqrt(%" PRIu64") gave %" PRIu32" instead of %" PRIu64"!", lower, i64Sqrt(lower), test);
-		ASSERT((uint32_t)i64Sqrt(upper) == test, "Sanity check failed, sqrt(%" PRIu64") gave %" PRIu32" instead of %" PRIu64"!", upper, i64Sqrt(upper), test);
-	}
-
 	return true;
 }
 
@@ -187,6 +166,16 @@ int32_t iHypot(int32_t x, int32_t y)
 int32_t iHypot3(int32_t x, int32_t y, int32_t z)
 {
 	return i64Sqrt((uint64_t)x * x + (uint64_t)y * y + (uint64_t)z * z); // Casting from int32_t to uint64_t does sign extend.
+}
+
+const std::array<uint16_t, 0x4001>& getSinTable()
+{
+	return trigSinTable;
+}
+
+const std::array<uint16_t, 0x2001>& getATanTable()
+{
+	return trigAtanTable;
 }
 
 // For testing above functions.

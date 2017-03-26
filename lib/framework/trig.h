@@ -26,7 +26,8 @@
 #ifndef _trig_h
 #define _trig_h
 
-#include "frame.h"
+#include "wzglobal.h"
+#include <array>
 
 /* Initialise the Trig tables */
 extern bool trigInitialise(void);
@@ -49,5 +50,8 @@ static inline WZ_DECL_CONST int32_t angleDelta(int32_t a)
 {
 	return (int16_t)a;  // Cast wrapping intended.
 }
+
+const std::array<uint16_t, 0x4001>& getSinTable();
+const std::array<uint16_t, 0x2001>& getATanTable();
 
 #endif

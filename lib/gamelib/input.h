@@ -30,9 +30,9 @@
 #error Framework header files MUST be included from Frame.h ONLY.
 #endif
 
-#include "types.h"
+#include "lib/framework/types.h"
 #include "lib/framework/utf.h"
-#include "vector.h"
+#include "lib/framework/vector.h"
 #include <vector>
 
 

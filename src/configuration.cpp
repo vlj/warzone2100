@@ -26,11 +26,11 @@
 #include <QtCore/QSettings>
 #include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/netplay/netplay.h"
 #include "lib/sound/mixer.h"
 #include "lib/ivis_opengl/screen.h"
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 
 #include "advvis.h"
 #include "ai.h"

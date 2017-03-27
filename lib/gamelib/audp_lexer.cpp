@@ -541,7 +541,7 @@ static inline bool no_warn_unused_result(int ignore) { if (ignore) {} return tru
 
 void audp_error(const char* fmt);
 
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 #ifndef yyextra
 # define yyextra audp_get_extra()

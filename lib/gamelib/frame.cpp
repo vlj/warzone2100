@@ -29,7 +29,7 @@
 #include "lib/gamelib/wzapp.h"
 
 #include "lib/gamelib/frameresource.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 
 /************************************************************************************
  *

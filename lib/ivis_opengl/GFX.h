@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 #include "pietypes.h"
 
 enum GFXTYPE

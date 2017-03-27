@@ -34,7 +34,7 @@
 #  include <errno.h>
 #endif // WZ_OS_WIN
 
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/framework/physfs_ext.h"
 #include "lib/exceptionhandler/exceptionhandler.h"
 #include "lib/exceptionhandler/dumpinfo.h"

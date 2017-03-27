@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/framework/math_ext.h"
 
 #include "objects.h"

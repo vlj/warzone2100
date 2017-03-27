@@ -24,6 +24,6 @@
 #ifndef __INCLUDED_LIB_WIDGET_WIDGINT_H__
 #define __INCLUDED_LIB_WIDGET_WIDGINT_H__
 
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 
 #endif // __INCLUDED_LIB_WIDGET_WIDGINT_H__

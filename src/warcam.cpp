@@ -31,7 +31,7 @@
 #include <QString>
 #include "lib/gamelib/frame.h"
 #include "lib/framework/trig.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 
 #include "lib/ivis_opengl/piematrix.h"
 #include "lib/framework/fixedpoint.h" //ivis matrix code

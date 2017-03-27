@@ -23,7 +23,7 @@
 */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/framework/threading.h"
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/pieblitfunc.h"

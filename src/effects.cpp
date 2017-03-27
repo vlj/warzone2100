@@ -39,7 +39,7 @@
 #include "lib/gamelib/wzapp.h"
 #include "lib/gamelib/wzconfig.h"
 #include "lib/gamelib/frameresource.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/framework/math_ext.h"
 
 #include "lib/ivis_opengl/ivisdef.h" //ivis matrix code

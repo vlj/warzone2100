@@ -55,7 +55,7 @@
 #include "multiplay.h"
 #include "intfac.h"
 #include "multimenu.h"
-#include "lib/framework/input.h"		//for key constants
+#include "lib/gamelib/input.h"		//for key constants
 #include "lib/netplay/netplay.h"
 #include "lib/script/chat_processing.h"
 

@@ -568,7 +568,7 @@ char *strres_text;
 /* Get the Yacc definitions */
 #include "strres_parser.h"
 
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 // fwrite declared with warn_unused_result, resulting in mysterious errors in "%%" on some distros.
 static inline bool no_warn_unused_result(int ignore) { if (ignore) {} return true; }

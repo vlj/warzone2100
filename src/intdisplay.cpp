@@ -41,7 +41,7 @@
 #include "lib/ivis_opengl/bitimage.h"
 #include "lib/ivis_opengl/piematrix.h"
 
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/widget/slider.h"
 #include "lib/widget/editbox.h"
 #include "lib/widget/button.h"

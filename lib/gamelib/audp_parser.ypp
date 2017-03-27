@@ -23,7 +23,7 @@
 #include "lib/gamelib/frame.h"
 #include "lib/gamelib/parser.h"
 #include "lib/sound/audio.h"
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 extern int audp_lex(void);
 extern int audp_lex_destroy(void);

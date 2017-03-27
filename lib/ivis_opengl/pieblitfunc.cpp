@@ -23,7 +23,7 @@
  *
  */
 /***************************************************************************/
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 
 #include "pieblitfunc.h"
 #include "pietypes.h"

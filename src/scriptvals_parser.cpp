@@ -75,7 +75,7 @@
 #include "lib/sound/audio.h"
 
 #include "src/scriptvals.h"
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 #include "scriptvals_parser.h"
 

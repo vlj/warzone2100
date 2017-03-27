@@ -20,7 +20,7 @@
 #ifndef _tex_
 #define _tex_
 
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 #include "png_util.h"
 
 #define iV_TEXNAME_MAX 64

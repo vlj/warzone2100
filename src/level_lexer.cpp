@@ -632,7 +632,7 @@ static inline bool no_warn_unused_result(int ignore) { if (ignore) {} return tru
 #define YYLMAX	255
 #endif
 
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 /* Store for any string values */
 static char aText[YYLMAX];

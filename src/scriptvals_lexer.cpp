@@ -616,7 +616,7 @@ char *scrv_text;
 static char aText[TEXT_BUFFERS][YYLMAX];
 static uint32_t currText=0;
 
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 
 #ifndef yyextra
 # define yyextra scrv_get_extra()

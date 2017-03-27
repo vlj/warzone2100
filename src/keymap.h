@@ -21,7 +21,7 @@
 #ifndef __INCLUDED_SRC_KEYMAP_H__
 #define __INCLUDED_SRC_KEYMAP_H__
 
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 
 
 enum KEY_ACTION

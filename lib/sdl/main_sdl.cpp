@@ -36,9 +36,9 @@
 #if defined(QT_STATICPLUGIN)
 #include <QtCore/QtPlugin>
 #endif
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/framework/utf.h"
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 #include "lib/ivis_opengl/pieclip.h"
 #include "lib/gamelib/gtime.h"
 #include "src/warzoneconfig.h"

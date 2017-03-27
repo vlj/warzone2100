@@ -30,7 +30,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/gamelib/gtime.h"
 #include "lib/netplay/netplay.h"
 #include "multiplay.h"

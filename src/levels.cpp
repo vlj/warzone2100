@@ -48,7 +48,7 @@
 #include "lib/script/script.h"
 #include "scripttabs.h"
 #include "research.h"
-#include "lib/framework/lexer_input.h"
+#include "lib/gamelib/lexer_input.h"
 #include "effects.h"
 #include "main.h"
 #include "multiint.h"

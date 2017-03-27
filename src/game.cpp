@@ -31,7 +31,7 @@
 #include "lib/framework/file.h"
 #include "lib/framework/physfs_ext.h"
 #include "lib/gamelib/strres.h"
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/opengl.h"
 
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/ivisdef.h"

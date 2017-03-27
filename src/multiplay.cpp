@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/framework/input.h"
+#include "lib/gamelib/input.h"
 #include "lib/gamelib/strres.h"
 #include "map.h"
 

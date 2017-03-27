@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(warzone2100 CXX)
 
+find_package(gflags REQUIRED)
+
 file(GLOB HEADERS "*.h")
 file(GLOB SRC "*.cpp")
 qt5_wrap_cpp(MOCFILES multiint.h qtscriptdebug.h)
@@ -30,6 +32,7 @@ target_link_libraries(warzone2100 ${OPENSSL_SSL_LIBRARY}
 	${OPENGL_glu_LIBRARY}
 	${FREETYPE_LIBRARIES}
 	${SSL_EAY_RELEASE}
+	gflags
 	Qt5::Script
 	Qt5::Widgets
 	)

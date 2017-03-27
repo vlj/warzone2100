@@ -24,9 +24,11 @@
 #ifndef __INCLUDED_SRC_CLPARSE_H__
 #define __INCLUDED_SRC_CLPARSE_H__
 
+#include <gflags/gflags.h>
+
 // parse the commandline
-bool ParseCommandLine(int argc, const char **argv);
-bool ParseCommandLineEarly(int argc, const char **argv);
+bool ParseCommandLine(int argc, char **argv);
+bool ParseCommandLineEarly(int argc, char **argv);
 
 bool autogame_enabled();
 

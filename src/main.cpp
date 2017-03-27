@@ -893,7 +893,7 @@ int realmain(int argc, char *argv[])
 	initI18n();
 
 	// find early boot info
-	if (!ParseCommandLineEarly(utfargc, utfargv))
+	if (!ParseCommandLineEarly(utfargc, const_cast<char**>(utfargv)))
 	{
 		return EXIT_FAILURE;
 	}
@@ -959,7 +959,7 @@ int realmain(int argc, char *argv[])
 	loadConfig();
 
 	// parse the command line
-	if (!ParseCommandLine(utfargc, utfargv))
+	if (!ParseCommandLine(utfargc, const_cast<char**>(utfargv)))
 	{
 		return EXIT_FAILURE;
 	}

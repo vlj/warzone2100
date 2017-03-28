@@ -20,7 +20,7 @@
 #include <QString>
 #include "lib/gamelib/frame.h"
 #include "lib/framework/file.h"
-#include "lib/ivis_opengl/opengl.h"
+#include "opengl.h"
 #include <stdlib.h>
 #include <string.h>
 #include "lib/framework/string_ext.h"

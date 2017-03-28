@@ -22,7 +22,7 @@
  */
 
 #include "lib/gamelib/frame.h"
-#include "lib/ivis_opengl/opengl.h"
+#include "opengl.h"
 
 #include "lib/framework/fixedpoint.h"
 #include "lib/ivis_opengl/pieclip.h"

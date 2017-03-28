@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "lib/framework/vector.h"
-#include "lib/ivis_opengl/opengl.h"
+#include "opengl.h"
 #include "pietypes.h"
 
 //*************************************************************************

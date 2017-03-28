@@ -22,7 +22,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "lib/ivis_opengl/opengl.h"
+#include "opengl.h"
 
 #include <physfs.h>
 

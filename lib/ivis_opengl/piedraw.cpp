@@ -24,7 +24,7 @@
 #include <string.h>
 
 #include "lib/gamelib/frame.h"
-#include "lib/ivis_opengl/opengl.h"
+#include "opengl.h"
 #include "lib/ivis_opengl/ivisdef.h"
 #include "lib/ivis_opengl/imd.h"
 #include "lib/ivis_opengl/piefunc.h"

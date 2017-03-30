@@ -24,7 +24,7 @@
 #ifndef __INCLUDED_SRC_COMBAT_H__
 #define __INCLUDED_SRC_COMBAT_H__
 
-#include "weapondef.h"
+#include "lib/gamelib/weapondef.h"
 
 /* Fire a weapon at something added int weapon_slot*/
 bool combFire(WEAPON *psWeap, BASE_OBJECT *psAttacker, BASE_OBJECT *psTarget, int weapon_slot);

@@ -32,7 +32,7 @@
 #include "movedef.h"
 #include "orderdef.h"
 #include "statsdef.h"
-#include "weapondef.h"
+#include "lib/gamelib/weapondef.h"
 #include "orderdef.h"
 #include "actiondef.h"
 

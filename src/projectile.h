@@ -22,7 +22,7 @@
 #define __INCLUDED_SRC_PROJECTILE_H__
 
 #include "projectiledef.h"
-#include "weapondef.h"
+#include "lib/gamelib/weapondef.h"
 
 /**
  *	@file projectile.h

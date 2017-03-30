@@ -27,7 +27,7 @@
 #include "positiondef.h"
 #include "basedef.h"
 #include "statsdef.h"
-#include "weapondef.h"
+#include "lib/gamelib/weapondef.h"
 
 #include <vector>
 

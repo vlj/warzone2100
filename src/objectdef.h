@@ -30,7 +30,7 @@
 #include "movedef.h"
 #include "statsdef.h"
 #include "researchdef.h"
-#include "weapondef.h"
+#include "lib/gamelib/weapondef.h"
 
 #include "basedef.h"
 #include "droiddef.h"

@@ -1,9 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 #include "lib/framework/vector.h"
-#include "opengl.h"
+#include "api_object.h"
 #include "pietypes.h"
 
 //*************************************************************************
@@ -75,7 +76,7 @@ struct iIMDShape
 	iIMDPoly *polys;
 
 	// The new rendering data
-	GLuint buffers[VBO_COUNT];
+	std::array<std::unique_ptr<gfx_api::buffer>, VBO_COUNT> buffers;
 	SHADER_MODE shaderProgram; // if using specialized shader for this model
 
 							   // object animation (animating a level, rather than its texture)

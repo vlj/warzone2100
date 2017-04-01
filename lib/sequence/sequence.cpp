@@ -676,7 +676,7 @@ bool seq_Play(const char *filename)
 	}
 
 	/* open video */
-	videoGfx = new GFX(GFX_TEXTURE, GL_TRIANGLE_STRIP, 2);
+	videoGfx = new GFX(GFX_TEXTURE, gfx_api::drawtype::triangle_strip, 2);
 	if (theora_p)
 	{
 		if (videodata.ti.frame_width > texture_width || videodata.ti.frame_height > texture_height)
@@ -703,7 +703,7 @@ bool seq_Play(const char *filename)
 		}
 
 		Allocate_videoFrame();
-		videoGfx->makeTexture(texture_width, texture_height, GL_LINEAR, GL_RGBA, blackframe);
+		videoGfx->makeTexture(texture_width, texture_height, gfx_api::filter::linear, gfx_api::format::rgba, blackframe);
 		free(blackframe);
 
 		// when using scanlines we need to double the height

@@ -422,13 +422,10 @@ static FTFace &getFTFace(iV_fonts FontID)
 	}
 }
 
-static GLuint textureID;
-static GLuint pbo;
+static std::unique_ptr<gfx_api::texture> textureID;
 
 void iV_TextInit()
 {
-	glGenTextures(1, &textureID);
-	glGenBuffers(1, &pbo);
 	iV_SetFont(font_regular);
 	regular = new FTFace(getGlobalFTlib().lib, "fonts/DejaVuSans.ttf", 12 * 64, DPI, DPI);
 	bold = new FTFace(getGlobalFTlib().lib, "fonts/DejaVuSans-Bold.ttf", 21 * 64, DPI, DPI);
@@ -446,8 +443,6 @@ void iV_TextShutdown()
 	medium = nullptr;
 	bold = nullptr;
 	small = nullptr;
-	glDeleteBuffers(1, &pbo);
-	glDeleteTextures(1, &textureID);
 }
 
 static iV_fonts s_FondID;
@@ -691,17 +686,14 @@ void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotati
 	if (width > 0 && height > 0)
 	{
 		pie_SetTexturePage(TEXPAGE_EXTERN);
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, 4 * width * height, texture.get(), GL_STREAM_DRAW);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		textureID = gfx_api::context::get_context().create_texture(gfx_api::format::rgba, width, height, 1);
+		textureID->upload_texture(gfx_api::format::rgba, width, height, texture.get());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		iV_DrawImage(textureID, Vector2i(xoffset, yoffset), Vector2i(width, height), REND_TEXT, color);
+		iV_DrawImage(*textureID, Vector2i(xoffset, yoffset), Vector2i(width, height), REND_TEXT, color);
 	}
 
 	glPopMatrix();

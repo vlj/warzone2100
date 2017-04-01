@@ -2,17 +2,13 @@
 #include "png_util.h"
 #include "tex.h"
 #include "piestate.h"
+#include "gl/gl_impl.h"
 
-GFX::GFX(GFXTYPE type, GLenum drawType, int coordsPerVertex) : mType(type), mdrawType(drawType), mCoordsPerVertex(coordsPerVertex), mSize(0)
+GFX::GFX(GFXTYPE type, gfx_api::drawtype drawType, int coordsPerVertex) : mType(type), mdrawType(drawType), mCoordsPerVertex(coordsPerVertex), mSize(0)
 {
-	glGenBuffers(VBO_MINIMAL, mBuffers);
-	if (type == GFX_TEXTURE)
-	{
-		glGenTextures(1, &mTexture);
-	}
 }
 
-void GFX::loadTexture(const char *filename, GLenum filter)
+void GFX::loadTexture(const char *filename, gfx_api::filter filter)
 {
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
 	const char *extension = strrchr(filename, '.'); // determine the filetype
@@ -29,14 +25,26 @@ void GFX::loadTexture(const char *filename, GLenum filter)
 	}
 }
 
-void GFX::makeTexture(int width, int height, GLenum filter, GLenum format, const GLvoid *image)
+static auto
+get_filter(const gfx_api::filter& filter)
+{
+	switch (filter)
+	{
+	case gfx_api::filter::linear: return GL_LINEAR;
+	case gfx_api::filter::nearest: return GL_NEAREST;
+	}
+	throw;
+}
+
+void GFX::makeTexture(int width, int height, gfx_api::filter filter, gfx_api::format format, const void *image)
 {
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
 	pie_SetTexturePage(TEXPAGE_EXTERN);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+	mTexture = gfx_api::context::get_context().create_texture(format, width, height, 1);
+	if (image != nullptr)
+		mTexture->upload_texture(format, width, height, image);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, get_filter(filter));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, get_filter(filter));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	mWidth = width;
@@ -56,27 +64,38 @@ void GFX::updateTexture(const void *image, int width, int height)
 		height = mHeight;
 	}
 	pie_SetTexturePage(TEXPAGE_EXTERN);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, mFormat, GL_UNSIGNED_BYTE, image);
+	mTexture->upload_texture(mFormat, width, height, image);
 }
 
-void GFX::buffers(int vertices, const GLvoid *vertBuf, const GLvoid *auxBuf)
+void GFX::buffers(int vertices, const void *vertBuf, const void *auxBuf)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_VERTEX]);
-	glBufferData(GL_ARRAY_BUFFER, vertices * mCoordsPerVertex * sizeof(GLfloat), vertBuf, GL_STATIC_DRAW);
+	mBuffers[VBO_VERTEX] = gfx_api::context::get_context().create_buffer(vertices * mCoordsPerVertex * sizeof(float));
+	mBuffers[VBO_VERTEX]->upload(0, vertices * mCoordsPerVertex * sizeof(GLfloat), vertBuf);
 	if (mType == GFX_TEXTURE)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_TEXCOORD]);
-		glBufferData(GL_ARRAY_BUFFER, vertices * 2 * sizeof(GLfloat), auxBuf, GL_STATIC_DRAW);
+		mBuffers[VBO_TEXCOORD] = gfx_api::context::get_context().create_buffer(vertices * 2 * sizeof(float));
+		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 2 * sizeof(float), auxBuf);
 	}
 	else if (mType == GFX_COLOUR)
 	{
 		// reusing texture buffer for colours for now
-		glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_TEXCOORD]);
-		glBufferData(GL_ARRAY_BUFFER, vertices * 4 * sizeof(GLbyte), auxBuf, GL_STATIC_DRAW);
+		mBuffers[VBO_TEXCOORD] = gfx_api::context::get_context().create_buffer(vertices * 4 * sizeof(char));
+		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 4 * sizeof(char), auxBuf);
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	mSize = vertices;
+}
+
+static auto
+get_gl_draw_type(const gfx_api::drawtype& dt)
+{
+	switch (dt)
+	{
+	case gfx_api::drawtype::line_strip: return GL_LINE_STRIP;
+	case gfx_api::drawtype::triangles: return GL_TRIANGLES;
+	case gfx_api::drawtype::triangle_fan: return GL_TRIANGLE_FAN;
+	case gfx_api::drawtype::triangle_strip: return GL_TRIANGLE_STRIP;
+	}
+	throw;
 }
 
 void GFX::draw()
@@ -84,19 +103,23 @@ void GFX::draw()
 	if (mType == GFX_TEXTURE)
 	{
 		pie_SetTexturePage(TEXPAGE_EXTERN);
-		glBindTexture(GL_TEXTURE_2D, mTexture);
+		const auto& as_gl_texture = dynamic_cast<gfx_api::gl_api::gl_texture&>(*mTexture);
+		glBindTexture(GL_TEXTURE_2D, as_gl_texture.object);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_TEXCOORD]); glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+		const auto& as_gl_buffer = dynamic_cast<gfx_api::gl_api::gl_buffer&>(*mBuffers[VBO_TEXCOORD]);
+		glBindBuffer(GL_ARRAY_BUFFER, as_gl_buffer.object); glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 	}
 	else if (mType == GFX_COLOUR)
 	{
 		pie_SetTexturePage(TEXPAGE_NONE);
 		glEnableClientState(GL_COLOR_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_TEXCOORD]); glColorPointer(4, GL_UNSIGNED_BYTE, 0, NULL);
+		const auto& as_gl_buffer = dynamic_cast<gfx_api::gl_api::gl_buffer&>(*mBuffers[VBO_TEXCOORD]);
+		glBindBuffer(GL_ARRAY_BUFFER, as_gl_buffer.object); glColorPointer(4, GL_UNSIGNED_BYTE, 0, NULL);
 	}
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffers[VBO_VERTEX]); glVertexPointer(mCoordsPerVertex, GL_FLOAT, 0, NULL);
-	glDrawArrays(mdrawType, 0, mSize);
+	const auto& as_gl_buffer = dynamic_cast<gfx_api::gl_api::gl_buffer&>(*mBuffers[VBO_VERTEX]);
+	glBindBuffer(GL_ARRAY_BUFFER, as_gl_buffer.object); glVertexPointer(mCoordsPerVertex, GL_FLOAT, 0, NULL);
+	glDrawArrays(get_gl_draw_type(mdrawType), 0, mSize);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	if (mType == GFX_TEXTURE)
 	{
@@ -111,10 +134,4 @@ void GFX::draw()
 
 GFX::~GFX()
 {
-	glDeleteBuffers(VBO_MINIMAL, mBuffers);
-	if (mType == GFX_TEXTURE)
-	{
-		glDeleteTextures(1, &mTexture);
-	}
 }
-

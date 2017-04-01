@@ -31,6 +31,7 @@
 #include "bitimage.h"
 #include "GFX.h"
 #include "screen.h"
+#include "gl/gl_impl.h"
 
 
 /***************************************************************************/
@@ -169,11 +170,11 @@ static void iv_DrawImageImpl(Vector2i Position, Vector2i size, Vector2f TextureU
 
 }
 
-void iV_DrawImage(GLuint TextureID, Vector2i Position, Vector2i size, REND_MODE mode, PIELIGHT colour)
+void iV_DrawImage(const gfx_api::texture& TextureID, Vector2i Position, Vector2i size, REND_MODE mode, PIELIGHT colour)
 {
 	pie_SetRendMode(mode);
 	pie_SetTexturePage(TEXPAGE_EXTERN);
-	glBindTexture(GL_TEXTURE_2D, TextureID);
+	glBindTexture(GL_TEXTURE_2D, dynamic_cast<const gfx_api::gl_api::gl_texture&>(TextureID).object);
 	iv_DrawImageImpl(Position, size, Vector2f(0.f, 0.f), Vector2f(1.f, 1.f), colour);
 }
 
@@ -314,7 +315,7 @@ void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, uint16_t ID, int x, int y, int He
 
 bool pie_InitRadar(void)
 {
-	radarGfx = new GFX(GFX_TEXTURE, GL_TRIANGLE_STRIP, 2);
+	radarGfx = new GFX(GFX_TEXTURE, gfx_api::drawtype::triangle_strip, 2);
 	return true;
 }
 
@@ -325,9 +326,9 @@ bool pie_ShutdownRadar(void)
 	return true;
 }
 
-void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidth, int theight, bool filter)
+void pie_SetRadar(const float& x, const float& y, const float& width, const float& height, const int& twidth, const int& theight, const bool& filter)
 {
-	radarGfx->makeTexture(twidth, theight, filter ? GL_LINEAR : GL_NEAREST);
+	radarGfx->makeTexture(twidth, theight, filter ? gfx_api::filter::linear : gfx_api::filter::nearest);
 	GLfloat texcoords[] = { 0.0f, 0.0f,  1.0f, 0.0f,  0.0f, 1.0f,  1.0f, 1.0f };
 	GLfloat vertices[] = { x, y,  x + width, y,  x, y + height,  x + width, y + height };
 	radarGfx->buffers(4, vertices, texcoords);

@@ -47,8 +47,8 @@ void pie_SetViewingWindow(Vector3i *v, PIELIGHT colour)
 
 	if (!radarViewGfx[0])
 	{
-		radarViewGfx[0] = new GFX(GFX_COLOUR, GL_TRIANGLE_FAN, 2);
-		radarViewGfx[1] = new GFX(GFX_COLOUR, GL_LINE_STRIP, 2);
+		radarViewGfx[0] = new GFX(GFX_COLOUR, gfx_api::drawtype::triangle_fan, 2);
+		radarViewGfx[1] = new GFX(GFX_COLOUR, gfx_api::drawtype::line_strip, 2);
 	}
 
 	pieVrts[0] = v[1];
@@ -167,7 +167,7 @@ void pie_Skybox_Init()
 	};
 
 	GL_DEBUG("Initializing skybox");
-	skyboxGfx = new GFX(GFX_TEXTURE, GL_TRIANGLES, 3);
+	skyboxGfx = new GFX(GFX_TEXTURE, gfx_api::drawtype::triangles, 3);
 	skyboxGfx->buffers(24, vertex.data(), texc.data());
 }
 

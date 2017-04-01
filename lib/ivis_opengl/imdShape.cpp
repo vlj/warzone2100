@@ -49,7 +49,6 @@ iIMDShape::~iIMDShape()
 		free(shadowEdgeList);
 		shadowEdgeList = NULL;
 	}
-	glDeleteBuffers(VBO_COUNT, buffers);
 	// shader deleted later, if any
 	iIMDShape *d = next;
 	delete d;

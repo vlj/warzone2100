@@ -22,8 +22,7 @@
  */
 #include <QString>
 #include "lib/gamelib/frame.h"
-#include "opengl.h"
-
+#include "gl/gl_impl.h"
 #include <physfs.h>
 
 #include "lib/ivis_opengl/pieblitfunc.h"
@@ -47,9 +46,7 @@
  *	Global Variables
  */
 
-std::vector<pie_internal::SHADER_PROGRAM> pie_internal::shaderProgram;
 static GLfloat shaderStretch = 0;
-SHADER_MODE pie_internal::currentShaderMode = SHADER_NONE;
 unsigned int pieStateCount = 0; // Used in pie_GetResetCounts
 static RENDER_STATE rendStates;
 static GLint ecmState = 0;
@@ -134,265 +131,15 @@ PIELIGHT pie_GetFogColour(void)
 	return rendStates.fogColour;
 }
 
-// Read shader into text buffer
-static char *readShaderBuf(const char *name)
+gfx_api::program& get_shader(const SHADER_MODE& shader)
 {
-	PHYSFS_file	*fp;
-	int	filesize;
-	char *buffer;
-
-	fp = PHYSFS_openRead(name);
-	debug(LOG_3D, "Reading...[directory: %s] %s", PHYSFS_getRealDir(name), name);
-	ASSERT_OR_RETURN(0, fp != NULL, "Could not open %s", name);
-	filesize = PHYSFS_fileLength(fp);
-	buffer = (char *)malloc(filesize + 1);
-	if (buffer)
-	{
-		PHYSFS_read(fp, buffer, 1, filesize);
-		buffer[filesize] = '\0';
-	}
-	PHYSFS_close(fp);
-
-	return buffer;
-}
-
-// Retrieve shader compilation errors
-static void printShaderInfoLog(code_part part, GLuint shader)
-{
-	GLint infologLen = 0;
-
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologLen);
-	if (infologLen > 0)
-	{
-		GLint charsWritten = 0;
-		GLchar *infoLog = (GLchar *)malloc(infologLen);
-
-		glGetShaderInfoLog(shader, infologLen, &charsWritten, infoLog);
-		debug(part, "Shader info log: %s", infoLog);
-		free(infoLog);
-	}
-}
-
-// Retrieve shader linkage errors
-static void printProgramInfoLog(code_part part, GLuint program)
-{
-	GLint infologLen = 0;
-
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infologLen);
-	if (infologLen > 0)
-	{
-		GLint charsWritten = 0;
-		GLchar *infoLog = (GLchar *)malloc(infologLen);
-
-		glGetProgramInfoLog(program, infologLen, &charsWritten, infoLog);
-		debug(part, "Program info log: %s", infoLog);
-		free(infoLog);
-	}
-}
-
-static void getLocs(pie_internal::SHADER_PROGRAM *program)
-{
-	glUseProgram(program->program);
-
-	// Attributes
-	program->locVertex = glGetAttribLocation(program->program, "vertex");
-	program->locNormal = glGetAttribLocation(program->program, "vertexNormal");
-	program->locTexCoord = glGetAttribLocation(program->program, "vertexTexCoord");
-	program->locColor = glGetAttribLocation(program->program, "vertexColor");
-
-	// Uniforms, these never change.
-	GLint locTex0 = glGetUniformLocation(program->program, "Texture");
-	GLint locTex1 = glGetUniformLocation(program->program, "TextureTcmask");
-	GLint locTex2 = glGetUniformLocation(program->program, "TextureNormal");
-	GLint locTex3 = glGetUniformLocation(program->program, "TextureSpecular");
-	glUniform1i(locTex0, 0);
-	glUniform1i(locTex1, 1);
-	glUniform1i(locTex2, 2);
-	glUniform1i(locTex3, 3);
-}
-
-void pie_FreeShaders()
-{
-	while (pie_internal::shaderProgram.size() > SHADER_MAX)
-	{
-		glDeleteShader(pie_internal::shaderProgram.back().program);
-		pie_internal::shaderProgram.pop_back();
-	}
-}
-
-// Read/compile/link shaders
-SHADER_MODE pie_LoadShader(const char *programName, const char *vertexPath, const char *fragmentPath,
-	const std::vector<std::string> &uniformNames)
-{
-	pie_internal::SHADER_PROGRAM program;
-	GLint status;
-	bool success = true; // Assume overall success
-	char *buffer[2];
-
-	program.program = glCreateProgram();
-	glBindAttribLocation(program.program, 0, "vertex");
-	glBindAttribLocation(program.program, 1, "vertexTexCoord");
-	glBindAttribLocation(program.program, 2, "vertexColor");
-	ASSERT_OR_RETURN(SHADER_NONE, program.program, "Could not create shader program!");
-
-	*buffer = (char *)"";
-
-	if (vertexPath)
-	{
-		success = false; // Assume failure before reading shader file
-
-		if ((*(buffer + 1) = readShaderBuf(vertexPath)))
-		{
-			GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-
-			glShaderSource(shader, 2, (const char **)buffer, NULL);
-			glCompileShader(shader);
-
-			// Check for compilation errors
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-			if (!status)
-			{
-				debug(LOG_ERROR, "Vertex shader compilation has failed [%s]", vertexPath);
-				printShaderInfoLog(LOG_ERROR, shader);
-			}
-			else
-			{
-				printShaderInfoLog(LOG_3D, shader);
-				glAttachShader(program.program, shader);
-				success = true;
-			}
-			if (GLEW_VERSION_4_3 || GLEW_KHR_debug)
-			{
-				glObjectLabel(GL_SHADER, shader, -1, vertexPath);
-			}
-			free(*(buffer + 1));
-		}
-	}
-
-	if (success && fragmentPath)
-	{
-		success = false; // Assume failure before reading shader file
-
-		if ((*(buffer + 1) = readShaderBuf(fragmentPath)))
-		{
-			GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
-
-			glShaderSource(shader, 2, (const char **)buffer, NULL);
-			glCompileShader(shader);
-
-			// Check for compilation errors
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-			if (!status)
-			{
-				debug(LOG_ERROR, "Fragment shader compilation has failed [%s]", fragmentPath);
-				printShaderInfoLog(LOG_ERROR, shader);
-			}
-			else
-			{
-				printShaderInfoLog(LOG_3D, shader);
-				glAttachShader(program.program, shader);
-				success = true;
-			}
-			if (GLEW_VERSION_4_3 || GLEW_KHR_debug)
-			{
-				glObjectLabel(GL_SHADER, shader, -1, fragmentPath);
-			}
-			free(*(buffer + 1));
-		}
-	}
-
-	if (success)
-	{
-		glLinkProgram(program.program);
-
-		// Check for linkage errors
-		glGetProgramiv(program.program, GL_LINK_STATUS, &status);
-		if (!status)
-		{
-			debug(LOG_ERROR, "Shader program linkage has failed [%s, %s]", vertexPath, fragmentPath);
-			printProgramInfoLog(LOG_ERROR, program.program);
-			success = false;
-		}
-		else
-		{
-			printProgramInfoLog(LOG_3D, program.program);
-		}
-		if (GLEW_VERSION_4_3 || GLEW_KHR_debug)
-		{
-			glObjectLabel(GL_PROGRAM, program.program, -1, programName);
-		}
-	}
-	GLuint p = program.program;
-	std::transform(uniformNames.begin(), uniformNames.end(),
-		std::back_inserter(program.locations),
-		[p](const std::string name) { return glGetUniformLocation(p, name.data()); });
-
-	getLocs(&program);
-	glUseProgram(0);
-
-	pie_internal::shaderProgram.push_back(program);
-
-	return SHADER_MODE(pie_internal::shaderProgram.size() - 1);
-}
-
-// Run from screen.c on init. Do not change the order of loading here! First ones are enumerated.
-bool pie_LoadShaders()
-{
-	pie_internal::SHADER_PROGRAM program;
-	int result;
-
-	// Load some basic shaders
-	memset(&program, 0, sizeof(program));
-	pie_internal::shaderProgram.push_back(program);
-
-	// TCMask shader for map-placed models with advanced lighting
-	debug(LOG_3D, "Loading shader: SHADER_COMPONENT");
-	result = pie_LoadShader("Component program", "shaders/tcmask.vert", "shaders/tcmask.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" });
-	ASSERT_OR_RETURN(false, result, "Failed to load component shader");
-
-	// TCMask shader for buttons with flat lighting
-	debug(LOG_3D, "Loading shader: SHADER_BUTTON");
-	result = pie_LoadShader("Button program", "shaders/button.vert", "shaders/button.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" });
-	ASSERT_OR_RETURN(false, result, "Failed to load button shader");
-
-	// Plain shader for no lighting
-	debug(LOG_3D, "Loading shader: SHADER_NOLIGHT");
-	result = pie_LoadShader("Plain program", "shaders/nolight.vert", "shaders/nolight.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" });
-	ASSERT_OR_RETURN(false, result, "Failed to load no-lighting shader");
-
-	debug(LOG_3D, "Loading shader: TERRAIN");
-	result = pie_LoadShader("terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag",
-		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex", "lightmap_tex", "textureMatrix2",
-		"fogEnabled", "fogEnd", "fogStart", "fogColor" });
-	ASSERT_OR_RETURN(false, result, "Failed to load terrain shader");
-
-	debug(LOG_3D, "Loading shader: TERRAIN_DEPTH");
-	result = pie_LoadShader("terrain_depth program", "shaders/terrain_water.vert", "shaders/terraindepth.frag",
-	{ "ModelViewProjectionMatrix", "paramx2", "paramy2", "lightmap_tex" });
-	ASSERT_OR_RETURN(false, result, "Failed to load terrain_depth shader");
-
-	debug(LOG_3D, "Loading shader: DECALS");
-	result = pie_LoadShader("decals program", "shaders/decals.vert", "shaders/decals.frag",
-		{ "ModelViewProjectionMatrix", "paramxlight", "paramylight", "tex", "lightmap_tex", "lightTextureMatrix",
-		"fogEnabled", "fogEnd", "fogStart", "fogColor" });
-	ASSERT_OR_RETURN(false, result, "Failed to load decals shader");
-
-	debug(LOG_3D, "Loading shader: WATER");
-	result = pie_LoadShader("water program", "shaders/terrain_water.vert", "shaders/water.frag",
-		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex1", "tex2", "textureMatrix1",
-		"fogEnabled", "fogEnd", "fogStart" });
-	ASSERT_OR_RETURN(false, result, "Failed to load water shader");
-
-	pie_internal::currentShaderMode = SHADER_NONE;
-	return true;
+	static std::vector<std::unique_ptr<gfx_api::program>> shaderProgram = gfx_api::context::get_context().build_programs();
+	return *shaderProgram[shader];
 }
 
 void pie_DeactivateShader()
 {
-	pie_internal::currentShaderMode = SHADER_NONE;
+	//pie_internal::currentShaderMode = SHADER_NONE;
 	glUseProgram(0);
 }
 
@@ -419,69 +166,6 @@ void pie_SetShaderStretchDepth(float stretch)
 float pie_GetShaderStretchDepth()
 {
 	return shaderStretch;
-}
-
-pie_internal::SHADER_PROGRAM &pie_ActivateShaderDeprecated(SHADER_MODE shaderMode, const iIMDShape *shape, PIELIGHT teamcolour, PIELIGHT colour)
-{
-	int maskpage = shape->tcmaskpage;
-	int normalpage = shape->normalpage;
-	int specularpage = shape->specularpage;
-	pie_internal::SHADER_PROGRAM &program = pie_internal::shaderProgram[shaderMode];
-
-	if (shaderMode != pie_internal::currentShaderMode)
-	{
-		glUseProgram(program.program);
-		pie_internal::SHADER_PROGRAM &program = pie_internal::shaderProgram[shaderMode];
-
-		// These do not change during our drawing pass
-		glUniform1i(program.locations[4], rendStates.fog);
-		glUniform1f(program.locations[9], timeState);
-
-		pie_internal::currentShaderMode = shaderMode;
-	}
-	glUniform4fv(program.locations[0], 1, &pal_PIELIGHTtoVec4(colour)[0]);
-	pie_SetTexturePage(shape->texpage);
-
-	glUniform4fv(program.locations[1], 1, &pal_PIELIGHTtoVec4(teamcolour)[0]);
-	glUniform1i(program.locations[3], maskpage != iV_TEX_INVALID);
-
-	glUniform1i(program.locations[8], 0);
-
-	if (program.locations[2] >= 0)
-	{
-		glUniform1f(program.locations[2], shaderStretch);
-	}
-	if (program.locations[5] >= 0)
-	{
-		glUniform1i(program.locations[5], normalpage != iV_TEX_INVALID);
-	}
-	if (program.locations[6] >= 0)
-	{
-		glUniform1i(program.locations[6], specularpage != iV_TEX_INVALID);
-	}
-	if (program.locations[7] >= 0)
-	{
-		glUniform1i(program.locations[7], ecmState);
-	}
-
-	if (maskpage != iV_TEX_INVALID)
-	{
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, pie_Texture(maskpage));
-	}
-	if (normalpage != iV_TEX_INVALID)
-	{
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, pie_Texture(normalpage));
-	}
-	if (specularpage != iV_TEX_INVALID)
-	{
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, pie_Texture(specularpage));
-	}
-	glActiveTexture(GL_TEXTURE0);
-
-	return program;
 }
 
 void pie_SetDepthBufferStatus(DEPTH_MODE depthMode)
@@ -569,7 +253,7 @@ void pie_SetTexturePage(int32_t num)
 			{
 				glEnable(GL_TEXTURE_2D);
 			}
-			glBindTexture(GL_TEXTURE_2D, pie_Texture(num));
+			glBindTexture(GL_TEXTURE_2D, dynamic_cast<gfx_api::gl_api::gl_texture&>(pie_Texture(num)).object);
 		}
 		rendStates.texPage = num;
 	}

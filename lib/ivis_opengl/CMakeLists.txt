@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.5)
 project (ivis-opengl CXX)
 
-file(GLOB HEADERS "*.h")
-file(GLOB SRC "*.cpp")
+file(GLOB_RECURSE HEADERS "*.h")
+file(GLOB_RECURSE SRC "*.cpp")
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   pkg_check_modules(HARFBUZZ harfbuzz)

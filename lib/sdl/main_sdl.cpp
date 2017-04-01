@@ -1418,21 +1418,6 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
 		sdlInitCursors();
 	}
 
-	// FIXME: aspect ratio
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, 1, -1);
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glCullFace(GL_FRONT);
-	glEnable(GL_CULL_FACE);
-
 	return true;
 }
 

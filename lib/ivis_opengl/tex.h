@@ -20,7 +20,7 @@
 #ifndef _tex_
 #define _tex_
 
-#include "opengl.h"
+#include "api_object.h"
 #include "png_util.h"
 
 #define iV_TEXNAME_MAX 64
@@ -29,15 +29,15 @@
 
 //*************************************************************************
 
-GLuint pie_Texture(int page);
+gfx_api::texture& pie_Texture(int page);
 int pie_NumberOfPages();
-int pie_ReserveTexture(const char *name);
+int pie_ReserveTexture(const char *name, const gfx_api::format& f, size_t width, size_t height, size_t levels);
 
 //*************************************************************************
 
 extern int iV_GetTexture(const char *filename, bool compression = true);
 extern void iV_unloadImage(iV_Image *image);
-extern unsigned int iV_getPixelFormat(const iV_Image *image);
+gfx_api::format iV_getPixelFormat(const iV_Image *image);
 
 //bool replaceTexture(const QString &oldfile, const QString &newfile);
 extern int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page = -1);

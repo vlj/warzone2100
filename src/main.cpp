@@ -1050,10 +1050,7 @@ int realmain(int argc, char *argv[])
 	{
 		return EXIT_FAILURE;
 	}
-	if (!pie_LoadShaders())
-	{
-		return EXIT_FAILURE;
-	}
+
 	war_SetWidth(pie_GetVideoBufferWidth());
 	war_SetHeight(pie_GetVideoBufferHeight());
 

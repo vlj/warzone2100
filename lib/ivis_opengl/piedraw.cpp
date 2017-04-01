@@ -25,14 +25,15 @@
 
 #include "lib/gamelib/frame.h"
 #include "opengl.h"
-#include "lib/ivis_opengl/ivisdef.h"
-#include "lib/ivis_opengl/imd.h"
-#include "lib/ivis_opengl/piefunc.h"
-#include "lib/ivis_opengl/tex.h"
-#include "lib/ivis_opengl/piedef.h"
-#include "lib/ivis_opengl/piestate.h"
-#include "lib/ivis_opengl/piepalette.h"
-#include "lib/ivis_opengl/pieclip.h"
+#include "ivisdef.h"
+#include "imd.h"
+#include "piefunc.h"
+#include "tex.h"
+#include "piedef.h"
+#include "piestate.h"
+#include "piepalette.h"
+#include "pieclip.h"
+#include "piestate.h"
 #include "piematrix.h"
 #include "screen.h"
 
@@ -173,13 +174,24 @@ static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour)
 	const PIELIGHT colour = WZCOL_WHITE;
 	pie_SetFogStatus(false);
 	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
-	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(SHADER_BUTTON, shape, teamcolour, colour);
+//	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(SHADER_BUTTON, shape, teamcolour, colour);
+	gfx_api::program& program = get_shader(SHADER_BUTTON);
+	program.use();
 	pie_SetRendMode(REND_OPAQUE);
 	pie_SetTexturePage(shape->texpage);
-	enableArray(shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shape->buffers[VBO_INDEX]);
+	program.set_vertex_buffers(
+	{
+		{ gfx_api::buffer_type::vec3, sizeof(Vector3f) },
+		{ gfx_api::buffer_type::vec3, sizeof(Vector3f) },
+		{ gfx_api::buffer_type::vec2, sizeof(Vector2f) }
+	},
+	{
+		{ *shape->buffers[VBO_VERTEX], 0u },
+		{ *shape->buffers[VBO_NORMAL], 0u },
+		{ *shape->buffers[VBO_TEXCOORD], 0u }
+	}
+	);
+	program.set_index_buffer(*shape->buffers[VBO_INDEX]);
 	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, NULL);
 	disableArrays();
 	polyCount += shape->npolys;
@@ -234,19 +246,29 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	}
 
 	SHADER_MODE mode = shape->shaderProgram == SHADER_NONE ? light ? SHADER_COMPONENT : SHADER_NOLIGHT : shape->shaderProgram;
-	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(mode, shape, teamcolour, colour);
+	gfx_api::program& program = get_shader(mode);
+	program.use();
+	//pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(mode, shape, teamcolour, colour);
 
-	if (program.locations.size() >= 9)
-		glUniform1i(program.locations[8], (pieFlag & pie_PREMULTIPLIED) == 0);
+	//if (program.locations.size() >= 9)
+	//	glUniform1i(program.locations[8], (pieFlag & pie_PREMULTIPLIED) == 0);
 
 	pie_SetTexturePage(shape->texpage);
 
 	frame %= std::max<int>(1, shape->numFrames);
-
-	enableArray(shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shape->buffers[VBO_INDEX]);
+	program.set_vertex_buffers(
+		{
+			{gfx_api::buffer_type::vec3, sizeof(Vector3f) },
+			{gfx_api::buffer_type::vec3, sizeof(Vector3f) },
+			{gfx_api::buffer_type::vec2, sizeof(Vector2f) }
+		},
+		{
+				{*shape->buffers[VBO_VERTEX], 0u},
+				{*shape->buffers[VBO_NORMAL], 0u},
+				{*shape->buffers[VBO_TEXCOORD], 0u}
+		}
+	);
+	program.set_index_buffer(*shape->buffers[VBO_INDEX]);
 	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(frame * shape->npolys * 3 * sizeof(uint16_t)));
 	disableArrays();
 

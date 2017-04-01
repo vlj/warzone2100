@@ -31,6 +31,7 @@
 
 /***************************************************************************/
 
+#include "api_object.h"
 #include "lib/gamelib/frame.h"
 #include "lib/framework/string_ext.h"
 #include "piedef.h"
@@ -68,7 +69,7 @@ static inline void iV_Box(int x0, int y0, int x1, int y1, PIELIGHT first)
 	iV_Box2(x0, y0, x1, y1, first, first);
 }
 extern void pie_BoxFill(int x0, int y0, int x1, int y1, PIELIGHT colour, REND_MODE rendermode = REND_OPAQUE);
-extern void iV_DrawImage(GLuint TextureID, Vector2i position, Vector2i size, REND_MODE mode, PIELIGHT colour);
+extern void iV_DrawImage(const gfx_api::texture& TextureID, Vector2i position, Vector2i size, REND_MODE mode, PIELIGHT colour);
 extern void iV_DrawImage(IMAGEFILE *ImageFile, uint16_t ID, int x, int y);
 void iV_DrawImage2(const ImageDef &ImageFile, float x, float y, float width = -0.0f, float height = -0.0f);
 void iV_DrawImageTc(Image image, Image imageTc, int x, int y, PIELIGHT colour);
@@ -91,7 +92,7 @@ bool pie_InitRadar();
 bool pie_ShutdownRadar();
 void pie_DownLoadRadar(uint32_t *buffer);
 void pie_RenderRadar();
-void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidth, int theight, bool filter);
+void pie_SetRadar(const float& x, const float& y, const float& width, const float& height, const int& twidth, const int& theight, const bool& filter);
 
 enum SCREENTYPE
 {

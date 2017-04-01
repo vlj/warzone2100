@@ -991,8 +991,6 @@ bool stageOneShutDown(void)
 	atmosSetWeatherType(WT_NONE); // reset weather and free its data
 	wzPerfShutdown();
 
-	pie_FreeShaders();
-
 	if (audio_Disabled() == false)
 	{
 		sound_CheckAllUnloaded();

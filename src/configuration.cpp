@@ -89,7 +89,7 @@ bool loadConfig()
 	}
 	if (ini.contains("notexturecompression"))
 	{
-		wz_texture_compression = GL_RGBA;
+		wz_texture_compression = false;
 	}
 	showFPS = ini.value("showFPS", false).toBool();
 	scroll_speed_accel = ini.value("scroll", DEFAULTSCROLL).toInt();

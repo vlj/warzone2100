@@ -290,11 +290,11 @@ bool ParseCommandLine(int argc, char **argv)
 
 	if (FLAGS_texturecompression)
 	{
-		wz_texture_compression = GL_COMPRESSED_RGBA_ARB;
+		wz_texture_compression = true;
 	}
 	else
 	{
-		wz_texture_compression = GL_RGBA;
+		wz_texture_compression = false;
 	}
 
 	if (FLAGS_autogame)

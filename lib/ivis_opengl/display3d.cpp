@@ -29,6 +29,7 @@
 #include "lib/framework/stdio_ext.h"
 
 /* Includes direct access to render library */
+#include "piestate.h"
 #include "pieblitfunc.h"
 #include "piedef.h"
 #include "tex.h"

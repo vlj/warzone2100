@@ -5204,8 +5204,8 @@ bool writeGameInfo(const char *pFileName)
 	ini.setValue("openGL_GLEW_version", opengl.GLEWversion);
 	ini.setValue("openGL_GLSL_version", opengl.GLSLversion);
 	// NOTE: deprecated for GL 3+. Needed this to check what extensions some chipsets support for the openGL hacks
-	std::string extensions = (const char *) glGetString(GL_EXTENSIONS);
-	ini.setValue("GL_EXTENSIONS", extensions.data());
+//	std::string extensions = (const char *) glGetString(GL_EXTENSIONS);
+//	ini.setValue("GL_EXTENSIONS", extensions.data());
 	ini.endGroup();
 	return true;
 }

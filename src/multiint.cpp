@@ -57,7 +57,7 @@
 #include "main.h"
 #include "objects.h"
 #include "display.h"// pal stuff
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "objmem.h"
 #include "gateway.h"
 #include "clparse.h"

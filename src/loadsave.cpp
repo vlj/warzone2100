@@ -47,7 +47,7 @@
 #include "lib/sound/audio.h"
 #include "frontend.h"
 #include "main.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "display.h"
 #ifndef WIN32
 #include <dirent.h>

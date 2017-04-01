@@ -37,7 +37,7 @@
 #include "game.h"			// for loading maps
 #include "message.h"		// for clearing messages.
 #include "main.h"
-#include "display3d.h"		// for changing the viewpoint
+#include "lib/ivis_opengl/display3d.h"		// for changing the viewpoint
 #include "power.h"
 #include "lib/widget/widget.h"
 #include "lib/gamelib/gtime.h"

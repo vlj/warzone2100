@@ -38,7 +38,7 @@
 #include "qtscript.h"
 #include "console.h"
 #include "keybind.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "keymap.h"
 #include "keyedit.h"
 #include "lib/script/script.h"

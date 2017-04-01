@@ -43,7 +43,7 @@
 #include "loop.h"
 #include "geometry.h"
 #include "action.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "order.h"
 #include "astar.h"
 #include "combat.h"

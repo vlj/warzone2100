@@ -38,10 +38,9 @@
 #include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/screen.h"
 
-#include "display3ddef.h"
 #include "texture.h"
-#include "radar.h"
-#include "map.h"
+#include "src/radar.h"
+#include "src/map.h"
 
 
 #define MIPMAP_LEVELS		4

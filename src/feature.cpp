@@ -53,7 +53,7 @@
 #include "advvis.h"
 
 #include "mapgrid.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "random.h"
 
 /* The statistics for the features */

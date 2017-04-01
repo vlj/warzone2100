@@ -58,7 +58,7 @@
 #include "message.h"
 #include "hci.h"
 #include "display.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "map.h"
 #include "effects.h"
 #include "init.h"

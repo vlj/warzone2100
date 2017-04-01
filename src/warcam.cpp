@@ -42,7 +42,7 @@
 
 #include "objects.h"
 #include "display.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "hci.h"
 #include "console.h"
 #include "effects.h"
@@ -55,7 +55,7 @@
 #include "order.h"
 #include "action.h"
 #include "intdisplay.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "selection.h"
 
 

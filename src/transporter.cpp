@@ -38,7 +38,7 @@
 #include "objmem.h"
 #include "transporter.h"
 #include "group.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "mission.h"
 #include "objects.h"
 #include "display.h"

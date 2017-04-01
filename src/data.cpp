@@ -49,7 +49,7 @@
 #include "stats.h"
 #include "template.h"
 #include "text.h"
-#include "texture.h"
+#include "lib/ivis_opengl/texture.h"
 
 // whether a save game is currently being loaded
 static bool saveFlag = false;

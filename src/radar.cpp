@@ -32,7 +32,7 @@
 #include "lib/gamelib/gtime.h"
 #include "advvis.h"
 #include "objects.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "map.h"
 #include "component.h"
 #include "radar.h"
@@ -46,7 +46,7 @@
 #include "mission.h"
 #include "multiplay.h"
 #include "intdisplay.h"
-#include "texture.h"
+#include "lib/ivis_opengl/texture.h"
 
 #define HIT_NOTIFICATION	(GAME_TICKS_PER_SEC * 2)
 #define RADAR_FRAME_SKIP	10

@@ -27,7 +27,7 @@
 #include "lib/sound/aud.h"
 #include "lib/sound/tracklib.h"
 
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "map.h"
 
 bool audio_ObjectDead(SIMPLE_OBJECT *psSimpleObj)

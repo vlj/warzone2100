@@ -61,7 +61,7 @@
 #include "multiplay.h"
 #include "radar.h"
 #include "seqdisp.h"
-#include "texture.h"
+#include "lib/ivis_opengl/texture.h"
 #include "version.h"
 #include "warzoneconfig.h"
 #include "wrappers.h"

@@ -29,7 +29,7 @@
 #include "geometry.h"
 #include "objectdef.h"
 #include "map.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "hci.h"
 #include "display.h"
 

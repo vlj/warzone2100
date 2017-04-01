@@ -57,7 +57,7 @@
 #include "power.h"
 #include "message.h"
 #include "bucket3d.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "warzoneconfig.h"
 
 #include "multiplay.h" //ajl

@@ -27,7 +27,7 @@
 #include "lib/gamelib/frame.h"
 #include "lib/framework/debug.h"
 #include "objects.h"
-#include "terrain.h"
+#include "lib/ivis_opengl/terrain.h"
 #include "multiplay.h"
 #include "display.h"
 

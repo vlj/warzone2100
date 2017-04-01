@@ -54,7 +54,7 @@
 #include "console.h"
 #include "design.h"
 #include "display.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "edit3d.h"
 #include "effects.h"
 #include "game.h"

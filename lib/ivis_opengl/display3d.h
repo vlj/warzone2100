@@ -21,12 +21,12 @@
 #ifndef __INCLUDED_SRC_DISPLAY3D_H__
 #define __INCLUDED_SRC_DISPLAY3D_H__
 
-#include "display.h"
+#include "src/display.h"
 #include "display3ddef.h"	// This should be the only place including this file
-#include "lib/ivis_opengl/pietypes.h"
-#include "lib/ivis_opengl/piedef.h"
-#include "objectdef.h"
-#include "message.h"
+#include "pietypes.h"
+#include "piedef.h"
+#include "src/objectdef.h"
+#include "src/message.h"
 
 /*!
  * Special tile types

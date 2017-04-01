@@ -29,7 +29,7 @@
 
 #include "action.h"
 #include "component.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "effects.h"
 #include "intdisplay.h"
 #include "loop.h"

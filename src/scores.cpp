@@ -48,7 +48,7 @@
 #include "hci.h"
 #include "miscimd.h"
 #include "lib/ivis_opengl/piematrix.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "mission.h"
 #include "game.h"
 #include "lib/sound/audio.h"

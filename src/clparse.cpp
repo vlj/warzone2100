@@ -29,7 +29,7 @@
 #include "lib/netplay/netplay.h"
 
 #include "clparse.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "frontend.h"
 #include "keybind.h"
 #include "loadsave.h"

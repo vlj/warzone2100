@@ -59,7 +59,7 @@
 #include "lighting.h"
 #include "multiplay.h"
 #include "warcam.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "group.h"
 #include "text.h"
 #include "scripttabs.h"

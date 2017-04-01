@@ -27,7 +27,7 @@
 #include "lib/ivis_opengl/piematrix.h"
 
 #include "atmos.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "effects.h"
 #include "hci.h"
 #include "loop.h"

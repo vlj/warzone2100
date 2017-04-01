@@ -51,7 +51,7 @@
 #include "stats.h"
 #include "lib/framework/math_ext.h"
 #include "edit3d.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "geometry.h"
 // FIXME Direct iVis implementation include!
 #include "lib/ivis_opengl/piematrix.h"

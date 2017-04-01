@@ -53,7 +53,7 @@
 
 #include "scores.h"
 
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "display.h"
 #include "multiplay.h"
 #include "multistat.h"

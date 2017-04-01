@@ -39,7 +39,7 @@
 #include "hci.h"
 #include "map.h"
 #include "selection.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "warcam.h"
 #include "display.h"
 #include "qtscript.h"

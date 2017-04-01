@@ -55,7 +55,7 @@
 #include "challenge.h"
 #include "configuration.h"
 #include "display.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "frontend.h"
 #include "game.h"
 #include "init.h"

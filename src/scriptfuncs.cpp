@@ -44,7 +44,7 @@
 #include "intelmap.h"
 #include "map.h"
 #include "structure.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "research.h"
 #include "lib/sound/audio.h"
 #include "lib/sound/audio_id.h"
@@ -88,7 +88,7 @@
 #include "projectile.h"
 #include "cluster.h"
 #include "multigifts.h"			//because of giftRadar()
-#include "display3d.h"			//for showRangeAtPos()
+#include "lib/ivis_opengl/display3d.h"			//for showRangeAtPos()
 #include "multimenu.h"
 #include "lib/script/chat_processing.h"
 #include "keymap.h"

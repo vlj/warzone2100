@@ -36,13 +36,13 @@
 #include "component.h"
 #include "configuration.h"
 #include "difficulty.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "hci.h"
 #include "multiint.h"
 #include "multiplay.h"
 #include "radar.h"
 #include "seqdisp.h"
-#include "texture.h"
+#include "lib/ivis_opengl/texture.h"
 #include "warzoneconfig.h"
 
 // ////////////////////////////////////////////////////////////////////////////

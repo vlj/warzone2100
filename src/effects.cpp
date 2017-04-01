@@ -54,7 +54,7 @@
 #include "lib/sound/audio.h"
 #include "lib/sound/audio_id.h"
 
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "map.h"
 #include "bucket3d.h"
 

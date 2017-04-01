@@ -45,11 +45,11 @@
 #include <glm/gtx/transform.hpp>
 
 #include "terrain.h"
-#include "map.h"
+#include "src/map.h"
 #include "texture.h"
 #include "display3d.h"
-#include "hci.h"
-#include "loop.h"
+#include "src/hci.h"
+#include "src/loop.h"
 
 /**
  * A sector contains all information to draw a square piece of the map.

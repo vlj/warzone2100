@@ -37,7 +37,7 @@
 #include "map.h"
 #include "loop.h"
 #include "component.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "lib/gamelib/cursors.h"
 #include "hci.h"
 #include "text.h"

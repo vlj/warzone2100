@@ -26,7 +26,7 @@ Alex McLean, Pumpkin Studios, EIDOS Interactive, 1997
 #include "lib/gamelib/frame.h"
 #include "map.h"
 #include "edit3d.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "objects.h"
 #include "display.h"
 #include "hci.h"

@@ -37,7 +37,7 @@
 
 #include <time.h>									// for recording ping times.
 #include "research.h"
-#include "display3d.h"								// for changing the viewpoint
+#include "lib/ivis_opengl/display3d.h"								// for changing the viewpoint
 #include "console.h"								// for screen messages
 #include "power.h"
 #include "cmddroid.h"								//  for commanddroidupdatekills

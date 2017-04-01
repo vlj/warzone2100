@@ -35,7 +35,7 @@
 #include "objects.h"
 #include "display.h"
 #include "mapdisplay.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "edit3d.h"
 #include "keybind.h"
 #include "mechanics.h"

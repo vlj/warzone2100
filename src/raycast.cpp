@@ -28,7 +28,7 @@
 
 #include "raycast.h"
 #include "map.h" // TILE_UNITS
-#include "display3d.h" // clipXY()
+#include "lib/ivis_opengl/display3d.h" // clipXY()
 
 struct HeightCallbackHelp_t
 {

@@ -60,7 +60,7 @@
 #include "lib/sound/audio_id.h"
 #include "lib/sound/audio.h"
 #include "fpath.h"
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "combat.h"
 #include "console.h"
 #include "mapgrid.h"

@@ -44,7 +44,7 @@
 #include "lib/ivis_opengl/screen.h"
 #include "lib/ivis_opengl/piemode.h"
 
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "edit3d.h"
 #include "structure.h"
 #include "research.h"

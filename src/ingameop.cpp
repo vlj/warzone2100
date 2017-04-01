@@ -36,7 +36,7 @@
 #include "lib/sound/cdaudio.h"
 #include "lib/sound/mixer.h"
 
-#include "display3d.h"
+#include "lib/ivis_opengl/display3d.h"
 #include "intdisplay.h"
 #include "hci.h"			// for wFont def.& intmode.
 #include "loop.h"

@@ -38,7 +38,6 @@
 #endif
 #include "lib/gamelib/input.h"
 #include "lib/framework/utf.h"
-#include "lib/ivis_opengl/opengl.h"
 #include "lib/ivis_opengl/pieclip.h"
 #include "lib/gamelib/gtime.h"
 #include "src/warzoneconfig.h"

@@ -42,6 +42,7 @@
 #include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/screen.h"
 #include "lib/ivis_opengl/piematrix.h"
+#include "uniform_buffer_types.h"
 #include <glm/gtx/transform.hpp>
 
 #include "terrain.h"
@@ -1119,8 +1120,18 @@ static void cullTerrain()
 
 static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight)
 {
-	auto &program = get_shader(SHADER_TERRAIN_DEPTH);// pie_ActivateShader(SHADER_TERRAIN_DEPTH, ModelViewProjection, paramsXLight, paramsYLight, 1);
+	auto &program = get_shader(SHADER_TERRAIN_DEPTH);
 	program.use();
+
+	const auto& uniform_buffer = gfx_api::context::get_context().get_uniform_storage(sizeof(ivis::TerrainDepthUniforms));
+	auto& uniforms = uniform_buffer->map<ivis::TerrainDepthUniforms>();
+
+	uniforms.ModelViewProjectionMatrix = ModelViewProjection;
+	uniforms.paramsXLight = paramsXLight;
+	uniforms.paramsYLight = paramsYLight;
+	uniform_buffer->unmap();
+	program.set_uniforms(*uniform_buffer);
+
 	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_SetRendMode(REND_OPAQUE);
 
@@ -1178,8 +1189,7 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 		renderState.fogColour.vector[2] / 255.f,
 		renderState.fogColour.vector[3] / 255.f
 	);
-	auto &program = get_shader(SHADER_TERRAIN); //pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, glm::vec4(), glm::vec4(), paramsXLight, paramsYLight, 0, 1, textureMatrix,
-		//renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
+	auto &program = get_shader(SHADER_TERRAIN);
 
 	// additive blending
 	pie_SetRendMode(REND_ADDITIVE);
@@ -1196,8 +1206,21 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 	{
 		const glm::vec4 paramsX(0, 0, -1.0f / world_coord(psGroundTypes[layer].textureSize), 0 );
 		const glm::vec4 paramsY(1.0f / world_coord(psGroundTypes[layer].textureSize), 0, 0, 0 );
-//		pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, paramsX, paramsY, paramsXLight, paramsYLight, 0, 1, textureMatrix,
-//			renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
+
+		const auto& uniform_buffer = gfx_api::context::get_context().get_uniform_storage(sizeof(ivis::TerrainLayers));
+		auto& uniforms = uniform_buffer->map<ivis::TerrainLayers>();
+		uniforms.ModelViewProjection = ModelViewProjection;
+		uniforms.paramsX = paramsX;
+		uniforms.paramsY = paramsY;
+		uniforms.paramsXLight = paramsXLight;
+		uniforms.paramsYLight = paramsYLight;
+		uniforms.textureMatrix = textureMatrix;
+		uniforms.fogEnabled = renderState.fogEnabled;
+		uniforms.fogBegin = renderState.fogBegin;
+		uniforms.fogEnd = renderState.fogEnd;
+		uniforms.fogColor = fogColor;
+		uniform_buffer->unmap();
+		program.set_uniforms(*uniform_buffer);
 
 		const auto& color_buffer_offset = sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer;
 		program.set_vertex_buffers({ {gfx_api::buffer_type::vec4, sizeof(RenderVertex)}, {gfx_api::buffer_type::ub4, sizeof(PIELIGHT)} },
@@ -1244,6 +1267,19 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 	auto &program = get_shader(SHADER_DECALS);// pie_ActivateShader(SHADER_DECALS, ModelViewProjection, paramsXLight, paramsYLight, 0, 1, textureMatrix,
 //		renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
 	// select the terrain texture page
+
+	const auto& uniform_buffer = gfx_api::context::get_context().get_uniform_storage(sizeof(ivis::TerrainDecals));
+	auto& uniforms = uniform_buffer->map<ivis::TerrainDecals>();
+	uniforms.ModelViewProjection = ModelViewProjection;
+	uniforms.paramsXLight = paramsXLight;
+	uniforms.paramsYLight = paramsYLight;
+	uniforms.textureMatrix = textureMatrix;
+	uniforms.fogEnabled = renderState.fogEnabled;
+	uniforms.fogBegin = renderState.fogBegin;
+	uniforms.fogEnd = renderState.fogEnd;
+	uniforms.fogColor = fogColor;
+	uniform_buffer->unmap();
+	program.set_uniforms(*uniform_buffer);
 	pie_SetTexturePage(terrainPage); glErrors();
 
 	// use the alpha to blend

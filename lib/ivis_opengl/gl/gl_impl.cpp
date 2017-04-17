@@ -3,6 +3,7 @@
 #include "lib/framework/debug.h"
 #include "..\piestate.h"
 #include "..\pieclip.h"
+#include "../uniform_buffer_types.h"
 
 
 // Read shader into text buffer
@@ -61,6 +62,94 @@ static void printProgramInfoLog(code_part part, GLuint program)
 	}
 }
 
+template<typename T>
+struct uniform_buffer_traits
+{
+};
+
+/**
+* setUniforms is an overloaded wrapper around glUniform* functions
+* accepting glm structures.
+*/
+
+inline void setUniforms(GLint location, const ::glm::vec4 &v)
+{
+	glUniform4f(location, v.x, v.y, v.z, v.w);
+}
+
+inline void setUniforms(GLint location, const ::glm::mat4 &m)
+{
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
+}
+
+inline void setUniforms(GLint location, const Vector2i &v)
+{
+	glUniform2i(location, v.x, v.y);
+}
+
+inline void setUniforms(GLint location, const Vector2f &v)
+{
+	glUniform2f(location, v.x, v.y);
+}
+
+inline void setUniforms(GLint location, const int32_t &v)
+{
+	glUniform1i(location, v);
+}
+
+inline void setUniforms(GLint location, const float &v)
+{
+	glUniform1f(location, v);
+}
+
+template<>
+struct uniform_buffer_traits<ivis::TerrainDepthUniforms>
+{
+	static constexpr std::array<const char*, 3> uniform_names = { "ModelViewProjectionMatrix", "paramx2", "paramy2" };
+
+	static auto get_bind_uniforms()
+	{
+		return [](const auto& v, const ivis::TerrainDepthUniforms& data) {
+			setUniforms(v[0], data.ModelViewProjectionMatrix);
+			setUniforms(v[1], data.paramsXLight);
+			setUniforms(v[2], data.paramsYLight);
+		};
+	}
+};
+
+template<>
+struct uniform_buffer_traits<ivis::TerrainLayers>
+{
+	static constexpr std::array<const char*, 10> uniform_names = { "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "textureMatrix2",
+		"fogEnabled", "fogEnd", "fogStart", "fogColor" };
+
+	static auto get_bind_uniforms()
+	{
+		return [](const auto& v, const ivis::TerrainLayers& data) {
+			setUniforms(v[0], data.ModelViewProjection);
+			setUniforms(v[1], data.paramsX);
+			setUniforms(v[2], data.paramsY);
+		};
+	}
+};
+
+template<>
+struct uniform_buffer_traits<ivis::TerrainDecals>
+{
+	static constexpr std::array<const char*, 8> uniform_names = { "ModelViewProjectionMatrix", "paramxlight", "paramylight", "lightTextureMatrix",
+		"fogEnabled", "fogEnd", "fogStart", "fogColor" };
+
+	static auto get_bind_uniforms()
+	{
+		return [](const auto& v, const ivis::TerrainDecals& data) {
+			setUniforms(v[0], data.ModelViewProjection);
+			setUniforms(v[1], data.paramsXLight);
+			setUniforms(v[2], data.paramsYLight);
+		};
+	}
+};
+
+
 template<typename... T>
 static void getLocs(gfx_api::program& p, const T&... locations)
 {
@@ -82,8 +171,9 @@ static void getLocs(gfx_api::program& p, const T&... locations)
 }
 
 // Read/compile/link shaders
-std::unique_ptr<gfx_api::gl_api::gl_program> pie_LoadShader(const char *programName, const char *vertexPath, const char *fragmentPath,
-	const std::vector<std::string> &uniformNames)
+template<typename UniformBufferType>
+static std::unique_ptr<gfx_api::gl_api::gl_program>
+pie_LoadShader(const char *programName, const char *vertexPath, const char *fragmentPath)
 {
 	gfx_api::gl_api::gl_program* program = new gfx_api::gl_api::gl_program();
 	GLint status;
@@ -182,9 +272,13 @@ std::unique_ptr<gfx_api::gl_api::gl_program> pie_LoadShader(const char *programN
 			glObjectLabel(GL_PROGRAM, program->program, -1, programName);
 		}
 	}
-	std::transform(uniformNames.begin(), uniformNames.end(),
+	std::transform(
+		uniform_buffer_traits<UniformBufferType>::uniform_names.begin(),
+		uniform_buffer_traits<UniformBufferType>::uniform_names.end(),
 		std::back_inserter(program->locations),
-		[&](const std::string name) { return glGetUniformLocation(program->program, name.data()); });
+		[&](const std::string name) { return glGetUniformLocation(program->program, name.data()); }
+	);
+	program->bind_uniforms = [program](const void* data) { uniform_buffer_traits<UniformBufferType>::get_bind_uniforms()(program->locations, *static_cast<const UniformBufferType*>(data)); };
 
 	glUseProgram(0);
 
@@ -263,49 +357,41 @@ std::vector<std::unique_ptr<gfx_api::program>> pie_LoadShaders()
 	// TCMask shader for map-placed models with advanced lighting
 	debug(LOG_3D, "Loading shader: SHADER_COMPONENT");
 	results.push_back(
-		pie_LoadShader("Component program", "shaders/tcmask.vert", "shaders/tcmask.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" })
+		pie_LoadShader<ivis::TerrainDepthUniforms>("Component program", "shaders/tcmask.vert", "shaders/tcmask.frag")
 	);
 	getLocs(*results.back());
 
 	// TCMask shader for buttons with flat lighting
 	debug(LOG_3D, "Loading shader: SHADER_BUTTON");
 	results.push_back(
-		pie_LoadShader("Button program", "shaders/button.vert", "shaders/button.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" })
+		pie_LoadShader<ivis::TerrainDepthUniforms>("Button program", "shaders/button.vert", "shaders/button.frag")
 	);
 
 	// Plain shader for no lighting
 	debug(LOG_3D, "Loading shader: SHADER_NOLIGHT");
 	results.push_back(
-		pie_LoadShader("Plain program", "shaders/nolight.vert", "shaders/nolight.frag",
-		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle" })
+		pie_LoadShader<ivis::TerrainDepthUniforms>("Plain program", "shaders/nolight.vert", "shaders/nolight.frag")
 	);
 
 	debug(LOG_3D, "Loading shader: TERRAIN");
 	results.push_back(
-		pie_LoadShader("terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag",
-		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex", "lightmap_tex", "textureMatrix2",
-			"fogEnabled", "fogEnd", "fogStart", "fogColor" })
+		pie_LoadShader<ivis::TerrainLayers>("terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag")
 	);
 
 	debug(LOG_3D, "Loading shader: TERRAIN_DEPTH");
 	results.push_back(
-		pie_LoadShader("terrain_depth program", "shaders/terrain_water.vert", "shaders/terraindepth.frag",
-		{ "ModelViewProjectionMatrix", "paramx2", "paramy2", "lightmap_tex" })
+		pie_LoadShader<ivis::TerrainDepthUniforms>("terrain_depth program", "shaders/terrain_water.vert", "shaders/terraindepth.frag")
 	);
 	getLocs(*results.back(), "vertex");
 	
 	debug(LOG_3D, "Loading shader: DECALS");
-	results.push_back(pie_LoadShader("decals program", "shaders/decals.vert", "shaders/decals.frag",
-		{ "ModelViewProjectionMatrix", "paramxlight", "paramylight", "tex", "lightmap_tex", "lightTextureMatrix",
-			"fogEnabled", "fogEnd", "fogStart", "fogColor" })
+	results.push_back(
+		pie_LoadShader<ivis::TerrainDecals>("decals program", "shaders/decals.vert", "shaders/decals.frag")
 	);
 
 	debug(LOG_3D, "Loading shader: WATER");
-	results.push_back(pie_LoadShader("water program", "shaders/terrain_water.vert", "shaders/water.frag",
-		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex1", "tex2", "textureMatrix1",
-			"fogEnabled", "fogEnd", "fogStart" })
+	results.push_back(
+		pie_LoadShader<ivis::TerrainDepthUniforms>("water program", "shaders/terrain_water.vert", "shaders/water.frag")
 	);
 
 	return results;
@@ -383,6 +469,12 @@ std::vector<std::unique_ptr<gfx_api::program>> gfx_api::gl_api::gl_context::buil
 	return pie_LoadShaders();
 }
 
+std::unique_ptr<gfx_api::uniforms> gfx_api::gl_api::gl_context::get_uniform_storage(const size_t & capacity)
+{
+
+	return std::unique_ptr<uniforms>(new gl_uniforms(capacity));
+}
+
 gfx_api::gl_api::gl_program::gl_program()
 {
 	glGenVertexArrays(1, &vao);
@@ -438,6 +530,11 @@ void gfx_api::gl_api::gl_program::set_index_buffer(const buffer & b)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dynamic_cast<const gl_buffer&>(b).object);
 }
 
+void gfx_api::gl_api::gl_program::set_uniforms(const uniforms & uniforms)
+{
+	bind_uniforms(dynamic_cast<const gl_uniforms&>(uniforms).memory);
+}
+
 void gfx_api::gl_api::gl_buffer::upload(size_t offset, size_t s, const void * ptr)
 {
 	glBindBuffer(target, object);
@@ -449,4 +546,23 @@ void gfx_api::gl_api::gl_texture::upload_texture(const format& f, size_t width, 
 	glBindTexture(GL_TEXTURE_2D, object);
 	const auto& gl_format = get_internal_format_type(f);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, std::get<1>(gl_format), std::get<2>(gl_format), ptr);
+}
+
+gfx_api::gl_api::gl_uniforms::gl_uniforms(const size_t size)
+{
+	memory = malloc(size);
+}
+
+gfx_api::gl_api::gl_uniforms::~gl_uniforms()
+{
+	free(memory);
+}
+
+void gfx_api::gl_api::gl_uniforms::unmap()
+{
+}
+
+void * gfx_api::gl_api::gl_uniforms::map_impl() const
+{
+	return memory;
 }

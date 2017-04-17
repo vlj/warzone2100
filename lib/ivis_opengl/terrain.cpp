@@ -1264,8 +1264,7 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 		renderState.fogColour.vector[2] / 255.f,
 		renderState.fogColour.vector[3] / 255.f
 	);
-	auto &program = get_shader(SHADER_DECALS);// pie_ActivateShader(SHADER_DECALS, ModelViewProjection, paramsXLight, paramsYLight, 0, 1, textureMatrix,
-//		renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
+	auto &program = get_shader(SHADER_DECALS);
 	// select the terrain texture page
 
 	const auto& uniform_buffer = gfx_api::context::get_context().get_uniform_storage(sizeof(ivis::TerrainDecals));

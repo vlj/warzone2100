@@ -56,7 +56,7 @@ namespace gfx_api
 		}
 
 		virtual void unmap() = 0;
-		virtual ~uniforms();
+		virtual ~uniforms() {};
 	private:
 		virtual void *map_impl() const = 0;
 

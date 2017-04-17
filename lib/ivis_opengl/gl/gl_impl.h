@@ -2,6 +2,7 @@
 #include "lib/ivis_opengl/api_object.h"
 #include "lib/ivis_opengl/opengl.h"
 #include <vector>
+#include <functional>
 
 namespace gfx_api
 {
@@ -27,10 +28,23 @@ namespace gfx_api
 
 		};
 
+		struct gl_uniforms final : gfx_api::uniforms
+		{
+			void* memory;
+			size_t size;
+			gl_uniforms(const size_t size);
+			virtual ~gl_uniforms();
+
+			// Inherited via uniforms
+			virtual void unmap() override;
+			virtual void * map_impl() const override;
+		};
+
 		struct gl_program final : gfx_api::program
 		{
 			GLuint program;
 			GLuint vao;
+			std::function<void(const void*)> bind_uniforms;
 
 			// Uniforms
 			std::vector<GLint> locations;
@@ -50,6 +64,9 @@ namespace gfx_api
 
 			// Hérité via program
 			virtual void set_index_buffer(const buffer & b) override;
+
+			// Inherited via program
+			virtual void set_uniforms(const uniforms & uniforms) override;
 		};
 
 		struct gl_context final : gfx_api::context
@@ -60,6 +77,9 @@ namespace gfx_api
 
 			// Hérité via context
 			virtual std::vector<std::unique_ptr<program>> build_programs() override;
+
+			// Inherited via context
+			virtual std::unique_ptr<uniforms> get_uniform_storage(const size_t & capacity) override;
 		};
 	}
 }
@@ -76,41 +96,6 @@ struct SHADER_PROGRAM
 extern std::vector<SHADER_PROGRAM> shaderProgram;
 extern SHADER_MODE currentShaderMode;*/
 
-/**
-* setUniforms is an overloaded wrapper around glUniform* functions
-* accepting glm structures.
-* Please do not use directly, use pie_ActivateShader below.
-*/
-
-/*inline void setUniforms(GLint location, const ::glm::vec4 &v)
-{
-glUniform4f(location, v.x, v.y, v.z, v.w);
-}
-
-inline void setUniforms(GLint location, const ::glm::mat4 &m)
-{
-glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
-}
-
-inline void setUniforms(GLint location, const Vector2i &v)
-{
-glUniform2i(location, v.x, v.y);
-}
-
-inline void setUniforms(GLint location, const Vector2f &v)
-{
-glUniform2f(location, v.x, v.y);
-}
-
-inline void setUniforms(GLint location, const int32_t &v)
-{
-glUniform1i(location, v);
-}
-
-inline void setUniforms(GLint location, const float &v)
-{
-glUniform1f(location, v);
-}*/
 
 /**
 * uniformSetter is a variadic function object.

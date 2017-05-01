@@ -377,6 +377,7 @@ std::vector<std::unique_ptr<gfx_api::program>> pie_LoadShaders()
 	results.push_back(
 		pie_LoadShader<ivis::TerrainLayers>("terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag")
 	);
+	getLocs(*results.back(), "vertex", "vertexColor");
 	dynamic_cast<gfx_api::gl_api::gl_program&>(*results.back()).bind_textures = [](const auto& textures) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, dynamic_cast<const gfx_api::gl_api::gl_texture*>(textures[0])->object);
@@ -506,6 +507,7 @@ auto get_type_info(const gfx_api::buffer_layout& layout)
 	case gfx_api::buffer_type::vec2: return std::make_tuple(2, GL_FLOAT, false);
 	case gfx_api::buffer_type::vec3: return std::make_tuple(3, GL_FLOAT, false);
 	case gfx_api::buffer_type::vec4: return std::make_tuple(4, GL_FLOAT, false);
+	case gfx_api::buffer_type::ub4: return std::make_tuple(4, GL_UNSIGNED_BYTE, true);
 	}
 	throw;
 }

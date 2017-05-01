@@ -160,14 +160,14 @@ static void getLocs(gfx_api::program& p, const T&... locations)
 	prog.attributes = { glGetAttribLocation(prog.program, locations)... };
 
 	// Uniforms, these never change.
-	GLint locTex0 = glGetUniformLocation(prog.program, "Texture");
+/*	GLint locTex0 = glGetUniformLocation(prog.program, "Texture");
 	GLint locTex1 = glGetUniformLocation(prog.program, "TextureTcmask");
 	GLint locTex2 = glGetUniformLocation(prog.program, "TextureNormal");
-	GLint locTex3 = glGetUniformLocation(prog.program, "TextureSpecular");
+	GLint locTex3 = glGetUniformLocation(prog.program, "TextureSpecular");*/
+	GLint locTex0 = glGetUniformLocation(prog.program, "tex");
+	GLint locTex1 = glGetUniformLocation(prog.program, "lightmap_tex");
 	glUniform1i(locTex0, 0);
 	glUniform1i(locTex1, 1);
-	glUniform1i(locTex2, 2);
-	glUniform1i(locTex3, 3);
 }
 
 // Read/compile/link shaders
@@ -377,6 +377,12 @@ std::vector<std::unique_ptr<gfx_api::program>> pie_LoadShaders()
 	results.push_back(
 		pie_LoadShader<ivis::TerrainLayers>("terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag")
 	);
+	dynamic_cast<gfx_api::gl_api::gl_program&>(*results.back()).bind_textures = [](const auto& textures) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, dynamic_cast<const gfx_api::gl_api::gl_texture*>(textures[0])->object);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	};
 
 	debug(LOG_3D, "Loading shader: TERRAIN_DEPTH");
 	results.push_back(
@@ -388,6 +394,12 @@ std::vector<std::unique_ptr<gfx_api::program>> pie_LoadShaders()
 	results.push_back(
 		pie_LoadShader<ivis::TerrainDecals>("decals program", "shaders/decals.vert", "shaders/decals.frag")
 	);
+	dynamic_cast<gfx_api::gl_api::gl_program&>(*results.back()).bind_textures = [](const auto& textures) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, dynamic_cast<const gfx_api::gl_api::gl_texture*>(textures[0])->object);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	};
 
 	debug(LOG_3D, "Loading shader: WATER");
 	results.push_back(
@@ -533,6 +545,11 @@ void gfx_api::gl_api::gl_program::set_index_buffer(const buffer & b)
 void gfx_api::gl_api::gl_program::set_uniforms(const uniforms & uniforms)
 {
 	bind_uniforms(dynamic_cast<const gl_uniforms&>(uniforms).memory);
+}
+
+void gfx_api::gl_api::gl_program::set_textures(const std::vector<texture*>& textures)
+{
+	bind_textures(textures);
 }
 
 void gfx_api::gl_api::gl_buffer::upload(size_t offset, size_t s, const void * ptr)

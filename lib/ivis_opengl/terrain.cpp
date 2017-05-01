@@ -1144,6 +1144,7 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 	// draw slightly higher distance than it actually is so it will not
 	// by accident obscure the actual terrain
 	glEnable(GL_POLYGON_OFFSET_FILL);
+	glEnable(GL_TEXTURE_2D);
 	glPolygonOffset(0.1f, 1.0f);
 
 	// bind the vertex buffer
@@ -1190,12 +1191,14 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 		renderState.fogColour.vector[3] / 255.f
 	);
 	auto &program = get_shader(SHADER_TERRAIN);
+	program.use();
 
 	// additive blending
 	pie_SetRendMode(REND_ADDITIVE);
 
 	// only draw colors
 	glDepthMask(GL_FALSE);
+	glEnable(GL_TEXTURE_2D);
 
 	program.set_index_buffer(*textureIndexVBO);
 
@@ -1228,9 +1231,7 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 
 		// load the texture
 		int texPage = iV_GetTexture(psGroundTypes[layer].textureName);
-		pie_SetTexturePage(texPage);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		program.set_textures({ &pie_Texture(texPage) });
 
 		for (int x = 0; x < xSectors; x++)
 		{
@@ -1265,6 +1266,7 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 		renderState.fogColour.vector[3] / 255.f
 	);
 	auto &program = get_shader(SHADER_DECALS);
+	program.use();
 	// select the terrain texture page
 
 	const auto& uniform_buffer = gfx_api::context::get_context().get_uniform_storage(sizeof(ivis::TerrainDecals));
@@ -1279,7 +1281,8 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 	uniforms.fogColor = fogColor;
 	uniform_buffer->unmap();
 	program.set_uniforms(*uniform_buffer);
-	pie_SetTexturePage(terrainPage); glErrors();
+
+	program.set_textures({ &pie_Texture(terrainPage) });
 
 	// use the alpha to blend
 	pie_SetRendMode(REND_ALPHA);

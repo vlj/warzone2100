@@ -45,6 +45,7 @@ namespace gfx_api
 			GLuint program;
 			GLuint vao;
 			std::function<void(const void*)> bind_uniforms;
+			std::function<void(const std::vector<texture*>&)> bind_textures;
 
 			// Uniforms
 			std::vector<GLint> locations;
@@ -67,6 +68,8 @@ namespace gfx_api
 
 			// Inherited via program
 			virtual void set_uniforms(const uniforms & uniforms) override;
+
+			virtual void set_textures(const std::vector<texture*>& textures) override;
 		};
 
 		struct gl_context final : gfx_api::context

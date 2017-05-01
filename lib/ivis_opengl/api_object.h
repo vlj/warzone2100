@@ -70,6 +70,7 @@ namespace gfx_api
 		virtual void set_vertex_buffers(const std::vector<buffer_layout>& layout,
 			const std::vector<std::tuple<const buffer&, size_t> >& buffers_and_offset) = 0;
 		virtual void set_uniforms(const uniforms& uniforms) = 0;
+		virtual void set_textures(const std::vector<texture*>& textures) = 0;
 
 		virtual void use() = 0;
 	};

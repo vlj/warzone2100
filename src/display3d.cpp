@@ -983,7 +983,7 @@ static void drawTiles(iView *player)
 	// this also detemines the length of the shadows
 	theSun = getTheSun();
 	auto suntmp = (viewMatrix * glm::vec4(theSun, 0.f));
-	theSun = suntmp.xyz;
+	theSun = suntmp.xyz();
 	pie_BeginLighting(theSun);
 
 	// update the fog of war... FIXME: Remove this
@@ -1435,7 +1435,7 @@ static void renderBuildOrder(DroidOrder const &order, STRUCT_STATES state)
 			return;
 		}
 		stats = getModuleStat(structure);
-		pos = structure->pos.xy;
+		pos = structure->pos.xy();
 	}
 	else
 	{
@@ -1674,7 +1674,7 @@ void setViewPos(UDWORD x, UDWORD y, WZ_DECL_UNUSED bool Pan)
 /// Get the player position
 Vector2i getPlayerPos()
 {
-	return player.p.xz;
+	return player.p.xz();
 }
 
 /// Set the player position
@@ -1714,7 +1714,7 @@ void	renderFeature(FEATURE *psFeature, const glm::mat4 &viewMatrix)
 	psFeature->sDisplay.frameNumber = currentGameFrame;
 
 	/* Daft hack to get around the oil derrick issue */
-	if (!TileHasFeature(mapTile(map_coord(psFeature->pos.xy))))
+	if (!TileHasFeature(mapTile(map_coord(psFeature->pos.xy()))))
 	{
 		return;
 	}
@@ -1943,7 +1943,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 
 		if (weaponImd[i] != nullptr)
 		{
-			glm::mat4 matrix = glm::translate(strImd->connectors[i].xzy) * glm::rotate(UNDEG(-rot.direction), glm::vec3(0.f, 1.f, 0.f));
+			glm::mat4 matrix = glm::translate(strImd->connectors[i].xzy()) * glm::rotate(UNDEG(-rot.direction), glm::vec3(0.f, 1.f, 0.f));
 			int recoilValue = noRecoil ? 0 : getRecoil(psStructure->asWeaps[i]);
 			if (mountImd[i] != nullptr)
 			{
@@ -1956,7 +1956,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 				pie_Draw3DShape(mountImd[i], animFrame, colour, buildingBrightness, pieFlag, pieFlagData, modelViewMatrix * matrix);
 				if (mountImd[i]->nconnectors)
 				{
-					matrix *= glm::translate(mountImd[i]->connectors->xzy);
+					matrix *= glm::translate(mountImd[i]->connectors->xzy());
 				}
 			}
 			matrix *= glm::rotate(UNDEG(rot.pitch), glm::vec3(1.f, 0.f, 0.f));
@@ -2053,7 +2053,7 @@ static void renderStructureTurrets(STRUCTURE *psStructure, iIMDShape *strImd, PI
 				iIMDShape *lImd;
 				lImd = getImdFromIndex(MI_LANDING);
 				pie_Draw3DShape(lImd, getModularScaledGraphicsTime(lImd->animInterval, lImd->numFrames), colour, buildingBrightness, 0, 0, 
-				                modelViewMatrix * glm::translate(psStructure->sDisplay.imd->connectors->xzy));
+				                modelViewMatrix * glm::translate(psStructure->sDisplay.imd->connectors->xzy()));
 			}
 		}
 	}

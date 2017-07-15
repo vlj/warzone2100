@@ -34,7 +34,6 @@
 #include "lib/framework/frame.h"
 #include "lib/framework/string_ext.h"
 #include "lib/framework/vector.h"
-#include "glm/core/type.hpp"
 #include "piedef.h"
 #include "ivisdef.h"
 #include "pietypes.h"

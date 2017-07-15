@@ -23,15 +23,16 @@
 #if defined(WZ_CC_MSVC)
 #pragma warning( disable : 4201)
 #endif
-#define GLM_SWIZZLE
+
 
 #include <stdint.h>
 
 #include "wzglobal.h"
 #include "frame.h"
 #include "lib/framework/types.h"
-#include "glm/core/setup.hpp"
-#include "glm/core/type.hpp"
+//#define GLM_MESSAGES
+#define GLM_SWIZZLE
+#include <glm/glm.hpp>
 
 using Vector3i = glm::ivec3;
 using Vector2i = glm::ivec2;
@@ -115,7 +116,7 @@ static inline WZ_DECL_PURE Vector2f Vector2f_Rotate2f(Vector2f v, int angle)
  */
 static inline bool WZ_DECL_PURE Vector3i_InCircle(Vector3i v, Vector3i c, unsigned r)
 {
-	Vector2i delta = Vector3i(v - c).xy;
+	Vector2i delta = Vector3i(v - c).xy();
 	// Explictily cast to "unsigned int" because this number never can be
 	// negative, due to the fact that these numbers are squared. Still GCC
 	// warns about a comparison of a comparison between an unsigned and a

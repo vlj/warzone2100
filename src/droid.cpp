@@ -426,7 +426,7 @@ void recycleDroid(DROID *psDroid)
 	triggerEvent(TRIGGER_OBJECT_RECYCLED, psDroid);
 	vanishDroid(psDroid);
 
-	Vector3i position = psDroid->pos.xzy;
+	Vector3i position = psDroid->pos.xzy();
 	addEffect(&position, EFFECT_EXPLOSION, EXPLOSION_TYPE_DISCOVERY, false, nullptr, false, gameTime - deltaGameTime + 1);
 
 	CHECK_DROID(psDroid);
@@ -1257,7 +1257,7 @@ static bool droidUpdateDroidRepairBase(DROID *psRepairDroid, DROID *psDroidToRep
 	/* add plasma repair effect whilst being repaired */
 	if ((ONEINFIVE) && (psDroidToRepair->visible[selectedPlayer]))
 	{
-		Vector3i iVecEffect = (psDroidToRepair->pos + Vector3i(DROID_REPAIR_SPREAD, DROID_REPAIR_SPREAD, rand() % 8)).xzy;
+		Vector3i iVecEffect = (psDroidToRepair->pos + Vector3i(DROID_REPAIR_SPREAD, DROID_REPAIR_SPREAD, rand() % 8)).xzy();
 		effectGiveAuxVar(90 + rand() % 20);
 		addEffect(&iVecEffect, EFFECT_EXPLOSION, EXPLOSION_TYPE_LASER, false, nullptr, 0, gameTime - deltaGameTime + 1 + rand() % deltaGameTime);
 		droidAddWeldSound(iVecEffect);
@@ -2013,7 +2013,7 @@ bool calcDroidMuzzleBaseLocation(DROID *psDroid, Vector3i *muzzle, int weapon_sl
 		af.Trans(psBodyImd->connectors[weapon_slot].x, -psBodyImd->connectors[weapon_slot].z,
 		         -psBodyImd->connectors[weapon_slot].y);//note y and z flipped
 
-		*muzzle = (af * barrel).xzy;
+		*muzzle = (af * barrel).xzy();
 		muzzle->z = -muzzle->z;
 	}
 	else
@@ -2091,7 +2091,7 @@ bool calcDroidMuzzleLocation(DROID *psDroid, Vector3i *muzzle, int weapon_slot)
 			debugLen += sprintf(debugStr + debugLen, ",barrel[%u]=(%d,%d,%d)", connector_num, psWeaponImd->connectors[connector_num].x, -psWeaponImd->connectors[connector_num].y, -psWeaponImd->connectors[connector_num].z);
 		}
 
-		*muzzle = (af * barrel).xzy;
+		*muzzle = (af * barrel).xzy();
 		muzzle->z = -muzzle->z;
 		sprintf(debugStr + debugLen, ",muzzle=(%d,%d,%d)", muzzle->x, muzzle->y, muzzle->z);
 

@@ -23,10 +23,25 @@ namespace gfx_api
 		virtual unsigned id() = 0;
 	};
 
+	struct buffer
+	{
+		enum class usage
+		{
+			vertex_buffer,
+			index_buffer,
+		};
+
+		virtual void upload(const size_t& start, const size_t& size, const void* data) = 0;
+		virtual void bind() = 0;
+		virtual ~buffer() {};
+
+	};
+
 	struct context
 	{
 		virtual ~context() {};
 		virtual texture* create_texture(const size_t& width, const size_t& height, const pixel_format& internal_format, const std::string& filename = "") = 0;
+		virtual buffer* create_buffer(const enum class buffer::usage&, const size_t& width) = 0;
 		static context& get();
 	};
 }

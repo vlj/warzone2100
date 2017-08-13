@@ -259,10 +259,6 @@ void pie_TexShutDown()
 {
 	// TODO, lazy deletions for faster loading of next level
 	debug(LOG_TEXTURE, "Cleaning out %u textures", static_cast<unsigned>(_TEX_PAGE.size()));
-	for (auto& page : _TEX_PAGE)
-	{
-		delete page.id;
-	}
 	_TEX_PAGE.clear();
 }
 

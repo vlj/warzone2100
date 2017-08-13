@@ -23,6 +23,20 @@ static GLenum to_gl(const gfx_api::pixel_format& format)
 	return GL_INVALID_ENUM;
 }
 
+static GLenum to_gl(const gfx_api::buffer::usage& usage)
+{
+	switch (usage)
+	{
+	case gfx_api::buffer::usage::index_buffer:
+		return GL_ELEMENT_ARRAY_BUFFER;
+	case gfx_api::buffer::usage::vertex_buffer:
+		return GL_ARRAY_BUFFER;
+	default:
+		debug(LOG_FATAL, "Unrecognised buffer usage");
+	}
+	return GL_INVALID_ENUM;
+}
+
 struct gl_texture : public gfx_api::texture
 {
 private:
@@ -62,6 +76,38 @@ public:
 
 };
 
+struct gl_buffer : public gfx_api::buffer
+{
+	gfx_api::buffer::usage usage;
+	GLuint buffer;
+
+	virtual ~gl_buffer() override
+	{
+		glDeleteBuffers(1, &buffer);
+	}
+
+	gl_buffer(const gfx_api::buffer::usage& usage, const size_t& size)
+		: usage(usage)
+	{
+		glGenBuffers(1, &buffer);
+		glBindBuffer(to_gl(usage), buffer);
+		glBufferData(to_gl(usage), size, nullptr, GL_STATIC_DRAW);
+	}
+
+	void bind() override
+	{
+		glBindBuffer(to_gl(usage), buffer);
+	}
+
+
+	virtual void upload(const size_t & start, const size_t & size, const void * data) override
+	{
+		glBindBuffer(to_gl(usage), buffer);
+		glBufferSubData(to_gl(usage), start, size, data);
+	}
+
+};
+
 struct gl_context : public gfx_api::context
 {
 	virtual gfx_api::texture* create_texture(const size_t & width, const size_t & height, const gfx_api::pixel_format & internal_format, const std::string& filename) override
@@ -77,6 +123,11 @@ struct gl_context : public gfx_api::context
 			glTexImage2D(GL_TEXTURE_2D, i, to_gl(internal_format), width >> i, height >> i, 0, to_gl(internal_format), GL_UNSIGNED_BYTE, nullptr);
 		}
 		return new_texture;
+	}
+
+	virtual gfx_api::buffer * create_buffer(const gfx_api::buffer::usage &usage, const size_t & width) override
+	{
+		return new gl_buffer(usage, width);
 	}
 };
 

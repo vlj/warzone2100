@@ -924,7 +924,8 @@ bool initTerrain()
 		return false;
 	}
 	if (lightmap_tex_num)
-		lightmap_tex_num = gfx_api::context::get().create_texture(lightmapWidth, lightmapHeight, gfx_api::pixel_format::rgb);
+		delete lightmap_tex_num;
+	lightmap_tex_num = gfx_api::context::get().create_texture(lightmapWidth, lightmapHeight, gfx_api::pixel_format::rgb);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	lightmap_tex_num->upload(0, 0, 0, lightmapWidth, lightmapHeight, gfx_api::pixel_format::rgb, lightmapPixmap);

@@ -57,7 +57,7 @@ public:
 private:
 	iV_fonts mFontID = font_count;
 	std::string mText;
-	gfx_api::texture* texture;
+	gfx_api::texture* texture = nullptr;
 	int mAboveBase = 0;
 	int mBelowBase = 0;
 	int mLineSize = 0;

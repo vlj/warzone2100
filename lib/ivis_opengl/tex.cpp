@@ -78,7 +78,8 @@ int pie_ReserveTexture(const char *name, const size_t& width, const size_t& heig
 void pie_AssignTexture(int page, gfx_api::texture* texture)
 {
 	if (_TEX_PAGE[page].id)
-		_TEX_PAGE[page].id = texture;
+		delete _TEX_PAGE[page].id;
+	_TEX_PAGE[page].id = texture;
 }
 
 int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page)

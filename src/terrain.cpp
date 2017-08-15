@@ -129,18 +129,14 @@ GLsizei dreCount;
 bool drawRangeElementsStarted = false;
 
 /// Pass all remaining triangles to OpenGL
+template<typename PSO>
 static void finishDrawRangeElements()
 {
 	if (drawRangeElementsStarted && dreCount > 0)
 	{
 		ASSERT(dreEnd - dreStart + 1 <= GLmaxElementsVertices, "too many vertices (%i)", (int)(dreEnd - dreStart + 1));
 		ASSERT(dreCount <= GLmaxElementsIndices, "too many indices (%i)", (int)dreCount);
-		glDrawRangeElements(GL_TRIANGLES,
-		                    dreStart,
-		                    dreEnd,
-		                    dreCount,
-		                    GL_UNSIGNED_INT,
-		                    BUFFER_OFFSET(sizeof(GLuint)*dreOffset));
+		PSO::get().draw_elements(dreCount, sizeof(GLuint)*dreOffset);
 	}
 	drawRangeElementsStarted = false;
 }
@@ -149,16 +145,12 @@ static void finishDrawRangeElements()
  * Either draw the elements or batch them to be sent to OpenGL later
  * This improves performance by reducing the amount of OpenGL calls.
  */
-static void addDrawRangeElements(GLenum mode,
-                                 GLuint start,
+template<typename PSO>
+static void addDrawRangeElements(GLuint start,
                                  GLuint end,
                                  GLsizei count,
-                                 GLenum type,
                                  GLuint offset)
 {
-	ASSERT(mode == GL_TRIANGLES, "not supported");
-	ASSERT(type == GL_UNSIGNED_INT, "not supported");
-
 	if (end - start + 1 > GLmaxElementsVertices)
 	{
 		debug(LOG_WARNING, "A single call provided too much vertices, will operate at reduced performance or crash. Decrease the sector size to fix this.");
@@ -184,9 +176,9 @@ static void addDrawRangeElements(GLenum mode,
 	    dreCount + count > GLmaxElementsIndices ||
 	    end - dreStart + 1 > GLmaxElementsVertices)
 	{
-		finishDrawRangeElements();
+		finishDrawRangeElements<PSO>();
 		// start anew
-		addDrawRangeElements(mode, start, end, count, type, offset);
+		addDrawRangeElements<PSO>(start, end, count, offset);
 	}
 	else
 	{
@@ -1087,25 +1079,15 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 {
 	const auto &program = pie_ActivateShader(SHADER_TERRAIN_DEPTH, ModelViewProjection, paramsXLight, paramsYLight, 1, glm::mat4(), glm::mat4());
 	pie_SetTexturePage(TEXPAGE_NONE);
-	pie_SetRendMode(REND_OPAQUE);
-
-	// we only draw in the depth buffer of using fog of war, as the clear color is black then
-	if (!pie_GetFogStatus())
-	{
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	}
 
 	// draw slightly higher distance than it actually is so it will not
 	// by accident obscure the actual terrain
-	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(0.1f, 1.0f);
 
 	// bind the vertex buffer
-	glEnableVertexAttribArray(program.locVertex);
+	gfx_api::TerrainDepth::get().bind();
+	gfx_api::TerrainDepth::get().bind_vertex_buffers(geometryVBO);
 	geometryIndexVBO->bind();
-	geometryVBO->bind();
-
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
 
 	for (int x = 0; x < xSectors; x++)
 	{
@@ -1113,26 +1095,17 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 		{
 			if (sectors[x * ySectors + y].draw)
 			{
-				addDrawRangeElements(GL_TRIANGLES,
+				addDrawRangeElements<gfx_api::TerrainDepth>(
 					sectors[x * ySectors + y].geometryOffset,
 					sectors[x * ySectors + y].geometryOffset + sectors[x * ySectors + y].geometrySize,
 					sectors[x * ySectors + y].geometryIndexSize,
-					GL_UNSIGNED_INT,
 					sectors[x * ySectors + y].geometryIndexOffset);
 			}
 		}
 	}
-	finishDrawRangeElements();
+	finishDrawRangeElements<gfx_api::TerrainDepth>();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	if (!pie_GetFogStatus())
-	{
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	}
-
-	// disable the depth offset
-	glDisable(GL_POLYGON_OFFSET_FILL);
 	glDisableVertexAttribArray(program.locVertex);
 	pie_DeactivateShader();
 }
@@ -1149,22 +1122,11 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 	const auto &program = pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, glm::vec4(), glm::vec4(), paramsXLight, paramsYLight, 0, 1,
 		glm::mat4(), textureMatrix, renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
 
-	// additive blending
-	pie_SetRendMode(REND_ADDITIVE);
-
-	// only draw colors
-	glDepthMask(GL_FALSE);
-
 	textureIndexVBO->bind();
 
 	// load the vertex (geometry) buffer
-	geometryVBO->bind();
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
-
-	glEnableVertexAttribArray(program.locColor);
-	textureVBO->bind();
-
+	gfx_api::TerrainLayer::get().bind();
+	gfx_api::TerrainLayer::get().bind_vertex_buffers(geometryVBO, textureVBO);
 	ASSERT_OR_RETURN(, psGroundTypes, "Ground type was not set, no textures will be seen.");
 
 	// draw each layer separately
@@ -1182,7 +1144,7 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		// load the color buffer
-		glVertexAttribPointer(program.locColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PIELIGHT), BUFFER_OFFSET(sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer));
+		gfx_api::context::get().bind_vertex_buffers({ { gfx_api::vertex_buffer_input{gfx_api::color, gfx_api::vertex_attribute_type::u8x4_norm, sizeof(PIELIGHT) , sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer }} }, { textureVBO });
 
 		for (int x = 0; x < xSectors; x++)
 		{
@@ -1190,16 +1152,15 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 			{
 				if (sectors[x * ySectors + y].draw)
 				{
-					addDrawRangeElements(GL_TRIANGLES,
+					addDrawRangeElements<gfx_api::TerrainLayer>(
 						sectors[x * ySectors + y].geometryOffset,
 						sectors[x * ySectors + y].geometryOffset + sectors[x * ySectors + y].geometrySize,
 						sectors[x * ySectors + y].textureIndexSize[layer],
-						GL_UNSIGNED_INT,
 						sectors[x * ySectors + y].textureIndexOffset[layer]);
 				}
 			}
 		}
-		finishDrawRangeElements();
+		finishDrawRangeElements<gfx_api::TerrainLayer>();
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -1223,16 +1184,9 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 	// select the terrain texture page
 	pie_SetTexturePage(terrainPage);
 
-	// use the alpha to blend
-	pie_SetRendMode(REND_ALPHA);
+	gfx_api::TerrainDecals::get().bind();
+	gfx_api::TerrainDecals::get().bind_vertex_buffers(decalVBO);
 
-	// and the texture coordinates buffer
-	glEnableVertexAttribArray(program.locVertex);
-	decalVBO->bind();
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(DecalVertex), BUFFER_OFFSET(0));
-
-	glEnableVertexAttribArray(program.locTexCoord);
-	glVertexAttribPointer(program.locTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(DecalVertex), BUFFER_OFFSET(12));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	int size = 0;
@@ -1250,7 +1204,7 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 			// can't append, so draw what we have and start anew
 			if (size > 0)
 			{
-				glDrawArrays(GL_TRIANGLES, offset, size);
+				gfx_api::TerrainDecals::get().draw(size, offset);
 			}
 			size = 0;
 			if (y < ySectors && sectors[x * ySectors + y].draw)
@@ -1340,15 +1294,14 @@ void drawWater(const glm::mat4 &viewMatrix)
 	const auto &program = pie_ActivateShader(SHADER_WATER, viewMatrix, paramsX, paramsY, paramsX2, paramsY2, 0, 1,
 		glm::translate(waterOffset, 0.f, 0.f), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd);
 
-	glDepthMask(GL_FALSE);
-
 	// first texture unit
 	pie_SetTexturePage(iV_GetTexture("page-80-water-1.png"));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	// multiplicative blending
-	pie_SetRendMode(REND_MULTIPLICATIVE);
+	gfx_api::WaterPSO::get().bind();
+	gfx_api::WaterPSO::get().bind_vertex_buffers(waterVBO);
+	waterIndexVBO->bind();
 
 	// second texture unit
 	glActiveTexture(GL_TEXTURE1);
@@ -1356,28 +1309,21 @@ void drawWater(const glm::mat4 &viewMatrix)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	// bind the vertex buffer
-	waterIndexVBO->bind();
-	waterVBO->bind();
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
-
 	for (x = 0; x < xSectors; x++)
 	{
 		for (y = 0; y < ySectors; y++)
 		{
 			if (sectors[x * ySectors + y].draw)
 			{
-				addDrawRangeElements(GL_TRIANGLES,
+				addDrawRangeElements<gfx_api::WaterPSO>(
 				                     sectors[x * ySectors + y].geometryOffset,
 				                     sectors[x * ySectors + y].geometryOffset + sectors[x * ySectors + y].geometrySize,
 				                     sectors[x * ySectors + y].waterIndexSize,
-				                     GL_UNSIGNED_INT,
 				                     sectors[x * ySectors + y].waterIndexOffset);
 			}
 		}
 	}
-	finishDrawRangeElements();
+	finishDrawRangeElements<gfx_api::WaterPSO>();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 

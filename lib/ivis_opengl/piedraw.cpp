@@ -47,15 +47,6 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 #define SHADOW_END_DISTANCE (8000*8000) // Keep in sync with lighting.c:FOG_END
 
-// Shadow stencil stuff
-static void ss_GL2_1pass();
-static void ss_EXT_1pass();
-static void ss_ATI_1pass();
-static void ss_2pass();
-static void (*ShadowStencilFunc)() = nullptr;
-static GLenum ss_op_depth_pass_front = GL_INCR;
-static GLenum ss_op_depth_pass_back = GL_DECR;
-
 /*
  *	Local Variables
  */
@@ -64,31 +55,6 @@ static unsigned int pieCount = 0;
 static unsigned int polyCount = 0;
 static bool shadows = false;
 static GLfloat lighting0[LIGHT_MAX][4];
-
-static std::vector<GLint> enabledAttribArrays;
-
-
-void enableArray(gfx_api::buffer& buffer, GLint loc, GLint size, GLenum type, GLboolean normalised, GLsizei stride, std::size_t offset)
-{
-	if (loc == -1)
-	{
-		return;
-	}
-	buffer.bind();
-	glVertexAttribPointer(loc, size, type, normalised, stride, BUFFER_OFFSET(offset));
-	glEnableVertexAttribArray(loc);
-	enabledAttribArrays.push_back(loc);
-}
-
-void disableArrays()
-{
-	for (GLint loc : enabledAttribArrays)
-	{
-		glDisableVertexAttribArray(loc);
-	}
-
-	enabledAttribArrays.clear();
-}
 
 /*
  *	Source
@@ -156,20 +122,15 @@ static std::vector<SHAPE> shapes;
 static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour, const glm::mat4 &matrix)
 {
 	const PIELIGHT colour = WZCOL_WHITE;
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(SHADER_BUTTON, shape, teamcolour, colour, matrix, pie_PerspectiveGet(),
 		glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4());
-	pie_SetRendMode(REND_OPAQUE);
+	gfx_api::Draw3DButtonPSO::get().bind();
 	pie_SetTexturePage(shape->texpage);
-	enableArray(*shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
+	gfx_api::Draw3DButtonPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
 	shape->buffers[VBO_INDEX]->bind();
-	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, nullptr);
-	disableArrays();
+	gfx_api::Draw3DButtonPSO::get().draw_elements(shape->npolys * 3, 0);
 	polyCount += shape->npolys;
 	pie_DeactivateShader();
-	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_ON);
 }
 
 static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour, PIELIGHT teamcolour, int pieFlag, int pieFlagData, glm::mat4 const &matrix)
@@ -189,29 +150,21 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	/* Set translucency */
 	if (pieFlag & pie_ADDITIVE)
 	{
-		pie_SetRendMode(REND_ADDITIVE);
 		colour.byte.a = (UBYTE)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_TRANSLUCENT)
 	{
-		pie_SetRendMode(REND_ALPHA);
 		colour.byte.a = (UBYTE)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_PREMULTIPLIED)
 	{
-		pie_SetRendMode(REND_PREMULTIPLIED);
 		light = false;
-	}
-	else
-	{
-		pie_SetRendMode(REND_OPAQUE);
 	}
 
 	if (pieFlag & pie_ECM)
 	{
-		pie_SetRendMode(REND_ALPHA);
 		light = true;
 		pie_SetShaderEcmEffect(true);
 	}
@@ -231,13 +184,33 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	pie_SetTexturePage(shape->texpage);
 
 	frame %= std::max<int>(1, shape->numFrames);
-
-	enableArray(*shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
 	shape->buffers[VBO_INDEX]->bind();
-	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(frame * shape->npolys * 3 * sizeof(uint16_t)));
-	disableArrays();
+
+	/* Set tranlucency */
+	if (pieFlag & pie_ADDITIVE)
+	{
+		gfx_api::Draw3DShapeAdditive::get().bind();
+		gfx_api::Draw3DShapeAdditive::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		gfx_api::Draw3DShapeAdditive::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else if (pieFlag & pie_TRANSLUCENT)
+	{
+		gfx_api::Draw3DShapeAlpha::get().bind();
+		gfx_api::Draw3DShapeAlpha::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		gfx_api::Draw3DShapeAlpha::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else if (pieFlag & pie_PREMULTIPLIED)
+	{
+		gfx_api::Draw3DShapePremul::get().bind();
+		gfx_api::Draw3DShapePremul::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		gfx_api::Draw3DShapePremul::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else
+	{
+		gfx_api::Draw3DShapeOpaque::get().bind();
+		gfx_api::Draw3DShapeOpaque::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		gfx_api::Draw3DShapeOpaque::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
 
 	polyCount += shape->npolys;
 
@@ -365,40 +338,11 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 		delete buffer;
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, sizeof(Vector3f) * vertexes.size());
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	glDrawArrays(GL_TRIANGLES, 0, edge_count * 2 * 3);
+	gfx_api::DrawStencilShadow::get().bind();
+	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
+	gfx_api::DrawStencilShadow::get().draw(edge_count * 2 * 3, 0);
 	glDisableVertexAttribArray(program.locVertex);
 	pie_DeactivateShader();
-}
-
-void pie_SetUp()
-{
-	// initialise pie engine
-
-	if (GLEW_EXT_stencil_wrap)
-	{
-		ss_op_depth_pass_front = GL_INCR_WRAP;
-		ss_op_depth_pass_back = GL_DECR_WRAP;
-	}
-
-	if (GLEW_VERSION_2_0)
-	{
-		ShadowStencilFunc = ss_GL2_1pass;
-	}
-	else if (GLEW_EXT_stencil_two_side)
-	{
-		ShadowStencilFunc = ss_EXT_1pass;
-	}
-	else if (GLEW_ATI_separate_stencil)
-	{
-		ShadowStencilFunc = ss_ATI_1pass;
-	}
-	else
-	{
-		ShadowStencilFunc = ss_2pass;
-	}
 }
 
 void pie_CleanUp()
@@ -493,28 +437,11 @@ static void pie_DrawShadows()
 
 	pie_SetTexturePage(TEXPAGE_NONE);
 
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glDepthFunc(GL_LESS);
-	glDepthMask(GL_FALSE);
-	glEnable(GL_STENCIL_TEST);
+	pie_ShadowDrawLoop();
 
-	ShadowStencilFunc();
-
-	glEnable(GL_CULL_FACE);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilMask(~0);
-	glStencilFunc(GL_LESS, 0, ~0);
-
-	glDisable(GL_DEPTH_TEST);
 	PIELIGHT grey;
 	grey.byte = { 0, 0, 0, 128 };
-	pie_BoxFill(0, 0, width, height, grey, REND_ALPHA);
-
-	pie_SetRendMode(REND_OPAQUE);
-	glDisable(GL_STENCIL_TEST);
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
+	pie_BoxFill_alpha(0, 0, width, height, grey);
 
 	scshapes.resize(0);
 }
@@ -557,66 +484,4 @@ void pie_GetResetCounts(unsigned int *pPieCount, unsigned int *pPolyCount)
 
 	pieCount = 0;
 	polyCount = 0;
-}
-
-// GL 2.0 1-pass version
-static void ss_GL2_1pass()
-{
-	glDisable(GL_CULL_FACE);
-	glStencilMask(~0);
-	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-	glStencilFunc(GL_ALWAYS, 0, ~0);
-
-	pie_ShadowDrawLoop();
-}
-
-// generic 1-pass version
-static void ss_EXT_1pass()
-{
-	glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-	glDisable(GL_CULL_FACE);
-	glStencilMask(~0);
-	glActiveStencilFaceEXT(GL_BACK);
-	glStencilOp(GL_KEEP, GL_KEEP, ss_op_depth_pass_back);
-	glStencilFunc(GL_ALWAYS, 0, ~0);
-	glActiveStencilFaceEXT(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_KEEP, ss_op_depth_pass_front);
-	glStencilFunc(GL_ALWAYS, 0, ~0);
-
-	pie_ShadowDrawLoop();
-
-	glDisable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-}
-
-// ATI-specific 1-pass version
-static void ss_ATI_1pass()
-{
-	glDisable(GL_CULL_FACE);
-	glStencilMask(~0);
-	glStencilOpSeparateATI(GL_BACK, GL_KEEP, GL_KEEP, ss_op_depth_pass_back);
-	glStencilOpSeparateATI(GL_FRONT, GL_KEEP, GL_KEEP, ss_op_depth_pass_front);
-	glStencilFunc(GL_ALWAYS, 0, ~0);
-
-	pie_ShadowDrawLoop();
-}
-
-// generic 2-pass version
-static void ss_2pass()
-{
-	glStencilMask(~0);
-	glStencilFunc(GL_ALWAYS, 0, ~0);
-	glEnable(GL_CULL_FACE);
-
-	// Setup stencil for front-facing polygons
-	glCullFace(GL_BACK);
-	glStencilOp(GL_KEEP, GL_KEEP, ss_op_depth_pass_front);
-
-	pie_ShadowDrawLoop();
-
-	// Setup stencil for back-facing polygons
-	glCullFace(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_KEEP, ss_op_depth_pass_back);
-
-	pie_ShadowDrawLoop();
 }

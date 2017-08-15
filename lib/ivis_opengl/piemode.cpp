@@ -49,7 +49,6 @@ iSurface rendSurface;
 
 bool pie_Initialise()
 {
-	pie_SetUp();
 	pie_TexInit();
 
 	/* Find texture compression extension */

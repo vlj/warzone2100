@@ -267,7 +267,7 @@ bool screenInitialise()
 	pie_Skybox_Init();
 
 	// Generate backdrop render
-	backdropGfx = new GFX(GFX_TEXTURE, GL_TRIANGLE_STRIP, 2);
+	backdropGfx = new GFX(GFX_TEXTURE, 2);
 
 	if (GLEW_ARB_timer_query)
 	{
@@ -473,10 +473,8 @@ bool screen_GetBackDrop()
 
 void screen_Display()
 {
-	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_OFF);
-
 	// Draw backdrop
-	backdropGfx->draw(glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f));
+	backdropGfx->draw<gfx_api::BackDropPSO>(glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f));
 
 	if (mappreview)
 	{
@@ -509,7 +507,6 @@ void screen_Display()
 			iV_DrawText(text, x, y, font_large);
 		}
 	}
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 }
 
 //******************************************************************

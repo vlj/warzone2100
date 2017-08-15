@@ -37,6 +37,38 @@ static GLenum to_gl(const gfx_api::buffer::usage& usage)
 	return GL_INVALID_ENUM;
 }
 
+static GLenum to_gl(const gfx_api::primitive_type& primitive)
+{
+	switch (primitive)
+	{
+	case gfx_api::primitive_type::lines:
+		return GL_LINES;
+	case gfx_api::primitive_type::triangles:
+		return GL_TRIANGLES;
+	case gfx_api::primitive_type::triangle_fan:
+		return GL_TRIANGLE_FAN;
+	case gfx_api::primitive_type::triangle_strip:
+		return GL_TRIANGLE_STRIP;
+	default:
+		debug(LOG_FATAL, "Unrecognised primitive type");
+	}
+	return GL_INVALID_ENUM;
+}
+
+static GLenum to_gl(const gfx_api::index_type& index)
+{
+	switch (index)
+	{
+	case gfx_api::index_type::u16:
+		return GL_UNSIGNED_SHORT;
+	case gfx_api::index_type::u32:
+		return GL_UNSIGNED_INT;
+	default:
+		debug(LOG_FATAL, "Unrecognised index type");
+	}
+	return GL_INVALID_ENUM;
+}
+
 struct gl_texture : public gfx_api::texture
 {
 private:
@@ -108,6 +140,177 @@ struct gl_buffer : public gfx_api::buffer
 
 };
 
+struct gl_pipeline_state_object : public gfx_api::pipeline_state_object
+{
+	gfx_api::state_description desc;
+	gl_pipeline_state_object(const gfx_api::state_description& _desc) :
+		desc(_desc)
+	{
+
+	}
+
+	virtual void bind() override
+	{
+		switch (desc.blend_state)
+		{
+		case REND_OPAQUE:
+			glDisable(GL_BLEND);
+			break;
+
+		case REND_ALPHA:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+
+		case REND_ADDITIVE:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			break;
+
+		case REND_MULTIPLICATIVE:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+			break;
+
+		case REND_PREMULTIPLIED:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+
+		case REND_TEXT:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA /* Should be GL_ONE_MINUS_SRC1_COLOR, if supported. Also, gl_FragData[1] then needs to be set in text.frag. */);
+			break;
+		}
+
+		switch (desc.depth_mode)
+		{
+		case DEPTH_CMP_LEQ_WRT_OFF:
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+			glDepthMask(GL_FALSE);
+			break;
+		case DEPTH_CMP_LEQ_WRT_ON:
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+			glDepthMask(GL_TRUE);
+			break;
+		case DEPTH_CMP_ALWAYS_WRT_ON:
+			glDisable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
+			break;
+
+		case DEPTH_CMP_ALWAYS_WRT_OFF:
+			glDisable(GL_DEPTH_TEST);
+			glDepthMask(GL_FALSE);
+			break;
+		}
+
+		if (desc.output_mask == 0)
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		else
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+		if (desc.offset)
+			glEnable(GL_POLYGON_OFFSET_FILL);
+		else
+			glDisable(GL_POLYGON_OFFSET_FILL);
+
+		switch (desc.stencil)
+		{
+		case gfx_api::stencil_mode::stencil_shadow_quad:
+			glEnable(GL_STENCIL_TEST);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			glStencilMask(~0);
+			glStencilFunc(GL_LESS, 0, ~0);
+			break;
+		case gfx_api::stencil_mode::stencil_shadow_silhouette:
+			glEnable(GL_STENCIL_TEST);
+			if (GLEW_VERSION_2_0)
+			{
+				glStencilMask(~0);
+				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+				glStencilFunc(GL_ALWAYS, 0, ~0);
+			}
+			else if (GLEW_EXT_stencil_two_side)
+			{
+				glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
+				glStencilMask(~0);
+				glActiveStencilFaceEXT(GL_BACK);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+				glStencilFunc(GL_ALWAYS, 0, ~0);
+				glActiveStencilFaceEXT(GL_FRONT);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+				glStencilFunc(GL_ALWAYS, 0, ~0);
+			}
+			else if (GLEW_ATI_separate_stencil)
+			{
+				glStencilMask(~0);
+				glStencilOpSeparateATI(GL_BACK, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+				glStencilOpSeparateATI(GL_FRONT, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+				glStencilFunc(GL_ALWAYS, 0, ~0);
+			}
+
+			break;
+		case gfx_api::stencil_mode::stencil_disabled:
+			glDisable(GL_STENCIL_TEST);
+			glDisable(GL_STENCIL_TEST_TWO_SIDE_EXT);
+			break;
+		}
+
+		switch (desc.cull)
+		{
+		case gfx_api::cull_mode::back:
+			glEnable(GL_CULL_FACE);
+			break;
+		case gfx_api::cull_mode::none:
+			glDisable(GL_CULL_FACE);
+			break;
+		}
+	}
+};
+
+size_t get_size(const gfx_api::vertex_attribute_type& type)
+{
+	switch (type)
+	{
+	case gfx_api::vertex_attribute_type::float2:
+		return 2;
+	case gfx_api::vertex_attribute_type::float3:
+		return 3;
+	case gfx_api::vertex_attribute_type::float4:
+	case gfx_api::vertex_attribute_type::u8x4_norm:
+		return 4;
+	}
+}
+
+GLenum get_type(const gfx_api::vertex_attribute_type& type)
+{
+	switch (type)
+	{
+	case gfx_api::vertex_attribute_type::float2:
+	case gfx_api::vertex_attribute_type::float3:
+	case gfx_api::vertex_attribute_type::float4:
+		return GL_FLOAT;
+	case gfx_api::vertex_attribute_type::u8x4_norm:
+		return GL_UNSIGNED_BYTE;
+	}
+}
+
+GLboolean get_normalisation(const gfx_api::vertex_attribute_type& type)
+{
+	switch (type)
+	{
+	case gfx_api::vertex_attribute_type::float2:
+	case gfx_api::vertex_attribute_type::float3:
+	case gfx_api::vertex_attribute_type::float4:
+		return GL_FALSE;
+	case gfx_api::vertex_attribute_type::u8x4_norm:
+		return true;
+	}
+}
+
 struct gl_context : public gfx_api::context
 {
 	virtual gfx_api::texture* create_texture(const size_t & width, const size_t & height, const gfx_api::pixel_format & internal_format, const std::string& filename) override
@@ -129,7 +332,38 @@ struct gl_context : public gfx_api::context
 	{
 		return new gl_buffer(usage, width);
 	}
+
+	virtual gfx_api::pipeline_state_object * build_pipeline(const gfx_api::state_description &state_desc) override
+	{
+		return new gl_pipeline_state_object(state_desc);
+	}
+
+	virtual void bind_vertex_buffers(const std::vector<std::vector<gfx_api::vertex_buffer_input>>& attribute_descriptions, const std::vector<gfx_api::buffer*>& vertex_buffers) override
+	{
+		for (size_t i = 0; i < attribute_descriptions.size() && i < vertex_buffers.size(); i++)
+		{
+			auto* buffer = static_cast<gl_buffer*>(vertex_buffers[i]);
+			buffer->bind();
+			for (const auto& attribute : attribute_descriptions[i])
+			{
+				glEnableVertexAttribArray(attribute.id);
+				glVertexAttribPointer(attribute.id, get_size(attribute.type), get_type(attribute.type), get_normalisation(attribute.type), attribute.stride, reinterpret_cast<void*>(attribute.offset));
+			}
+		}
+	}
+
+	virtual void draw(const size_t& offset, const size_t &count, const gfx_api::primitive_type &primitive) override
+	{
+		glDrawArrays(to_gl(primitive), offset, count);
+	}
+
+	virtual void draw_elements(const size_t& offset, const size_t &count, const gfx_api::primitive_type &primitive, const gfx_api::index_type& index) override
+	{
+		glDrawElements(to_gl(primitive), count, to_gl(index), reinterpret_cast<void*>(offset));
+	}
 };
+
+
 
 gfx_api::context& gfx_api::context::get()
 {

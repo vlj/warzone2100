@@ -56,7 +56,7 @@
  */
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/gfx_api.h"
 #include "sequence.h"
 #include "timer.h"
 #include "lib/framework/math_ext.h"
@@ -384,10 +384,7 @@ static void video_write(bool update)
 		videoGfx->updateTexture(RGBAframe, video_width, video_height * height_factor);
 	}
 
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-
-	videoGfx->draw(
+	videoGfx->draw<gfx_api::VideoPSO>(
 		glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f) *
 		glm::translate(glm::vec3(Scrnvidpos[0], Scrnvidpos[1], Scrnvidpos[2]))
 	);
@@ -676,7 +673,7 @@ bool seq_Play(const char *filename)
 	}
 
 	/* open video */
-	videoGfx = new GFX(GFX_TEXTURE, GL_TRIANGLE_STRIP, 2);
+	videoGfx = new GFX(GFX_TEXTURE, 2);
 	if (theora_p)
 	{
 		if (videodata.ti.frame_width > texture_width || videodata.ti.frame_height > texture_height)

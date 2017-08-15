@@ -68,8 +68,6 @@ void rendStatesRendModeHack();  // Sets rendStates.rendMode = REND_ALPHA; (Added
  */
 /***************************************************************************/
 void pie_SetDefaultStates();//Sets all states
-void pie_SetDepthBufferStatus(DEPTH_MODE depthMode);
-void pie_SetDepthOffset(float offset);
 //fog available
 void pie_EnableFog(bool val);
 bool pie_GetFogEnabled();
@@ -81,7 +79,6 @@ PIELIGHT pie_GetFogColour() WZ_DECL_PURE;
 void pie_UpdateFogDistance(float begin, float end);
 //render states
 void pie_SetTexturePage(SDWORD num);
-void pie_SetRendMode(REND_MODE rendMode);
 RENDER_STATE getCurrentRenderState();
 
 int pie_GetMaxAntialiasing();

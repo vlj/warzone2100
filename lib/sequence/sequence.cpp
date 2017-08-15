@@ -56,7 +56,7 @@
  */
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
+#include "lib/ivis_opengl/gfx_api.h"
 #include "sequence.h"
 #include "timer.h"
 #include "lib/framework/math_ext.h"
@@ -381,10 +381,7 @@ static void video_write(bool update)
 		videoGfx->updateTexture(RGBAframe, video_width, video_height * height_factor);
 	}
 
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-
-	videoGfx->draw(
+	videoGfx->draw<gfx_api::VideoPSO>(
 		glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f) *
 		glm::translate(glm::vec3(Scrnvidpos[0], Scrnvidpos[1], Scrnvidpos[2]))
 	);

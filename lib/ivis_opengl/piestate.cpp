@@ -225,6 +225,7 @@ SHADER_MODE pie_LoadShader(const char *programName, const char *vertexPath, cons
 	glBindAttribLocation(program.program, 0, "vertex");
 	glBindAttribLocation(program.program, 1, "vertexTexCoord");
 	glBindAttribLocation(program.program, 2, "vertexColor");
+	glBindAttribLocation(program.program, 3, "vertexNormal");
 	ASSERT_OR_RETURN(SHADER_NONE, program.program, "Could not create shader program!");
 
 	*buffer = (char *)"";
@@ -427,10 +428,10 @@ bool pie_LoadShaders()
 	pie_internal::currentShaderMode = SHADER_NONE;
 
 	GLbyte rect[] {
-		0, 1, 0, 1,
-		0, 0, 0, 1,
-		1, 1, 0, 1,
-		1, 0, 0, 1
+		0, 255, 0, 255,
+		0, 0, 0, 255,
+		255, 255, 0, 255,
+		255, 0, 0, 255
 	};
 	if (pie_internal::rectBuffer)
 		delete pie_internal::rectBuffer;

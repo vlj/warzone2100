@@ -473,10 +473,8 @@ bool screen_GetBackDrop()
 
 void screen_Display()
 {
-	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_OFF);
-
 	// Draw backdrop
-	backdropGfx->draw(glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f));
+	backdropGfx->draw<gfx_api::BackDropPSO>(glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f));
 
 	if (mappreview)
 	{

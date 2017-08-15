@@ -65,31 +65,6 @@ static unsigned int polyCount = 0;
 static bool shadows = false;
 static GLfloat lighting0[LIGHT_MAX][4];
 
-static std::vector<GLint> enabledAttribArrays;
-
-
-void enableArray(gfx_api::buffer& buffer, GLint loc, GLint size, GLenum type, GLboolean normalised, GLsizei stride, std::size_t offset)
-{
-	if (loc == -1)
-	{
-		return;
-	}
-	buffer.bind();
-	glVertexAttribPointer(loc, size, type, normalised, stride, BUFFER_OFFSET(offset));
-	glEnableVertexAttribArray(loc);
-	enabledAttribArrays.push_back(loc);
-}
-
-void disableArrays()
-{
-	for (GLint loc : enabledAttribArrays)
-	{
-		glDisableVertexAttribArray(loc);
-	}
-
-	enabledAttribArrays.clear();
-}
-
 /*
  *	Source
  */
@@ -156,20 +131,16 @@ static std::vector<SHAPE> shapes;
 static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour, const glm::mat4 &matrix)
 {
 	const PIELIGHT colour = WZCOL_WHITE;
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(SHADER_BUTTON, shape, teamcolour, colour, matrix, pie_PerspectiveGet(),
 		glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4());
-	pie_SetRendMode(REND_OPAQUE);
+	gfx_api::Draw3DButtonPSO::get().bind();
 	pie_SetTexturePage(shape->texpage);
-	enableArray(*shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
+	gfx_api::Draw3DButtonPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
 	shape->buffers[VBO_INDEX]->bind();
 	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, nullptr);
-	disableArrays();
 	polyCount += shape->npolys;
 	pie_DeactivateShader();
-	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_ON);
+	gfx_api::pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_ON, std::tuple<>>::get().bind();
 }
 
 static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour, PIELIGHT teamcolour, int pieFlag, int pieFlagData, glm::mat4 const &matrix)
@@ -189,29 +160,21 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	/* Set tranlucency */
 	if (pieFlag & pie_ADDITIVE)
 	{
-		pie_SetRendMode(REND_ADDITIVE);
 		colour.byte.a = (UBYTE)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_TRANSLUCENT)
 	{
-		pie_SetRendMode(REND_ALPHA);
 		colour.byte.a = (UBYTE)pieFlagData;
 		light = false;
 	}
 	else if (pieFlag & pie_PREMULTIPLIED)
 	{
-		pie_SetRendMode(REND_PREMULTIPLIED);
 		light = false;
-	}
-	else
-	{
-		pie_SetRendMode(REND_OPAQUE);
 	}
 
 	if (pieFlag & pie_ECM)
 	{
-		pie_SetRendMode(REND_ALPHA);
 		light = true;
 		pie_SetShaderEcmEffect(true);
 	}
@@ -232,12 +195,30 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 
 	frame %= std::max<int>(1, shape->numFrames);
 
-	enableArray(*shape->buffers[VBO_VERTEX], program.locVertex, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_NORMAL], program.locNormal, 3, GL_FLOAT, false, 0, 0);
-	enableArray(*shape->buffers[VBO_TEXCOORD], program.locTexCoord, 2, GL_FLOAT, false, 0, 0);
+	/* Set tranlucency */
+	if (pieFlag & pie_ADDITIVE)
+	{
+		gfx_api::Draw3DShapeAdditive::get().bind();
+		gfx_api::Draw3DShapeAdditive::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+	}
+	else if (pieFlag & pie_TRANSLUCENT)
+	{
+		gfx_api::Draw3DShapeAlpha::get().bind();
+		gfx_api::Draw3DShapeAlpha::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+	}
+	else if (pieFlag & pie_PREMULTIPLIED)
+	{
+		gfx_api::Draw3DShapePremul::get().bind();
+		gfx_api::Draw3DShapePremul::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+	}
+	else
+	{
+		gfx_api::Draw3DShapeOpaque::get().bind();
+		gfx_api::Draw3DShapeOpaque::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+	}
+
 	shape->buffers[VBO_INDEX]->bind();
 	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(frame * shape->npolys * 3 * sizeof(uint16_t)));
-	disableArrays();
 
 	polyCount += shape->npolys;
 
@@ -365,9 +346,8 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 		delete buffer;
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, sizeof(Vector3f) * vertexes.size());
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
+	gfx_api::DrawStencilShadow::get().bind();
+	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
 	glDrawArrays(GL_TRIANGLES, 0, edge_count * 2 * 3);
 	glDisableVertexAttribArray(program.locVertex);
 	pie_DeactivateShader();
@@ -509,7 +489,7 @@ static void pie_DrawShadows()
 	glDisable(GL_DEPTH_TEST);
 	PIELIGHT grey;
 	grey.byte = { 0, 0, 0, 128 };
-	pie_BoxFill(0, 0, width, height, grey, REND_ALPHA);
+	pie_BoxFill_alpha(0, 0, width, height, grey);
 
 	pie_SetRendMode(REND_OPAQUE);
 	glDisable(GL_STENCIL_TEST);

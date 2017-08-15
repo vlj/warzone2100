@@ -80,15 +80,13 @@ void pie_SetViewingWindow(Vector3i *v, PIELIGHT colour)
 
 void pie_DrawViewingWindow(const glm::mat4 &modelViewProjectionMatrix)
 {
-	pie_SetRendMode(REND_ALPHA);
-	radarViewGfx[0]->draw(modelViewProjectionMatrix);
-	radarViewGfx[1]->draw(modelViewProjectionMatrix);
+	radarViewGfx[0]->draw<gfx_api::RadarViewPSO>(modelViewProjectionMatrix);
+	radarViewGfx[1]->draw<gfx_api::RadarViewPSO>(modelViewProjectionMatrix);
 }
 
 void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, const glm::mat4 &modelViewMatrix)
 {
 	pie_SetTexturePage(TEXPAGE_NONE);
-	pie_SetRendMode(REND_ADDITIVE);
 	glm::vec4 color(c.byte.r / 255.f, c.byte.g / 255.f, c.byte.b / 255.f, 128.f / 255.f);
 	const auto &program = pie_ActivateShader(SHADER_GENERIC_COLOR, pie_PerspectiveGet() * modelViewMatrix, color);
 
@@ -97,8 +95,8 @@ void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, c
 		delete buffer;
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, 3 * sizeof(Vector3f));
 	buffer->upload(0, 3 * sizeof(Vector3f), vrt.data());
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	gfx_api::TransColouredTrianglePSO::get().bind();
+	gfx_api::TransColouredTrianglePSO::get().bind_vertex_buffers(buffer);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
 	glDisableVertexAttribArray(program.locVertex);
 }
@@ -184,11 +182,6 @@ void pie_Skybox_Shutdown()
 
 void pie_DrawSkybox(float scale, const glm::mat4 &viewMatrix)
 {
-	// no use in updating the depth buffer
-	glDepthMask(GL_FALSE);
-	// enable alpha
-	pie_SetRendMode(REND_ALPHA);
-
 	// Apply scale matrix
-	skyboxGfx->draw(pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale));
+	skyboxGfx->draw<gfx_api::SkyboxPSO>(pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale));
 }

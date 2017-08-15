@@ -689,7 +689,7 @@ void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotati
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glDisable(GL_CULL_FACE);
-		iV_DrawImageText(*textureID, Vector2i(XPos, YPos), Vector2i(xoffset, yoffset), Vector2i(width, height), rotation, REND_TEXT, color);
+		iV_DrawImageText(*textureID, Vector2i(XPos, YPos), Vector2i(xoffset, yoffset), Vector2i(width, height), rotation, color);
 		glEnable(GL_CULL_FACE);
 	}
 }
@@ -780,6 +780,6 @@ void WzText::render(Vector2i position, PIELIGHT colour, float rotation)
 		rotation = 180. - rotation;
 	}
 	glDisable(GL_CULL_FACE);
-	iV_DrawImageText(*texture, position, offsets, dimensions, rotation, REND_TEXT, colour);
+	iV_DrawImageText(*texture, position, offsets, dimensions, rotation, colour);
 	glEnable(GL_CULL_FACE);
 }

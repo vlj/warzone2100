@@ -1087,7 +1087,6 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 {
 	const auto &program = pie_ActivateShader(SHADER_TERRAIN_DEPTH, ModelViewProjection, paramsXLight, paramsYLight, 1, glm::mat4(), glm::mat4());
 	pie_SetTexturePage(TEXPAGE_NONE);
-	pie_SetRendMode(REND_OPAQUE);
 
 	// we only draw in the depth buffer of using fog of war, as the clear color is black then
 	if (!pie_GetFogStatus())
@@ -1101,11 +1100,9 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 	glPolygonOffset(0.1f, 1.0f);
 
 	// bind the vertex buffer
-	glEnableVertexAttribArray(program.locVertex);
+	gfx_api::TerrainDepth::get().bind();
+	gfx_api::TerrainDepth::get().bind_vertex_buffers(geometryVBO);
 	geometryIndexVBO->bind();
-	geometryVBO->bind();
-
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
 
 	for (int x = 0; x < xSectors; x++)
 	{
@@ -1149,22 +1146,11 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 	const auto &program = pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, glm::vec4(), glm::vec4(), paramsXLight, paramsYLight, 0, 1,
 		glm::mat4(), textureMatrix, renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
 
-	// additive blending
-	pie_SetRendMode(REND_ADDITIVE);
-
-	// only draw colors
-	glDepthMask(GL_FALSE);
-
 	textureIndexVBO->bind();
 
 	// load the vertex (geometry) buffer
-	geometryVBO->bind();
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
-
-	glEnableVertexAttribArray(program.locColor);
-	textureVBO->bind();
-
+	gfx_api::TerrainLayer::get().bind();
+	gfx_api::TerrainLayer::get().bind_vertex_buffers(geometryVBO, textureVBO);
 	ASSERT_OR_RETURN(, psGroundTypes, "Ground type was not set, no textures will be seen.");
 
 	// draw each layer separately
@@ -1182,7 +1168,7 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		// load the color buffer
-		glVertexAttribPointer(program.locColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PIELIGHT), BUFFER_OFFSET(sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer));
+		gfx_api::context::get().bind_vertex_buffers({ { gfx_api::vertex_buffer_input{gfx_api::color, gfx_api::vertex_attribute_type::u8x4_norm, sizeof(PIELIGHT) , sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer }} }, { textureVBO });
 
 		for (int x = 0; x < xSectors; x++)
 		{
@@ -1223,16 +1209,9 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 	// select the terrain texture page
 	pie_SetTexturePage(terrainPage);
 
-	// use the alpha to blend
-	pie_SetRendMode(REND_ALPHA);
+	gfx_api::TerrainDecals::get().bind();
+	gfx_api::TerrainDecals::get().bind_vertex_buffers(decalVBO);
 
-	// and the texture coordinates buffer
-	glEnableVertexAttribArray(program.locVertex);
-	decalVBO->bind();
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(DecalVertex), BUFFER_OFFSET(0));
-
-	glEnableVertexAttribArray(program.locTexCoord);
-	glVertexAttribPointer(program.locTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(DecalVertex), BUFFER_OFFSET(12));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	int size = 0;
@@ -1340,27 +1319,20 @@ void drawWater(const glm::mat4 &viewMatrix)
 	const auto &program = pie_ActivateShader(SHADER_WATER, viewMatrix, paramsX, paramsY, paramsX2, paramsY2, 0, 1,
 		glm::translate(waterOffset, 0.f, 0.f), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd);
 
-	glDepthMask(GL_FALSE);
-
 	// first texture unit
 	pie_SetTexturePage(iV_GetTexture("page-80-water-1.png"));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	// multiplicative blending
-	pie_SetRendMode(REND_MULTIPLICATIVE);
+	gfx_api::WaterPSO::get().bind();
+	gfx_api::WaterPSO::get().bind_vertex_buffers(waterVBO);
+	waterIndexVBO->bind();
 
 	// second texture unit
 	glActiveTexture(GL_TEXTURE1);
 	pie_Texture(iV_GetTexture("page-81-water-2.png")).bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// bind the vertex buffer
-	waterIndexVBO->bind();
-	waterVBO->bind();
-	glEnableVertexAttribArray(program.locVertex);
-	glVertexAttribPointer(program.locVertex, 3, GL_FLOAT, GL_FALSE, sizeof(RenderVertex), BUFFER_OFFSET(0));
 
 	for (x = 0; x < xSectors; x++)
 	{

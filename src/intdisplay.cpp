@@ -603,7 +603,6 @@ void intDisplayPowerBar(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	int x0 = xOffset + BarGraph->x();
 	int y0 = yOffset + BarGraph->y();
 
-	pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_ON);
 	pie_SetFogStatus(false);
 
 	iV_DrawImage(IntImages, IMAGE_PBAR_TOP, x0, y0);
@@ -1536,8 +1535,6 @@ void IntFancyButton::displayIMD(Image image, ImdObject imdObject, int xOffset, i
 			iV_DrawImage(image, ButXPos + ox, ButYPos + oy);
 		}
 
-		pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
-
 		/* all non droid buttons */
 		if (IMDType == IMDTYPE_COMPONENT)
 		{
@@ -1563,8 +1560,6 @@ void IntFancyButton::displayIMD(Image image, ImdObject imdObject, int xOffset, i
 		{
 			displayIMDButton((iIMDShape *)Object, &model.rotation, &model.position, model.scale);
 		}
-
-		pie_SetDepthBufferStatus(DEPTH_CMP_ALWAYS_WRT_ON);
 	}
 }
 

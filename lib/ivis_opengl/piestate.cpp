@@ -75,11 +75,7 @@ void pie_SetDefaultStates()//Sets all states
 	black.byte.a = 255;
 	pie_SetFogColour(black);
 
-	//depth Buffer on
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
-
 	rendStates.rendMode = REND_ALPHA;	// to force reset to REND_OPAQUE
-	pie_SetRendMode(REND_OPAQUE);
 }
 
 //***************************************************************************
@@ -225,6 +221,7 @@ SHADER_MODE pie_LoadShader(const char *programName, const char *vertexPath, cons
 	glBindAttribLocation(program.program, 0, "vertex");
 	glBindAttribLocation(program.program, 1, "vertexTexCoord");
 	glBindAttribLocation(program.program, 2, "vertexColor");
+	glBindAttribLocation(program.program, 3, "vertexNormal");
 	ASSERT_OR_RETURN(SHADER_NONE, program.program, "Could not create shader program!");
 
 	*buffer = (char *)"";
@@ -427,10 +424,10 @@ bool pie_LoadShaders()
 	pie_internal::currentShaderMode = SHADER_NONE;
 
 	GLbyte rect[] {
-		0, 1, 0, 1,
-		0, 0, 0, 1,
-		1, 1, 0, 1,
-		1, 0, 0, 1
+		0, 255, 0, 255,
+		0, 0, 0, 255,
+		255, 255, 0, 255,
+		255, 0, 0, 255
 	};
 	if (pie_internal::rectBuffer)
 		delete pie_internal::rectBuffer;
@@ -555,43 +552,6 @@ pie_internal::SHADER_PROGRAM &pie_ActivateShaderDeprecated(SHADER_MODE shaderMod
 	return program;
 }
 
-void pie_SetDepthBufferStatus(DEPTH_MODE depthMode)
-{
-	switch (depthMode)
-	{
-	case DEPTH_CMP_LEQ_WRT_ON:
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glDepthMask(GL_TRUE);
-		break;
-
-	case DEPTH_CMP_ALWAYS_WRT_ON:
-		glDisable(GL_DEPTH_TEST);
-		glDepthMask(GL_TRUE);
-		break;
-
-	case DEPTH_CMP_ALWAYS_WRT_OFF:
-		glDisable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
-		break;
-	}
-}
-
-/// Set the depth (z) offset
-/// Negative values are closer to the screen
-void pie_SetDepthOffset(float offset)
-{
-	if (offset == 0.0f)
-	{
-		glDisable(GL_POLYGON_OFFSET_FILL);
-	}
-	else
-	{
-		glPolygonOffset(offset, offset);
-		glEnable(GL_POLYGON_OFFSET_FILL);
-	}
-}
-
 /// Set the OpenGL fog start and end
 void pie_UpdateFogDistance(float begin, float end)
 {
@@ -633,50 +593,6 @@ void pie_SetTexturePage(SDWORD num)
 		}
 		rendStates.texPage = num;
 	}
-}
-
-void pie_SetRendMode(REND_MODE rendMode)
-{
-	if (rendMode != rendStates.rendMode)
-	{
-		rendStates.rendMode = rendMode;
-		switch (rendMode)
-		{
-		case REND_OPAQUE:
-			glDisable(GL_BLEND);
-			break;
-
-		case REND_ALPHA:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-
-		case REND_ADDITIVE:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-			break;
-
-		case REND_MULTIPLICATIVE:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-			break;
-
-		case REND_PREMULTIPLIED:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-
-		case REND_TEXT:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA /* Should be GL_ONE_MINUS_SRC1_COLOR, if supported. Also, gl_FragData[1] then needs to be set in text.frag. */);
-			break;
-
-		default:
-			ASSERT(false, "Bad render state");
-			break;
-		}
-	}
-	return;
 }
 
 RENDER_STATE getCurrentRenderState()

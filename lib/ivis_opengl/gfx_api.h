@@ -190,7 +190,7 @@ namespace gfx_api
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>
 		>>;
 	using gfx_tc = vertex_buffer_description<vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::float2, 0, 0>>;
-	using gfx_colour = vertex_buffer_description<vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>;
+	using gfx_colour = vertex_buffer_description<vertex_attribute_description<color, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>;
 	using gfx_vtx2 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float2, 0, 0>>;
 	using gfx_vtx3 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>;
 
@@ -200,7 +200,7 @@ namespace gfx_api
 	using BackDropPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_tc>;
 	using SkyboxPSO = GFX<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, gfx_vtx3, gfx_tc>;
 	using RadarPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_tc>;
-	using RadarViewPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_colour>;
+	using RadarViewPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_colour>;
 
 	using DrawImageTextPSO = typename gfx_api::pipeline_state_helper<REND_TEXT, DEPTH_CMP_ALWAYS_WRT_OFF,
 		std::tuple<

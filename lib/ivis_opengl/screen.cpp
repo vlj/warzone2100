@@ -507,7 +507,6 @@ void screen_Display()
 			iV_DrawText(text, x, y, font_large);
 		}
 	}
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 }
 
 //******************************************************************

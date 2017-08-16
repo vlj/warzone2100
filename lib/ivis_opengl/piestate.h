@@ -68,7 +68,6 @@ void rendStatesRendModeHack();  // Sets rendStates.rendMode = REND_ALPHA; (Added
  */
 /***************************************************************************/
 void pie_SetDefaultStates();//Sets all states
-void pie_SetDepthBufferStatus(DEPTH_MODE depthMode);
 void pie_SetDepthOffset(float offset);
 //fog available
 void pie_EnableFog(bool val);

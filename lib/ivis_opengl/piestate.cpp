@@ -75,9 +75,6 @@ void pie_SetDefaultStates()//Sets all states
 	black.byte.a = 255;
 	pie_SetFogColour(black);
 
-	//depth Buffer on
-	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
-
 	rendStates.rendMode = REND_ALPHA;	// to force reset to REND_OPAQUE
 }
 

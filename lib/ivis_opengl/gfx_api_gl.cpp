@@ -153,12 +153,16 @@ struct gl_pipeline_state_object : public gfx_api::pipeline_state_object
 
 		switch (desc.depth_mode)
 		{
+		case DEPTH_CMP_LEQ_WRT_OFF:
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+			glDepthMask(GL_FALSE);
+			break;
 		case DEPTH_CMP_LEQ_WRT_ON:
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
 			glDepthMask(GL_TRUE);
 			break;
-
 		case DEPTH_CMP_ALWAYS_WRT_ON:
 			glDisable(GL_DEPTH_TEST);
 			glDepthMask(GL_TRUE);

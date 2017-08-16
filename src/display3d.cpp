@@ -1037,7 +1037,6 @@ static void drawTiles(iView *player)
 
 	// and prepare for rendering the models
 	wzPerfBegin(PERF_MODEL_INIT, "Draw 3D scene - model init");
-	pie_SetRendMode(REND_OPAQUE);
 
 	/* ---------------------------------------------------------------- */
 	/* Now display all the static objects                               */

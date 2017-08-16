@@ -81,7 +81,6 @@ PIELIGHT pie_GetFogColour() WZ_DECL_PURE;
 void pie_UpdateFogDistance(float begin, float end);
 //render states
 void pie_SetTexturePage(SDWORD num);
-void pie_SetRendMode(REND_MODE rendMode);
 RENDER_STATE getCurrentRenderState();
 
 int pie_GetMaxAntialiasing();

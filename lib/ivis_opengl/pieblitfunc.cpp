@@ -414,8 +414,6 @@ void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width
 	assertValidImage(ImageFile, ID);
 	const ImageDef *Image = &ImageFile->imageDefs[ID];
 
-	pie_SetRendMode(REND_OPAQUE);
-
 	PIERECT dest;
 	Vector2i pieImage = makePieImage(ImageFile, ID, &dest, x, y);
 
@@ -440,8 +438,6 @@ void iV_DrawImageRepeatY(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Heigh
 {
 	assertValidImage(ImageFile, ID);
 	const ImageDef *Image = &ImageFile->imageDefs[ID];
-
-	pie_SetRendMode(REND_OPAQUE);
 
 	PIERECT dest;
 	Vector2i pieImage = makePieImage(ImageFile, ID, &dest, x, y);

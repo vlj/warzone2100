@@ -79,7 +79,6 @@ void pie_SetDefaultStates()//Sets all states
 	pie_SetDepthBufferStatus(DEPTH_CMP_LEQ_WRT_ON);
 
 	rendStates.rendMode = REND_ALPHA;	// to force reset to REND_OPAQUE
-	pie_SetRendMode(REND_OPAQUE);
 }
 
 //***************************************************************************
@@ -634,50 +633,6 @@ void pie_SetTexturePage(SDWORD num)
 		}
 		rendStates.texPage = num;
 	}
-}
-
-void pie_SetRendMode(REND_MODE rendMode)
-{
-	if (rendMode != rendStates.rendMode)
-	{
-		rendStates.rendMode = rendMode;
-		switch (rendMode)
-		{
-		case REND_OPAQUE:
-			glDisable(GL_BLEND);
-			break;
-
-		case REND_ALPHA:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-
-		case REND_ADDITIVE:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-			break;
-
-		case REND_MULTIPLICATIVE:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-			break;
-
-		case REND_PREMULTIPLIED:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-
-		case REND_TEXT:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA /* Should be GL_ONE_MINUS_SRC1_COLOR, if supported. Also, gl_FragData[1] then needs to be set in text.frag. */);
-			break;
-
-		default:
-			ASSERT(false, "Bad render state");
-			break;
-		}
-	}
-	return;
 }
 
 RENDER_STATE getCurrentRenderState()

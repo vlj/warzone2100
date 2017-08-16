@@ -491,7 +491,6 @@ static void pie_DrawShadows()
 	grey.byte = { 0, 0, 0, 128 };
 	pie_BoxFill_alpha(0, 0, width, height, grey);
 
-	pie_SetRendMode(REND_OPAQUE);
 	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);

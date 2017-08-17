@@ -282,7 +282,7 @@ struct gl_context : public gfx_api::context
 
 	virtual void draw_elements(const size_t &count, const gfx_api::primitive_type &primitive) override
 	{
-		glDrawElements(to_gl(primitive), 0, GL_UNSIGNED_SHORT, nullptr);
+		glDrawElements(to_gl(primitive), count, GL_UNSIGNED_SHORT, nullptr);
 	}
 };
 

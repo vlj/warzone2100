@@ -43,6 +43,7 @@
 #include "lib/ivis_opengl/screen.h"
 #include "lib/ivis_opengl/piematrix.h"
 #include <glm/gtx/transform.hpp>
+#include <tbb/tbb.h>
 
 #include "terrain.h"
 #include "map.h"
@@ -1058,29 +1059,33 @@ static void updateLightMap()
 
 static void cullTerrain()
 {
-	for (int x = 0; x < xSectors; x++)
-	{
-		for (int y = 0; y < ySectors; y++)
+	tbb::parallel_for(tbb::blocked_range2d<size_t>(0, xSectors, 0, ySectors),
+		[&](const tbb::blocked_range2d<size_t>& range)
 		{
-			float xPos = world_coord(x * sectorSize + sectorSize / 2);
-			float yPos = world_coord(y * sectorSize + sectorSize / 2);
-			float distance = pow(player.p.x - xPos, 2) + pow(player.p.z - yPos, 2);
-
-			if (distance > pow((double)world_coord(terrainDistance), 2))
+			for (auto&& x = range.rows().begin(); x!= range.rows().end(); ++x)
 			{
-				sectors[x * ySectors + y].draw = false;
-			}
-			else
-			{
-				sectors[x * ySectors + y].draw = true;
-				if (sectors[x * ySectors + y].dirty)
+				for (auto&& y = range.cols().begin(); y != range.cols().end(); ++y)
 				{
-					updateSectorGeometry(x, y);
-					sectors[x * ySectors + y].dirty = false;
+					float xPos = world_coord(x * sectorSize + sectorSize / 2);
+					float yPos = world_coord(y * sectorSize + sectorSize / 2);
+					float distance = pow(player.p.x - xPos, 2) + pow(player.p.z - yPos, 2);
+
+					if (distance > pow((double)world_coord(terrainDistance), 2))
+					{
+						sectors[x * ySectors + y].draw = false;
+					}
+					else
+					{
+						sectors[x * ySectors + y].draw = true;
+						if (sectors[x * ySectors + y].dirty)
+						{
+							updateSectorGeometry(x, y);
+							sectors[x * ySectors + y].dirty = false;
+						}
+					}
 				}
 			}
-		}
-	}
+		});
 }
 
 static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight)

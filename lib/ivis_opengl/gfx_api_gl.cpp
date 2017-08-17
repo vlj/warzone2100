@@ -37,6 +37,24 @@ static GLenum to_gl(const gfx_api::buffer::usage& usage)
 	return GL_INVALID_ENUM;
 }
 
+static GLenum to_gl(const gfx_api::primitive_type& primitive)
+{
+	switch (primitive)
+	{
+	case gfx_api::primitive_type::lines:
+		return GL_LINES;
+	case gfx_api::primitive_type::triangles:
+		return GL_TRIANGLES;
+	case gfx_api::primitive_type::triangle_fan:
+		return GL_TRIANGLE_FAN;
+	case gfx_api::primitive_type::triangle_strip:
+		return GL_TRIANGLE_STRIP;
+	default:
+		debug(LOG_FATAL, "Unrecognised primitive type");
+	}
+	return GL_INVALID_ENUM;
+}
+
 struct gl_texture : public gfx_api::texture
 {
 private:
@@ -255,6 +273,16 @@ struct gl_context : public gfx_api::context
 				glVertexAttribPointer(attribute.id, get_size(attribute.type), get_type(attribute.type), get_normalisation(attribute.type), attribute.stride, reinterpret_cast<void*>(attribute.offset));
 			}
 		}
+	}
+
+	virtual void draw(const size_t &count, const gfx_api::primitive_type &primitive) override
+	{
+		glDrawArrays(to_gl(primitive), 0, count);
+	}
+
+	virtual void draw_elements(const size_t &count, const gfx_api::primitive_type &primitive) override
+	{
+		glDrawElements(to_gl(primitive), 0, GL_UNSIGNED_SHORT, nullptr);
 	}
 };
 

@@ -175,7 +175,7 @@ void iV_Line(int x0, int y0, int x1, int y1, PIELIGHT colour)
 	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y0), glm::vec2(x1, y1), color, mat);
 	gfx_api::LinePSO::get().bind();
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
-	glDrawArrays(GL_LINES, 0, 2);
+	gfx_api::LinePSO::get().draw(2);
 	pie_DeactivateShader();
 }
 
@@ -194,7 +194,7 @@ void iV_Lines(const std::vector<glm::ivec4> &lines, PIELIGHT colour)
 	for (const auto &line : lines)
 	{
 		pie_ActivateShader(SHADER_LINE, glm::vec2(line.x, line.y), glm::vec2(line.z, line.w), color, mat);
-		glDrawArrays(GL_LINES, 0, 2);
+		gfx_api::LinePSO::get().draw(2);
 	}
 	pie_DeactivateShader();
 }
@@ -217,7 +217,7 @@ static void pie_DrawRect(float x0, float y0, float x1, float y1, PIELIGHT colour
 		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f));
 	PSO::get().bind();
 	PSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	PSO::get().draw(4);
 	pie_DeactivateShader();
 }
 
@@ -243,9 +243,9 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 	gfx_api::LinePSO::get().bind();
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y1), glm::vec2(x0, y0), firstColor, mat);
-	glDrawArrays(GL_LINES, 0, 2);
+	gfx_api::LinePSO::get().draw(2);
 	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y0), glm::vec2(x1, y0), firstColor, mat);
-	glDrawArrays(GL_LINES, 0, 2);
+	gfx_api::LinePSO::get().draw(2);
 
 	const glm::vec4 secondColor(
 		second.vector[0] / 255.f,
@@ -254,9 +254,9 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 		second.vector[3] / 255.f
 	);
 	pie_ActivateShader(SHADER_LINE, glm::vec2(x1, y0), glm::vec2(x1, y1), secondColor, mat);
-	glDrawArrays(GL_LINES, 0, 2);
+	gfx_api::LinePSO::get().draw(2);
 	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y1), glm::vec2(x1, y1), secondColor, mat);
-	glDrawArrays(GL_LINES, 0, 2);
+	gfx_api::LinePSO::get().draw(2);
 	pie_DeactivateShader();
 }
 
@@ -310,7 +310,7 @@ static void iv_DrawImageImpl(Vector2i offset, Vector2i size, Vector2f TextureUV,
 		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f), 0);
 	PSO::get().bind();
 	PSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	PSO::get().draw(4);
 	pie_DeactivateShader();
 }
 

@@ -97,7 +97,7 @@ void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, c
 	buffer->upload(0, 3 * sizeof(Vector3f), vrt.data());
 	gfx_api::TransColouredTrianglePSO::get().bind();
 	gfx_api::TransColouredTrianglePSO::get().bind_vertex_buffers(buffer);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+	gfx_api::TransColouredTrianglePSO::get().draw(3);
 	glDisableVertexAttribArray(program.locVertex);
 }
 

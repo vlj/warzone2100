@@ -40,6 +40,14 @@ namespace gfx_api
 
 	};
 
+	enum class primitive_type
+	{
+		lines,
+		triangles,
+		triangle_strip,
+		triangle_fan,
+	};
+
 	struct state_description
 	{
 		const REND_MODE blend_state;
@@ -82,6 +90,8 @@ namespace gfx_api
 		virtual buffer* create_buffer(const enum class buffer::usage&, const size_t& width) = 0;
 		virtual pipeline_state_object* build_pipeline(const state_description&) = 0;
 		virtual void bind_vertex_buffers(const std::vector<std::vector<vertex_buffer_input>>& attribute_descriptions, const std::vector<buffer*>& vertex_buffers) = 0;
+		virtual void draw(const size_t&, const primitive_type&) = 0;
+		virtual void draw_elements(const size_t&, const primitive_type&) = 0;
 		static context& get();
 	};
 
@@ -108,12 +118,12 @@ namespace gfx_api
 		}
 	};
 
-	template<REND_MODE render_mode, DEPTH_MODE depth_mode, typename vertex_buffer_inputs>
+	template<REND_MODE render_mode, DEPTH_MODE depth_mode, primitive_type primitive, typename vertex_buffer_inputs>
 	struct pipeline_state_helper
 	{
-		static pipeline_state_helper<render_mode, depth_mode, vertex_buffer_inputs>& get()
+		static pipeline_state_helper<render_mode, depth_mode, primitive, vertex_buffer_inputs>& get()
 		{
-			static pipeline_state_helper<render_mode, depth_mode, vertex_buffer_inputs> object;
+			static pipeline_state_helper<render_mode, depth_mode, primitive, vertex_buffer_inputs> object;
 			return object;
 		}
 
@@ -127,6 +137,16 @@ namespace gfx_api
 		{
 			static_assert(sizeof...(args) == std::tuple_size<vertex_buffer_inputs>::value, "Wrong number of vertex buffer");
 			gfx_api::context::get().bind_vertex_buffers(untuple(vertex_buffer_inputs{}), { args... });
+		}
+
+		void draw(const size_t& count)
+		{
+			context::get().draw(count, primitive);
+		}
+
+		void draw_elements(const size_t& count)
+		{
+			context::get().draw_elements(count, primitive);
 		}
 	private:
 		pipeline_state_object* pso;
@@ -148,7 +168,7 @@ namespace gfx_api
 	constexpr size_t normal = 3;
 
 	template<REND_MODE render_mode>
-	using Draw3DShape = typename gfx_api::pipeline_state_helper<render_mode, DEPTH_CMP_LEQ_WRT_ON,
+	using Draw3DShape = typename gfx_api::pipeline_state_helper<render_mode, DEPTH_CMP_LEQ_WRT_ON, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>,
 			vertex_buffer_description<vertex_attribute_description<normal, gfx_api::vertex_attribute_type::float3, 0, 0>>,
@@ -161,31 +181,31 @@ namespace gfx_api
 	using Draw3DShapePremul = Draw3DShape<REND_PREMULTIPLIED>;
 	using Draw3DShapeAdditive = Draw3DShape<REND_ADDITIVE>;
 
-	using TransColouredTrianglePSO = typename gfx_api::pipeline_state_helper<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_ON,
+	using TransColouredTrianglePSO = typename gfx_api::pipeline_state_helper<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_ON, primitive_type::triangle_fan,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>
 		>>;
-	using DrawStencilShadow = typename gfx_api::pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF,
+	using DrawStencilShadow = typename gfx_api::pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>
 		>>;
-	using TerrainDepth = typename gfx_api::pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_ON,
+	using TerrainDepth = typename gfx_api::pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_ON, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>
 		>>;
-	using TerrainLayer = typename gfx_api::pipeline_state_helper<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_OFF,
+	using TerrainLayer = typename gfx_api::pipeline_state_helper<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>,
 			vertex_buffer_description<vertex_attribute_description<color, gfx_api::vertex_attribute_type::u8x4_norm, sizeof(unsigned), 0>>
 		>>;
-	using TerrainDecals = typename gfx_api::pipeline_state_helper<REND_ALPHA, DEPTH_CMP_LEQ_WRT_OFF,
+	using TerrainDecals = typename gfx_api::pipeline_state_helper<REND_ALPHA, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<
 				vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3) + sizeof(glm::vec2), 0>,
 				vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::float2, sizeof(glm::vec3) + sizeof(glm::vec2), sizeof(glm::vec3)>
 			>
 		>>;
-	using WaterPSO = typename gfx_api::pipeline_state_helper<REND_MULTIPLICATIVE, DEPTH_CMP_LEQ_WRT_OFF,
+	using WaterPSO = typename gfx_api::pipeline_state_helper<REND_MULTIPLICATIVE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>
 		>>;
@@ -194,40 +214,40 @@ namespace gfx_api
 	using gfx_vtx2 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float2, 0, 0>>;
 	using gfx_vtx3 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>;
 
-	template<REND_MODE rm, DEPTH_MODE dm, typename VTX, typename Second>
-	using GFX = typename gfx_api::pipeline_state_helper<rm, dm, std::tuple<VTX, Second>>;
-	using VideoPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_tc>;
-	using BackDropPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_tc>;
-	using SkyboxPSO = GFX<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, gfx_vtx3, gfx_tc>;
-	using RadarPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_tc>;
-	using RadarViewPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, gfx_vtx2, gfx_colour>;
+	template<REND_MODE rm, DEPTH_MODE dm, primitive_type primitive, typename VTX, typename Second>
+	using GFX = typename gfx_api::pipeline_state_helper<rm, dm, primitive, std::tuple<VTX, Second>>;
+	using VideoPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
+	using BackDropPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
+	using SkyboxPSO = GFX<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles, gfx_vtx3, gfx_tc>;
+	using RadarPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
+	using RadarViewPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_colour>;
 
-	using DrawImageTextPSO = typename gfx_api::pipeline_state_helper<REND_TEXT, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using DrawImageTextPSO = typename gfx_api::pipeline_state_helper<REND_TEXT, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
 
-	using ShadowBox2DPSO = typename pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using ShadowBox2DPSO = typename pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
-	using UniTransBoxPSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using UniTransBoxPSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
-	using DrawImagePSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using DrawImagePSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
-	using BoxFillPSO = typename pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using BoxFillPSO = typename pipeline_state_helper<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
-	using BoxFillAlphaPSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using BoxFillAlphaPSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;
-	using LinePSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF,
+	using LinePSO = typename pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::lines,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
 		>>;

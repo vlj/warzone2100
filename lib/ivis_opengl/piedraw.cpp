@@ -137,10 +137,9 @@ static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour, const glm::m
 	pie_SetTexturePage(shape->texpage);
 	gfx_api::Draw3DButtonPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
 	shape->buffers[VBO_INDEX]->bind();
-	glDrawElements(GL_TRIANGLES, shape->npolys * 3, GL_UNSIGNED_SHORT, nullptr);
+	gfx_api::Draw3DButtonPSO::get().draw_elements(shape->npolys * 3);
 	polyCount += shape->npolys;
 	pie_DeactivateShader();
-	gfx_api::pipeline_state_helper<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_ON, std::tuple<>>::get().bind();
 }
 
 static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour, PIELIGHT teamcolour, int pieFlag, int pieFlagData, glm::mat4 const &matrix)
@@ -348,7 +347,7 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
 	gfx_api::DrawStencilShadow::get().bind();
 	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
-	glDrawArrays(GL_TRIANGLES, 0, edge_count * 2 * 3);
+	gfx_api::DrawStencilShadow::get().draw(edge_count * 2 * 3);
 	glDisableVertexAttribArray(program.locVertex);
 	pie_DeactivateShader();
 }

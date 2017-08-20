@@ -25,7 +25,6 @@
 /***************************************************************************/
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
 #include "lib/gamelib/gtime.h"
 #include <time.h>
 
@@ -75,7 +74,7 @@ GFX::GFX(GFXTYPE type, int coordsPerVertex) : mType(type), mCoordsPerVertex(coor
 {
 }
 
-void GFX::loadTexture(const char *filename, GLenum filter)
+void GFX::loadTexture(const char *filename)
 {
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
 	const char *extension = strrchr(filename, '.'); // determine the filetype
@@ -87,24 +86,19 @@ void GFX::loadTexture(const char *filename, GLenum filter)
 	}
 	if (iV_loadImage_PNG(filename, &image))
 	{
-		makeTexture(image.width, image.height, filter, iV_getPixelFormat(&image), image.bmp);
+		makeTexture(image.width, image.height, iV_getPixelFormat(&image), image.bmp);
 		iV_unloadImage(&image);
 	}
 }
 
-void GFX::makeTexture(int width, int height, GLenum filter, const gfx_api::pixel_format& format, const GLvoid *image)
+void GFX::makeTexture(int width, int height, const gfx_api::pixel_format& format, const void *image)
 {
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
-	pie_SetTexturePage(TEXPAGE_EXTERN);
 	if (mTexture)
 		delete mTexture;
 	mTexture = gfx_api::context::get().create_texture(width, height, format);
 	if (image != nullptr)
 		mTexture->upload(0u, 0u, 0u, width, height, format, image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	mWidth = width;
 	mHeight = height;
 	mFormat = format;
@@ -121,32 +115,30 @@ void GFX::updateTexture(const void *image, int width, int height)
 	{
 		height = mHeight;
 	}
-	pie_SetTexturePage(TEXPAGE_EXTERN);
 	mTexture->upload(0u, 0u, 0u, width, height, mFormat, image);
 }
 
-void GFX::buffers(int vertices, const GLvoid *vertBuf, const GLvoid *auxBuf)
+void GFX::buffers(int vertices, const void *vertBuf, const void *auxBuf)
 {
 	if (mBuffers[VBO_VERTEX])
 		delete mBuffers[VBO_VERTEX];
-	mBuffers[VBO_VERTEX] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * mCoordsPerVertex * sizeof(GLfloat));
-	mBuffers[VBO_VERTEX]->upload(0, vertices * mCoordsPerVertex * sizeof(GLfloat), vertBuf);
+	mBuffers[VBO_VERTEX] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * mCoordsPerVertex * sizeof(float));
+	mBuffers[VBO_VERTEX]->upload(0, vertices * mCoordsPerVertex * sizeof(float), vertBuf);
 	if (mType == GFX_TEXTURE)
 	{
 		if (mBuffers[VBO_TEXCOORD])
 			delete mBuffers[VBO_TEXCOORD];
-		mBuffers[VBO_TEXCOORD] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * 2 * sizeof(GLfloat));
-		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 2 * sizeof(GLfloat), auxBuf);
+		mBuffers[VBO_TEXCOORD] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * 2 * sizeof(float));
+		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 2 * sizeof(float), auxBuf);
 	}
 	else if (mType == GFX_COLOUR)
 	{
 		if (mBuffers[VBO_TEXCOORD])
 			delete mBuffers[VBO_TEXCOORD];
-		mBuffers[VBO_TEXCOORD] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * 4 * sizeof(GLbyte));
+		mBuffers[VBO_TEXCOORD] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, vertices * 4 * sizeof(char));
 		// reusing texture buffer for colours for now
-		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 4 * sizeof(GLbyte), auxBuf);
+		mBuffers[VBO_TEXCOORD]->upload(0, vertices * 4 * sizeof(char), auxBuf);
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	mSize = vertices;
 }
 
@@ -164,7 +156,6 @@ GFX::~GFX()
 
 void iV_Line(int x0, int y0, int x1, int y1, PIELIGHT colour)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	const glm::vec4 color(
 		colour.vector[0] / 255.f,
 		colour.vector[1] / 255.f,
@@ -172,16 +163,14 @@ void iV_Line(int x0, int y0, int x1, int y1, PIELIGHT colour)
 		colour.vector[3] / 255.f
 	);
 	const auto &mat = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f);
-	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y0), glm::vec2(x1, y1), color, mat);
 	gfx_api::LinePSO::get().bind();
+	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y0), glm::vec2(x1, y1), color, mat });
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	gfx_api::LinePSO::get().draw(2, 0);
-	pie_DeactivateShader();
 }
 
 void iV_Lines(const std::vector<glm::ivec4> &lines, PIELIGHT colour)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	const glm::vec4 color(
 		colour.vector[0] / 255.f,
 		colour.vector[1] / 255.f,
@@ -193,10 +182,9 @@ void iV_Lines(const std::vector<glm::ivec4> &lines, PIELIGHT colour)
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	for (const auto &line : lines)
 	{
-		pie_ActivateShader(SHADER_LINE, glm::vec2(line.x, line.y), glm::vec2(line.z, line.w), color, mat);
+		gfx_api::LinePSO::get().bind_constants({ glm::vec2(line.x, line.y), glm::vec2(line.z, line.w), color, mat });
 		gfx_api::LinePSO::get().draw(2, 0);
 	}
-	pie_DeactivateShader();
 }
 
 template<typename PSO>
@@ -213,17 +201,15 @@ static void pie_DrawRect(float x0, float y0, float x1, float y1, PIELIGHT colour
 	const auto& center = Vector2f(x0, y0);
 	const auto& mvp = defaultProjectionMatrix() * glm::translate(Vector3f(center, 0.f)) * glm::scale(x1 - x0, y1 - y0, 1.f);
 
-	pie_ActivateShader(SHADER_RECT, mvp,
-		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f));
 	PSO::get().bind();
+	PSO::get().bind_constants({ mvp,
+		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f) });
 	PSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	PSO::get().draw(4, 0);
-	pie_DeactivateShader();
 }
 
 void iV_ShadowBox(int x0, int y0, int x1, int y1, int pad, PIELIGHT first, PIELIGHT second, PIELIGHT fill)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_DrawRect<gfx_api::ShadowBox2DPSO>(x0 + pad, y0 + pad, x1 - pad, y1 - pad, fill);
 	iV_Box2(x0, y0, x1, y1, first, second);
 }
@@ -232,7 +218,6 @@ void iV_ShadowBox(int x0, int y0, int x1, int y1, int pad, PIELIGHT first, PIELI
 
 void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	const glm::mat4 mat = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f);
 	const glm::vec4 firstColor(
 		first.vector[0] / 255.f,
@@ -242,9 +227,9 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 	);
 	gfx_api::LinePSO::get().bind();
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
-	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y1), glm::vec2(x0, y0), firstColor, mat);
+	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y1), glm::vec2(x0, y0), firstColor, mat });
 	gfx_api::LinePSO::get().draw(2, 0);
-	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y0), glm::vec2(x1, y0), firstColor, mat);
+	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y0), glm::vec2(x1, y0), firstColor, mat });
 	gfx_api::LinePSO::get().draw(2, 0);
 
 	const glm::vec4 secondColor(
@@ -253,24 +238,21 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 		second.vector[2] / 255.f,
 		second.vector[3] / 255.f
 	);
-	pie_ActivateShader(SHADER_LINE, glm::vec2(x1, y0), glm::vec2(x1, y1), secondColor, mat);
+	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x1, y0), glm::vec2(x1, y1), secondColor, mat });
 	gfx_api::LinePSO::get().draw(2, 0);
-	pie_ActivateShader(SHADER_LINE, glm::vec2(x0, y1), glm::vec2(x1, y1), secondColor, mat);
+	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y1), glm::vec2(x1, y1), secondColor, mat });
 	gfx_api::LinePSO::get().draw(2, 0);
-	pie_DeactivateShader();
 }
 
 /***************************************************************************/
 
 void pie_BoxFill(int x0, int y0, int x1, int y1, PIELIGHT colour)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_DrawRect<gfx_api::BoxFillPSO>(x0, y0, x1, y1, colour);
 }
 
 void pie_BoxFill_alpha(int x0, int y0, int x1, int y1, PIELIGHT colour)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_DrawRect<gfx_api::BoxFillAlphaPSO>(x0, y0, x1, y1, colour);
 }
 
@@ -285,7 +267,6 @@ void iV_TransBoxFill(float x0, float y0, float x1, float y1)
 
 void pie_UniTransBoxFill(float x0, float y0, float x1, float y1, PIELIGHT light)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	pie_DrawRect<gfx_api::UniTransBoxPSO>(x0, y0, x1, y1, light);
 }
 
@@ -303,32 +284,27 @@ static void iv_DrawImageImpl(Vector2i offset, Vector2i size, Vector2f TextureUV,
 {
 	glm::mat4 transformMat = modelViewProjection * glm::translate(offset.x, offset.y, 0) * glm::scale(size.x, size.y, 1);
 
-	pie_ActivateShader(mode,
-		transformMat,
+	PSO::get().bind();
+	PSO::get().bind_constants({ transformMat,
 		Vector2f(TextureUV.x, TextureUV.y),
 		Vector2f(TextureSize.x, TextureSize.y),
-		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f), 0);
-	PSO::get().bind();
+		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f), 0 });
 	PSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	PSO::get().draw(4, 0);
-	pie_DeactivateShader();
 }
 
 void iV_DrawImageText(gfx_api::texture& TextureID, Vector2i Position, Vector2i offset, Vector2i size, float angle, PIELIGHT colour)
 {
-	pie_SetTexturePage(TEXPAGE_EXTERN);
-	TextureID.bind();
-
 	glm::mat4 mvp = defaultProjectionMatrix() * glm::translate(Position.x, Position.y, 0) * glm::rotate(angle, glm::vec3(0.f, 0.f, 1.f));
-
+	gfx_api::DrawImageTextPSO::get().bind_textures(&TextureID);
 	iv_DrawImageImpl<gfx_api::DrawImageTextPSO>(offset, size, Vector2f(0.f, 0.f), Vector2f(1.f, 1.f), colour, mvp, SHADER_TEXT);
 }
 
 static void pie_DrawImage(IMAGEFILE *imageFile, int id, Vector2i size, const PIERECT *dest, PIELIGHT colour, const glm::mat4 &modelViewProjection)
 {
 	ImageDef const &image2 = imageFile->imageDefs[id];
-	GLuint texPage = imageFile->pages[image2.TPageID].id;
-	GLfloat invTextureSize = 1.f / imageFile->pages[image2.TPageID].size;
+	uint32_t texPage = imageFile->pages[image2.TPageID].id;
+	float invTextureSize = 1.f / imageFile->pages[image2.TPageID].size;
 	float tu = image2.Tu * invTextureSize;
 	float tv = image2.Tv * invTextureSize;
 	float su = size.x * invTextureSize;
@@ -336,7 +312,7 @@ static void pie_DrawImage(IMAGEFILE *imageFile, int id, Vector2i size, const PIE
 
 	glm::mat4 mvp = modelViewProjection * glm::translate(dest->x, dest->y, 0);
 
-	pie_SetTexturePage(texPage);
+	gfx_api::DrawImagePSO::get().bind_textures(&pie_Texture(texPage));
 	iv_DrawImageImpl<gfx_api::DrawImagePSO>(Vector2i(0, 0), Vector2i(dest->w, dest->h), Vector2f(tu, tv), Vector2f(su, sv), colour, mvp);
 }
 
@@ -359,15 +335,15 @@ static Vector2i makePieImage(IMAGEFILE *imageFile, unsigned id, PIERECT *dest, i
 void iV_DrawImage2(const QString &filename, float x, float y, float width, float height)
 {
 	ImageDef *image = iV_GetImage(filename);
-	const GLfloat invTextureSize = image->invTextureSize;
+	const float invTextureSize = image->invTextureSize;
 	const int tu = image->Tu;
 	const int tv = image->Tv;
 	const int w = width > 0 ? width : image->Width;
 	const int h = height > 0 ? height : image->Height;
 	x += image->XOffset;
 	y += image->YOffset;
-	pie_SetTexturePage(image->textureId);
 	gfx_api::DrawImagePSO::get().bind();
+	gfx_api::DrawImagePSO::get().bind_textures(&pie_Texture(image->textureId));
 
 	glm::mat4 mvp = defaultProjectionMatrix() * glm::translate(x, y, 0);
 	iv_DrawImageImpl<gfx_api::DrawImagePSO>(Vector2i(0, 0), Vector2i(w, h),
@@ -472,11 +448,11 @@ bool pie_ShutdownRadar()
 	return true;
 }
 
-void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidth, int theight, bool filter)
+void pie_SetRadar(float x, float y, float width, float height, int twidth, int theight, bool filter)
 {
-	radarGfx->makeTexture(twidth, theight, filter ? GL_LINEAR : GL_NEAREST);
-	GLfloat texcoords[] = { 0.0f, 0.0f,  1.0f, 0.0f,  0.0f, 1.0f,  1.0f, 1.0f };
-	GLfloat vertices[] = { x, y,  x + width, y,  x, y + height,  x + width, y + height };
+	radarGfx->makeTexture(twidth, theight);
+	float texcoords[] = { 0.0f, 0.0f,  1.0f, 0.0f,  0.0f, 1.0f,  1.0f, 1.0f };
+	float vertices[] = { x, y,  x + width, y,  x, y + height,  x + width, y + height };
 	radarGfx->buffers(4, vertices, texcoords);
 }
 
@@ -489,6 +465,8 @@ void pie_DownLoadRadar(UDWORD *buffer)
 /** Display radar texture using the given height and width, depending on zoom level. */
 void pie_RenderRadar(const glm::mat4 &modelViewProjectionMatrix)
 {
+	gfx_api::RadarPSO::get().bind();
+	gfx_api::RadarPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
 	radarGfx->draw<gfx_api::RadarPSO>(modelViewProjectionMatrix);
 }
 

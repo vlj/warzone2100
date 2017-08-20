@@ -150,8 +150,8 @@ static int dropped = 0;
 // Screen dimensions
 #define NUM_VERTICES 4
 static GFX *videoGfx = nullptr;
-static GLfloat vertices[NUM_VERTICES][2];
-static GLfloat Scrnvidpos[3];
+static float vertices[NUM_VERTICES][2];
+static float Scrnvidpos[3];
 
 static SCANLINE_MODE use_scanlines;
 
@@ -257,8 +257,8 @@ static double getRelativeTime(void)
 	return ((getTimeNow() - basetime) * .001);
 }
 
-const GLfloat texture_width = 1024.0f;
-const GLfloat texture_height = 1024.0f;
+const float texture_width = 1024.0f;
+const float texture_height = 1024.0f;
 
 /** Allocates memory to hold the decoded video frame
  */
@@ -380,11 +380,11 @@ static void video_write(bool update)
 
 		videoGfx->updateTexture(RGBAframe, video_width, video_height * height_factor);
 	}
-
-	videoGfx->draw<gfx_api::VideoPSO>(
-		glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f) *
-		glm::translate(glm::vec3(Scrnvidpos[0], Scrnvidpos[1], Scrnvidpos[2]))
-	);
+	const auto& modelViewProjectionMatrix = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f) *
+		glm::translate(glm::vec3(Scrnvidpos[0], Scrnvidpos[1], Scrnvidpos[2]));
+	gfx_api::VideoPSO::get().bind();
+	gfx_api::VideoPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	videoGfx->draw<gfx_api::VideoPSO>(modelViewProjectionMatrix);
 }
 
 // FIXME: perhaps we should use wz's routine for audio?
@@ -697,14 +697,14 @@ bool seq_Play(const char *filename)
 		}
 
 		Allocate_videoFrame();
-		videoGfx->makeTexture(texture_width, texture_height, GL_LINEAR, gfx_api::pixel_format::rgba, blackframe);
+		videoGfx->makeTexture(texture_width, texture_height, gfx_api::pixel_format::rgba, blackframe);
 		free(blackframe);
 
 		// when using scanlines we need to double the height
 		const int height_factor = (use_scanlines ? 2 : 1);
-		const GLfloat vtwidth = (float)videodata.ti.frame_width / texture_width;
-		const GLfloat vtheight = (float)videodata.ti.frame_height * height_factor / texture_height;
-		GLfloat texcoords[NUM_VERTICES * 2] = { 0.0f, 0.0f, vtwidth, 0.0f, 0.0f, vtheight, vtwidth, vtheight };
+		const float vtwidth = (float)videodata.ti.frame_width / texture_width;
+		const float vtheight = (float)videodata.ti.frame_height * height_factor / texture_height;
+		float texcoords[NUM_VERTICES * 2] = { 0.0f, 0.0f, vtwidth, 0.0f, 0.0f, vtheight, vtwidth, vtheight };
 		videoGfx->buffers(NUM_VERTICES, vertices, texcoords);
 	}
 
@@ -953,7 +953,6 @@ void seq_Shutdown()
 	audioTime = 0;
 	sampletimeOffset = last_time = timer_expire = timer_started = 0;
 	basetime = -1;
-	pie_SetTexturePage(-1);
 	debug(LOG_VIDEO, " **** frames = %d dropped = %d ****", frames, dropped);
 }
 

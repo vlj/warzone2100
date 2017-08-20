@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
 #include "lib/ivis_opengl/ivisdef.h"
 #include "lib/ivis_opengl/imd.h"
 #include "lib/ivis_opengl/piefunc.h"
@@ -54,7 +53,7 @@
 static unsigned int pieCount = 0;
 static unsigned int polyCount = 0;
 static bool shadows = false;
-static GLfloat lighting0[LIGHT_MAX][4];
+static float lighting0[LIGHT_MAX][4];
 
 /*
  *	Source
@@ -62,7 +61,7 @@ static GLfloat lighting0[LIGHT_MAX][4];
 
 void pie_InitLighting()
 {
-	const GLfloat defaultLight[LIGHT_MAX][4] = {{0.0f, 0.0f, 0.0f, 1.0f},  {0.5f, 0.5f, 0.5f, 1.0f},  {0.8f, 0.8f, 0.8f, 1.0f},  {1.0f, 1.0f, 1.0f, 1.0f}};
+	const float defaultLight[LIGHT_MAX][4] = {{0.0f, 0.0f, 0.0f, 1.0f},  {0.5f, 0.5f, 0.5f, 1.0f},  {0.8f, 0.8f, 0.8f, 1.0f},  {1.0f, 1.0f, 1.0f, 1.0f}};
 	memcpy(lighting0, defaultLight, sizeof(lighting0));
 }
 
@@ -121,16 +120,70 @@ static std::vector<SHAPE> shapes;
 
 static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour, const glm::mat4 &matrix)
 {
+	auto* tcmask = shape->tcmaskpage != iV_TEX_INVALID ? &pie_Texture(shape->tcmaskpage) : nullptr;
+	auto* normalmap = shape->normalpage != iV_TEX_INVALID ? &pie_Texture(shape->normalpage) : nullptr;
+	auto* specularmap = shape->specularpage != iV_TEX_INVALID ? &pie_Texture(shape->specularpage) : nullptr;
+
 	const PIELIGHT colour = WZCOL_WHITE;
-	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(SHADER_BUTTON, shape, teamcolour, colour, matrix, pie_PerspectiveGet(),
-		glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4());
 	gfx_api::Draw3DButtonPSO::get().bind();
-	pie_SetTexturePage(shape->texpage);
+	gfx_api::constant_buffer_type<SHADER_BUTTON> cbuf{
+		pal_PIELIGHTtoVec4(colour), pal_PIELIGHTtoVec4(teamcolour), 0.f, tcmask ? 1 : 0, 0, 2, 3, 0, 0, 0.f, matrix, pie_PerspectiveGet() * matrix, glm::transpose(glm::inverse(matrix)),
+		glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4(), glm::vec4(), 0.f, 0.f, glm::vec4() };
+	gfx_api::Draw3DButtonPSO::get().bind_constants(cbuf);
+
+	gfx_api::Draw3DButtonPSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
 	gfx_api::Draw3DButtonPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
 	shape->buffers[VBO_INDEX]->bind();
 	gfx_api::Draw3DButtonPSO::get().draw_elements(shape->npolys * 3, 0);
 	polyCount += shape->npolys;
-	pie_DeactivateShader();
+}
+
+template<SHADER_MODE shader, typename AdditivePSO, typename AlphaPSO, typename PremultipliedPSO, typename OpaquePSO>
+static void draw3dShapeTemplated(const PIELIGHT &colour, const PIELIGHT &teamcolour, const float& stretch, const int& ecmState, const float& timestate, const glm::mat4 & matrix, glm::vec4 &sceneColor, glm::vec4 &ambient, glm::vec4 &diffuse, glm::vec4 &specular, const iIMDShape * shape, int pieFlag, int frame)
+{
+	auto* tcmask = shape->tcmaskpage != iV_TEX_INVALID ? &pie_Texture(shape->tcmaskpage) : nullptr;
+	auto* normalmap = shape->normalpage != iV_TEX_INVALID ? &pie_Texture(shape->normalpage) : nullptr;
+	auto* specularmap = shape->specularpage != iV_TEX_INVALID ? &pie_Texture(shape->specularpage) : nullptr;
+
+	gfx_api::constant_buffer_type<shader> cbuf{
+		pal_PIELIGHTtoVec4(colour), pal_PIELIGHTtoVec4(teamcolour), stretch, tcmask ? 1 : 0, 0, 2, 3, ecmState, !(pieFlag & pie_PREMULTIPLIED), timestate, matrix, pie_PerspectiveGet() * matrix, glm::transpose(glm::inverse(matrix)),
+		glm::vec4(currentSunPosition, 0.f), sceneColor, ambient, diffuse, specular, 0.f, 0.f, glm::vec4() };
+
+
+	/* Set tranlucency */
+	if (pieFlag & pie_ADDITIVE)
+	{
+		AdditivePSO::get().bind();
+		AdditivePSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		AdditivePSO::get().bind_constants(cbuf);
+		AdditivePSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
+		AdditivePSO::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else if (pieFlag & pie_TRANSLUCENT)
+	{
+		AlphaPSO::get().bind();
+		AlphaPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		AlphaPSO::get().bind_constants(cbuf);
+		AlphaPSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
+		AlphaPSO::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else if (pieFlag & pie_PREMULTIPLIED)
+	{
+		PremultipliedPSO::get().bind();
+		PremultipliedPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		PremultipliedPSO::get().bind_constants(cbuf);
+		PremultipliedPSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
+		PremultipliedPSO::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+	else
+	{
+		OpaquePSO::get().bind();
+		OpaquePSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
+		OpaquePSO::get().bind_constants(cbuf);
+		OpaquePSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
+		OpaquePSO::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+	}
+
 }
 
 static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour, PIELIGHT teamcolour, int pieFlag, int pieFlagData, glm::mat4 const &matrix)
@@ -175,47 +228,22 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	glm::vec4 specular(lighting0[LIGHT_SPECULAR][0], lighting0[LIGHT_SPECULAR][1], lighting0[LIGHT_SPECULAR][2], lighting0[LIGHT_SPECULAR][3]);
 
 	SHADER_MODE mode = shape->shaderProgram == SHADER_NONE ? light ? SHADER_COMPONENT : SHADER_NOLIGHT : shape->shaderProgram;
-	pie_internal::SHADER_PROGRAM &program = pie_ActivateShaderDeprecated(mode, shape, teamcolour, colour, matrix, pie_PerspectiveGet(),
-		glm::vec4(currentSunPosition, 0.f), sceneColor, ambient, diffuse, specular);
-
-	if (program.locations.size() >= 9)
-		glUniform1i(program.locations[8], (pieFlag & pie_PREMULTIPLIED) == 0);
-
-	pie_SetTexturePage(shape->texpage);
 
 	frame %= std::max<int>(1, shape->numFrames);
 	shape->buffers[VBO_INDEX]->bind();
 
-	/* Set tranlucency */
-	if (pieFlag & pie_ADDITIVE)
+	if (light)
 	{
-		gfx_api::Draw3DShapeAdditive::get().bind();
-		gfx_api::Draw3DShapeAdditive::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
-		gfx_api::Draw3DShapeAdditive::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
-	}
-	else if (pieFlag & pie_TRANSLUCENT)
-	{
-		gfx_api::Draw3DShapeAlpha::get().bind();
-		gfx_api::Draw3DShapeAlpha::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
-		gfx_api::Draw3DShapeAlpha::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
-	}
-	else if (pieFlag & pie_PREMULTIPLIED)
-	{
-		gfx_api::Draw3DShapePremul::get().bind();
-		gfx_api::Draw3DShapePremul::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
-		gfx_api::Draw3DShapePremul::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+		draw3dShapeTemplated<SHADER_COMPONENT, gfx_api::Draw3DShapeAdditive, gfx_api::Draw3DShapeAlpha, gfx_api::Draw3DShapePremul, gfx_api::Draw3DShapeOpaque>(colour, teamcolour, pie_GetShaderStretchDepth(), pie_GetShaderEcmEffect(), pie_GetShaderTime(), matrix, sceneColor, ambient, diffuse, specular, shape, pieFlag, frame);
 	}
 	else
 	{
-		gfx_api::Draw3DShapeOpaque::get().bind();
-		gfx_api::Draw3DShapeOpaque::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
-		gfx_api::Draw3DShapeOpaque::get().draw_elements(shape->npolys * 3, frame * shape->npolys * 3 * sizeof(uint16_t));
+		draw3dShapeTemplated<SHADER_NOLIGHT, gfx_api::Draw3DShapeNoLightAdditive, gfx_api::Draw3DShapeNoLightAlpha, gfx_api::Draw3DShapeNoLightPremul, gfx_api::Draw3DShapeNoLightOpaque>(colour, teamcolour, pie_GetShaderStretchDepth(), pie_GetShaderEcmEffect(), pie_GetShaderTime(), matrix, sceneColor, ambient, diffuse, specular, shape, pieFlag, frame);
 	}
 
 	polyCount += shape->npolys;
 
 	pie_SetShaderEcmEffect(false);
-	pie_DeactivateShader();
 }
 
 static inline bool edgeLessThan(EDGE const &e1, EDGE const &e2)
@@ -332,17 +360,15 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 	}
 
 	// draw the shadow volume
-	const auto &program = pie_ActivateShader(SHADER_GENERIC_COLOR, pie_PerspectiveGet() * modelViewMatrix, glm::vec4());
 	static gfx_api::buffer* buffer;
 	if (buffer)
 		delete buffer;
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, sizeof(Vector3f) * vertexes.size());
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
 	gfx_api::DrawStencilShadow::get().bind();
+	gfx_api::DrawStencilShadow::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, glm::vec4() });
 	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
 	gfx_api::DrawStencilShadow::get().draw(edge_count * 2 * 3, 0);
-	glDisableVertexAttribArray(program.locVertex);
-	pie_DeactivateShader();
 }
 
 void pie_CleanUp()
@@ -435,8 +461,6 @@ static void pie_DrawShadows()
 	const float width = pie_GetVideoBufferWidth();
 	const float height = pie_GetVideoBufferHeight();
 
-	pie_SetTexturePage(TEXPAGE_NONE);
-
 	pie_ShadowDrawLoop();
 
 	PIELIGHT grey;
@@ -471,7 +495,6 @@ void pie_RemainingPasses()
 		pie_Draw3DShape2(shape.shape, shape.frame, shape.colour, shape.teamcolour, shape.flag, shape.flag_data, shape.matrix);
 	}
 	pie_SetShaderStretchDepth(0);
-	pie_DeactivateShader();
 	tshapes.clear();
 	shapes.clear();
 	GL_DEBUG("Remaining passes - done");

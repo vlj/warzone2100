@@ -27,7 +27,6 @@
 #include <QtCore/QFile>
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
 #include "lib/exceptionhandler/dumpinfo.h"
 #include "lib/ivis_opengl/png_util.h"
 #include "lib/ivis_opengl/tex.h"
@@ -474,7 +473,10 @@ bool screen_GetBackDrop()
 void screen_Display()
 {
 	// Draw backdrop
-	backdropGfx->draw<gfx_api::BackDropPSO>(glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f));
+	const auto& modelViewProjectionMatrix = glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f);
+	gfx_api::BackDropPSO::get().bind();
+	gfx_api::BackDropPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	backdropGfx->draw<gfx_api::BackDropPSO>(modelViewProjectionMatrix);
 
 	if (mappreview)
 	{
@@ -514,8 +516,8 @@ void screen_Display()
 //bitmap MUST be (BACKDROP_HACK_WIDTH * BACKDROP_HACK_HEIGHT) for now.
 void screen_Upload(const char *newBackDropBmp)
 {
-	GLfloat x1 = 0, x2 = screenWidth, y1 = 0, y2 = screenHeight;
-	GLfloat tx = 1, ty = 1;
+	float x1 = 0, x2 = screenWidth, y1 = 0, y2 = screenHeight;
+	float tx = 1, ty = 1;
 	int scale = 0, w = 0, h = 0;
 	const float aspect = screenWidth / (float)screenHeight, backdropAspect = 4 / (float)3;
 
@@ -534,7 +536,7 @@ void screen_Upload(const char *newBackDropBmp)
 
 	if (newBackDropBmp) // preview
 	{
-		backdropGfx->makeTexture(BACKDROP_HACK_WIDTH, BACKDROP_HACK_HEIGHT, GL_NEAREST, gfx_api::pixel_format::rgb, newBackDropBmp);
+		backdropGfx->makeTexture(BACKDROP_HACK_WIDTH, BACKDROP_HACK_HEIGHT, gfx_api::pixel_format::rgb, newBackDropBmp);
 
 		int s1 = screenWidth / preview_width;
 		int s2 = screenHeight / preview_height;
@@ -552,8 +554,8 @@ void screen_Upload(const char *newBackDropBmp)
 	}
 
 	// Generate coordinates and put them into VBOs
-	GLfloat texcoords[8] = { 0.0f, 0.0f,  tx, 0.0,  0.0f, ty,  tx, ty };
-	GLfloat vertices[8] = { x1, y1,  x2, y1,  x1, y2,  x2, y2 };
+	float texcoords[8] = { 0.0f, 0.0f,  tx, 0.0,  0.0f, ty,  tx, ty };
+	float vertices[8] = { x1, y1,  x2, y1,  x1, y2,  x2, y2 };
 	backdropGfx->buffers(4, vertices, texcoords);
 }
 

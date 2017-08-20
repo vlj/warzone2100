@@ -32,7 +32,6 @@
 #include <string.h>
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
 #include "lib/ivis_opengl/ivisdef.h"
 #include "lib/ivis_opengl/imd.h"
 #include "lib/ivis_opengl/piefunc.h"
@@ -1077,9 +1076,6 @@ static void cullTerrain()
 
 static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight)
 {
-	const auto &program = pie_ActivateShader(SHADER_TERRAIN_DEPTH, ModelViewProjection, paramsXLight, paramsYLight, 1, glm::mat4(), glm::mat4());
-	pie_SetTexturePage(TEXPAGE_NONE);
-
 	// draw slightly higher distance than it actually is so it will not
 	// by accident obscure the actual terrain
 	glPolygonOffset(0.1f, 1.0f);
@@ -1087,6 +1083,7 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 	// bind the vertex buffer
 	gfx_api::TerrainDepth::get().bind();
 	gfx_api::TerrainDepth::get().bind_vertex_buffers(geometryVBO);
+	gfx_api::TerrainDepth::get().bind_constants({ ModelViewProjection, paramsXLight, paramsYLight, 1, glm::mat4(), glm::mat4() });
 	geometryIndexVBO->bind();
 
 	for (int x = 0; x < xSectors; x++)
@@ -1106,8 +1103,6 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 	finishDrawRangeElements<gfx_api::TerrainDepth>();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(program.locVertex);
-	pie_DeactivateShader();
 }
 
 static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight, const glm::mat4 &textureMatrix)
@@ -1119,8 +1114,6 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 		renderState.fogColour.vector[2] / 255.f,
 		renderState.fogColour.vector[3] / 255.f
 	);
-	const auto &program = pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, glm::vec4(), glm::vec4(), paramsXLight, paramsYLight, 0, 1,
-		glm::mat4(), textureMatrix, renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
 
 	textureIndexVBO->bind();
 
@@ -1134,14 +1127,12 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 	{
 		const glm::vec4 paramsX(0, 0, -1.0f / world_coord(psGroundTypes[layer].textureSize), 0 );
 		const glm::vec4 paramsY(1.0f / world_coord(psGroundTypes[layer].textureSize), 0, 0, 0 );
-		pie_ActivateShader(SHADER_TERRAIN, ModelViewProjection, paramsX, paramsY, paramsXLight, paramsYLight, 0, 1, glm::mat4(), textureMatrix,
-			renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
+		gfx_api::TerrainLayer::get().bind_constants({ ModelViewProjection, paramsX, paramsY, paramsXLight, paramsYLight, 0, 1, glm::mat4(), textureMatrix,
+			renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor });
 
 		// load the texture
 		int texPage = iV_GetTexture(psGroundTypes[layer].textureName);
-		pie_SetTexturePage(texPage);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		gfx_api::TerrainLayer::get().bind_textures(&pie_Texture(texPage), lightmap_tex_num);
 
 		// load the color buffer
 		gfx_api::context::get().bind_vertex_buffers({ { gfx_api::vertex_buffer_input{gfx_api::color, gfx_api::vertex_attribute_type::u8x4_norm, sizeof(PIELIGHT) , sizeof(PIELIGHT)*xSectors * ySectors * (sectorSize + 1) * (sectorSize + 1) * 2 * layer }} }, { textureVBO });
@@ -1164,10 +1155,6 @@ static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::v
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	// we don't need this one anymore
-	glDisableVertexAttribArray(program.locVertex);
-	glDisableVertexAttribArray(program.locColor);
-	pie_DeactivateShader();
 }
 
 static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight, const glm::mat4 &textureMatrix)
@@ -1179,13 +1166,12 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 		renderState.fogColour.vector[2] / 255.f,
 		renderState.fogColour.vector[3] / 255.f
 	);
-	const auto &program = pie_ActivateShader(SHADER_DECALS, ModelViewProjection, paramsXLight, paramsYLight, 0, 1, textureMatrix,
-		renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor);
-	// select the terrain texture page
-	pie_SetTexturePage(terrainPage);
 
 	gfx_api::TerrainDecals::get().bind();
+	gfx_api::TerrainDecals::get().bind_textures(&pie_Texture(terrainPage), lightmap_tex_num);
 	gfx_api::TerrainDecals::get().bind_vertex_buffers(decalVBO);
+	gfx_api::TerrainDecals::get().bind_constants({ ModelViewProjection, paramsXLight, paramsYLight, 0, 1, textureMatrix,
+		renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, fogColor });
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -1214,11 +1200,6 @@ static void drawDecals(const glm::mat4 &ModelViewProjection, const glm::vec4 &pa
 			}
 		}
 	}
-
-	glDepthMask(GL_TRUE);
-	glDisableVertexAttribArray(program.locTexCoord);
-	glDisableVertexAttribArray(program.locVertex);
-	pie_DeactivateShader();
 }
 
 
@@ -1234,9 +1215,9 @@ void drawTerrain(const glm::mat4 &mvp)
 
 	///////////////////////////////////
 	// set up the lightmap texture
-	glActiveTexture(GL_TEXTURE1);
+//	glActiveTexture(GL_TEXTURE1);
 	// bind the texture
-	lightmap_tex_num->bind();
+//	lightmap_tex_num->bind();
 
 	// we limit the framerate of the lightmap, because updating a texture is an expensive operation
 	if (realTime - lightmapLastUpdate >= LIGHTMAP_REFRESH)
@@ -1265,6 +1246,10 @@ void drawTerrain(const glm::mat4 &mvp)
 	// terrain
 	drawTerrainLayers(mvp, paramsXLight, paramsYLight, lightMatrix);
 
+
+	glActiveTexture(GL_TEXTURE0);
+
+
 	//////////////////////////////////
 	// decals
 	drawDecals(mvp, paramsXLight, paramsYLight, lightMatrix);
@@ -1291,23 +1276,12 @@ void drawWater(const glm::mat4 &viewMatrix)
 	const glm::vec4 paramsY2(1.0f / world_coord(5), 0, 0, 0);
 	const auto &renderState = getCurrentRenderState();
 
-	const auto &program = pie_ActivateShader(SHADER_WATER, viewMatrix, paramsX, paramsY, paramsX2, paramsY2, 0, 1,
-		glm::translate(waterOffset, 0.f, 0.f), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd);
-
-	// first texture unit
-	pie_SetTexturePage(iV_GetTexture("page-80-water-1.png"));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 	gfx_api::WaterPSO::get().bind();
+	gfx_api::WaterPSO::get().bind_textures(&pie_Texture(iV_GetTexture("page-80-water-1.png")), &pie_Texture(iV_GetTexture("page-81-water-2.png")));
 	gfx_api::WaterPSO::get().bind_vertex_buffers(waterVBO);
+	gfx_api::WaterPSO::get().bind_constants({ viewMatrix, paramsX, paramsY, paramsX2, paramsY2, 0, 1,
+		glm::translate(waterOffset, 0.f, 0.f), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd });
 	waterIndexVBO->bind();
-
-	// second texture unit
-	glActiveTexture(GL_TEXTURE1);
-	pie_Texture(iV_GetTexture("page-81-water-2.png")).bind();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	for (x = 0; x < xSectors; x++)
 	{
@@ -1327,8 +1301,6 @@ void drawWater(const glm::mat4 &viewMatrix)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glDisableVertexAttribArray(program.locVertex);
-
 	// move the water
 	if (!gamePaused())
 	{
@@ -1339,8 +1311,6 @@ void drawWater(const glm::mat4 &viewMatrix)
 	glActiveTexture(GL_TEXTURE0);
 
 	// clean up
-	glDepthMask(GL_TRUE);
-	pie_DeactivateShader();
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);  // HACK Must unbind GL_ARRAY_BUFFER (don't know if it has to be unbound everywhere), otherwise text rendering may mysteriously crash.
 }

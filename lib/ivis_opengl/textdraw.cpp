@@ -20,7 +20,6 @@
 
 #include "lib/framework/frame.h"
 #include "lib/framework/file.h"
-#include "lib/framework/opengl.h"
 #include <stdlib.h>
 #include <string.h>
 #include "lib/framework/string_ext.h"
@@ -659,7 +658,6 @@ int iV_DrawFormattedText(const char *String, UDWORD x, UDWORD y, UDWORD Width, U
 void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotation, iV_fonts fontID)
 {
 	ASSERT_OR_RETURN(, string, "Couldn't render string!");
-	pie_SetTexturePage(TEXPAGE_EXTERN);
 
 	if (rotation != 0.f)
 	{
@@ -679,15 +677,10 @@ void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotati
 	std::tie(texture, width, height, xoffset, yoffset) = getShaper().drawText(tr, getFTFace(fontID));
 	if (width > 0 && height > 0)
 	{
-		pie_SetTexturePage(TEXPAGE_EXTERN);
 		if (textureID)
 			delete textureID;
 		textureID = gfx_api::context::get().create_texture(width, height, gfx_api::pixel_format::rgba);
 		textureID->upload(0u, 0u, 0u, width, height, gfx_api::pixel_format::rgba, texture.get());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		iV_DrawImageText(*textureID, Vector2i(XPos, YPos), Vector2i(xoffset, yoffset), Vector2i(width, height), rotation, color);
 	}
 }
@@ -742,21 +735,15 @@ void WzText::setText(const std::string &string, iV_fonts fontID)
 	std::tie(data, dimensions.x, dimensions.y, offsets.x, offsets.y) = getShaper().drawText(tr, face);
 	if (dimensions.x > 0 && dimensions.y > 0)
 	{
-		pie_SetTexturePage(TEXPAGE_EXTERN);
 		if (texture)
 			delete texture;
 		texture = gfx_api::context::get().create_texture(dimensions.x, dimensions.y, gfx_api::pixel_format::rgba);
 		texture->upload(0u, 0u, 0u, dimensions.x , dimensions.y, gfx_api::pixel_format::rgba, data.get());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		mAboveBase = -(type->size->metrics.ascender >> 6);
 		mLineSize = (type->size->metrics.ascender - type->size->metrics.descender) >> 6;
 		mBelowBase = type->size->metrics.descender >> 6;
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 WzText::WzText(const std::string &string, iV_fonts fontID)

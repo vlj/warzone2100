@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 #include "pietypes.h"
+#include <glm/glm.hpp>
 
 namespace gfx_api
 {
@@ -106,10 +107,27 @@ namespace gfx_api
 		{}
 	};
 
+	enum class sampler_type
+	{
+		bilinear,
+		anisotropic,
+		nearest_clamped,
+		anisotropic_repeat,
+	};
+
+	struct texture_input
+	{
+		const size_t id;
+		const sampler_type sampler;
+
+		constexpr texture_input(size_t _id, sampler_type _sampler)
+			: id(_id), sampler(_sampler)
+		{}
+	};
+
 	struct pipeline_state_object
 	{
 		virtual ~pipeline_state_object() {}
-		virtual void bind() = 0;
 	};
 
 	struct context
@@ -117,8 +135,11 @@ namespace gfx_api
 		virtual ~context() {};
 		virtual texture* create_texture(const size_t& width, const size_t& height, const pixel_format& internal_format, const std::string& filename = "") = 0;
 		virtual buffer* create_buffer(const enum class buffer::usage&, const size_t& width) = 0;
-		virtual pipeline_state_object* build_pipeline(const state_description&) = 0;
+		virtual pipeline_state_object* build_pipeline(const state_description&, const SHADER_MODE&) = 0;
+		virtual void bind_pipeline(pipeline_state_object*) = 0;
 		virtual void bind_vertex_buffers(const std::vector<std::vector<vertex_buffer_input>>& attribute_descriptions, const std::vector<buffer*>& vertex_buffers) = 0;
+		virtual void bind_textures(const std::vector<texture_input>& attribute_descriptions, const std::vector<texture*>& textures) = 0;
+		virtual void set_constants(const void* buffer) = 0;
 		virtual void draw(const size_t& offset, const size_t&, const primitive_type&) = 0;
 		virtual void draw_elements(const size_t& offset, const size_t&, const primitive_type&, const index_type&) = 0;
 		static context& get();
@@ -147,6 +168,15 @@ namespace gfx_api
 		}
 	};
 
+	template<size_t texture_unit, sampler_type sampler>
+	struct texture_description
+	{
+		static texture_input get_desc()
+		{
+			return texture_input{ texture_unit, sampler };
+		}
+	};
+
 	template<REND_MODE render_mode, DEPTH_MODE depth_mode, uint8_t output_mask, polygon_offset offset, stencil_mode stencil, cull_mode cull>
 	struct rasterizer_state
 	{
@@ -156,18 +186,23 @@ namespace gfx_api
 		}
 	};
 
-	template<typename rasterizer, primitive_type primitive, index_type index, typename vertex_buffer_inputs>
+	template<SHADER_MODE T>
+	struct constant_buffer_type {};
+
+	template<typename rasterizer, primitive_type primitive, index_type index, typename vertex_buffer_inputs, typename texture_inputs, SHADER_MODE shader>
 	struct pipeline_state_helper
 	{
-		static pipeline_state_helper<rasterizer, primitive, index, vertex_buffer_inputs>& get()
+		using texture_tuple = texture_inputs;
+
+		static pipeline_state_helper<rasterizer, primitive, index, vertex_buffer_inputs, texture_inputs, shader>& get()
 		{
-			static pipeline_state_helper<rasterizer, primitive, index, vertex_buffer_inputs> object;
+			static pipeline_state_helper < rasterizer, primitive, index, vertex_buffer_inputs, texture_inputs, shader> object;
 			return object;
 		}
 
 		void bind()
 		{
-			pso->bind();
+			gfx_api::context::get().bind_pipeline(pso);
 		}
 
 		template<typename... Args>
@@ -175,6 +210,18 @@ namespace gfx_api
 		{
 			static_assert(sizeof...(args) == std::tuple_size<vertex_buffer_inputs>::value, "Wrong number of vertex buffer");
 			gfx_api::context::get().bind_vertex_buffers(untuple(vertex_buffer_inputs{}), { args... });
+		}
+
+		template<typename...Args>
+		void bind_textures(Args&&... args)
+		{
+			static_assert(sizeof...(args) == std::tuple_size<texture_inputs>::value, "Wrong number of textures");
+			gfx_api::context::get().bind_textures(untuple(texture_inputs{}), { args... });
+		}
+
+		void bind_constants(const constant_buffer_type<shader>& data)
+		{
+			gfx_api::context::get().set_constants(static_cast<const void*>(&data));
 		}
 
 		void draw(const size_t& count, const size_t& offset)
@@ -190,13 +237,15 @@ namespace gfx_api
 		pipeline_state_object* pso;
 		pipeline_state_helper()
 		{
-			pso = gfx_api::context::get().build_pipeline(rasterizer::get());
+			pso = gfx_api::context::get().build_pipeline(rasterizer::get(), shader);
 		}
 
 		template<typename...Args>
-		std::vector<std::vector<vertex_buffer_input>> untuple(const std::tuple<Args...>&)
+		auto untuple(const std::tuple<Args...>&)
 		{
-			return { Args::get_desc()... };
+			auto type_holder = { Args::get_desc()... };
+			using output_type = typename decltype(type_holder);
+			return std::vector<output_type::value_type>(type_holder);
 		}
 	};
 
@@ -205,89 +254,307 @@ namespace gfx_api
 	constexpr size_t color = 2;
 	constexpr size_t normal = 3;
 
-	template<REND_MODE render_mode>
+	using notexture = std::tuple<>;
+
+	template<>
+	struct constant_buffer_type<SHADER_BUTTON>
+	{
+		glm::vec4 colour;
+		glm::vec4 teamcolour;
+		float shaderStretch;
+		int tcmask;
+		int fogEnabled;
+		int normalMap;
+		int specularMap;
+		int ecmState;
+		int alphaTest;
+		float timeState;
+		glm::mat4 ModelViewMatrix;
+		glm::mat4 ModelViewProjectionMatrix;
+		glm::mat4 NormalMatrix;
+		glm::vec4 sunPos;
+		glm::vec4 sceneColor;
+		glm::vec4 ambient;
+		glm::vec4 diffuse;
+		glm::vec4 specular;
+		float fogEnd;
+		float fogBegin;
+		glm::vec4 fogColour;
+	};
+
+	template<>
+	struct constant_buffer_type<SHADER_COMPONENT>
+	{
+		glm::vec4 colour;
+		glm::vec4 teamcolour;
+		float shaderStretch;
+		int tcmask;
+		int fogEnabled;
+		int normalMap;
+		int specularMap;
+		int ecmState;
+		int alphaTest;
+		float timeState;
+		glm::mat4 ModelViewMatrix;
+		glm::mat4 ModelViewProjectionMatrix;
+		glm::mat4 NormalMatrix;
+		glm::vec4 sunPos;
+		glm::vec4 sceneColor;
+		glm::vec4 ambient;
+		glm::vec4 diffuse;
+		glm::vec4 specular;
+		float fogEnd;
+		float fogBegin;
+		glm::vec4 fogColour;
+	};
+
+	template<>
+	struct constant_buffer_type<SHADER_NOLIGHT>
+	{
+		glm::vec4 colour;
+		glm::vec4 teamcolour;
+		float shaderStretch;
+		int tcmask;
+		int fogEnabled;
+		int normalMap;
+		int specularMap;
+		int ecmState;
+		int alphaTest;
+		float timeState;
+		glm::mat4 ModelViewMatrix;
+		glm::mat4 ModelViewProjectionMatrix;
+		glm::mat4 NormalMatrix;
+		glm::vec4 sunPos;
+		glm::vec4 sceneColor;
+		glm::vec4 ambient;
+		glm::vec4 diffuse;
+		glm::vec4 specular;
+		float fogEnd;
+		float fogBegin;
+		glm::vec4 fogColour;
+	};
+
+	template<REND_MODE render_mode, SHADER_MODE shader>
 	using Draw3DShape = typename gfx_api::pipeline_state_helper<rasterizer_state<render_mode, DEPTH_CMP_LEQ_WRT_ON, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangles, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>,
 			vertex_buffer_description<vertex_attribute_description<normal, gfx_api::vertex_attribute_type::float3, 0, 0>>,
 			vertex_buffer_description<vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::float2, 0, 0>>
-		>>;
+		>,
+		std::tuple<
+			texture_description<0, sampler_type::anisotropic>, // diffuse
+			texture_description<1, sampler_type::bilinear>, // team color mask
+			texture_description<2, sampler_type::anisotropic>, // normal map
+			texture_description<3, sampler_type::anisotropic> // specular map
+		>, shader>;
 
-	using Draw3DButtonPSO = Draw3DShape<REND_OPAQUE>;
-	using Draw3DShapeOpaque = Draw3DShape<REND_OPAQUE>;
-	using Draw3DShapeAlpha = Draw3DShape<REND_ALPHA>;
-	using Draw3DShapePremul = Draw3DShape<REND_PREMULTIPLIED>;
-	using Draw3DShapeAdditive = Draw3DShape<REND_ADDITIVE>;
+	using Draw3DButtonPSO = Draw3DShape<REND_OPAQUE, SHADER_BUTTON>;
+	using Draw3DShapeOpaque = Draw3DShape<REND_OPAQUE, SHADER_COMPONENT>;
+	using Draw3DShapeAlpha = Draw3DShape<REND_ALPHA, SHADER_COMPONENT>;
+	using Draw3DShapePremul = Draw3DShape<REND_PREMULTIPLIED, SHADER_COMPONENT>;
+	using Draw3DShapeAdditive = Draw3DShape<REND_ADDITIVE, SHADER_COMPONENT>;
+	using Draw3DShapeNoLightOpaque = Draw3DShape<REND_OPAQUE, SHADER_NOLIGHT>;
+	using Draw3DShapeNoLightAlpha = Draw3DShape<REND_ALPHA, SHADER_NOLIGHT>;
+	using Draw3DShapeNoLightPremul = Draw3DShape<REND_PREMULTIPLIED, SHADER_NOLIGHT>;
+	using Draw3DShapeNoLightAdditive = Draw3DShape<REND_ADDITIVE, SHADER_NOLIGHT>;
+
+	template<>
+	struct constant_buffer_type<SHADER_GENERIC_COLOR>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 colour;
+	};
 
 	using TransColouredTrianglePSO = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_ON, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangle_fan, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>
-		>>;
+		>, notexture, SHADER_GENERIC_COLOR>;
 	using DrawStencilShadow = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, 0, polygon_offset::disabled, stencil_mode::stencil_shadow_silhouette, cull_mode::none>, primitive_type::triangles, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>
-		>>;
+		>, notexture, SHADER_GENERIC_COLOR>;
+
+	template<>
+	struct constant_buffer_type<SHADER_TERRAIN_DEPTH>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 param1;
+		glm::vec4 param2;
+		int texture;
+		glm::mat4 unused0;
+		glm::mat4 unused1;
+	};
+
 	using TerrainDepth = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_ON, 0, polygon_offset::enabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangles, index_type::u32,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>
-		>>;
+		>, notexture, SHADER_TERRAIN_DEPTH>;
+
+	template<>
+	struct constant_buffer_type<SHADER_TERRAIN>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 paramX;
+		glm::vec4 paramY;
+		glm::vec4 paramXLight;
+		glm::vec4 paramYLight;
+		int texture0;
+		int texture1;
+		glm::mat4 unused;
+		glm::mat4 texture_matrix;
+		int fog_enabled;
+		float fog_begin;
+		float fog_end;
+		glm::vec4 fog_colour;
+	};
+
 	using TerrainLayer = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_ADDITIVE, DEPTH_CMP_LEQ_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangles, index_type::u32,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>,
 			vertex_buffer_description<vertex_attribute_description<color, gfx_api::vertex_attribute_type::u8x4_norm, sizeof(unsigned), 0>>
-		>>;
+		>, std::tuple<texture_description<0, sampler_type::anisotropic_repeat>, texture_description<1, sampler_type::bilinear>>, SHADER_TERRAIN>;
+
+	template<>
+	struct constant_buffer_type<SHADER_DECALS>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 param1;
+		glm::vec4 param2;
+		int texture0;
+		int texture1;
+		glm::mat4 texture_matrix;
+		int fog_enabled;
+		float fog_begin;
+		float fog_end;
+		glm::vec4 fog_colour;
+	};
+
 	using TerrainDecals = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_ALPHA, DEPTH_CMP_LEQ_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangles, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<
 				vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3) + sizeof(glm::vec2), 0>,
 				vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::float2, sizeof(glm::vec3) + sizeof(glm::vec2), sizeof(glm::vec3)>
 			>
-		>>;
+		>, std::tuple<texture_description<0, sampler_type::bilinear>, texture_description<1, sampler_type::bilinear>>, SHADER_DECALS>;
+
+	template<>
+	struct constant_buffer_type<SHADER_WATER>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 param1;
+		glm::vec4 param2;
+		glm::vec4 param3;
+		glm::vec4 param4;
+		int texture0;
+		int texture1;
+		glm::mat4 translation;
+		glm::mat4 texture_matrix;
+		int fog_enabled;
+		float fog_begin;
+		float fog_end;
+		glm::vec4 fog_colour;
+	};
+
 	using WaterPSO = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_MULTIPLICATIVE, DEPTH_CMP_LEQ_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangles, index_type::u32,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, sizeof(glm::vec3), 0>>
-		>>;
+		>, std::tuple<texture_description<0, sampler_type::anisotropic>, texture_description<1, sampler_type::anisotropic>>, SHADER_WATER>;
+
 	using gfx_tc = vertex_buffer_description<vertex_attribute_description<texcoord, gfx_api::vertex_attribute_type::float2, 0, 0>>;
 	using gfx_colour = vertex_buffer_description<vertex_attribute_description<color, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>;
 	using gfx_vtx2 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float2, 0, 0>>;
 	using gfx_vtx3 = vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::float3, 0, 0>>;
 
-	template<REND_MODE rm, DEPTH_MODE dm, primitive_type primitive, typename VTX, typename Second>
-	using GFX = typename gfx_api::pipeline_state_helper<rasterizer_state<rm, dm, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive, index_type::u16, std::tuple<VTX, Second>>;
-	using VideoPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
-	using BackDropPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
-	using SkyboxPSO = GFX<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles, gfx_vtx3, gfx_tc>;
-	using RadarPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc>;
-	using RadarViewPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_colour>;
+	template<>
+	struct constant_buffer_type<SHADER_GFX_TEXT>
+	{
+		glm::mat4 mat;
+		glm::vec4 vec;
+		int texture;
+	};
+
+	template<>
+	struct constant_buffer_type<SHADER_GFX_COLOUR>
+	{
+		glm::mat4 mat;
+	};
+
+	template<REND_MODE rm, DEPTH_MODE dm, primitive_type primitive, typename VTX, typename Second, SHADER_MODE shader, typename texture>
+	using GFX = typename gfx_api::pipeline_state_helper<rasterizer_state<rm, dm, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive, index_type::u16, std::tuple<VTX, Second>, texture, shader>;
+	using VideoPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc, SHADER_GFX_TEXT, std::tuple<texture_description<0, gfx_api::sampler_type::bilinear>>>;
+	using BackDropPSO = GFX<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc, SHADER_GFX_TEXT, std::tuple<texture_description<0, gfx_api::sampler_type::bilinear>>>;
+	using SkyboxPSO = GFX<REND_OPAQUE, DEPTH_CMP_LEQ_WRT_OFF, primitive_type::triangles, gfx_vtx3, gfx_tc, SHADER_GFX_TEXT, std::tuple<texture_description<0, gfx_api::sampler_type::anisotropic>>>;
+	using RadarPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_tc, SHADER_GFX_TEXT, std::tuple<texture_description<0, gfx_api::sampler_type::bilinear>>>;
+	using RadarViewPSO = GFX<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, primitive_type::triangle_strip, gfx_vtx2, gfx_colour, SHADER_GFX_COLOUR, notexture>;
+
+	template<>
+	struct constant_buffer_type<SHADER_TEXT>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec2 offset;
+		glm::vec2 size;
+		glm::vec4 color;
+		int texture;
+	};
 
 	using DrawImageTextPSO = typename gfx_api::pipeline_state_helper<rasterizer_state<REND_TEXT, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::none>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>,
+		std::tuple<texture_description<0, sampler_type::nearest_clamped>>, SHADER_TEXT>;
+
+	template<>
+	struct constant_buffer_type<SHADER_RECT>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec4 colour;
+	};
 
 	using ShadowBox2DPSO = typename pipeline_state_helper<rasterizer_state<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, notexture, SHADER_RECT>;
 	using UniTransBoxPSO = typename pipeline_state_helper<rasterizer_state<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, notexture, SHADER_RECT>;
+
+	template<>
+	struct constant_buffer_type<SHADER_TEXRECT>
+	{
+		glm::mat4 transform_matrix;
+		glm::vec2 offset;
+		glm::vec2 size;
+		glm::vec4 color;
+		int texture;
+	};
+
 	using DrawImagePSO = typename pipeline_state_helper<rasterizer_state<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, std::tuple<texture_description<0, sampler_type::bilinear>>, SHADER_TEXRECT>;
+
 	using BoxFillPSO = typename pipeline_state_helper<rasterizer_state<REND_OPAQUE, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, notexture, SHADER_RECT>;
 	using BoxFillAlphaPSO = typename pipeline_state_helper<rasterizer_state<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_shadow_quad, cull_mode::back>, primitive_type::triangle_strip, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, notexture, SHADER_RECT>;
+
+	template<>
+	struct constant_buffer_type<SHADER_LINE>
+	{
+		glm::vec2 p0;
+		glm::vec2 p1;
+		glm::vec4 colour;
+		glm::mat4 mat;
+	};
+
 	using LinePSO = typename pipeline_state_helper<rasterizer_state<REND_ALPHA, DEPTH_CMP_ALWAYS_WRT_OFF, 255, polygon_offset::disabled, stencil_mode::stencil_disabled, cull_mode::back>, primitive_type::lines, index_type::u16,
 		std::tuple<
 			vertex_buffer_description<vertex_attribute_description<position, gfx_api::vertex_attribute_type::u8x4_norm, 0, 0>>
-		>>;
+		>, notexture, SHADER_LINE>;
 }
 

@@ -83,28 +83,12 @@ static int newPage(const char *name, int level, int width, int height, int count
 		pie_AssignTexture(texPage,
 			gfx_api::context::get().create_texture(width, height,
 				wz_texture_compression ? gfx_api::pixel_format::compressed_rgba : gfx_api::pixel_format::rgba));
+
+		// Specify first and last mipmap level to be used
+		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmap_levels - 1);
 	}
 	terrainPage = texPage;
-	pie_SetTexturePage(texPage);
-
-	// Specify first and last mipmap level to be used
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmap_levels - 1);
-
-	// debug(LOG_TEXTURE, "newPage: glTexImage2D(page=%d, level=%d) opengl id=%u", texPage, level, _TEX_PAGE[texPage].id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	// Use anisotropic filtering, if available, but only max 4.0 to reduce processor burden
-	if (GLEW_EXT_texture_filter_anisotropic)
-	{
-		GLfloat max;
-
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, MIN(4.0f, max));
-	}
 
 	return texPage;
 }

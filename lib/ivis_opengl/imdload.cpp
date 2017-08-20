@@ -816,7 +816,6 @@ static iIMDShape *_imd_load_level(const QString &filename, const char **ppFileDa
 	s->buffers[VBO_INDEX]->upload(0, indices.size() * sizeof(uint16_t), indices.constData());
 	s->buffers[VBO_TEXCOORD] = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, texcoords.size() * sizeof(float));
 	s->buffers[VBO_TEXCOORD]->upload(0, texcoords.size() * sizeof(float), texcoords.constData());
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
 
 	indices.resize(0);
 	vertices.resize(0);

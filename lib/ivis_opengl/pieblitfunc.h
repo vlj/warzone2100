@@ -41,7 +41,7 @@
 #include "pietypes.h"
 #include "piepalette.h"
 #include "pieclip.h"
-#include "lib/framework/opengl.h"
+#include <type_traits>
 
 /***************************************************************************/
 /*
@@ -79,37 +79,33 @@ public:
 	~GFX();
 
 	/// Load texture data from file, allocate space for it, and put it on the GPU
-	void loadTexture(const char *filename, GLenum filter = GL_LINEAR);
+	void loadTexture(const char *filename);
 
 	/// Allocate space on the GPU for texture of given parameters. If image is non-NULL,
 	/// then that memory buffer is uploaded to the GPU.
-	void makeTexture(int width, int height, GLenum filter = GL_LINEAR, const gfx_api::pixel_format& format = gfx_api::pixel_format::rgba, const GLvoid *image = nullptr);
+	void makeTexture(int width, int height, const gfx_api::pixel_format& format = gfx_api::pixel_format::rgba, const void *image = nullptr);
 
 	/// Upload given memory buffer to already allocated texture space on the GPU
-	void updateTexture(const GLvoid *image, int width = -1, int height = -1);
+	void updateTexture(const void *image, int width = -1, int height = -1);
 
 	/// Upload vertex and texture buffer data to the GPU
-	void buffers(int vertices, const GLvoid *vertBuf, const GLvoid *texBuf);
+	void buffers(int vertices, const void *vertBuf, const void *texBuf);
 
 	/// Draw everything
 	template<typename PSO>
-	void draw(const glm::mat4 &modelViewProjectionMatrix)
+	typename std::enable_if<(std::tuple_size<typename PSO::texture_tuple>::value != 0), void>::type draw(const glm::mat4 &modelViewProjectionMatrix)
 	{
-		if (mType == GFX_TEXTURE)
-		{
-			pie_SetTexturePage(TEXPAGE_EXTERN);
-			mTexture->bind();
-			pie_ActivateShader(SHADER_GFX_TEXT, modelViewProjectionMatrix, glm::vec4(1), 0);
-		}
-		else if (mType == GFX_COLOUR)
-		{
-			pie_SetTexturePage(TEXPAGE_NONE);
-			pie_ActivateShader(SHADER_GFX_COLOUR, modelViewProjectionMatrix);
-		}
-		PSO::get().bind();
+		PSO::get().bind_textures(mTexture);
 		PSO::get().bind_vertex_buffers(mBuffers[VBO_VERTEX], mBuffers[VBO_TEXCOORD]);
 		PSO::get().draw(mSize, 0);
-		pie_DeactivateShader();
+	}
+
+	template<typename PSO>
+	typename std::enable_if<(std::tuple_size<typename PSO::texture_tuple>::value == 0), void>::type draw(const glm::mat4 &modelViewProjectionMatrix)
+	{
+		PSO::get().bind_constants({ modelViewProjectionMatrix });
+		PSO::get().bind_vertex_buffers(mBuffers[VBO_VERTEX], mBuffers[VBO_TEXCOORD]);
+		PSO::get().draw(mSize, 0);
 	}
 
 private:
@@ -162,7 +158,7 @@ bool pie_InitRadar();
 bool pie_ShutdownRadar();
 void pie_DownLoadRadar(UDWORD *buffer);
 void pie_RenderRadar(const glm::mat4 &modelViewProjectionMatrix);
-void pie_SetRadar(GLfloat x, GLfloat y, GLfloat width, GLfloat height, int twidth, int theight, bool filter);
+void pie_SetRadar(float x, float y, float width, float height, int twidth, int theight, bool filter);
 
 enum SCREENTYPE
 {

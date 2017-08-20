@@ -29,7 +29,6 @@
 #include "lib/netplay/netplay.h"
 #include "lib/sound/mixer.h"
 #include "lib/ivis_opengl/screen.h"
-#include "lib/framework/opengl.h"
 #include "lib/ivis_opengl/pieclip.h"
 
 #include "ai.h"
@@ -88,7 +87,7 @@ bool loadConfig()
 	}
 	if (ini.contains("notexturecompression"))
 	{
-		wz_texture_compression = GL_RGBA;
+		wz_texture_compression = false;
 	}
 	showFPS = ini.value("showFPS", false).toBool();
 	scroll_speed_accel = ini.value("scroll", DEFAULTSCROLL).toInt();

@@ -22,7 +22,6 @@
  */
 
 #include "lib/framework/frame.h"
-#include "lib/framework/opengl.h"
 
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/piedef.h"
@@ -56,8 +55,8 @@ void pie_SetViewingWindow(Vector3i *v, PIELIGHT colour)
 	pieVrts[3] = v[3];
 	pieVrts[4] = v[1];
 
-	GLfloat vert[VW_VERTICES * 2];
-	GLbyte cols[VW_VERTICES * 4];
+	float vert[VW_VERTICES * 2];
+	uint8_t cols[VW_VERTICES * 4];
 	for (int i = 0; i < VW_VERTICES; i++)
 	{
 		vert[i * 2 + 0] = pieVrts[i].x;
@@ -80,15 +79,15 @@ void pie_SetViewingWindow(Vector3i *v, PIELIGHT colour)
 
 void pie_DrawViewingWindow(const glm::mat4 &modelViewProjectionMatrix)
 {
+	gfx_api::RadarViewPSO::get().bind();
+	gfx_api::RadarViewPSO::get().bind_constants({ modelViewProjectionMatrix });
 	radarViewGfx[0]->draw<gfx_api::RadarViewPSO>(modelViewProjectionMatrix);
 	radarViewGfx[1]->draw<gfx_api::RadarViewPSO>(modelViewProjectionMatrix);
 }
 
 void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, const glm::mat4 &modelViewMatrix)
 {
-	pie_SetTexturePage(TEXPAGE_NONE);
 	glm::vec4 color(c.byte.r / 255.f, c.byte.g / 255.f, c.byte.b / 255.f, 128.f / 255.f);
-	const auto &program = pie_ActivateShader(SHADER_GENERIC_COLOR, pie_PerspectiveGet() * modelViewMatrix, color);
 
 	static gfx_api::buffer* buffer;
 	if (buffer)
@@ -96,9 +95,9 @@ void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, c
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, 3 * sizeof(Vector3f));
 	buffer->upload(0, 3 * sizeof(Vector3f), vrt.data());
 	gfx_api::TransColouredTrianglePSO::get().bind();
+	gfx_api::TransColouredTrianglePSO::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, color });
 	gfx_api::TransColouredTrianglePSO::get().bind_vertex_buffers(buffer);
 	gfx_api::TransColouredTrianglePSO::get().draw(3, 0);
-	glDisableVertexAttribArray(program.locVertex);
 }
 
 void pie_Skybox_Init()
@@ -164,7 +163,7 @@ void pie_Skybox_Init()
 		uvLeft1, uvLeft0, uvBack1,
 	};
 
-	GL_DEBUG("Initializing skybox");
+	//GL_DEBUG("Initializing skybox");
 	skyboxGfx = new GFX(GFX_TEXTURE, 3);
 	skyboxGfx->buffers(24, vertex.data(), texc.data());
 }
@@ -172,7 +171,6 @@ void pie_Skybox_Init()
 void pie_Skybox_Texture(const char *filename)
 {
 	skyboxGfx->loadTexture(filename);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 }
 
 void pie_Skybox_Shutdown()
@@ -183,5 +181,8 @@ void pie_Skybox_Shutdown()
 void pie_DrawSkybox(float scale, const glm::mat4 &viewMatrix)
 {
 	// Apply scale matrix
-	skyboxGfx->draw<gfx_api::SkyboxPSO>(pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale));
+	const auto& modelViewProjectionMatrix = pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale);
+	gfx_api::SkyboxPSO::get().bind();
+	gfx_api::SkyboxPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	skyboxGfx->draw<gfx_api::SkyboxPSO>(modelViewProjectionMatrix);
 }

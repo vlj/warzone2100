@@ -13,7 +13,10 @@ configuration:
 
 before_build:
  - ps: ./get-dependencies.ps1
- - ps: cmake '-H.' -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" -Bbuild
+ - ps: mkdir build
+ - ps: pushd build
+ - ps: cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" ..
+ - ps: popd
 
 build:
  parallel: true

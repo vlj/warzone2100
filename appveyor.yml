@@ -1,5 +1,5 @@
 environment:
-  QT5DIR: C:\Qt\5.7\msvc2015
+  QT5DIR: C:\Qt\5.9.1\msvc2015
 
 cache:
   - vcpkg/ -> get-dependencies.ps1
@@ -12,6 +12,7 @@ configuration:
   - Release
 
 before_build:
+ - set PATH=%PATH%;%QT5DIR%\bin;
  - ps: ./get-dependencies.ps1
  - ps: mkdir build
  - ps: pushd build
@@ -20,4 +21,4 @@ before_build:
 
 build:
  parallel: true
- project: build/PACKAGE.sln
+ project: build/PACKAGE.vcxproj

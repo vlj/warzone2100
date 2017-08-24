@@ -18,4 +18,4 @@ before_build:
 
 build:
  parallel: true
- project: build/PACKAGE.vcxproj
+ project: build/src/warzone2100.vcxproj

@@ -14,10 +14,7 @@ configuration:
 before_build:
  - set PATH=%PATH%;%QT5DIR%\bin;
  - ps: ./get-dependencies.ps1
- - ps: mkdir build
- - ps: pushd build
- - ps: cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" ..
- - ps: popd
+ - cmake -H. -Bbuild  -DCMAKE_TOOLCHAIN_FILE=C:\projects\warzone2100\vcpkg\scripts\buildsystems\vcpkg.cmake -G "Visual Studio 14 2015" 
 
 build:
  parallel: true

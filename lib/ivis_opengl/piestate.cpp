@@ -338,7 +338,6 @@ bool pie_LoadShaders()
 		delete pie_internal::rectBuffer;
 	pie_internal::rectBuffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, 16 * sizeof(GLbyte));
 	pie_internal::rectBuffer->upload(0, 16 * sizeof(GLbyte), rect);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	return true;
 }

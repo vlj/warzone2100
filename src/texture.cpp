@@ -72,7 +72,7 @@ int getTextureSize()
 }
 
 // Generate a new texture page both in the texture page table, and on the graphics card
-static int newPage(const char *name, int level, int width, int height, int count)
+static int newPage(const char *name, int, int width, int height, int count)
 {
 	int texPage = firstPage + ((count + 1) / TILES_IN_PAGE);
 
@@ -81,8 +81,7 @@ static int newPage(const char *name, int level, int width, int height, int count
 		// We need to create a new texture page; create it and increase texture table to store it
 		pie_ReserveTexture(name, width, height);
 		pie_AssignTexture(texPage,
-			gfx_api::context::get().create_texture(width, height,
-				wz_texture_compression ? gfx_api::pixel_format::compressed_rgba : gfx_api::pixel_format::rgba));
+			gfx_api::context::get().create_texture(4, width, height, gfx_api::texel_format::FORMAT_BGRA8_UNORM_PACK8));
 
 		// Specify first and last mipmap level to be used
 		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -115,7 +114,7 @@ bool texLoad(const char *fileName)
 	mipmap_max = MIPMAP_MAX;
 	mipmap_levels = MIPMAP_LEVELS;
 
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glval);
+/*	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glval);
 
 	while (glval < mipmap_max * TILES_IN_PAGE_COLUMN)
 	{
@@ -135,7 +134,7 @@ bool texLoad(const char *fileName)
 		mipmap_max /= 2;
 		mipmap_levels--;
 		debug(LOG_TEXTURE, "Downgrading texture quality to %d due to user setting %d", mipmap_max, maxTextureSize);
-	}
+	}*/
 
 	/* Get and set radar colours */
 
@@ -186,23 +185,18 @@ bool texLoad(const char *fileName)
 		// Load until we cannot find anymore of them
 		for (k = 0; k < MAX_TILES; k++)
 		{
-			iV_Image tile;
-
-			sprintf(fullPath, "%s/tile-%02d.png", partialPath, k);
-			if (PHYSFS_exists(fullPath)) // avoid dire warning
-			{
-				bool retval = iV_loadImage_PNG(fullPath, &tile);
-				ASSERT_OR_RETURN(false, retval, "Could not load %s!", fullPath);
-			}
-			else
+			sprintf(fullPath, "%s/tile-%02d.dds", partialPath, k);
+			if (!PHYSFS_exists(fullPath)) // avoid dire warning
 			{
 				// no more textures in this set
 				ASSERT_OR_RETURN(false, k > 0, "Could not find %s", fullPath);
 				break;
 			}
+
+			auto&& texture = gfx_api::load(fullPath);
+			const auto& texture_extent = texture.extent();
 			// Insert into texture page
-			pie_Texture(texPage).upload(j, xOffset, yOffset, tile.width, tile.height, gfx_api::pixel_format::rgba, tile.bmp);
-			free(tile.bmp);
+			pie_Texture(texPage).upload(j, xOffset, yOffset, texture_extent.x, texture_extent.y, texture.format(), texture.data(0, 0, 0));
 			if (i == mipmap_max) // dealing with main texture page; so register coordinates
 			{
 				tileTexInfo[k].uOffset = (float)xOffset / (float)xSize;

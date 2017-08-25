@@ -1,14 +1,15 @@
 environment:
   QT5DIR: C:\Qt\5.9.1\msvc2015
+  VULKAN_SDK: C:\projects\warzone2100\vcpkg\VulkanSDK\1.0.57.0
+  VK_SDK_PATH: C:\projects\warzone2100\vcpkg\VulkanSDK\1.0.57.0
 
-cache:
-  - vcpkg/ -> get-dependencies.ps1
+#cache:
+#  - vcpkg/ -> get-dependencies.ps1
 
 platform:
   - Win32
 
 configuration:
-  - Debug
   - Release
 
 before_build:
@@ -19,4 +20,8 @@ before_build:
 
 build:
  parallel: true
- project: build/src/warzone2100.vcxproj
+ project: build/PACKAGE.vcxproj
+
+artifacts:
+ - path: build/wz2100-0.1.1-win32.exe
+   name: wz2100_installer

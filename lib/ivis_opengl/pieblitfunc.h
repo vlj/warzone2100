@@ -42,6 +42,7 @@
 #include "piepalette.h"
 #include "pieclip.h"
 #include <type_traits>
+#include <gli/gli.hpp>
 
 /***************************************************************************/
 /*
@@ -83,7 +84,8 @@ public:
 
 	/// Allocate space on the GPU for texture of given parameters. If image is non-NULL,
 	/// then that memory buffer is uploaded to the GPU.
-	void makeTexture(int width, int height, const gfx_api::pixel_format& format = gfx_api::pixel_format::rgba, const void *image = nullptr);
+	void makeTexture(int width, int height, const gfx_api::texel_format& format = gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8, const void *image = nullptr);
+	void makeTexture(const gli::texture2d& texture);
 
 	/// Upload given memory buffer to already allocated texture space on the GPU
 	void updateTexture(const void *image, int width = -1, int height = -1);
@@ -110,7 +112,7 @@ public:
 
 private:
 	GFXTYPE mType;
-	gfx_api::pixel_format mFormat;
+	gfx_api::texel_format mFormat;
 	int mWidth;
 	int mHeight;
 	int mCoordsPerVertex;

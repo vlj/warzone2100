@@ -82,9 +82,10 @@ void pie_AssignTexture(int page, gfx_api::texture* texture)
 	_TEX_PAGE[page].id = texture;
 }
 
-int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page)
+//int pie_AddTexPage(const gli::texture2d& s, const char *filename, bool gameTexture, int page)
+int pie_AddTexPage(const gli::texture2d& s, const char *filename, bool gameTexture, int page)
 {
-	ASSERT(s && filename, "Bad input parameter");
+	ASSERT(filename, "Bad input parameter");
 
 	if (page < 0)
 	{
@@ -102,34 +103,18 @@ int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page
 
 	if (gameTexture) // this is a game texture, use texture compression
 	{
-		gfx_api::pixel_format format{};
-		switch (iV_getPixelFormat(s))
-		{
-		case gfx_api::pixel_format::rgba:
-			format = wz_texture_compression ? gfx_api::pixel_format::compressed_rgba : gfx_api::pixel_format::rgba;
-			break;
-		case gfx_api::pixel_format::rgb:
-			format = wz_texture_compression ? gfx_api::pixel_format::compressed_rgb : gfx_api::pixel_format::rgb;
-			break;
-		default:
-			debug(LOG_FATAL, "getPixelFormat only returns rgb or rgba at the moment");
-		}
 		if (_TEX_PAGE[page].id)
 			delete _TEX_PAGE[page].id;
-		_TEX_PAGE[page].id = gfx_api::context::get().create_texture(s->width, s->height, format, filename);
-		pie_Texture(page).upload(0u, 0u, 0u, s->width, s->height, iV_getPixelFormat(s), s->bmp);
-		pie_Texture(page).generate_mip_levels();
+		_TEX_PAGE[page].id = gfx_api::create_texture(s);
+		gfx_api::upload_texture(pie_Texture(page), s);
 	}
 	else	// this is an interface texture, do not use compression
 	{
 		if (_TEX_PAGE[page].id)
 			delete _TEX_PAGE[page].id;
-		_TEX_PAGE[page].id = gfx_api::context::get().create_texture(s->width, s->height, gfx_api::pixel_format::rgba, filename);
-		pie_Texture(page).upload(0u, 0u, 0u, s->width, s->height, iV_getPixelFormat(s), s->bmp);
+		_TEX_PAGE[page].id = gfx_api::create_texture(s);
+		gfx_api::upload_texture(pie_Texture(page), s);
 	}
-	// it is uploaded, we do not need it anymore
-	free(s->bmp);
-	s->bmp = nullptr;
 
 	/* Send back the texpage number so we can store it in the IMD */
 	return page;
@@ -182,7 +167,6 @@ void pie_MakeTexPageTCMaskName(char *filename)
  */
 int iV_GetTexture(const char *filename, bool compression)
 {
-	iV_Image sSprite;
 	char path[PATH_MAX];
 
 	/* Have we already loaded this one then? */
@@ -199,14 +183,10 @@ int iV_GetTexture(const char *filename, bool compression)
 	// Try to load it
 	sstrcpy(path, "texpages/");
 	sstrcat(path, filename);
-	if (!iV_loadImage_PNG(path, &sSprite))
-	{
-		debug(LOG_ERROR, "Failed to load %s", path);
-		return -1;
-	}
+	const auto& sSprite = gfx_api::load(path);
 	sstrcpy(path, filename);
 	pie_MakeTexPageName(path);
-	return pie_AddTexPage(&sSprite, path, compression);
+	return pie_AddTexPage(sSprite, path, compression);
 }
 
 bool replaceTexture(const QString &oldfile, const QString &newfile)
@@ -214,12 +194,12 @@ bool replaceTexture(const QString &oldfile, const QString &newfile)
 	char tmpname[iV_TEXNAME_MAX];
 
 	// Load new one to replace it
-	iV_Image image;
-	if (!iV_loadImage_PNG(QString("texpages/" + newfile).toUtf8().constData(), &image))
+	const auto& image = gfx_api::load(QString("texpages/" + newfile).toUtf8().constData());
+	/*if (!iV_loadImage_PNG(QString("texpages/" + newfile).toUtf8().constData(), &image))
 	{
 		debug(LOG_ERROR, "Failed to load image: %s", newfile.toUtf8().constData());
 		return false;
-	}
+	}*/
 	sstrcpy(tmpname, oldfile.toUtf8().constData());
 	pie_MakeTexPageName(tmpname);
 	// Have we already loaded this one?
@@ -231,12 +211,10 @@ bool replaceTexture(const QString &oldfile, const QString &newfile)
 			debug(LOG_TEXTURE, "Replacing texture %s with %s from index %d (tex id %u)", _TEX_PAGE[i].name, newfile.toUtf8().constData(), i, _TEX_PAGE[i].id->id());
 			sstrcpy(tmpname, newfile.toUtf8().constData());
 			pie_MakeTexPageName(tmpname);
-			pie_AddTexPage(&image, tmpname, true, i);
-			iV_unloadImage(&image);
+			pie_AddTexPage(image, tmpname, true, i);
 			return true;
 		}
 	}
-	iV_unloadImage(&image);
 	debug(LOG_ERROR, "Nothing to replace!");
 	return false;
 }
@@ -266,19 +244,5 @@ void iV_unloadImage(iV_Image *image)
 	else
 	{
 		debug(LOG_ERROR, "Tried to free invalid image!");
-	}
-}
-
-gfx_api::pixel_format iV_getPixelFormat(const iV_Image *image)
-{
-	switch (image->depth)
-	{
-	case 3:
-		return gfx_api::pixel_format::rgb;
-	case 4:
-		return gfx_api::pixel_format::rgba;
-	default:
-		debug(LOG_FATAL, "iV_getPixelFormat: Unsupported image depth: %u", image->depth);
-		return gfx_api::pixel_format::invalid;
 	}
 }

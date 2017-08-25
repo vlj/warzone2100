@@ -36,8 +36,14 @@ struct screeninfo
 	int screen;
 };
 
+enum class video_backend
+{
+	gl,
+	vulkan
+};
+
 void wzMain(int &argc, char **argv);
-bool wzMainScreenSetup(int antialiasing = 0, bool fullscreen = false, bool vsync = true);
+bool wzMainScreenSetup(const video_backend& backend, int antialiasing = 0, bool fullscreen = false, bool vsync = true);
 void wzMainEventLoop();
 void wzQuit();              ///< Quit game
 void wzShutdown();

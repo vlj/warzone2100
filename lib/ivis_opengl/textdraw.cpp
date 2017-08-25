@@ -679,8 +679,8 @@ void iV_DrawTextRotated(const char *string, float XPos, float YPos, float rotati
 	{
 		if (textureID)
 			delete textureID;
-		textureID = gfx_api::context::get().create_texture(width, height, gfx_api::pixel_format::rgba);
-		textureID->upload(0u, 0u, 0u, width, height, gfx_api::pixel_format::rgba, texture.get());
+		textureID = gfx_api::context::get().create_texture(1, width, height, gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8);
+		textureID->upload(0u, 0u, 0u, width, height, gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8, texture.get());
 		iV_DrawImageText(*textureID, Vector2i(XPos, YPos), Vector2i(xoffset, yoffset), Vector2i(width, height), rotation, color);
 	}
 }
@@ -737,8 +737,8 @@ void WzText::setText(const std::string &string, iV_fonts fontID)
 	{
 		if (texture)
 			delete texture;
-		texture = gfx_api::context::get().create_texture(dimensions.x, dimensions.y, gfx_api::pixel_format::rgba);
-		texture->upload(0u, 0u, 0u, dimensions.x , dimensions.y, gfx_api::pixel_format::rgba, data.get());
+		texture = gfx_api::context::get().create_texture(1, dimensions.x, dimensions.y, gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8);
+		texture->upload(0u, 0u, 0u, dimensions.x , dimensions.y, gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8, data.get());
 
 		mAboveBase = -(type->size->metrics.ascender >> 6);
 		mLineSize = (type->size->metrics.ascender - type->size->metrics.descender) >> 6;

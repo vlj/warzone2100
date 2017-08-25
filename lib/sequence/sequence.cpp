@@ -386,7 +386,7 @@ static void video_write(bool update)
 	const auto& modelViewProjectionMatrix = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f) *
 		glm::translate(glm::vec3(Scrnvidpos[0], Scrnvidpos[1], Scrnvidpos[2]));
 	gfx_api::VideoPSO::get().bind();
-	gfx_api::VideoPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	gfx_api::VideoPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec2{}, glm::vec2{}, glm::vec4(1), 0 });
 	videoGfx->draw<gfx_api::VideoPSO>(modelViewProjectionMatrix);
 }
 
@@ -700,7 +700,7 @@ bool seq_Play(const char *filename)
 		}
 
 		Allocate_videoFrame();
-		videoGfx->makeTexture(texture_width, texture_height, gfx_api::pixel_format::rgba, blackframe);
+		videoGfx->makeTexture(texture_width, texture_height, gfx_api::texel_format::FORMAT_RGBA8_UNORM_PACK8, blackframe);
 		free(blackframe);
 
 		// when using scanlines we need to double the height

@@ -37,13 +37,14 @@
 #include "lib/ivis_opengl/pieclip.h"
 #include "lib/gamelib/gtime.h"
 #include "src/warzoneconfig.h"
-#include <SDL.h>
-#include <SDL_thread.h>
-#include <SDL_clipboard.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL_clipboard.h>
 #include "wz2100icon.h"
 #include "cursors_sdl.h"
 #include <algorithm>
 #include <map>
+#include "lib/ivis_opengl/gfx_api.h"
 
 // This is for the cross-compiler, for static QT 5 builds to avoid the 'plugins' crap on windows
 #if defined(QT_STATICPLUGIN)
@@ -67,7 +68,6 @@ int main(int argc, char *argv[])
 
 // At this time, we only have 1 window and 1 GL context.
 static SDL_Window *WZwindow = nullptr;
-static SDL_GLContext WZglcontext = nullptr;
 unsigned int screenWidth = 0;
 unsigned int screenHeight = 0;
 
@@ -1240,8 +1240,20 @@ void wzMain(int &argc, char **argv)
 	appPtr = new QApplication(argc, argv);
 }
 
+static SDL_WindowFlags SDL_backend(const video_backend& backend)
+{
+	switch (backend)
+	{
+	case video_backend::gl:
+		return SDL_WINDOW_OPENGL;
+	case video_backend::vulkan:
+		return SDL_WINDOW_VULKAN;
+	}
+	return SDL_WindowFlags{};
+}
+
 // This stage, we handle display mode setting
-bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
+bool wzMainScreenSetup(const video_backend& backend, int antialiasing, bool fullscreen, bool vsync)
 {
 	// populate with the saved values (if we had any)
 	int width = pie_GetVideoBufferWidth();
@@ -1323,7 +1335,7 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
 	screenHeight = MAX(screenHeight, 480);
 
 	//// The flags to pass to SDL_CreateWindow
-	int video_flags  = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	int video_flags  = SDL_backend(backend) | SDL_WINDOW_SHOWN;
 
 	if (fullscreen)
 	{
@@ -1352,13 +1364,6 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
 		debug(LOG_FATAL, "Can't create a window, because: %s", SDL_GetError());
 		SDL_Quit();
 		exit(EXIT_FAILURE);
-	}
-
-	WZglcontext = SDL_GL_CreateContext(WZwindow);
-	if (!WZglcontext)
-	{
-		debug(LOG_ERROR, "Failed to create a openGL context! [%s]", SDL_GetError());
-		return false;
 	}
 
 	int bpp = SDL_BITSPERPIXEL(SDL_GetWindowPixelFormat(WZwindow));
@@ -1391,14 +1396,14 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
 	// Enable/disable vsync if requested by the user
 	wzSetSwapInterval(vsync);
 
-	int value = 0;
+/*	int value = 0;
 	if (SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value) == -1 || value == 0)
 	{
 		debug(LOG_FATAL, "OpenGL initialization did not give double buffering!");
 		debug(LOG_FATAL, "Double buffering is required for this game!");
 		SDL_Quit();
 		exit(1);
-	}
+	}*/
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	uint32_t rmask = 0xff000000;
@@ -1436,10 +1441,7 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync)
 		sdlInitCursors();
 	}
 
-	// FIXME: aspect ratio
-	glViewport(0, 0, width, height);
-	glCullFace(GL_FRONT);
-	glEnable(GL_CULL_FACE);
+	gfx_api::context::get().setSwapchain(WZwindow);
 
 	return true;
 }

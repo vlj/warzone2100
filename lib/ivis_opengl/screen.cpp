@@ -54,6 +54,7 @@
 
 /* global used to indicate preferred internal OpenGL format */
 bool wz_texture_compression = 0;
+extern bool khr_debug;
 
 // for compatibility with older versions of GLEW
 #ifndef GLEW_ARB_timer_query
@@ -88,199 +89,25 @@ static PERF_POINT queryActive = PERF_COUNT;
 static int preview_width = 0, preview_height = 0;
 static Vector2i player_pos[MAX_PLAYERS];
 static bool mappreview = false;
-OPENGL_DATA opengl;
-static bool khr_debug = false;
-
-static const char *cbsource(GLenum source)
-{
-	switch (source)
-	{
-	case GL_DEBUG_SOURCE_API: return "API";
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WM";
-	case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SC";
-	case GL_DEBUG_SOURCE_THIRD_PARTY: return "3P";
-	case GL_DEBUG_SOURCE_APPLICATION: return "WZ";
-default: case GL_DEBUG_SOURCE_OTHER: return "OTHER";
-	}
-}
-
-static const char *cbtype(GLenum type)
-{
-	switch (type)
-	{
-	case GL_DEBUG_TYPE_ERROR: return "Error";
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated";
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "Undefined";
-	case GL_DEBUG_TYPE_PORTABILITY: return "Portability";
-	case GL_DEBUG_TYPE_PERFORMANCE: return "Performance";
-	case GL_DEBUG_TYPE_MARKER: return "Marker";
-default: case GL_DEBUG_TYPE_OTHER: return "Other";
-	}
-}
-
-static const char *cbseverity(GLenum severity)
-{
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_HIGH: return "High";
-	case GL_DEBUG_SEVERITY_MEDIUM: return "Medium";
-	case GL_DEBUG_SEVERITY_LOW: return "Low";
-	case GL_DEBUG_SEVERITY_NOTIFICATION: return "Notification";
-	default: return "Other";
-	}
-}
-
-static void khr_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
-{
-	(void)userParam; // we pass in NULL here
-	(void)length; // length of message, buggy on some drivers, don't use
-	(void)id; // message id
-	debug(LOG_ERROR, "GL::%s(%s:%s) : %s", cbsource(source), cbtype(type), cbseverity(severity), message);
-}
 
 /* Initialise the double buffered display */
 bool screenInitialise()
 {
-	GLint glMaxTUs;
-	GLenum err;
-
-	err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debug(LOG_FATAL, "Error: %s", glewGetErrorString(err));
-		exit(1);
-	}
-
-	/* Dump general information about OpenGL implementation to the console and the dump file */
-	ssprintf(opengl.vendor, "OpenGL Vendor: %s", glGetString(GL_VENDOR));
-	addDumpInfo(opengl.vendor);
-	debug(LOG_3D, "%s", opengl.vendor);
-	ssprintf(opengl.renderer, "OpenGL Renderer: %s", glGetString(GL_RENDERER));
-	addDumpInfo(opengl.renderer);
-	debug(LOG_3D, "%s", opengl.renderer);
-	ssprintf(opengl.version, "OpenGL Version: %s", glGetString(GL_VERSION));
-	addDumpInfo(opengl.version);
-	debug(LOG_3D, "%s", opengl.version);
-	ssprintf(opengl.GLEWversion, "GLEW Version: %s", glewGetString(GLEW_VERSION));
-	if (strncmp(opengl.GLEWversion, "1.9.", 4) == 0) // work around known bug with KHR_debug extension support in this release
-	{
-		debug(LOG_WARNING, "Your version of GLEW is old and buggy, please upgrade to at least version 1.10.");
-		khr_debug = false;
-	}
-	else
-	{
-		khr_debug = GLEW_KHR_debug;
-	}
-	addDumpInfo(opengl.GLEWversion);
-	debug(LOG_3D, "%s", opengl.GLEWversion);
-
-	GLubyte const *extensionsBegin = glGetString(GL_EXTENSIONS);
-	if (extensionsBegin == nullptr)
-	{
-		static GLubyte const emptyString[] = "";
-		extensionsBegin = emptyString;
-	}
-	GLubyte const *extensionsEnd = extensionsBegin + strlen((char const *)extensionsBegin);
-	std::vector<std::string> glExtensions;
-	for (GLubyte const *i = extensionsBegin; i < extensionsEnd;)
-	{
-		GLubyte const *j = std::find(i, extensionsEnd, ' ');
-		glExtensions.push_back(std::string(i, j));
-		i = j + 1;
-	}
-
-	/* Dump extended information about OpenGL implementation to the console */
-
-	std::string line;
-	for (unsigned n = 0; n < glExtensions.size(); ++n)
-	{
-		std::string word = " ";
-		word += glExtensions[n];
-		if (n + 1 != glExtensions.size())
-		{
-			word += ',';
-		}
-		if (line.size() + word.size() > 160)
-		{
-			debug(LOG_3D, "OpenGL Extensions:%s", line.c_str());
-			line.clear();
-		}
-		line += word;
-	}
-	debug(LOG_3D, "OpenGL Extensions:%s", line.c_str());
-	debug(LOG_3D, "Notable OpenGL features:");
-	debug(LOG_3D, "  * OpenGL 1.2 %s supported!", GLEW_VERSION_1_2 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.3 %s supported!", GLEW_VERSION_1_3 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.4 %s supported!", GLEW_VERSION_1_4 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.5 %s supported!", GLEW_VERSION_1_5 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 2.0 %s supported!", GLEW_VERSION_2_0 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 2.1 %s supported!", GLEW_VERSION_2_1 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 3.0 %s supported!", GLEW_VERSION_3_0 ? "is" : "is NOT");
-	debug(LOG_3D, "  * Texture compression %s supported.", GLEW_ARB_texture_compression ? "is" : "is NOT");
-	debug(LOG_3D, "  * Two side stencil %s supported.", GLEW_EXT_stencil_two_side ? "is" : "is NOT");
-	debug(LOG_3D, "  * ATI separate stencil is%s supported.", GLEW_ATI_separate_stencil ? "" : " NOT");
-	debug(LOG_3D, "  * Stencil wrap %s supported.", GLEW_EXT_stencil_wrap ? "is" : "is NOT");
-	debug(LOG_3D, "  * Anisotropic filtering %s supported.", GLEW_EXT_texture_filter_anisotropic ? "is" : "is NOT");
-	debug(LOG_3D, "  * Rectangular texture %s supported.", GLEW_ARB_texture_rectangle ? "is" : "is NOT");
-	debug(LOG_3D, "  * FrameBuffer Object (FBO) %s supported.", GLEW_EXT_framebuffer_object ? "is" : "is NOT");
-	debug(LOG_3D, "  * ARB Vertex Buffer Object (VBO) %s supported.", GLEW_ARB_vertex_buffer_object ? "is" : "is NOT");
-	debug(LOG_3D, "  * NPOT %s supported.", GLEW_ARB_texture_non_power_of_two ? "is" : "is NOT");
-	debug(LOG_3D, "  * texture cube_map %s supported.", GLEW_ARB_texture_cube_map ? "is" : "is NOT");
-	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &glMaxTUs);
-	debug(LOG_3D, "  * Total number of Texture Units (TUs) supported is %d.", (int) glMaxTUs);
-	debug(LOG_3D, "  * GL_ARB_timer_query %s supported!", GLEW_ARB_timer_query ? "is" : "is NOT");
-	debug(LOG_3D, "  * KHR_DEBUG support %s detected", khr_debug ? "was" : "was NOT");
-
-	if (!GLEW_VERSION_2_0)
-	{
-		debug(LOG_FATAL, "OpenGL 2.0 not supported! Please upgrade your drivers.");
-		return false;
-	}
-
 	screenWidth = MAX(screenWidth, 640);
 	screenHeight = MAX(screenHeight, 480);
 
-	std::pair<int, int> glslVersion(0, 0);
-	sscanf((char const *)glGetString(GL_SHADING_LANGUAGE_VERSION), "%d.%d", &glslVersion.first, &glslVersion.second);
-
-	/* Dump information about OpenGL 2.0+ implementation to the console and the dump file */
-	GLint glMaxTIUs, glMaxTCs, glMaxTIUAs, glmaxSamples, glmaxSamplesbuf;
-
-	debug(LOG_3D, "  * OpenGL GLSL Version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	ssprintf(opengl.GLSLversion, "OpenGL GLSL Version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	addDumpInfo(opengl.GLSLversion);
-
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &glMaxTIUs);
-	debug(LOG_3D, "  * Total number of Texture Image Units (TIUs) supported is %d.", (int) glMaxTIUs);
-	glGetIntegerv(GL_MAX_TEXTURE_COORDS, &glMaxTCs);
-	debug(LOG_3D, "  * Total number of Texture Coords (TCs) supported is %d.", (int) glMaxTCs);
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB, &glMaxTIUAs);
-	debug(LOG_3D, "  * Total number of Texture Image Units ARB(TIUAs) supported is %d.", (int) glMaxTIUAs);
-	glGetIntegerv(GL_SAMPLE_BUFFERS, &glmaxSamplesbuf);
-	debug(LOG_3D, "  * (current) Max Sample buffer is %d.", (int) glmaxSamplesbuf);
-	glGetIntegerv(GL_SAMPLES, &glmaxSamples);
-	debug(LOG_3D, "  * (current) Max Sample level is %d.", (int) glmaxSamples);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	pie_Skybox_Init();
 
 	// Generate backdrop render
 	backdropGfx = new GFX(GFX_TEXTURE, 2);
 
-	if (GLEW_ARB_timer_query)
+
+/*	if (GLEW_ARB_timer_query)
 	{
 		glGenQueries(PERF_COUNT, perfpos);
-	}
-
-	if (khr_debug)
-	{
-		glDebugMessageCallback((GLDEBUGPROC)khr_callback, nullptr);
-		glEnable(GL_DEBUG_OUTPUT);
-		// Do not want to output notifications. Some drivers spam them too much.
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-		debug(LOG_3D, "Enabling KHR_debug message callback");
-	}
+	}*/
 
 	return true;
 }
@@ -475,7 +302,7 @@ void screen_Display()
 	// Draw backdrop
 	const auto& modelViewProjectionMatrix = glm::ortho(0.f, (float)pie_GetVideoBufferWidth(), (float)pie_GetVideoBufferHeight(), 0.f);
 	gfx_api::BackDropPSO::get().bind();
-	gfx_api::BackDropPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	gfx_api::BackDropPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec2{}, glm::vec2{}, glm::vec4(1), 0 });
 	backdropGfx->draw<gfx_api::BackDropPSO>(modelViewProjectionMatrix);
 
 	if (mappreview)
@@ -536,7 +363,7 @@ void screen_Upload(const char *newBackDropBmp)
 
 	if (newBackDropBmp) // preview
 	{
-		backdropGfx->makeTexture(BACKDROP_HACK_WIDTH, BACKDROP_HACK_HEIGHT, gfx_api::pixel_format::rgb, newBackDropBmp);
+		backdropGfx->makeTexture(BACKDROP_HACK_WIDTH, BACKDROP_HACK_HEIGHT, gfx_api::texel_format::FORMAT_RGB8_UNORM_PACK8, newBackDropBmp);
 
 		int s1 = screenWidth / preview_width;
 		int s2 = screenHeight / preview_height;

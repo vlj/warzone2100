@@ -95,7 +95,7 @@ void pie_TransColouredTriangle(const std::array<Vector3f, 3> &vrt, PIELIGHT c, c
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, 3 * sizeof(Vector3f));
 	buffer->upload(0, 3 * sizeof(Vector3f), vrt.data());
 	gfx_api::TransColouredTrianglePSO::get().bind();
-	gfx_api::TransColouredTrianglePSO::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, color });
+	gfx_api::TransColouredTrianglePSO::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, glm::vec2{}, glm::vec2{}, color });
 	gfx_api::TransColouredTrianglePSO::get().bind_vertex_buffers(buffer);
 	gfx_api::TransColouredTrianglePSO::get().draw(3, 0);
 }
@@ -183,6 +183,6 @@ void pie_DrawSkybox(float scale, const glm::mat4 &viewMatrix)
 	// Apply scale matrix
 	const auto& modelViewProjectionMatrix = pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale);
 	gfx_api::SkyboxPSO::get().bind();
-	gfx_api::SkyboxPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	gfx_api::SkyboxPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec2{}, glm::vec2{}, glm::vec4(1), 0 });
 	skyboxGfx->draw<gfx_api::SkyboxPSO>(modelViewProjectionMatrix);
 }

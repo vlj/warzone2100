@@ -248,6 +248,7 @@ typedef enum
 	CLI_CRASH,
 	CLI_TEXTURECOMPRESSION,
 	CLI_NOTEXTURECOMPRESSION,
+	CLI_VULKAN,
 	CLI_AUTOGAME,
 	CLI_SAVEANDQUIT,
 	CLI_SKIRMISH,
@@ -284,6 +285,7 @@ static const struct poptOption *getOptionsTable()
 		{ "host",       '\0', POPT_ARG_NONE,   nullptr, CLI_HOSTLAUNCH, N_("Go directly to host screen"),        nullptr, true },
 		{ "texturecompression", '\0', POPT_ARG_NONE, nullptr, CLI_TEXTURECOMPRESSION, N_("Enable texture compression"), nullptr, false },
 		{ "notexturecompression", '\0', POPT_ARG_NONE, nullptr, CLI_NOTEXTURECOMPRESSION, N_("Disable texture compression"), nullptr, false },
+		{ "vulkan", '\0', POPT_ARG_NONE , nullptr, CLI_VULKAN, N_("Use Vulkan backend"), nullptr, false },
 		{ "autogame",   '\0', POPT_ARG_NONE,   nullptr, CLI_AUTOGAME,   N_("Run games automatically for testing"), nullptr, true },
 		{ "saveandquit", '\0', POPT_ARG_STRING, nullptr, CLI_SAVEANDQUIT, N_("Immediately save game and quit"), N_("save name"), true },
 		{ "skirmish",   '\0', POPT_ARG_STRING, nullptr, CLI_SKIRMISH,   N_("Start skirmish game with given settings file"), N_("test"), true },
@@ -624,6 +626,10 @@ bool ParseCommandLine(int argc, const char **argv)
 
 		case CLI_NOTEXTURECOMPRESSION:
 			wz_texture_compression = false;
+			break;
+
+		case CLI_VULKAN:
+			uses_vulkan = true;
 			break;
 
 		case CLI_AUTOGAME:

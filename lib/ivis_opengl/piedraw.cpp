@@ -133,7 +133,7 @@ static void pie_Draw3DButton(iIMDShape *shape, PIELIGHT teamcolour, const glm::m
 
 	gfx_api::Draw3DButtonPSO::get().bind_textures(&pie_Texture(shape->texpage), tcmask, normalmap, specularmap);
 	gfx_api::Draw3DButtonPSO::get().bind_vertex_buffers(shape->buffers[VBO_VERTEX], shape->buffers[VBO_NORMAL], shape->buffers[VBO_TEXCOORD]);
-	shape->buffers[VBO_INDEX]->bind();
+	gfx_api::context::get().bind_index_buffer(*shape->buffers[VBO_INDEX], gfx_api::index_type::u16);
 	gfx_api::Draw3DButtonPSO::get().draw_elements(shape->npolys * 3, 0);
 	polyCount += shape->npolys;
 }
@@ -230,7 +230,7 @@ static void pie_Draw3DShape2(const iIMDShape *shape, int frame, PIELIGHT colour,
 	SHADER_MODE mode = shape->shaderProgram == SHADER_NONE ? light ? SHADER_COMPONENT : SHADER_NOLIGHT : shape->shaderProgram;
 
 	frame %= std::max<int>(1, shape->numFrames);
-	shape->buffers[VBO_INDEX]->bind();
+	gfx_api::context::get().bind_index_buffer(*shape->buffers[VBO_INDEX], gfx_api::index_type::u16);
 
 	if (light)
 	{
@@ -366,7 +366,7 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, sizeof(Vector3f) * vertexes.size());
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
 	gfx_api::DrawStencilShadow::get().bind();
-	gfx_api::DrawStencilShadow::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, glm::vec4() });
+	gfx_api::DrawStencilShadow::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, glm::vec2{}, glm::vec2{}, glm::vec4() });
 	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
 	gfx_api::DrawStencilShadow::get().draw(edge_count * 2 * 3, 0);
 }

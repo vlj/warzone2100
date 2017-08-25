@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <QtCore/QHash>
 #include <QtCore/QString>
+#include <gli/gli.hpp>
 
 static QHash<QString, ImageDef *> images;
 static QList<IMAGEFILE *> files;
@@ -51,7 +52,7 @@ struct ImageMergeRectangle
 	int index;  // Index in ImageDefs array.
 	int page;   // Texture page index.
 	Vector2i loc, siz;
-	iV_Image *data;
+	gli::texture2d data;
 };
 
 struct ImageMerge
@@ -191,14 +192,15 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 
 		ImageMergeRectangle *imageRect = &pageLayout.images[numImages];
 		imageRect->index = numImages;
-		imageRect->data = new iV_Image;
-		if (!iV_loadImage_PNG(spriteName.c_str(), imageRect->data))
+		imageRect->data = gfx_api::load(spriteName.c_str());
+		/*if (!iV_loadImage_PNG(spriteName.c_str(), imageRect->data))
 		{
 			debug(LOG_ERROR, "Failed to find image \"%s\" listed in \"%s\".", spriteName.c_str(), fileName);
 			delete imageFile;
 			return nullptr;
-		}
-		imageRect->siz = Vector2i(imageRect->data->width, imageRect->data->height);
+		}*/
+		debug(LOG_WARNING, "Loading %s", spriteName.c_str());
+		imageRect->siz = Vector2i(imageRect->data.extent().x, imageRect->data.extent().y);
 		numImages++;
 		ptr += temp;
 		while (ptr < pFileData + pFileSize && *ptr++ != '\n') {} // skip rest of line
@@ -212,16 +214,12 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 	pageLayout.arrange();  // Arrange all the images onto texture pages (attempt to do so with as few pages as possible).
 	imageFile->pages.resize(pageLayout.pages.size());
 
-	std::vector<iV_Image> ivImages(pageLayout.pages.size());
-
+	std::vector<gli::texture2d> ivImages(pageLayout.pages.size());
 	for (unsigned p = 0; p < pageLayout.pages.size(); ++p)
 	{
 		int size = pageLayout.pages[p];
-		ivImages[p].depth = 4;
-		ivImages[p].width = size;
-		ivImages[p].height = size;
-		ivImages[p].bmp = (unsigned char *)malloc(size * size * 4); // MUST be malloc, since this is free()d later by pie_AddTexPage().
-		memset(ivImages[p].bmp, 0x00, size * size * 4);
+		ivImages[p] = { gli::format::FORMAT_BGRA8_UNORM_PACK8, gli::texture2d::extent_type{ size, size } };
+		ivImages[p].clear(gli::u8vec4(0, 0, 0, 255));
 		imageFile->pages[p].size = size;
 		// Must set imageFile->pages[p].id later, after filling out ivImages[p].bmp.
 	}
@@ -235,12 +233,15 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 		imageFile->imageDefs[r->index].Height = r->siz.y;
 
 		// Copy image data onto texture page.
-		iV_Image *srcImage = r->data;
+		/*iV_Image *srcImage = r->data;
 		int srcDepth = srcImage->depth;
 		int srcStride = srcImage->width * srcDepth; // Not sure whether to pad in the case that srcDepth ≠ 4, however this apparently cannot happen.
-		unsigned char *srcBytes = srcImage->bmp + 0 * srcDepth + 0 * srcStride;
-		iV_Image *dstImage = &ivImages[r->page];
-		int dstDepth = dstImage->depth;
+		unsigned char *srcBytes = srcImage->bmp + 0 * srcDepth + 0 * srcStride;*/
+		const auto& size = r->data.extent();
+		const auto& srcSize = gli::extent3d{ r->siz.x, r->siz.y, 1 };
+		gli::texture2d& dstImage = ivImages[r->page];
+		dstImage.copy(r->data, 0, 0, 0, { 0, 0, 0 }, 0, 0, 0, { r->loc.x, r->loc.y, 0 }, srcSize);
+/*		int dstDepth = dstImage->depth;
 		int dstStride = dstImage->width * dstDepth;
 		unsigned char *dstBytes = dstImage->bmp + r->loc.x * dstDepth + r->loc.y * dstStride;
 		Vector2i size = r->siz;
@@ -250,11 +251,9 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 			{
 				memcpy(rgba, srcBytes + x * srcDepth + y * srcStride, srcDepth);
 				memcpy(dstBytes + x * dstDepth + y * dstStride, rgba, dstDepth);
-			}
+			}*/
 
 		// Finished reading the image data and copying it to the texture page, delete it.
-		free(r->data->bmp);
-		delete r->data;
 	}
 
 	// Debug usage only. Dump all images to disk (do mkdir images/, first). Doesn't dump the alpha channel, since the .ppm format doesn't support that.
@@ -278,7 +277,7 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 		char arbitraryName[256];
 		ssprintf(arbitraryName, "%s-%03u", fileName, p);
 		// Now we can set imageFile->pages[p].id. This free()s the ivImages[p].bmp array!
-		imageFile->pages[p].id = pie_AddTexPage(&ivImages[p], arbitraryName, false);
+		imageFile->pages[p].id = pie_AddTexPage(ivImages[p], arbitraryName, false);
 	}
 
 	// duplicate some data, since we want another access point to these data structures now, FIXME

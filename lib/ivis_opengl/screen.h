@@ -56,6 +56,7 @@ void screen_Display();
 void screenDumpToDisk(const char *path, const char *level);
 
 extern bool wz_texture_compression;
+extern bool uses_vulkan;
 
 void screenDoDumpToDiskIfRequired();
 

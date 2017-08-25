@@ -34,6 +34,7 @@
 *.suo
 *.user
 *.dds
+*.spv
 /devpkg/*
 build_tools/autorevision/Debug/*
 build_tools/autorevision/Release/*

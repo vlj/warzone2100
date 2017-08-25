@@ -41,6 +41,8 @@
 #include "screen.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <gli/gli.hpp>
+#include <physfs.h>
 
 /***************************************************************************/
 /*
@@ -79,29 +81,45 @@ void GFX::loadTexture(const char *filename)
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
 	const char *extension = strrchr(filename, '.'); // determine the filetype
 	iV_Image image;
-	if (!extension || strcmp(extension, ".png") != 0)
+/*	if (!extension || strcmp(extension, ".dds") != 0)
 	{
 		debug(LOG_ERROR, "Bad image filename: %s", filename);
 		return;
-	}
-	if (iV_loadImage_PNG(filename, &image))
-	{
-		makeTexture(image.width, image.height, iV_getPixelFormat(&image), image.bmp);
-		iV_unloadImage(&image);
-	}
+	}*/
+
+	makeTexture(gfx_api::load(filename));
 }
 
-void GFX::makeTexture(int width, int height, const gfx_api::pixel_format& format, const void *image)
+void GFX::makeTexture(int width, int height, const gfx_api::texel_format& format, const void *image)
 {
 	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
 	if (mTexture)
 		delete mTexture;
-	mTexture = gfx_api::context::get().create_texture(width, height, format);
+	mTexture = gfx_api::context::get().create_texture(1, width, height, format);
 	if (image != nullptr)
 		mTexture->upload(0u, 0u, 0u, width, height, format, image);
 	mWidth = width;
 	mHeight = height;
 	mFormat = format;
+}
+
+void GFX::makeTexture(const gli::texture2d& texture)
+{
+	ASSERT(mType == GFX_TEXTURE, "Wrong GFX type");
+
+	if (texture.levels() > 1)
+	{
+		debug(LOG_ERROR, "File has several mipmap level, only one will be used.");
+	}
+	if (mTexture)
+		delete mTexture;
+	const auto& extent = texture.extent(0);
+	
+	mTexture = gfx_api::create_texture(texture);
+	gfx_api::upload_texture(*mTexture, texture);
+	mWidth = extent.x;
+	mHeight = extent.y;
+	mFormat = texture.format();
 }
 
 void GFX::updateTexture(const void *image, int width, int height)
@@ -164,7 +182,7 @@ void iV_Line(int x0, int y0, int x1, int y1, PIELIGHT colour)
 	);
 	const auto &mat = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f);
 	gfx_api::LinePSO::get().bind();
-	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y0), glm::vec2(x1, y1), color, mat });
+	gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(x0, y0), glm::vec2(x1, y1), color });
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	gfx_api::LinePSO::get().draw(2, 0);
 }
@@ -182,7 +200,7 @@ void iV_Lines(const std::vector<glm::ivec4> &lines, PIELIGHT colour)
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	for (const auto &line : lines)
 	{
-		gfx_api::LinePSO::get().bind_constants({ glm::vec2(line.x, line.y), glm::vec2(line.z, line.w), color, mat });
+		gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(line.x, line.y), glm::vec2(line.z, line.w), color });
 		gfx_api::LinePSO::get().draw(2, 0);
 	}
 }
@@ -202,7 +220,7 @@ static void pie_DrawRect(float x0, float y0, float x1, float y1, PIELIGHT colour
 	const auto& mvp = defaultProjectionMatrix() * glm::translate(Vector3f(center, 0.f)) * glm::scale(x1 - x0, y1 - y0, 1.f);
 
 	PSO::get().bind();
-	PSO::get().bind_constants({ mvp,
+	PSO::get().bind_constants({ mvp, glm::vec2{}, glm::vec2{},
 		glm::vec4(colour.vector[0] / 255.f, colour.vector[1] / 255.f, colour.vector[2] / 255.f, colour.vector[3] / 255.f) });
 	PSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
 	PSO::get().draw(4, 0);
@@ -227,9 +245,9 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 	);
 	gfx_api::LinePSO::get().bind();
 	gfx_api::LinePSO::get().bind_vertex_buffers(pie_internal::rectBuffer);
-	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y1), glm::vec2(x0, y0), firstColor, mat });
+	gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(x0, y1), glm::vec2(x0, y0), firstColor });
 	gfx_api::LinePSO::get().draw(2, 0);
-	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y0), glm::vec2(x1, y0), firstColor, mat });
+	gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(x0, y0), glm::vec2(x1, y0), firstColor });
 	gfx_api::LinePSO::get().draw(2, 0);
 
 	const glm::vec4 secondColor(
@@ -238,9 +256,9 @@ void iV_Box2(int x0, int y0, int x1, int y1, PIELIGHT first, PIELIGHT second)
 		second.vector[2] / 255.f,
 		second.vector[3] / 255.f
 	);
-	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x1, y0), glm::vec2(x1, y1), secondColor, mat });
+	gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(x1, y0), glm::vec2(x1, y1), secondColor });
 	gfx_api::LinePSO::get().draw(2, 0);
-	gfx_api::LinePSO::get().bind_constants({ glm::vec2(x0, y1), glm::vec2(x1, y1), secondColor, mat });
+	gfx_api::LinePSO::get().bind_constants({ mat, glm::vec2(x0, y1), glm::vec2(x1, y1), secondColor });
 	gfx_api::LinePSO::get().draw(2, 0);
 }
 
@@ -296,6 +314,7 @@ static void iv_DrawImageImpl(Vector2i offset, Vector2i size, Vector2f TextureUV,
 void iV_DrawImageText(gfx_api::texture& TextureID, Vector2i Position, Vector2i offset, Vector2i size, float angle, PIELIGHT colour)
 {
 	glm::mat4 mvp = defaultProjectionMatrix() * glm::translate(Position.x, Position.y, 0) * glm::rotate(angle, glm::vec3(0.f, 0.f, 1.f));
+	gfx_api::DrawImageTextPSO::get().bind();
 	gfx_api::DrawImageTextPSO::get().bind_textures(&TextureID);
 	iv_DrawImageImpl<gfx_api::DrawImageTextPSO>(offset, size, Vector2f(0.f, 0.f), Vector2f(1.f, 1.f), colour, mvp, SHADER_TEXT);
 }
@@ -394,6 +413,7 @@ void iV_DrawImageRepeatX(IMAGEFILE *ImageFile, UWORD ID, int x, int y, int Width
 	Vector2i pieImage = makePieImage(ImageFile, ID, &dest, x, y);
 
 	unsigned hRemainder = Width % Image->Width;
+	gfx_api::DrawImagePSO::get().bind();
 
 	for (unsigned hRep = 0; hRep < Width / Image->Width; hRep++)
 	{
@@ -466,7 +486,7 @@ void pie_DownLoadRadar(UDWORD *buffer)
 void pie_RenderRadar(const glm::mat4 &modelViewProjectionMatrix)
 {
 	gfx_api::RadarPSO::get().bind();
-	gfx_api::RadarPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec4(1), 0 });
+	gfx_api::RadarPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec2{}, glm::vec2{}, glm::vec4(1), 0 });
 	radarGfx->draw<gfx_api::RadarPSO>(modelViewProjectionMatrix);
 }
 

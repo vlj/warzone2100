@@ -13,7 +13,7 @@ configuration:
 
 before_build:
  - set PATH=%PATH%;%QT5DIR%\bin;
- - ps: Invoke-WebRequest https://1drv.ms/u/s!AnAvNPqq0z02gaAnXhCw3qd1HoxP2Q -OutFile vcpkg.7z
+ - ps: Invoke-WebRequest https://onedrive.live.com/download?cid=363DD3AAFA342F70&resid=363DD3AAFA342F70%2120519&authkey=AIoZ_CRK7-Ckq9I -OutFile vcpkg.7z
  - 7z x vcpkg.7z > NUL
  - cmake -H. -Bbuild  -DCMAKE_TOOLCHAIN_FILE=C:\projects\warzone2100\vcpkg\scripts\buildsystems\vcpkg.cmake -G "Visual Studio 14 2015" 
 

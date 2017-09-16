@@ -1213,7 +1213,7 @@ void drawTerrain(const glm::mat4 &mvp)
 	cullTerrain();
 
 	// shift the lightmap half a tile as lights are supposed to be placed at the center of a tile
-	const glm::mat4 lightMatrix = glm::translate(1.f / lightmapWidth / 2, 1.f / lightmapHeight / 2, 0.f);
+	const glm::mat4 lightMatrix = glm::translate(glm::vec3{ 1.f / lightmapWidth / 2, 1.f / lightmapHeight / 2, 0.f });
 
 	//////////////////////////////////////
 	// canvas to draw on
@@ -1250,7 +1250,7 @@ void drawWater(const glm::mat4 &viewMatrix)
 	gfx_api::WaterPSO::get().bind_textures(&pie_Texture(iV_GetTexture("page-80-water-1.png")), &pie_Texture(iV_GetTexture("page-81-water-2.png")));
 	gfx_api::WaterPSO::get().bind_vertex_buffers(waterVBO);
 	gfx_api::WaterPSO::get().bind_constants({ viewMatrix, paramsX, paramsY, paramsX2, paramsY2,
-		glm::translate(waterOffset, 0.f, 0.f), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, glm::vec4{}, 0, 1
+		glm::translate(glm::vec3{ waterOffset, 0.f, 0.f}), glm::mat4(), renderState.fogEnabled, renderState.fogBegin, renderState.fogEnd, glm::vec4{}, 0, 1
 });
 	gfx_api::context::get().bind_index_buffer(*waterIndexVBO, gfx_api::index_type::u32);
 

@@ -279,7 +279,7 @@ void drawRadar()
 		frameSkip = RADAR_FRAME_SKIP;
 	}
 	frameSkip--;
-	glm::mat4 radarMatrix = glm::translate(radarCenterX, radarCenterY, 0);
+	glm::mat4 radarMatrix = glm::translate(glm::vec3{ radarCenterX, radarCenterY, 0 });
 	glm::mat4 orthoMatrix = glm::ortho(0.f, static_cast<float>(pie_GetVideoBufferWidth()), static_cast<float>(pie_GetVideoBufferHeight()), 0.f);
 	if (rotateRadar)
 	{
@@ -289,7 +289,7 @@ void drawRadar()
 	}
 
 	pie_RenderRadar(orthoMatrix * radarMatrix);
-	DrawRadarExtras(orthoMatrix * radarMatrix * glm::translate(-radarWidth / 2.f - 1.f, -radarHeight / 2.f - 1.f, 0.f));
+	DrawRadarExtras(orthoMatrix * radarMatrix * glm::translate(glm::vec3{ -radarWidth / 2.f - 1.f, -radarHeight / 2.f - 1.f, 0.f }));
 	drawRadarBlips(-radarWidth / 2.0 - 1, -radarHeight / 2.0 - 1, pixSizeH, pixSizeV, orthoMatrix * radarMatrix);
 }
 

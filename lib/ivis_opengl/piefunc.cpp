@@ -181,7 +181,7 @@ void pie_Skybox_Shutdown()
 void pie_DrawSkybox(float scale, const glm::mat4 &viewMatrix)
 {
 	// Apply scale matrix
-	const auto& modelViewProjectionMatrix = pie_PerspectiveGet() * viewMatrix * glm::scale(scale, scale / 2.f, scale);
+	const auto& modelViewProjectionMatrix = pie_PerspectiveGet() * viewMatrix * glm::scale(glm::vec3{ scale, scale / 2.f, scale });
 	gfx_api::SkyboxPSO::get().bind();
 	gfx_api::SkyboxPSO::get().bind_constants({ modelViewProjectionMatrix, glm::vec2{}, glm::vec2{}, glm::vec4(1), 0 });
 	skyboxGfx->draw<gfx_api::SkyboxPSO>(modelViewProjectionMatrix);

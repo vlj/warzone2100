@@ -126,6 +126,14 @@ void	initConsoleMessages()
 	permitNewConsoleMessages(true);							// Allow new messages
 }
 
+void deinitConsoleMessages()
+{
+	ActiveMessages.clear();
+	TeamMessages.clear();
+	HistoryMessages.clear();
+	InfoMessages.clear();
+}
+
 // toggle between team & global history
 void setHistoryMode(bool mode)
 {

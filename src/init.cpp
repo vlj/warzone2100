@@ -1193,6 +1193,9 @@ bool stageThreeInitialise()
 		return false;
 	}
 
+	/* Init the game messaging system */
+	initConsoleMessages();
+
 	effectResetUpdates();
 	initLighting(0, 0, mapWidth, mapHeight);
 	pie_InitLighting();
@@ -1318,6 +1321,8 @@ bool stageThreeShutDown()
 	}
 
 	scrExternReset();
+
+	deinitConsoleMessages();
 
 	// reset the run data so that doesn't need to be initialised in the scripts
 	initRunData();

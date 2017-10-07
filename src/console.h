@@ -43,6 +43,7 @@ extern char ConsoleString[MAX_CONSOLE_TMP_STRING_LENGTH];
 bool addConsoleMessage(const char *Text, CONSOLE_TEXT_JUSTIFICATION jusType, SDWORD player, bool team = false);
 void updateConsoleMessages();
 void initConsoleMessages();
+void deinitConsoleMessages();
 void removeTopConsoleMessage();
 void displayConsoleMessages();
 void displayOldMessages();

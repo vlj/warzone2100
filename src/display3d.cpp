@@ -1091,9 +1091,6 @@ bool init3DView()
 	/* Get all the init stuff out of here? */
 	initWarCam();
 
-	/* Init the game messaging system */
-	initConsoleMessages();
-
 	atmosInitSystem();
 
 	// Set the initial fog distance

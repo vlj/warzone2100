@@ -28,7 +28,7 @@
 #include "lib/netplay/netplay.h"
 #include "lib/widget/widgbase.h"
 #include "lib/widget/form.h"
-#include <QtCore/QSignalMapper>
+#include <functional>
 
 
 #define MAX_LEN_AI_NAME   40
@@ -40,7 +40,6 @@
 
 class MultibuttonWidget : public W_FORM
 {
-	Q_OBJECT
 
 public:
 	MultibuttonWidget(WIDGET *parent, int value = -1);
@@ -61,10 +60,8 @@ public:
 		return currentValue_;
 	}
 
-signals:
-	void chosen(int);
+	std::vector<std::function<void(int)>> on_chosen;
 
-public slots:
 	void choose(int value);
 
 private:
@@ -73,7 +70,6 @@ private:
 protected:
 	W_LABEL *label;
 	std::vector<std::pair<W_BUTTON *, int> > buttons;
-	QSignalMapper *mapper;
 	int currentValue_;
 	bool disabled;
 	int gap_;
@@ -82,7 +78,6 @@ protected:
 
 class MultichoiceWidget : public MultibuttonWidget
 {
-	Q_OBJECT
 
 public:
 	MultichoiceWidget(WIDGET *parent, int value = -1);

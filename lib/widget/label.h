@@ -31,8 +31,6 @@
 
 class W_LABEL : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	W_LABEL(W_LABINIT const *init);
 	W_LABEL(WIDGET *parent);

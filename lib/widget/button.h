@@ -33,8 +33,6 @@
 
 class W_BUTTON : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	struct Images
 	{
@@ -70,8 +68,7 @@ public:
 	using WIDGET::setString;
 	using WIDGET::setTip;
 
-signals:
-	void clicked();
+	std::vector<std::function<void(void)>> on_clicked;
 
 public:
 	UDWORD		state;				// The current button state
@@ -86,8 +83,6 @@ public:
 
 class StateButton : public W_BUTTON
 {
-	Q_OBJECT
-
 public:
 	StateButton(WIDGET *parent) : W_BUTTON(parent) {}
 	void setState(unsigned state);

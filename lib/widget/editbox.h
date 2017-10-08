@@ -37,8 +37,6 @@
 
 class W_EDITBOX : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	W_EDITBOX(W_EDBINIT const *init);
 	W_EDITBOX(WIDGET *parent);

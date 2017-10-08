@@ -45,8 +45,6 @@ struct TabSelectionStyle
 
 class TabSelectionWidget : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	TabSelectionWidget(WIDGET *parent);
 
@@ -58,14 +56,12 @@ public:
 		return tabButtons.size();
 	}
 
-signals:
-	void tabChanged(int);
+	std::vector<std::function<void(int)>> tabChanged;
 
-public slots:
 	void setTab(int tab);
 	void setNumberOfTabs(int tabs);
 
-private slots:
+private:
 	void prevTabPage();
 	void nextTabPage();
 
@@ -78,13 +74,10 @@ private:
 	std::vector<W_BUTTON *> tabButtons;
 	W_BUTTON *prevTabPageButton;
 	W_BUTTON *nextTabPageButton;
-	class QSignalMapper *setTabMapper;
 };
 
 class ListWidget : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	enum Order {RightThenDown, DownThenRight};
 
@@ -106,11 +99,9 @@ public:
 		return std::max(((int)myChildren.size() - 1) / widgetsPerPage(), 0) + 1;
 	}
 
-signals:
-	void currentPageChanged(int);
-	void numberOfPagesChanged(int);
+	std::vector<std::function<void(int)>> currentPageChanged;
+	std::vector<std::function<void(int)>> numberOfPagesChanged;
 
-public slots:
 	void setCurrentPage(int page);
 
 private:
@@ -147,8 +138,6 @@ private:
 
 class ListTabWidget : public WIDGET
 {
-	Q_OBJECT
-
 public:
 	enum TabPosition {Top, Bottom};
 

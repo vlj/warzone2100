@@ -46,11 +46,11 @@ TabSelectionWidget::TabSelectionWidget(WIDGET *parent)
 	, tabsAtOnce(1)
 	, prevTabPageButton(new W_BUTTON(this))
 	, nextTabPageButton(new W_BUTTON(this))
-	, setTabMapper(new QSignalMapper(this))
+	//, setTabMapper(new QSignalMapper(this))
 {
-	connect(setTabMapper, SIGNAL(mapped(int)), this, SLOT(setTab(int)));
-	connect(prevTabPageButton, SIGNAL(clicked()), this, SLOT(prevTabPage()));
-	connect(nextTabPageButton, SIGNAL(clicked()), this, SLOT(nextTabPage()));
+	//connect(setTabMapper, SIGNAL(mapped(int)), this, SLOT(setTab(int)));
+	prevTabPageButton->on_clicked.push_back([this]() {prevTabPage(); });
+	nextTabPageButton->on_clicked.push_back([this]() {nextTabPage(); });
 
 	prevTabPageButton->setTip(_("Tab Scroll left"));
 	nextTabPageButton->setTip(_("Tab Scroll right"));
@@ -80,7 +80,8 @@ void TabSelectionWidget::setTab(int tab)
 		return;  // Nothing to do.
 	}
 	doLayoutAll();
-	emit tabChanged(currentTab);
+	for (const auto& callbacks : tabChanged)
+		callbacks(currentTab);
 }
 
 void TabSelectionWidget::setNumberOfTabs(int tabs)
@@ -96,8 +97,7 @@ void TabSelectionWidget::setNumberOfTabs(int tabs)
 	for (unsigned n = previousSize; n < tabButtons.size(); ++n)
 	{
 		tabButtons[n] = new W_BUTTON(this);
-		connect(tabButtons[n], SIGNAL(clicked()), setTabMapper, SLOT(map()));
-		setTabMapper->setMapping(tabButtons[n], n);
+		tabButtons[n]->on_clicked.push_back([this, n]() { setTab(n); });
 	}
 
 	doLayoutAll();
@@ -199,7 +199,8 @@ void ListWidget::addWidgetToLayout(WIDGET *widget)
 	int numPages = pages();
 	if (oldNumPages != numPages)
 	{
-		emit numberOfPagesChanged(numPages);
+		for (const auto& callbacks : numberOfPagesChanged)
+			callbacks(numPages);
 	}
 }
 
@@ -220,7 +221,8 @@ void ListWidget::setCurrentPage(int page)
 	{
 		myChildren[n]->show();
 	}
-	emit currentPageChanged(currentPage_);
+	for (const auto& callbacks : currentPageChanged)
+		callbacks(currentPage_);
 }
 
 void ListWidget::doLayoutAll()
@@ -257,9 +259,9 @@ ListTabWidget::ListTabWidget(WIDGET *parent)
 	, widgets(new ListWidget(this))
 	, tabPos(Top)
 {
-	connect(tabs, SIGNAL(tabChanged(int)), widgets, SLOT(setCurrentPage(int)));
-	connect(widgets, SIGNAL(currentPageChanged(int)), tabs, SLOT(setTab(int)));
-	connect(widgets, SIGNAL(numberOfPagesChanged(int)), tabs, SLOT(setNumberOfTabs(int)));
+	tabs->tabChanged.push_back([this](int i) { widgets->setCurrentPage(i); });
+	widgets->currentPageChanged.push_back([this](int i) { tabs->setTab(i); });
+	widgets->numberOfPagesChanged.push_back([this](int i) { tabs->setNumberOfTabs(i); });
 	tabs->setNumberOfTabs(widgets->pages());
 }
 

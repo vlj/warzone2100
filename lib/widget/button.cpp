@@ -137,7 +137,8 @@ void W_BUTTON::released(W_CONTEXT *, WIDGET_KEY key)
 		if ((!(style & WBUT_NOPRIMARY) && key == WKEY_PRIMARY) ||
 		    ((style & WBUT_SECONDARY) && key == WKEY_SECONDARY))
 		{
-			emit clicked();
+			for (const auto& callbacks : on_clicked)
+				callbacks();
 			screenPointer->setReturn(this);
 			state &= ~WBUT_DOWN;
 			dirty = true;

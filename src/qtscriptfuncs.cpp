@@ -2529,19 +2529,86 @@ static QScriptValue js_terrainType(QScriptContext *context, QScriptEngine *)
 	return QScriptValue(terrainType(mapTile(x, y)));
 }
 
-//-- \subsection{orderDroid(droid, order)}
-//-- Give a droid an order to do something. (3.2+ only)
-static QScriptValue js_orderDroid(QScriptContext *context, QScriptEngine *)
+namespace
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "Droid id %d not found belonging to player %d", id, player);
-	DROID_ORDER order = (DROID_ORDER)context->argument(1).toInt32();
-	SCRIPT_ASSERT(context, order == DORDER_HOLD || order == DORDER_RTR || order == DORDER_STOP
-	              || order == DORDER_RTB || order == DORDER_REARM || order == DORDER_RECYCLE,
-	              "Invalid order: %s", getDroidOrderName(order));
+	template<typename T>
+	struct unbox {
+		//T operator()(size_t& idx, QScriptContext *context) const;
+	};
+
+	template<>
+	struct unbox<int>
+	{
+		int operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toInt32();
+		}
+	};
+
+	template<>
+	struct unbox<unsigned int>
+	{
+		unsigned int operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toInt32();
+		}
+	};
+
+	template<>
+	struct unbox<float>
+	{
+		float operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toNumber();
+		}
+	};
+
+	template<>
+	struct unbox<const DROID*>
+	{
+		const DROID* operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue droidVal = context->argument(0);
+			int id = droidVal.property("id").toInt32();
+			int player = droidVal.property("player").toInt32();
+			return IdToDroid(id, player);
+		}
+	};
+
+	template<>
+	struct unbox<DROID*>
+	{
+		DROID* operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue droidVal = context->argument(0);
+			int id = droidVal.property("id").toInt32();
+			int player = droidVal.property("player").toInt32();
+			return IdToDroid(id, player);
+		}
+	};
+
+	QScriptValue box(int32_t a)
+	{
+		return a;
+	}
+
+	QScriptValue box(bool a)
+	{
+		return a;
+	}
+
+	template<typename R, typename...Args>
+	QScriptValue wrap_(R(*f)(Args...), QScriptContext *context, QScriptEngine *engine)
+	{
+		size_t idx = 0;
+		return box(f(unbox<Args>{}(idx, context)...));
+	}
+}
+
+
+static bool orderDroid_(DROID* psDroid, int _order)
+{
+	DROID_ORDER order = (DROID_ORDER)_order;
 	if (order == DORDER_REARM)
 	{
 		if (STRUCTURE *psStruct = findNearestReArmPad(psDroid, psDroid->psBaseStruct, false))
@@ -2557,7 +2624,15 @@ static QScriptValue js_orderDroid(QScriptContext *context, QScriptEngine *)
 	{
 		orderDroid(psDroid, order, ModeQueue);
 	}
-	return QScriptValue(true);
+	return true;
+}
+
+//-- \subsection{orderDroid(droid, order)}
+//-- Give a droid an order to do something. (3.2+ only)
+static QScriptValue js_orderDroid(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(orderDroid_, context, engine);
+	QScriptValue droidVal = context->argument(0);
 }
 
 //-- \subsection{orderDroidObj(droid, order, object)}
@@ -3214,18 +3289,14 @@ static QScriptValue js_translate(QScriptContext *context, QScriptEngine *engine)
 //-- Return amount of power held by the given player.
 static QScriptValue js_playerPower(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
-	return QScriptValue(getPower(player));
+	return wrap_(getPower, context, engine);
 }
 
 //-- \subsection{queuedPower(player)}
 //-- Return amount of power queued up for production by the given player. (3.2+ only)
 static QScriptValue js_queuedPower(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
-	return QScriptValue(getQueuedPower(player));
+	return wrap_(getQueuedPower, context, engine);
 }
 
 //-- \subsection{isStructureAvailable(structure type[, player])}
@@ -3252,12 +3323,7 @@ static QScriptValue js_isStructureAvailable(QScriptContext *context, QScriptEngi
 //-- Returns true if given droid is a VTOL (not including transports).
 static QScriptValue js_isVTOL(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
-	return QScriptValue(isVtolDroid(psDroid));
+	return wrap_(isVtolDroid, context, engine);
 }
 
 //-- \subsection{hackGetObj(type, player, id)}
@@ -3337,17 +3403,17 @@ static QScriptValue js_objFromId(QScriptContext *context, QScriptEngine *engine)
 	return QScriptValue(convMax(psObj, engine));
 }
 
+bool setDroidExperience(DROID* psDroid, float exp)
+{
+	psDroid->experience = exp * 65536;
+	return true;
+};
+
 //-- \subsection{setDroidExperience(droid, experience)}
 //-- Set the amount of experience a droid has. Experience is read using floating point precision.
 static QScriptValue js_setDroidExperience(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
-	psDroid->experience = context->argument(1).toNumber() * 65536;
-	return QScriptValue();
+	return wrap_(setDroidExperience, context, engine);
 }
 
 //-- \subsection{donateObject(object, to)}

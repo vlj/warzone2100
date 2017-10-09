@@ -2568,10 +2568,19 @@ namespace
 	{
 		const DROID* operator()(size_t& idx, QScriptContext *context)
 		{
-			QScriptValue droidVal = context->argument(0);
+			QScriptValue droidVal = context->argument(idx++);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
 			return IdToDroid(id, player);
+		}
+	};
+
+	template<>
+	struct unbox<const char*>
+	{
+		const char* operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toString().toUtf8().constData();
 		}
 	};
 
@@ -2580,7 +2589,7 @@ namespace
 	{
 		DROID* operator()(size_t& idx, QScriptContext *context)
 		{
-			QScriptValue droidVal = context->argument(0);
+			QScriptValue droidVal = context->argument(idx++);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
 			return IdToDroid(id, player);
@@ -2656,31 +2665,30 @@ static QScriptValue js_orderDroidObj(QScriptContext *context, QScriptEngine *)
 	return QScriptValue(true);
 }
 
+static bool orderDroidBuild5(DROID* psDroid, int _order, const char* statName, int x, int y, float _direction)
+{
+	int index = getStructStatFromName(statName);
+	DROID_ORDER order = (DROID_ORDER)_order;
+	STRUCTURE_STATS	*psStats = &asStructureStats[index];
+	uint16_t direction = DEG(_direction);
+	orderDroidStatsLocDir(psDroid, order, psStats, world_coord(x) + TILE_UNITS / 2, world_coord(y) + TILE_UNITS / 2, direction, ModeQueue);
+	return true;
+}
+
+static bool orderDroidBuild4(DROID* psDroid, int _order, const char* statName, int x, int y)
+{
+	return orderDroidBuild5(psDroid, _order, statName, x, y, 0.f);
+}
+
 //-- \subsection{orderDroidBuild(droid, order, structure type, x, y[, direction])}
 //-- Give a droid an order to build something at the given position. Returns true if allowed.
-static QScriptValue js_orderDroidBuild(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_orderDroidBuild(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	DROID_ORDER order = (DROID_ORDER)context->argument(1).toInt32();
-	QString statName = context->argument(2).toString();
-	int index = getStructStatFromName(statName.toUtf8().constData());
-	SCRIPT_ASSERT(context, index >= 0, "%s not found", statName.toUtf8().constData());
-	STRUCTURE_STATS	*psStats = &asStructureStats[index];
-	int x = context->argument(3).toInt32();
-	int y = context->argument(4).toInt32();
-	uint16_t direction = 0;
-
-	SCRIPT_ASSERT(context, order == DORDER_BUILD, "Invalid order");
-	SCRIPT_ASSERT(context, psStats->id.compare("A0ADemolishStructure") != 0, "Cannot build demolition");
 	if (context->argumentCount() > 5)
 	{
-		direction = DEG(context->argument(5).toNumber());
+		return wrap_(orderDroidBuild5, context, engine);
 	}
-	orderDroidStatsLocDir(psDroid, order, psStats, world_coord(x) + TILE_UNITS / 2, world_coord(y) + TILE_UNITS / 2, direction, ModeQueue);
-	return QScriptValue(true);
+	return wrap_(orderDroidBuild4, context, engine);
 }
 
 //-- \subsection{orderDroidLoc(droid, order, x, y)}

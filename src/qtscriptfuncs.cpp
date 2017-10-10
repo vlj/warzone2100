@@ -3167,24 +3167,34 @@ static QScriptValue js_enableStructure(QScriptContext *context, QScriptEngine *e
 }
 
 //-- \subsection{setTutorialMode(bool)} Sets a number of restrictions appropriate for tutorial if set to true.
+static bool setTutorialMode(bool intutorial)
+{
+	bInTutorial = intutorial;
+	return true;
+}
+
 static QScriptValue js_setTutorialMode(QScriptContext *context, QScriptEngine *engine)
 {
-	bInTutorial = context->argument(0).toBool();
-	return QScriptValue();
+	return wrap_(setTutorialMode, context, engine);
 }
 
 //-- \subsection{setMiniMap(bool)} Turns visible minimap on or off in the GUI.
+static bool setMiniMap(bool radarpermitted)
+{
+	radarPermitted = radarpermitted;
+	return true;
+}
+
 static QScriptValue js_setMiniMap(QScriptContext *context, QScriptEngine *engine)
 {
-	radarPermitted = context->argument(0).toBool();
-	return QScriptValue();
+	return wrap_(setMiniMap, context, engine);
 }
 
 //-- \subsection{setDesign(bool)} Whether to allow player to design stuff.
-static QScriptValue js_setDesign(QScriptContext *context, QScriptEngine *engine)
+static bool setDesign(bool allowdesign)
 {
 	DROID_TEMPLATE *psCurr;
-	allowDesign = context->argument(0).toBool();
+	allowDesign = allowdesign;
 	// Switch on or off future templates
 	// FIXME: This dual data structure for templates is just plain insane.
 	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
@@ -3198,19 +3208,23 @@ static QScriptValue js_setDesign(QScriptContext *context, QScriptEngine *engine)
 		bool researched = researchedTemplate(psCurr, selectedPlayer);
 		psCurr->enabled = (researched || allowDesign);
 	}
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_setDesign(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(setDesign, context, engine);
 }
 
 //-- \subsection{enableTemplate(template name)} Enable a specific template (even if design is disabled).
-static QScriptValue js_enableTemplate(QScriptContext *context, QScriptEngine *engine)
+static bool enableTemplate(const char* templateName)
 {
 	DROID_TEMPLATE *psCurr;
-	QString templateName = context->argument(0).toString();
 	bool found = false;
 	// FIXME: This dual data structure for templates is just plain insane.
 	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
 	{
-		if (templateName.compare(keyvaluepair.second->id) == 0)
+		if (QString(templateName).compare(keyvaluepair.second->id) == 0)
 		{
 			keyvaluepair.second->enabled = true;
 			found = true;
@@ -3219,31 +3233,35 @@ static QScriptValue js_enableTemplate(QScriptContext *context, QScriptEngine *en
 	}
 	if (!found)
 	{
-		debug(LOG_ERROR, "Template %s was not found!", templateName.toUtf8().constData());
-		return QScriptValue(false);
+		debug(LOG_ERROR, "Template %s was not found!", templateName);
+		return false;
 	}
 	for (auto &localTemplate : localTemplates)
 	{
 		psCurr = &localTemplate;
-		if (templateName.compare(psCurr->id) == 0)
+		if (QString(templateName).compare(psCurr->id) == 0)
 		{
 			psCurr->enabled = true;
 			break;
 		}
 	}
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_enableTemplate(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(enableTemplate, context, engine);
 }
 
 //-- \subsection{removeTemplate(template name)} Remove a template.
-static QScriptValue js_removeTemplate(QScriptContext *context, QScriptEngine *engine)
+static bool removeTemplate(const char* templateName)
 {
 	DROID_TEMPLATE *psCurr;
-	QString templateName = context->argument(0).toString();
 	bool found = false;
 	// FIXME: This dual data structure for templates is just plain insane.
 	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
 	{
-		if (templateName.compare(keyvaluepair.second->id) == 0)
+		if (QString(templateName).compare(keyvaluepair.second->id) == 0)
 		{
 			keyvaluepair.second->enabled = false;
 			found = true;
@@ -3252,19 +3270,24 @@ static QScriptValue js_removeTemplate(QScriptContext *context, QScriptEngine *en
 	}
 	if (!found)
 	{
-		debug(LOG_ERROR, "Template %s was not found!", templateName.toUtf8().constData());
-		return QScriptValue(false);
+		debug(LOG_ERROR, "Template %s was not found!", templateName);
+		return false;
 	}
 	for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
 	{
 		psCurr = &*i;
-		if (templateName.compare(psCurr->id) == 0)
+		if (QString(templateName).compare(psCurr->id) == 0)
 		{
 			localTemplates.erase(i);
 			break;
 		}
 	}
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_removeTemplate(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(removeTemplate, context, engine);
 }
 
 //-- \subsection{setReticuleButton(id, filename, filenameHigh, tooltip, callback)} Add reticule button. id is which

@@ -37,9 +37,9 @@
 #include "lib/ivis_opengl/pieclip.h"
 #include "lib/gamelib/gtime.h"
 #include "src/warzoneconfig.h"
-#include <SDL.h>
-#include <SDL_thread.h>
-#include <SDL_clipboard.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL_clipboard.h>
 #include "wz2100icon.h"
 #include "cursors_sdl.h"
 #include <algorithm>

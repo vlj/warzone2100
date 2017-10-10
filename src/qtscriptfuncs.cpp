@@ -1424,6 +1424,8 @@ namespace
 	{
 		int operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			return context->argument(idx++).toInt32();
 		}
 	};
@@ -1433,15 +1435,32 @@ namespace
 	{
 		unsigned int operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			return context->argument(idx++).toInt32();
 		}
 	};
+
+	template<>
+	struct unbox<bool>
+	{
+		bool operator()(size_t& idx, QScriptContext *context)
+		{
+			if (context->argumentCount() < idx)
+				return {};
+			return 	context->argument(idx++).toBool();
+		}
+	};
+
+
 
 	template<>
 	struct unbox<float>
 	{
 		float operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			return context->argument(idx++).toNumber();
 		}
 	};
@@ -1451,6 +1470,8 @@ namespace
 	{
 		const DROID* operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			QScriptValue droidVal = context->argument(idx++);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
@@ -1463,6 +1484,8 @@ namespace
 	{
 		const char* operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			return context->argument(idx++).toString().toUtf8().constData();
 		}
 	};
@@ -1472,6 +1495,8 @@ namespace
 	{
 		DROID* operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			QScriptValue droidVal = context->argument(idx++);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
@@ -1490,6 +1515,8 @@ namespace
 	{
 		structure_id_player operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			QScriptValue structVal = context->argument(idx++);
 			int id = structVal.property("id").toInt32();
 			int player = structVal.property("player").toInt32();
@@ -1509,6 +1536,8 @@ namespace
 	{
 		object_id_player_type operator()(size_t& idx, QScriptContext *context)
 		{
+			if (context->argumentCount() < idx)
+				return {};
 			QScriptValue objVal = context->argument(idx++);
 			int id = objVal.property("id").toInt32();
 			int player = objVal.property("player").toInt32();
@@ -2441,45 +2470,37 @@ endstructloc:
 
 //-- \subsection{structureIdle(structure)}
 //-- Is given structure idle?
-static QScriptValue js_structureIdle(QScriptContext *context, QScriptEngine *)
+static bool structureIdle_(structure_id_player structVal)
 {
-	QScriptValue structVal = context->argument(0);
-	int id = structVal.property("id").toInt32();
-	int player = structVal.property("player").toInt32();
-	STRUCTURE *psStruct = IdToStruct(id, player);
-	SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
-	return QScriptValue(structureIdle(psStruct));
+	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
+	return structureIdle(psStruct);
+}
+
+static QScriptValue js_structureIdle(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(structureIdle_, context, engine);
 }
 
 //-- \subsection{removeStruct(structure)}
 //-- Immediately remove the given structure from the map. Returns a boolean that is true on success.
 //-- No special effects are applied. Deprecated since 3.2.
-static QScriptValue js_removeStruct(QScriptContext *context, QScriptEngine *)
+static bool removeStruct_(structure_id_player structVal)
 {
-	QScriptValue structVal = context->argument(0);
-	int id = structVal.property("id").toInt32();
-	int player = structVal.property("player").toInt32();
-	STRUCTURE *psStruct = IdToStruct(id, player);
-	SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
-	return QScriptValue(removeStruct(psStruct, true));
+	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
+	return removeStruct(psStruct, true);
+}
+
+static QScriptValue js_removeStruct(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(removeStruct_, context, engine);
 }
 
 //-- \subsection{removeObject(game object[, special effects?])}
 //-- Remove the given game object with special effects. Returns a boolean that is true on success.
 //-- A second, optional boolean parameter specifies whether special effects are to be applied. (3.2+ only)
-static QScriptValue js_removeObject(QScriptContext *context, QScriptEngine *)
+static bool removeObject(object_id_player_type qval, bool sfx)
 {
-	QScriptValue qval = context->argument(0);
-	int id = qval.property("id").toInt32();
-	int player = qval.property("player").toInt32();
-	OBJECT_TYPE type = (OBJECT_TYPE)qval.property("type").toInt32();
-	BASE_OBJECT *psObj = IdToObject(type, id, player);
-	SCRIPT_ASSERT(context, psObj, "Object id %d not found belonging to player %d", id, player);
-	bool sfx = false;
-	if (context->argumentCount() > 1)
-	{
-		sfx = context->argument(1).toBool();
-	}
+	BASE_OBJECT *psObj = IdToObject(qval.type, qval.id, qval.player);
 	bool retval = false;
 	if (sfx)
 	{
@@ -2488,7 +2509,7 @@ static QScriptValue js_removeObject(QScriptContext *context, QScriptEngine *)
 		case OBJ_STRUCTURE: destroyStruct((STRUCTURE *)psObj, gameTime); break;
 		case OBJ_DROID: retval = destroyDroid((DROID *)psObj, gameTime); break;
 		case OBJ_FEATURE: retval = destroyFeature((FEATURE *)psObj, gameTime); break;
-		default: SCRIPT_ASSERT(context, false, "Wrong game object type"); break;
+		default: break;
 		}
 	}
 	else
@@ -2498,10 +2519,15 @@ static QScriptValue js_removeObject(QScriptContext *context, QScriptEngine *)
 		case OBJ_STRUCTURE: retval = removeStruct((STRUCTURE *)psObj, true); break;
 		case OBJ_DROID: retval = removeDroidBase((DROID *)psObj); break;
 		case OBJ_FEATURE: retval = removeFeature((FEATURE *)psObj); break;
-		default: SCRIPT_ASSERT(context, false, "Wrong game object type"); break;
+		default: break;
 		}
 	}
-	return QScriptValue(retval);
+	return retval;
+}
+
+static QScriptValue js_removeObject(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(removeObject, context, engine);
 }
 
 //-- \subsection{console(strings...)}

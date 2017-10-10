@@ -2825,20 +2825,29 @@ static QScriptValue js_startTransporterEntry(QScriptContext *context, QScriptEng
 //-- Change if the mission transporter will fetch droids in non offworld missions
 //-- setReinforcementTime() is be used to hide it before coming back after the set time
 //-- which is handled by the campaign library in the victory data section (3.2.4+ only).
-static QScriptValue js_useSafetyTransport(QScriptContext *context, QScriptEngine *)
+static bool useSafetyTransport(bool flag)
 {
-	bool flag = context->argument(0).toBool();
 	setDroidsToSafetyFlag(flag);
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_useSafetyTransport(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(useSafetyTransport, context, engine);
 }
 
 //-- \subsection{restoreLimboMissionData()}
 //-- Swap mission type and bring back units previously stored at the start
 //-- of the mission (see cam3-c mission). (3.2.4+ only).
-static QScriptValue js_restoreLimboMissionData(QScriptContext *context, QScriptEngine *)
+static bool restoreLimboMissionData()
 {
 	resetLimboMission();
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_restoreLimboMissionData(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(restoreLimboMissionData, context, engine);
 }
 
 //-- \subsection{setReinforcementTime(time)} Set time for reinforcements to arrive. If time is
@@ -2846,11 +2855,9 @@ static QScriptValue js_restoreLimboMissionData(QScriptContext *context, QScriptE
 //-- If time equals to the magic LZ_COMPROMISED_TIME constant, reinforcement GUI ticker
 //-- is set to "--:--" and reinforcements are suppressed until this function is called
 //-- again with a regular time value.
-static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngine *)
+static bool setReinforcementTime(int time)
 {
-	int value = context->argument(0).toInt32() * GAME_TICKS_PER_SEC;
-	SCRIPT_ASSERT(context, value == LZ_COMPROMISED_TIME || value < 60 * 60 * GAME_TICKS_PER_SEC,
-	              "The transport timer cannot be set to more than 1 hour!");
+	int value = time * GAME_TICKS_PER_SEC;
 	mission.ETA = value;
 	if (missionCanReEnforce())
 	{
@@ -2862,7 +2869,7 @@ static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngi
 
 		intRemoveTransporterTimer();
 		/* Only remove the launch if haven't got a transporter droid since the scripts set the
-		 * time to -1 at the between stage if there are not going to be reinforcements on the submap  */
+		* time to -1 at the between stage if there are not going to be reinforcements on the submap  */
 		for (psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
 		{
 			if (isTransporter(psDroid))
@@ -2871,12 +2878,17 @@ static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngi
 			}
 		}
 		// if not found a transporter, can remove the launch button
-		if (psDroid ==  nullptr)
+		if (psDroid == nullptr)
 		{
 			intRemoveTransporterLaunch();
 		}
 	}
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(setReinforcementTime, context, engine);
 }
 
 //-- \subsection{setStructureLimits(structure type, limit[, player])} Set build limits for a structure.

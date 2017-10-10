@@ -1546,12 +1546,8 @@ namespace
 		}
 	};
 
-	QScriptValue box(int32_t a)
-	{
-		return a;
-	}
-
-	QScriptValue box(bool a)
+	template<typename T>
+	QScriptValue box(T a)
 	{
 		return a;
 	}
@@ -2613,15 +2609,16 @@ static QScriptValue js_groupAdd(QScriptContext *context, QScriptEngine *engine)
 	return QScriptValue();
 }
 
+static float distBetweenTwoPoints(float x1, float y1, float x2, float y2)
+{
+	return iHypot(x1 - x2, y1 - y2);
+}
+
 //-- \subsection{distBetweenTwoPoints(x1, y1, x2, y2)}
 //-- Return distance between two points.
 static QScriptValue js_distBetweenTwoPoints(QScriptContext *context, QScriptEngine *engine)
 {
-	int x1 = context->argument(0).toNumber();
-	int y1 = context->argument(1).toNumber();
-	int x2 = context->argument(2).toNumber();
-	int y2 = context->argument(3).toNumber();
-	return QScriptValue(iHypot(x1 - x2, y1 - y2));
+	return wrap_(distBetweenTwoPoints, context, engine);
 }
 
 //-- \subsection{groupSize(group)}
@@ -2636,43 +2633,43 @@ static QScriptValue js_groupSize(QScriptContext *context, QScriptEngine *engine)
 //-- \subsection{droidCanReach(droid, x, y)}
 //-- Return whether or not the given droid could possibly drive to the given position. Does
 //-- not take player built blockades into account.
-static QScriptValue js_droidCanReach(QScriptContext *context, QScriptEngine *)
+static bool droidCanReach(DROID* psDroid, int x, int y)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	int x = context->argument(1).toInt32();
-	int y = context->argument(2).toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "Droid id %d not found belonging to player %d", id, player);
 	const PROPULSION_STATS *psPropStats = asPropulsionStats + psDroid->asBits[COMP_PROPULSION];
-	return QScriptValue(fpathCheck(psDroid->pos, Vector3i(world_coord(x), world_coord(y), 0), psPropStats->propulsionType));
+	return fpathCheck(psDroid->pos, Vector3i(world_coord(x), world_coord(y), 0), psPropStats->propulsionType);
+}
+
+static QScriptValue js_droidCanReach(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(droidCanReach, context, engine);
 }
 
 //-- \subsection{propulsionCanReach(propulsion, x1, y1, x2, y2)}
 //-- Return true if a droid with a given propulsion is able to travel from (x1, y1) to (x2, y2).
 //-- Does not take player built blockades into account. (3.2+ only)
-static QScriptValue js_propulsionCanReach(QScriptContext *context, QScriptEngine *)
+static bool propulsionCanReach(const char* propulsionValueName, int x1, int y1, int x2, int y2)
 {
-	QScriptValue propulsionValue = context->argument(0);
-	int propulsion = getCompFromName(COMP_PROPULSION, propulsionValue.toString());
-	SCRIPT_ASSERT(context, propulsion > 0, "No such propulsion: %s", propulsionValue.toString().toUtf8().constData());
-	int x1 = context->argument(1).toInt32();
-	int y1 = context->argument(2).toInt32();
-	int x2 = context->argument(3).toInt32();
-	int y2 = context->argument(4).toInt32();
+	int propulsion = getCompFromName(COMP_PROPULSION, propulsionValueName);
 	const PROPULSION_STATS *psPropStats = asPropulsionStats + propulsion;
-	return QScriptValue(fpathCheck(Vector3i(world_coord(x1), world_coord(y1), 0), Vector3i(world_coord(x2), world_coord(y2), 0), psPropStats->propulsionType));
+	return fpathCheck(Vector3i(world_coord(x1), world_coord(y1), 0), Vector3i(world_coord(x2), world_coord(y2), 0), psPropStats->propulsionType);
+}
+
+static QScriptValue js_propulsionCanReach(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(propulsionCanReach, context, engine);
 }
 
 //-- \subsection{terrainType(x, y)}
 //-- Returns tile type of a given map tile, such as TER_WATER for water tiles or TER_CLIFFFACE for cliffs.
 //-- Tile types regulate which units may pass through this tile. (3.2+ only)
-static QScriptValue js_terrainType(QScriptContext *context, QScriptEngine *)
+static unsigned char terrainType_(int x, int y)
 {
-	int x = context->argument(0).toInt32();
-	int y = context->argument(1).toInt32();
-	return QScriptValue(terrainType(mapTile(x, y)));
+	return terrainType(mapTile(x, y));
+}
+
+static QScriptValue js_terrainType(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(terrainType_, context, engine);
 }
 
 static bool orderDroid_(DROID* psDroid, int _order)
@@ -2701,28 +2698,21 @@ static bool orderDroid_(DROID* psDroid, int _order)
 static QScriptValue js_orderDroid(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(orderDroid_, context, engine);
-	QScriptValue droidVal = context->argument(0);
 }
 
 //-- \subsection{orderDroidObj(droid, order, object)}
 //-- Give a droid an order to do something to something.
-static QScriptValue js_orderDroidObj(QScriptContext *context, QScriptEngine *)
+static bool orderDroidObj_(DROID* psDroid, int order_, object_id_player_type objVal)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "Droid id %d not found belonging to player %d", id, player);
-	DROID_ORDER order = (DROID_ORDER)context->argument(1).toInt32();
-	QScriptValue objVal = context->argument(2);
-	int oid = objVal.property("id").toInt32();
-	int oplayer = objVal.property("player").toInt32();
-	OBJECT_TYPE otype = (OBJECT_TYPE)objVal.property("type").toInt32();
-	BASE_OBJECT *psObj = IdToObject(otype, oid, oplayer);
-	SCRIPT_ASSERT(context, psObj, "Object id %d not found belonging to player %d", oid, oplayer);
-	SCRIPT_ASSERT(context, validOrderForObj(order), "Invalid order: %s", getDroidOrderName(order));
+	BASE_OBJECT *psObj = IdToObject(objVal.type, objVal.id, objVal.player);
+	DROID_ORDER order = (DROID_ORDER)order_;
 	orderDroidObj(psDroid, order, psObj, ModeQueue);
-	return QScriptValue(true);
+	return true;
+}
+
+static QScriptValue js_orderDroidObj(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(orderDroidObj_, context, engine);
 }
 
 static bool orderDroidBuild5(DROID* psDroid, int _order, const char* statName, int x, int y, float _direction)
@@ -2753,27 +2743,22 @@ static QScriptValue js_orderDroidBuild(QScriptContext *context, QScriptEngine *e
 
 //-- \subsection{orderDroidLoc(droid, order, x, y)}
 //-- Give a droid an order to do something at the given location.
-static QScriptValue js_orderDroidLoc(QScriptContext *context, QScriptEngine *)
+static bool orderDroidLoc_(DROID* psDroid, int order_, int x, int y)
 {
-	QScriptValue droidVal = context->argument(0);
-	int id = droidVal.property("id").toInt32();
-	int player = droidVal.property("player").toInt32();
-	QScriptValue orderVal = context->argument(1);
-	int x = context->argument(2).toInt32();
-	int y = context->argument(3).toInt32();
-	DROID_ORDER order = (DROID_ORDER)orderVal.toInt32();
-	SCRIPT_ASSERT(context, validOrderForLoc(order), "Invalid location based order: %s", getDroidOrderName(order));
-	DROID *psDroid = IdToDroid(id, player);
-	SCRIPT_ASSERT(context, psDroid, "Droid id %d not found belonging to player %d", id, player);
-	SCRIPT_ASSERT(context, tileOnMap(x, y), "Outside map bounds (%d, %d)", x, y);
+	DROID_ORDER order = (DROID_ORDER)order_;
 	orderDroidLoc(psDroid, order, world_coord(x), world_coord(y), ModeQueue);
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_orderDroidLoc(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(orderDroidLoc_, context, engine);
 }
 
 //-- \subsection{setMissionTime(time)} Set mission countdown in seconds.
-static QScriptValue js_setMissionTime(QScriptContext *context, QScriptEngine *)
+static bool SetMissionTime(int time)
 {
-	int value = context->argument(0).toInt32() * GAME_TICKS_PER_SEC;
+	int value = time * GAME_TICKS_PER_SEC;
 	mission.startTime = gameTime;
 	mission.time = value;
 	setMissionCountDown();
@@ -2787,25 +2772,36 @@ static QScriptValue js_setMissionTime(QScriptContext *context, QScriptEngine *)
 		intRemoveMissionTimer();
 		mission.cheatTime = 0;
 	}
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_setMissionTime(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(SetMissionTime, context, engine);
 }
 
 //-- \subsection{getMissionTime()} Get time remaining on mission countdown in seconds. (3.2+ only)
-static QScriptValue js_getMissionTime(QScriptContext *, QScriptEngine *)
+static int getMissionTime()
 {
-	return QScriptValue((mission.time - (gameTime - mission.startTime)) / GAME_TICKS_PER_SEC);
+	return (mission.time - (gameTime - mission.startTime)) / GAME_TICKS_PER_SEC;
+}
+
+static QScriptValue js_getMissionTime(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(getMissionTime, context, engine);
 }
 
 //-- \subsection{setTransporterExit(x, y, player)}
 //-- Set the exit position for the mission transporter. (3.2+ only)
-static QScriptValue js_setTransporterExit(QScriptContext *context, QScriptEngine *)
+static bool setTransporterExit(int x, int y, int player)
 {
-	int x = context->argument(0).toInt32();
-	int y = context->argument(1).toInt32();
-	int player = context->argument(2).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
 	missionSetTransporterExit(player, x, y);
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_setTransporterExit(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(setTransporterExit, context, engine);
 }
 
 //-- \subsection{startTransporterEntry(x, y, player)}
@@ -2813,15 +2809,16 @@ static QScriptValue js_setTransporterExit(QScriptContext *context, QScriptEngine
 //-- reinforcements. If you want the camera to follow it in, use cameraTrack() on it.
 //-- The transport needs to be set up with the mission droids, and the first transport
 //-- found will be used. (3.2+ only)
-static QScriptValue js_startTransporterEntry(QScriptContext *context, QScriptEngine *)
+static bool startTransporterEntry(int x, int y, int player)
 {
-	int x = context->argument(0).toInt32();
-	int y = context->argument(1).toInt32();
-	int player = context->argument(2).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
 	missionSetTransporterEntry(player, x, y);
 	missionFlyTransportersIn(player, false);
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_startTransporterEntry(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(startTransporterEntry, context, engine);
 }
 
 //-- \subsection{useSafetyTransport(flag)}
@@ -2910,12 +2907,15 @@ static QScriptValue js_setStructureLimits(QScriptContext *context, QScriptEngine
 
 //-- \subsection{centreView(x, y)}
 //-- Center the player's camera at the given position.
-static QScriptValue js_centreView(QScriptContext *context, QScriptEngine *)
+static bool centreView(int x, int y)
 {
-	int x = context->argument(0).toInt32();
-	int y = context->argument(1).toInt32();
 	setViewPos(x, y, false);
-	return QScriptValue();
+	return true;
+}
+
+static QScriptValue js_centreView(QScriptContext *context, QScriptEngine *engine)
+{
+	return wrap_(centreView, context, engine);
 }
 
 //-- \subsection{playSound(sound[, x, y, z])}

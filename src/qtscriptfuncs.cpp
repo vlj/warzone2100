@@ -1411,25 +1411,145 @@ static QScriptValue js_newGroup(QScriptContext *, QScriptEngine *engine)
 	return QScriptValue(i++);
 }
 
+
+namespace
+{
+	template<typename T>
+	struct unbox {
+		//T operator()(size_t& idx, QScriptContext *context) const;
+	};
+
+	template<>
+	struct unbox<int>
+	{
+		int operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toInt32();
+		}
+	};
+
+	template<>
+	struct unbox<unsigned int>
+	{
+		unsigned int operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toInt32();
+		}
+	};
+
+	template<>
+	struct unbox<float>
+	{
+		float operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toNumber();
+		}
+	};
+
+	template<>
+	struct unbox<const DROID*>
+	{
+		const DROID* operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue droidVal = context->argument(idx++);
+			int id = droidVal.property("id").toInt32();
+			int player = droidVal.property("player").toInt32();
+			return IdToDroid(id, player);
+		}
+	};
+
+	template<>
+	struct unbox<const char*>
+	{
+		const char* operator()(size_t& idx, QScriptContext *context)
+		{
+			return context->argument(idx++).toString().toUtf8().constData();
+		}
+	};
+
+	template<>
+	struct unbox<DROID*>
+	{
+		DROID* operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue droidVal = context->argument(idx++);
+			int id = droidVal.property("id").toInt32();
+			int player = droidVal.property("player").toInt32();
+			return IdToDroid(id, player);
+		}
+	};
+
+	struct structure_id_player
+	{
+		int id;
+		int player;
+	};
+
+	template<>
+	struct unbox<structure_id_player>
+	{
+		structure_id_player operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue structVal = context->argument(idx++);
+			int id = structVal.property("id").toInt32();
+			int player = structVal.property("player").toInt32();
+			return { id, player };
+		}
+	};
+
+	struct object_id_player_type
+	{
+		int id;
+		int player;
+		OBJECT_TYPE type;
+	};
+
+	template<>
+	struct unbox<object_id_player_type>
+	{
+		object_id_player_type operator()(size_t& idx, QScriptContext *context)
+		{
+			QScriptValue objVal = context->argument(idx++);
+			int id = objVal.property("id").toInt32();
+			int player = objVal.property("player").toInt32();
+			OBJECT_TYPE type = (OBJECT_TYPE)objVal.property("type").toInt32();
+			return { id, player, type };
+		}
+	};
+
+	QScriptValue box(int32_t a)
+	{
+		return a;
+	}
+
+	QScriptValue box(bool a)
+	{
+		return a;
+	}
+
+	template<typename R, typename...Args>
+	QScriptValue wrap_(R(*f)(Args...), QScriptContext *context, QScriptEngine *engine)
+	{
+		size_t idx = 0;
+		return box(f(unbox<Args>{}(idx, context)...));
+	}
+}
+
+
+static bool activateStructure(structure_id_player structVal, object_id_player_type objVal)
+{
+	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
+	BASE_OBJECT *psObj = IdToObject(objVal.type, objVal.id, objVal.player);
+	orderStructureObj(structVal.player, psObj);
+	return true;
+}
+
 //-- \subsection{activateStructure(structure, [target[, ability]])}
 //-- Activate a special ability on a structure. Currently only works on the lassat.
 //-- The lassat needs a target.
-static QScriptValue js_activateStructure(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_activateStructure(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue structVal = context->argument(0);
-	int id = structVal.property("id").toInt32();
-	int player = structVal.property("player").toInt32();
-	STRUCTURE *psStruct = IdToStruct(id, player);
-	SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
-	// ... and then do nothing with psStruct yet
-	QScriptValue objVal = context->argument(1);
-	int oid = objVal.property("id").toInt32();
-	int oplayer = objVal.property("player").toInt32();
-	OBJECT_TYPE otype = (OBJECT_TYPE)objVal.property("type").toInt32();
-	BASE_OBJECT *psObj = IdToObject(otype, oid, oplayer);
-	SCRIPT_ASSERT(context, psObj, "No such object id %d belonging to player %d", oid, oplayer);
-	orderStructureObj(player, psObj);
-	return QScriptValue(true);
+	return wrap_(activateStructure, context, engine);
 }
 
 //-- \subsection{findResearch(research, [player])}
@@ -2528,92 +2648,6 @@ static QScriptValue js_terrainType(QScriptContext *context, QScriptEngine *)
 	int y = context->argument(1).toInt32();
 	return QScriptValue(terrainType(mapTile(x, y)));
 }
-
-namespace
-{
-	template<typename T>
-	struct unbox {
-		//T operator()(size_t& idx, QScriptContext *context) const;
-	};
-
-	template<>
-	struct unbox<int>
-	{
-		int operator()(size_t& idx, QScriptContext *context)
-		{
-			return context->argument(idx++).toInt32();
-		}
-	};
-
-	template<>
-	struct unbox<unsigned int>
-	{
-		unsigned int operator()(size_t& idx, QScriptContext *context)
-		{
-			return context->argument(idx++).toInt32();
-		}
-	};
-
-	template<>
-	struct unbox<float>
-	{
-		float operator()(size_t& idx, QScriptContext *context)
-		{
-			return context->argument(idx++).toNumber();
-		}
-	};
-
-	template<>
-	struct unbox<const DROID*>
-	{
-		const DROID* operator()(size_t& idx, QScriptContext *context)
-		{
-			QScriptValue droidVal = context->argument(idx++);
-			int id = droidVal.property("id").toInt32();
-			int player = droidVal.property("player").toInt32();
-			return IdToDroid(id, player);
-		}
-	};
-
-	template<>
-	struct unbox<const char*>
-	{
-		const char* operator()(size_t& idx, QScriptContext *context)
-		{
-			return context->argument(idx++).toString().toUtf8().constData();
-		}
-	};
-
-	template<>
-	struct unbox<DROID*>
-	{
-		DROID* operator()(size_t& idx, QScriptContext *context)
-		{
-			QScriptValue droidVal = context->argument(idx++);
-			int id = droidVal.property("id").toInt32();
-			int player = droidVal.property("player").toInt32();
-			return IdToDroid(id, player);
-		}
-	};
-
-	QScriptValue box(int32_t a)
-	{
-		return a;
-	}
-
-	QScriptValue box(bool a)
-	{
-		return a;
-	}
-
-	template<typename R, typename...Args>
-	QScriptValue wrap_(R(*f)(Args...), QScriptContext *context, QScriptEngine *engine)
-	{
-		size_t idx = 0;
-		return box(f(unbox<Args>{}(idx, context)...));
-	}
-}
-
 
 static bool orderDroid_(DROID* psDroid, int _order)
 {
@@ -3903,22 +3937,18 @@ static QScriptValue js_setAlliance(QScriptContext *context, QScriptEngine *engin
 	return QScriptValue(true);
 }
 
+static bool setAssemblyPoint_(structure_id_player structVal, int x, int y)
+{
+	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
+	setAssemblyPoint(((FACTORY *)psStruct->pFunctionality)->psAssemblyPoint, x, y, structVal.player, true);
+	return true;
+}
+
 //-- \subsection{setAssemblyPoint(structure, x, y)}
 //-- Set the assembly point droids go to when built for the specified structure. (3.2+ only)
 static QScriptValue js_setAssemblyPoint(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue structVal = context->argument(0);
-	int id = structVal.property("id").toInt32();
-	int player = structVal.property("player").toInt32();
-	STRUCTURE *psStruct = IdToStruct(id, player);
-	SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
-	int x = context->argument(1).toInt32();
-	int y = context->argument(2).toInt32();
-	SCRIPT_ASSERT(context, psStruct->pStructureType->type == REF_FACTORY
-	              || psStruct->pStructureType->type == REF_CYBORG_FACTORY
-	              || psStruct->pStructureType->type == REF_VTOL_FACTORY, "Structure not a factory");
-	setAssemblyPoint(((FACTORY *)psStruct->pFunctionality)->psAssemblyPoint, x, y, player, true);
-	return QScriptValue(true);
+	return wrap_(setAssemblyPoint_, context, engine);
 }
 
 //-- \subsection{hackNetOff()}

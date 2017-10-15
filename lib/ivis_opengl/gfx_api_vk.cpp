@@ -153,9 +153,9 @@ vk::Semaphore buffering_mechanism::acquireSemaphore;
 vk::SwapchainKHR buffering_mechanism::swapchain;
 
 #ifdef DEBUG
-constexpr auto debugLayer = false;
+constexpr auto debugLayer = true;
 #else
-constexpr auto debugLayer = false;
+constexpr auto debugLayer = true;
 #endif // DEBUG
 
 VkBool32 messageCallback(
@@ -1116,6 +1116,15 @@ void VkRoot::bind_vertex_buffers(const std::size_t& first, const std::vector<std
 	std::transform(vertex_buffers_offset.begin(), vertex_buffers_offset.end(), std::back_inserter(offsets),
 		[](auto&& input) { return std::get<1>(input); });
 	buffering_mechanism::get_current_resources().cmdDraw.bindVertexBuffers(first, temp, offsets);
+}
+
+void VkRoot::bind_streamed_vertex_buffers(const void* data, const std::size_t size)
+{
+	const auto& offset = buffering_mechanism::scratchBuffer->alloc(size, 16);
+	const auto mappedPtr = dev.mapMemory(buffering_mechanism::scratchBuffer->memory, offset, size);
+	memcpy(mappedPtr, data, size);
+	dev.unmapMemory(buffering_mechanism::scratchBuffer->memory);
+	buffering_mechanism::get_current_resources().cmdDraw.bindVertexBuffers(0, { buffering_mechanism::scratchBuffer->buffer }, { offset });
 }
 
 void VkRoot::setupSwapchainImages()

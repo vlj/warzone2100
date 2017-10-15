@@ -130,8 +130,10 @@ struct gl_context : public gfx_api::context
 {
 	gl_pipeline_state_object* current_program = nullptr;
 	SDL_Window* WZwindow;
+	GLuint scratchbuffer;
 
 	gl_context();
+	~gl_context();
 
 	virtual gfx_api::texture* create_texture(const size_t& mipmap_count, const size_t & width, const size_t & height, const gfx_api::texel_format & internal_format, const std::string& filename) override;
 	virtual gfx_api::buffer * create_buffer(const gfx_api::buffer::usage &usage, const size_t & width) override;
@@ -143,6 +145,7 @@ struct gl_context : public gfx_api::context
 	virtual void bind_pipeline(gfx_api::pipeline_state_object* pso) override;
 	virtual void bind_index_buffer(gfx_api::buffer&, const gfx_api::index_type&) override;
 	virtual void bind_vertex_buffers(const std::size_t& first, const std::vector<std::tuple<gfx_api::buffer*, std::size_t>>& vertex_buffers_offset) override;
+	virtual void bind_streamed_vertex_buffers(const void* data, const std::size_t size) override;
 	virtual void bind_textures(const std::vector<gfx_api::texture_input>& texture_descriptions, const std::vector<gfx_api::texture*>& textures) override;
 	virtual void setSwapchain(struct SDL_Window* window) override;
 	virtual void set_constants(const void* buffer, const size_t& size) override;

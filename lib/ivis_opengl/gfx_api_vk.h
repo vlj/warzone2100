@@ -205,6 +205,7 @@ struct VkRoot final : gfx_api::context
 	virtual void draw(const std::size_t& offset, const std::size_t& count, const gfx_api::primitive_type&) override;
 	virtual void draw_elements(const std::size_t& offset, const std::size_t& count, const gfx_api::primitive_type&, const gfx_api::index_type&) override;
 	virtual void bind_vertex_buffers(const std::size_t& first, const std::vector<std::tuple<gfx_api::buffer*, std::size_t>>& vertex_buffers_offset) override;
+	virtual void bind_streamed_vertex_buffers(const void* data, const std::size_t size) override;
 	void setupSwapchainImages();
 	vk::Format get_format(const gfx_api::texel_format& format);
 

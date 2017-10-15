@@ -798,6 +798,11 @@ gl_context::gl_context()
 
 }
 
+gl_context::~gl_context()
+{
+	glDeleteBuffers(1, &scratchbuffer);
+}
+
 gfx_api::texture* gl_context::create_texture(const size_t& mipmap_count, const size_t & width, const size_t & height, const gfx_api::texel_format & internal_format, const std::string& filename)
 {
 	auto* new_texture = new gl_texture();
@@ -846,6 +851,12 @@ void gl_context::bind_vertex_buffers(const std::size_t& first, const std::vector
 			glVertexAttribPointer(attribute.id, get_size(attribute.type), get_type(attribute.type), get_normalisation(attribute.type), buffer_desc.stride, reinterpret_cast<void*>(attribute.offset + std::get<1>(vertex_buffers_offset[i])));
 		}
 	}
+}
+
+void gl_context::bind_streamed_vertex_buffers(const void* data, const std::size_t size)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, scratchbuffer);
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW);
 }
 
 void gl_context::bind_index_buffer(gfx_api::buffer& _buffer, const gfx_api::index_type&)
@@ -1056,6 +1067,8 @@ void gl_context::setSwapchain(struct SDL_Window* window)
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 		debug(LOG_3D, "Enabling KHR_debug message callback");
 	}
+
+	glGenBuffers(1, &scratchbuffer);
 }
 
 void gl_context::set_constants(const void* buffer, const size_t& size)

@@ -149,6 +149,7 @@ namespace gfx_api
 		virtual void bind_pipeline(pipeline_state_object*) = 0;
 		virtual void bind_index_buffer(buffer&, const index_type&) = 0;
 		virtual void bind_vertex_buffers(const std::size_t& first, const std::vector<std::tuple<gfx_api::buffer*, std::size_t>>& vertex_buffers_offset) = 0;
+		virtual void bind_streamed_vertex_buffers(const void* data, const std::size_t size) = 0;
 		virtual void bind_textures(const std::vector<texture_input>& attribute_descriptions, const std::vector<texture*>& textures) = 0;
 		virtual void set_constants(const void* buffer, const std::size_t& size) = 0;
 		virtual void draw(const std::size_t& offset, const std::size_t&, const primitive_type&) = 0;

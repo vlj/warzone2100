@@ -365,7 +365,6 @@ static void pie_DrawShadow(iIMDShape *shape, int flag, int flag_data, const glm:
 		delete buffer;
 	buffer = gfx_api::context::get().create_buffer(gfx_api::buffer::usage::vertex_buffer, sizeof(Vector3f) * vertexes.size());
 	buffer->upload(0, sizeof(Vector3f) * vertexes.size(), vertexes.data());
-	gfx_api::DrawStencilShadow::get().bind();
 	gfx_api::DrawStencilShadow::get().bind_constants({ pie_PerspectiveGet() * modelViewMatrix, glm::vec2{}, glm::vec2{}, glm::vec4() });
 	gfx_api::DrawStencilShadow::get().bind_vertex_buffers(buffer);
 	gfx_api::DrawStencilShadow::get().draw(edge_count * 2 * 3, 0);
@@ -450,6 +449,7 @@ void pie_Draw3DShape(iIMDShape *shape, int frame, int team, PIELIGHT colour, int
 
 static void pie_ShadowDrawLoop()
 {
+	gfx_api::DrawStencilShadow::get().bind();
 	for (unsigned i = 0; i < scshapes.size(); i++)
 	{
 		pie_DrawShadow(scshapes[i].shape, scshapes[i].flag, scshapes[i].flag_data, scshapes[i].light, scshapes[i].matrix);

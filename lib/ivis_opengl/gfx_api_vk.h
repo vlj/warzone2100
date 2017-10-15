@@ -193,7 +193,9 @@ struct VkRoot final : gfx_api::context
 
 	VkPSO* currentPSO = nullptr;
 
-	VkRoot();
+	bool debugLayer = false;
+
+	VkRoot(bool _debug);
 	~VkRoot();
 
 	virtual gfx_api::pipeline_state_object * build_pipeline(const gfx_api::state_description &state_desc, const SHADER_MODE& shader_mode, const gfx_api::primitive_type& primitive,

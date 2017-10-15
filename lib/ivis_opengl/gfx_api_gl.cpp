@@ -793,11 +793,6 @@ static void khr_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
 	debug(LOG_ERROR, "GL::%s(%s:%s) : %s", cbsource(source), cbtype(type), cbseverity(severity), message);
 }
 
-gl_context::gl_context()
-{
-
-}
-
 gl_context::~gl_context()
 {
 	glDeleteBuffers(1, &scratchbuffer);
@@ -967,11 +962,11 @@ void gl_context::setSwapchain(struct SDL_Window* window)
 	if (strncmp(opengl.GLEWversion, "1.9.", 4) == 0) // work around known bug with KHR_debug extension support in this release
 	{
 		debug(LOG_WARNING, "Your version of GLEW is old and buggy, please upgrade to at least version 1.10.");
-		khr_debug = false;
+		khr_debug &= false;
 	}
 	else
 	{
-		khr_debug = GLEW_KHR_debug;
+		khr_debug &= GLEW_KHR_debug;
 	}
 	addDumpInfo(opengl.GLEWversion);
 	debug(LOG_3D, "%s", opengl.GLEWversion);

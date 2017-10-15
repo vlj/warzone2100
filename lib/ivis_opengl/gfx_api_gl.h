@@ -131,8 +131,9 @@ struct gl_context : public gfx_api::context
 	gl_pipeline_state_object* current_program = nullptr;
 	SDL_Window* WZwindow;
 	GLuint scratchbuffer;
+	bool khr_debug = false;
 
-	gl_context();
+	gl_context(bool _debug) : khr_debug(_debug) {}
 	~gl_context();
 
 	virtual gfx_api::texture* create_texture(const size_t& mipmap_count, const size_t & width, const size_t & height, const gfx_api::texel_format & internal_format, const std::string& filename) override;

@@ -152,12 +152,6 @@ uint32_t buffering_mechanism::currentSwapchainIndex;
 vk::Semaphore buffering_mechanism::acquireSemaphore;
 vk::SwapchainKHR buffering_mechanism::swapchain;
 
-#ifdef DEBUG
-constexpr auto debugLayer = true;
-#else
-constexpr auto debugLayer = true;
-#endif // DEBUG
-
 VkBool32 messageCallback(
 	VkDebugReportFlagsEXT flags,
 	VkDebugReportObjectTypeEXT objType,
@@ -811,7 +805,7 @@ void VkTexture::upload(const std::size_t& mip_level, const std::size_t& offset_x
 void VkTexture::generate_mip_levels() {}
 unsigned VkTexture::id() { return 0; }
 
-VkRoot::VkRoot()
+VkRoot::VkRoot(bool _debug) : debugLayer(_debug)
 	{
 		const auto appInfo = vk::ApplicationInfo()
 			.setPApplicationName("Warzone2100")

@@ -380,3 +380,244 @@ bool setAssemblyPoint_(structure_id_player structVal, int x, int y)
 	return true;
 }
 
+static void setComponent(const QString& name, int player, int value)
+{
+	COMPONENT_STATS *psComp = getCompStatsFromName(name);
+	ASSERT_OR_RETURN(, psComp, "Bad component %s", name.toUtf8().constData());
+	apCompLists[player][psComp->compType][psComp->index] = value;
+}
+//-- \subsection{enableComponent(component, player)}
+//-- The given component is made available for research for the given player.
+bool enableComponent(const char* componentName, int player)
+{
+	setComponent(componentName, player, FOUND);
+	return true;
+}
+
+//-- \subsection{makeComponentAvailable(component, player)}
+//-- The given component is made available to the given player. This means the player can
+//-- actually build designs with it.
+bool makeComponentAvailable(const char* componentName, int player)
+{
+//	SCRIPT_ASSERT_PLAYER(context, player);
+	setComponent(componentName, player, AVAILABLE);
+	return true;
+}
+
+//-- \subsection{allianceExistsBetween(player, player)}
+//-- Returns true if an alliance exists between the two players, or they are the same player.
+bool allianceExistsBetween(int player1, int player2)
+{
+//	SCRIPT_ASSERT(context, player1 < MAX_PLAYERS && player1 >= 0, "Invalid player");
+//	SCRIPT_ASSERT(context, player2 < MAX_PLAYERS && player2 >= 0, "Invalid player");
+	return alliances[player1][player2] == ALLIANCE_FORMED;
+}
+
+
+//-- \subsection{_(string)}
+//-- Mark string for translation.
+const char* translate(const char* txt)
+{
+	// The redundant QString cast is a workaround for a Qt5 bug, the QScriptValue(char const *) constructor interprets as Latin1 instead of UTF-8!
+	return gettext(txt);
+}
+
+//-- \subsection{safeDest(player, x, y)} Returns true if given player is safe from hostile fire at
+//-- the given location, to the best of that player's map knowledge.
+bool safeDest(int player, int x, int y)
+{
+//	SCRIPT_ASSERT_PLAYER(context, player);
+//	SCRIPT_ASSERT(context, tileOnMap(x, y), "Out of bounds coordinates(%d, %d)", x, y);
+	return !(auxTile(x, y, player) & AUXBITS_DANGER);
+}
+
+//-- \subsection{setNoGoArea(x1, y1, x2, y2, player)}
+//-- Creates an area on the map on which nothing can be built. If player is zero,
+//-- then landing lights are placed. If player is -1, then a limbo landing zone
+//-- is created and limbo droids placed.
+// FIXME: missing a way to call initNoGoAreas(); check if we can call this in
+// every level start instead of through scripts
+bool _setNoGoArea(int x1, int y1, int x2, int y2, int player)
+{
+//	SCRIPT_ASSERT(context, x1 >= 0, "Minimum scroll x value %d is less than zero - ", x1);
+//	SCRIPT_ASSERT(context, y1 >= 0, "Minimum scroll y value %d is less than zero - ", y1);
+//	SCRIPT_ASSERT(context, x2 <= mapWidth, "Maximum scroll x value %d is greater than mapWidth %d", x2, (int)mapWidth);
+//	SCRIPT_ASSERT(context, y2 <= mapHeight, "Maximum scroll y value %d is greater than mapHeight %d", y2, (int)mapHeight);
+//	SCRIPT_ASSERT(context, player < MAX_PLAYERS && player >= -1, "Bad player value %d", player);
+
+	if (player == -1)
+	{
+		setNoGoArea(x1, y1, x2, y2, LIMBO_LANDING);
+		placeLimboDroids();	// this calls the Droids from the Limbo list onto the map
+	}
+	else
+	{
+		setNoGoArea(x1, y1, x2, y2, player);
+	}
+	return true;
+}
+
+
+//-- \subsection{setScrollLimits(x1, y1, x2, y2)}
+//-- Limit the scrollable area of the map to the given rectangle. (3.2+ only)
+bool setScrollLimits(int minX, int minY, int maxX, int maxY)
+{
+//	SCRIPT_ASSERT(context, minX >= 0, "Minimum scroll x value %d is less than zero - ", minX);
+//	SCRIPT_ASSERT(context, minY >= 0, "Minimum scroll y value %d is less than zero - ", minY);
+//	SCRIPT_ASSERT(context, maxX <= mapWidth, "Maximum scroll x value %d is greater than mapWidth %d", maxX, (int)mapWidth);
+//	SCRIPT_ASSERT(context, maxY <= mapHeight, "Maximum scroll y value %d is greater than mapHeight %d", maxY, (int)mapHeight);
+
+	const int prevMinX = scrollMinX;
+	const int prevMinY = scrollMinY;
+	const int prevMaxX = scrollMaxX;
+	const int prevMaxY = scrollMaxY;
+
+	scrollMinX = minX;
+	scrollMaxX = maxX;
+	scrollMinY = minY;
+	scrollMaxY = maxY;
+
+	// When the scroll limits change midgame - need to redo the lighting
+	initLighting(prevMinX < scrollMinX ? prevMinX : scrollMinX,
+		prevMinY < scrollMinY ? prevMinY : scrollMinY,
+		prevMaxX < scrollMaxX ? prevMaxX : scrollMaxX,
+		prevMaxY < scrollMaxY ? prevMaxY : scrollMaxY);
+
+	// need to reset radar to take into account of new size
+	resizeRadar();
+	return true;
+}
+
+//-- \subsection{loadLevel(level name)}
+//-- Load the level with the given name.
+bool loadLevel(const char* level)
+{
+	sstrcpy(aLevelName, level);
+
+	// Find the level dataset
+	LEVEL_DATASET *psNewLevel = levFindDataSet(level);
+//	SCRIPT_ASSERT(context, psNewLevel, "Could not find level data for %s", level.toUtf8().constData());
+
+	// Get the mission rolling...
+	nextMissionType = psNewLevel->type;
+	loopMissionState = LMS_CLEAROBJECTS;
+	return true;
+}
+
+//-- \subsection{setAlliance(player1, player2, value)}
+//-- Set alliance status between two players to either true or false. (3.2+ only)
+bool setAlliance(int player1, int player2, bool value)
+{
+	if (value)
+	{
+		formAlliance(player1, player2, true, false, true);
+	}
+	else
+	{
+		breakAlliance(player1, player2, true, true);
+	}
+	return true;
+}
+
+//-- \subsection{getExperienceModifier(player)}
+//-- Get the percentage of experience this player droids are going to gain. (3.2+ only)
+int getExperienceModifier(int player)
+{
+	return getExpGain(player);
+}
+
+//-- \subsection{setExperienceModifier(player, percent)}
+//-- Set the percentage of experience this player droids are going to gain. (3.2+ only)
+bool setExperienceModifier(int player, int percent)
+{
+	setExpGain(player, percent);
+	return true;
+}
+
+//-- \subsection{setSunPosition(x, y, z)}
+//-- Move the position of the Sun, which in turn moves where shadows are cast. (3.2+ only)
+bool setSunPosition(float x, float y, float z)
+{
+	setTheSun(Vector3f(x, y, z));
+	return true;
+}
+
+//-- \subsection{setSunIntensity(ambient r, g, b, diffuse r, g, b, specular r, g, b)}
+//-- Set the ambient, diffuse and specular colour intensities of the Sun lighting source. (3.2+ only)
+bool setSunIntensity(float ambient_r, float ambient_g, float ambient_b, float diffuse_r, float diffuse_g, float diffuse_b, float specular_r, float specular_g, float specular_b)
+{
+	float ambient[4];
+	float diffuse[4];
+	float specular[4];
+	ambient[0] = ambient_r;
+	ambient[1] = ambient_g;
+	ambient[2] = ambient_b;
+	ambient[3] = 1.0f;
+	diffuse[0] = diffuse_r;
+	diffuse[1] = diffuse_g;
+	diffuse[2] = diffuse_b;
+	diffuse[3] = 1.0f;
+	specular[0] = specular_r;
+	specular[1] = specular_g;
+	specular[2] = specular_b;
+	specular[3] = 1.0f;
+	pie_Lighting0(LIGHT_AMBIENT, ambient);
+	pie_Lighting0(LIGHT_DIFFUSE, diffuse);
+	pie_Lighting0(LIGHT_SPECULAR, specular);
+	return true;
+}
+
+//-- \subsection{setWeather(weather type)}
+//-- Set the current weather. This should be one of WEATHER_RAIN, WEATHER_SNOW or WEATHER_CLEAR. (3.2+ only)
+bool setWeather(int _weather)
+{
+	WT_CLASS weather = (WT_CLASS)_weather;
+//	SCRIPT_ASSERT(context, weather >= 0 && weather <= WT_NONE, "Bad weather type");
+	atmosSetWeatherType(weather);
+	return true;
+}
+
+//-- \subsection{setSky(texture file, wind speed, skybox scale)}
+//-- Change the skybox. (3.2+ only)
+bool setSky(const char* page, float wind, float scale)
+{
+	setSkyBox(page, wind, scale);
+	return true;
+}
+
+//-- \subsection{cameraSlide(x, y)}
+//-- Slide the camera over to the given position on the map. (3.2+ only)
+bool cameraSlide(float x, float y)
+{
+	requestRadarTrack(x, y);
+	return true;
+}
+
+//-- \subsection{cameraZoom(z, speed)}
+//-- Slide the camera to the given zoom distance. Normal camera zoom ranges between 500 and 5000. (3.2+ only)
+bool cameraZoom(float z, float speed)
+{
+	setZoom(speed, z);
+	return true;
+}
+
+//-- \subsection{addSpotter(x, y, player, range, type, expiry)}
+//-- Add an invisible viewer at a given position for given player that shows map in given range. \emph{type}
+//-- is zero for vision reveal, or one for radar reveal. The difference is that a radar reveal can be obstructed
+//-- by ECM jammers. \emph{expiry}, if non-zero, is the game time at which the spotter shall automatically be
+//-- removed. The function returns a unique ID that can be used to remove the spotter with \emph{removeSpotter}. (3.2+ only)
+unsigned int _addSpotter(int x, int y, int player, int range, bool radar, unsigned int expiry)
+{
+	return addSpotter(x, y, player, range, radar, expiry);
+}
+
+//-- \subsection{removeSpotter(id)}
+//-- Remove a spotter given its unique ID. (3.2+ only)
+bool removeSpotter(unsigned int id)
+{
+	removeSpotter(id);
+	return true;
+}
+
+
+

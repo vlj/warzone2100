@@ -2974,23 +2974,11 @@ static QScriptValue js_applyLimitSet(QScriptContext *context, QScriptEngine *eng
 	return QScriptValue();
 }
 
-static void setComponent(const QString& name, int player, int value)
-{
-	COMPONENT_STATS *psComp = getCompStatsFromName(name);
-	ASSERT_OR_RETURN(, psComp, "Bad component %s", name.toUtf8().constData());
-	apCompLists[player][psComp->compType][psComp->index] = value;
-}
-
 //-- \subsection{enableComponent(component, player)}
 //-- The given component is made available for research for the given player.
 static QScriptValue js_enableComponent(QScriptContext *context, QScriptEngine *engine)
 {
-	QString componentName = context->argument(0).toString();
-	int player = context->argument(1).toInt32();
-
-	SCRIPT_ASSERT_PLAYER(context, player);
-	setComponent(componentName, player, FOUND);
-	return QScriptValue();
+	return wrap_(enableComponent, context, engine);
 }
 
 //-- \subsection{makeComponentAvailable(component, player)}
@@ -2998,31 +2986,21 @@ static QScriptValue js_enableComponent(QScriptContext *context, QScriptEngine *e
 //-- actually build designs with it.
 static QScriptValue js_makeComponentAvailable(QScriptContext *context, QScriptEngine *engine)
 {
-	QString componentName = context->argument(0).toString();
-	int player = context->argument(1).toInt32();
-
-	SCRIPT_ASSERT_PLAYER(context, player);
-	setComponent(componentName, player, AVAILABLE);
-	return QScriptValue();
+	return wrap_(makeComponentAvailable, context, engine);
 }
 
 //-- \subsection{allianceExistsBetween(player, player)}
 //-- Returns true if an alliance exists between the two players, or they are the same player.
 static QScriptValue js_allianceExistsBetween(QScriptContext *context, QScriptEngine *engine)
 {
-	int player1 = context->argument(0).toInt32();
-	int player2 = context->argument(1).toInt32();
-	SCRIPT_ASSERT(context, player1 < MAX_PLAYERS && player1 >= 0, "Invalid player");
-	SCRIPT_ASSERT(context, player2 < MAX_PLAYERS && player2 >= 0, "Invalid player");
-	return QScriptValue(alliances[player1][player2] == ALLIANCE_FORMED);
+	return wrap_(allianceExistsBetween, context, engine);
 }
 
 //-- \subsection{_(string)}
 //-- Mark string for translation.
 static QScriptValue js_translate(QScriptContext *context, QScriptEngine *engine)
 {
-	// The redundant QString cast is a workaround for a Qt5 bug, the QScriptValue(char const *) constructor interprets as Latin1 instead of UTF-8!
-	return QScriptValue(QString(gettext(context->argument(0).toString().toUtf8().constData())));
+	return wrap_(translate, context, engine);
 }
 
 //-- \subsection{playerPower(player)}
@@ -3214,12 +3192,7 @@ static QScriptValue js_donatePower(QScriptContext *context, QScriptEngine *engin
 //-- the given location, to the best of that player's map knowledge.
 static QScriptValue js_safeDest(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
-	int x = context->argument(1).toInt32();
-	int y = context->argument(2).toInt32();
-	SCRIPT_ASSERT(context, tileOnMap(x, y), "Out of bounds coordinates(%d, %d)", x, y);
-	return QScriptValue(!(auxTile(x, y, player) & AUXBITS_DANGER));
+	return wrap_(safeDest, context, engine);
 }
 
 //-- \subsection{addStructure(structure type, player, x, y)}
@@ -3338,65 +3311,16 @@ static QScriptValue js_countDroid(QScriptContext *context, QScriptEngine *engine
 //-- is created and limbo droids placed.
 // FIXME: missing a way to call initNoGoAreas(); check if we can call this in
 // every level start instead of through scripts
-static QScriptValue js_setNoGoArea(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setNoGoArea(QScriptContext *context, QScriptEngine *engine)
 {
-	const int x1 = context->argument(0).toInt32();
-	const int y1 = context->argument(1).toInt32();
-	const int x2 = context->argument(2).toInt32();
-	const int y2 = context->argument(3).toInt32();
-	const int player = context->argument(4).toInt32();
-
-	SCRIPT_ASSERT(context, x1 >= 0, "Minimum scroll x value %d is less than zero - ", x1);
-	SCRIPT_ASSERT(context, y1 >= 0, "Minimum scroll y value %d is less than zero - ", y1);
-	SCRIPT_ASSERT(context, x2 <= mapWidth, "Maximum scroll x value %d is greater than mapWidth %d", x2, (int)mapWidth);
-	SCRIPT_ASSERT(context, y2 <= mapHeight, "Maximum scroll y value %d is greater than mapHeight %d", y2, (int)mapHeight);
-	SCRIPT_ASSERT(context, player < MAX_PLAYERS && player >= -1, "Bad player value %d", player);
-
-	if (player == -1)
-	{
-		setNoGoArea(x1, y1, x2, y2, LIMBO_LANDING);
-		placeLimboDroids();	// this calls the Droids from the Limbo list onto the map
-	}
-	else
-	{
-		setNoGoArea(x1, y1, x2, y2, player);
-	}
-	return QScriptValue();
+	wrap_(_setNoGoArea, context, engine);
 }
 
 //-- \subsection{setScrollLimits(x1, y1, x2, y2)}
 //-- Limit the scrollable area of the map to the given rectangle. (3.2+ only)
-static QScriptValue js_setScrollLimits(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setScrollLimits(QScriptContext *context, QScriptEngine *engine)
 {
-	const int minX = context->argument(0).toInt32();
-	const int minY = context->argument(1).toInt32();
-	const int maxX = context->argument(2).toInt32();
-	const int maxY = context->argument(3).toInt32();
-
-	SCRIPT_ASSERT(context, minX >= 0, "Minimum scroll x value %d is less than zero - ", minX);
-	SCRIPT_ASSERT(context, minY >= 0, "Minimum scroll y value %d is less than zero - ", minY);
-	SCRIPT_ASSERT(context, maxX <= mapWidth, "Maximum scroll x value %d is greater than mapWidth %d", maxX, (int)mapWidth);
-	SCRIPT_ASSERT(context, maxY <= mapHeight, "Maximum scroll y value %d is greater than mapHeight %d", maxY, (int)mapHeight);
-
-	const int prevMinX = scrollMinX;
-	const int prevMinY = scrollMinY;
-	const int prevMaxX = scrollMaxX;
-	const int prevMaxY = scrollMaxY;
-
-	scrollMinX = minX;
-	scrollMaxX = maxX;
-	scrollMinY = minY;
-	scrollMaxY = maxY;
-
-	// When the scroll limits change midgame - need to redo the lighting
-	initLighting(prevMinX < scrollMinX ? prevMinX : scrollMinX,
-	             prevMinY < scrollMinY ? prevMinY : scrollMinY,
-	             prevMaxX < scrollMaxX ? prevMaxX : scrollMaxX,
-	             prevMaxY < scrollMaxY ? prevMaxY : scrollMaxY);
-
-	// need to reset radar to take into account of new size
-	resizeRadar();
-	return QScriptValue();
+	wrap_(setScrollLimits, context, engine);
 }
 
 //-- \subsection{getScrollLimits()}
@@ -3414,20 +3338,9 @@ static QScriptValue js_getScrollLimits(QScriptContext *context, QScriptEngine *e
 
 //-- \subsection{loadLevel(level name)}
 //-- Load the level with the given name.
-static QScriptValue js_loadLevel(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_loadLevel(QScriptContext *context, QScriptEngine *engine)
 {
-	QString level = context->argument(0).toString();
-
-	sstrcpy(aLevelName, level.toUtf8().constData());
-
-	// Find the level dataset
-	LEVEL_DATASET *psNewLevel = levFindDataSet(level.toUtf8().constData());
-	SCRIPT_ASSERT(context, psNewLevel, "Could not find level data for %s", level.toUtf8().constData());
-
-	// Get the mission rolling...
-	nextMissionType = psNewLevel->type;
-	loopMissionState = LMS_CLEAROBJECTS;
-	return QScriptValue();
+	wrap_(loadLevel, context, engine);
 }
 
 //-- \subsection{enumRange(x, y, range[, filter[, seen]])}
@@ -3615,18 +3528,7 @@ static QScriptValue js_chat(QScriptContext *context, QScriptEngine *engine)
 //-- Set alliance status between two players to either true or false. (3.2+ only)
 static QScriptValue js_setAlliance(QScriptContext *context, QScriptEngine *engine)
 {
-	int player1 = context->argument(0).toInt32();
-	int player2 = context->argument(1).toInt32();
-	bool value = context->argument(2).toBool();
-	if (value)
-	{
-		formAlliance(player1, player2, true, false, true);
-	}
-	else
-	{
-		breakAlliance(player1, player2, true, true);
-	}
-	return QScriptValue(true);
+	wrap_(setAlliance, context, engine);
 }
 
 //-- \subsection{setAssemblyPoint(structure, x, y)}
@@ -3711,20 +3613,16 @@ static QScriptValue js_getDroidLimit(QScriptContext *context, QScriptEngine *eng
 
 //-- \subsection{getExperienceModifier(player)}
 //-- Get the percentage of experience this player droids are going to gain. (3.2+ only)
-static QScriptValue js_getExperienceModifier(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_getExperienceModifier(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	return QScriptValue(getExpGain(player));
+	wrap_(getExperienceModifier, context, engine);
 }
 
 //-- \subsection{setExperienceModifier(player, percent)}
 //-- Set the percentage of experience this player droids are going to gain. (3.2+ only)
-static QScriptValue js_setExperienceModifier(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setExperienceModifier(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	int percent = context->argument(1).toInt32();
-	setExpGain(player, percent);
-	return QScriptValue();
+	wrap_(setExperienceModifier, context, engine);
 }
 
 //-- \subsection{setDroidLimit(player, value[, droid type])}
@@ -3838,59 +3736,30 @@ static QScriptValue js_hackRemoveMessage(QScriptContext *context, QScriptEngine 
 
 //-- \subsection{setSunPosition(x, y, z)}
 //-- Move the position of the Sun, which in turn moves where shadows are cast. (3.2+ only)
-static QScriptValue js_setSunPosition(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setSunPosition(QScriptContext *context, QScriptEngine *engine)
 {
-	float x = context->argument(0).toNumber();
-	float y = context->argument(1).toNumber();
-	float z = context->argument(2).toNumber();
-	setTheSun(Vector3f(x, y, z));
-	return QScriptValue();
+	return wrap_(setSunPosition, context, engine);
 }
 
 //-- \subsection{setSunIntensity(ambient r, g, b, diffuse r, g, b, specular r, g, b)}
 //-- Set the ambient, diffuse and specular colour intensities of the Sun lighting source. (3.2+ only)
-static QScriptValue js_setSunIntensity(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setSunIntensity(QScriptContext *context, QScriptEngine *engine)
 {
-	float ambient[4];
-	float diffuse[4];
-	float specular[4];
-	ambient[0] = context->argument(0).toNumber();
-	ambient[1] = context->argument(1).toNumber();
-	ambient[2] = context->argument(2).toNumber();
-	ambient[3] = 1.0f;
-	diffuse[0] = context->argument(3).toNumber();
-	diffuse[1] = context->argument(4).toNumber();
-	diffuse[2] = context->argument(5).toNumber();
-	diffuse[3] = 1.0f;
-	specular[0] = context->argument(6).toNumber();
-	specular[1] = context->argument(7).toNumber();
-	specular[2] = context->argument(8).toNumber();
-	specular[3] = 1.0f;
-	pie_Lighting0(LIGHT_AMBIENT, ambient);
-	pie_Lighting0(LIGHT_DIFFUSE, diffuse);
-	pie_Lighting0(LIGHT_SPECULAR, specular);
-	return QScriptValue();
+	return wrap_(setSunIntensity, context, engine);
 }
 
 //-- \subsection{setWeather(weather type)}
 //-- Set the current weather. This should be one of WEATHER_RAIN, WEATHER_SNOW or WEATHER_CLEAR. (3.2+ only)
-static QScriptValue js_setWeather(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setWeather(QScriptContext *context, QScriptEngine *engine)
 {
-	WT_CLASS weather = (WT_CLASS)context->argument(0).toInt32();
-	SCRIPT_ASSERT(context, weather >= 0 && weather <= WT_NONE, "Bad weather type");
-	atmosSetWeatherType(weather);
-	return QScriptValue();
+	return wrap_(setWeather, context, engine);
 }
 
 //-- \subsection{setSky(texture file, wind speed, skybox scale)}
 //-- Change the skybox. (3.2+ only)
-static QScriptValue js_setSky(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setSky(QScriptContext *context, QScriptEngine *engine)
 {
-	QString page = context->argument(0).toString();
-	float wind = context->argument(1).toNumber();
-	float scale = context->argument(2).toNumber();
-	setSkyBox(page.toUtf8().constData(), wind, scale);
-	return QScriptValue();
+	return wrap_(setSky, context, engine);
 }
 
 //-- \subsection{hackDoNotSave(name)}
@@ -3971,22 +3840,16 @@ static QScriptValue js_hackMarkTiles(QScriptContext *context, QScriptEngine *)
 
 //-- \subsection{cameraSlide(x, y)}
 //-- Slide the camera over to the given position on the map. (3.2+ only)
-static QScriptValue js_cameraSlide(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_cameraSlide(QScriptContext *context, QScriptEngine *engine)
 {
-	float x = context->argument(0).toNumber();
-	float y = context->argument(1).toNumber();
-	requestRadarTrack(x, y);
-	return QScriptValue();
+	return wrap_(cameraSlide, context, engine);
 }
 
 //-- \subsection{cameraZoom(z, speed)}
 //-- Slide the camera to the given zoom distance. Normal camera zoom ranges between 500 and 5000. (3.2+ only)
-static QScriptValue js_cameraZoom(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_cameraZoom(QScriptContext *context, QScriptEngine *engine)
 {
-	float z = context->argument(0).toNumber();
-	float speed = context->argument(1).toNumber();
-	setZoom(speed, z);
-	return QScriptValue();
+	return wrap_(cameraZoom, context, engine);
 }
 
 //-- \subsection{cameraTrack(droid)}
@@ -4071,25 +3934,16 @@ static QScriptValue js_setObjectFlag(QScriptContext *context, QScriptEngine *)
 //-- is zero for vision reveal, or one for radar reveal. The difference is that a radar reveal can be obstructed
 //-- by ECM jammers. \emph{expiry}, if non-zero, is the game time at which the spotter shall automatically be
 //-- removed. The function returns a unique ID that can be used to remove the spotter with \emph{removeSpotter}. (3.2+ only)
-static QScriptValue js_addSpotter(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_addSpotter(QScriptContext *context, QScriptEngine *engine)
 {
-	int x = context->argument(0).toInt32();
-	int y = context->argument(1).toInt32();
-	int player = context->argument(2).toInt32();
-	int range = context->argument(3).toInt32();
-	bool radar = context->argument(4).toBool();
-	uint32_t expiry = context->argument(5).toUInt32();
-	uint32_t id = addSpotter(x, y, player, range, radar, expiry);
-	return QScriptValue(id);
+	return wrap_(_addSpotter, context, engine);
 }
 
 //-- \subsection{removeSpotter(id)}
 //-- Remove a spotter given its unique ID. (3.2+ only)
-static QScriptValue js_removeSpotter(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_removeSpotter(QScriptContext *context, QScriptEngine *engine)
 {
-	uint32_t id = context->argument(0).toUInt32();
-	removeSpotter(id);
-	return QScriptValue();
+	return wrap_(removeSpotter, context, engine);
 }
 
 //-- \subsection{syncRandom(limit)}

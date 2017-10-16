@@ -92,4 +92,66 @@ extern "C" {
 	bool removeTemplate(const char* templateName);
 	bool setDroidExperience(DROID* psDroid, float exp);
 	bool setAssemblyPoint_(structure_id_player structVal, int x, int y);
+	//-- \subsection{enableComponent(component, player)}
+	//-- The given component is made available for research for the given player.
+	bool enableComponent(const char* componentName, int player);
+	//-- \subsection{makeComponentAvailable(component, player)}
+	//-- The given component is made available to the given player. This means the player can
+	//-- actually build designs with it.
+	bool makeComponentAvailable(const char* componentName, int player);
+	//-- \subsection{allianceExistsBetween(player, player)}
+	//-- Returns true if an alliance exists between the two players, or they are the same player.
+	bool allianceExistsBetween(int player1, int player2);
+	//-- \subsection{_(string)}
+	//-- Mark string for translation.
+	const char* translate(const char* txt);
+	//-- \subsection{safeDest(player, x, y)} Returns true if given player is safe from hostile fire at
+	//-- the given location, to the best of that player's map knowledge.
+	bool safeDest(int player, int x, int y);
+	//-- \subsection{setNoGoArea(x1, y1, x2, y2, player)}
+	//-- Creates an area on the map on which nothing can be built. If player is zero,
+	//-- then landing lights are placed. If player is -1, then a limbo landing zone
+	//-- is created and limbo droids placed.
+	// FIXME: missing a way to call initNoGoAreas(); check if we can call this in
+	// every level start instead of through scripts
+	bool _setNoGoArea(int x1, int y1, int x2, int y2, int player);
+	//-- \subsection{setScrollLimits(x1, y1, x2, y2)}
+	//-- Limit the scrollable area of the map to the given rectangle. (3.2+ only)
+	bool setScrollLimits(int minX, int minY, int maxX, int maxY);
+	//-- \subsection{loadLevel(level name)}
+	//-- Load the level with the given name.
+	bool loadLevel(const char* level);
+	//-- \subsection{setAlliance(player1, player2, value)}
+	//-- Set alliance status between two players to either true or false. (3.2+ only)
+	bool setAlliance(int player1, int player2, bool value);
+	//-- \subsection{getExperienceModifier(player)}
+	//-- Get the percentage of experience this player droids are going to gain. (3.2+ only)
+	int getExperienceModifier(int player);
+	//-- \subsection{setExperienceModifier(player, percent)}
+	//-- Set the percentage of experience this player droids are going to gain. (3.2+ only)
+	bool setExperienceModifier(int player, int percent);
+	//-- \subsection{setSunPosition(x, y, z)}
+	//-- Move the position of the Sun, which in turn moves where shadows are cast. (3.2+ only)
+	bool setSunPosition(float x, float y, float z);
+	//-- \subsection{setSunIntensity(ambient r, g, b, diffuse r, g, b, specular r, g, b)}
+	//-- Set the ambient, diffuse and specular colour intensities of the Sun lighting source. (3.2+ only)
+	bool setSunIntensity(float ambient_r, float ambient_g, float ambient_b, float diffuse_r, float diffuse_g, float diffuse_b, float specular_r, float specular_g, float specular_b);
+	//-- \subsection{setWeather(weather type)}
+	//-- Set the current weather. This should be one of WEATHER_RAIN, WEATHER_SNOW or WEATHER_CLEAR. (3.2+ only)
+	bool setWeather(int _weather);
+	//-- \subsection{setSky(texture file, wind speed, skybox scale)}
+	//-- Change the skybox. (3.2+ only)
+	bool setSky(const char* page, float wind, float scale);
+	//-- \subsection{cameraSlide(x, y)}
+	//-- Slide the camera over to the given position on the map. (3.2+ only)
+	bool cameraSlide(float x, float y);
+	//-- \subsection{cameraZoom(z, speed)}
+	//-- Slide the camera to the given zoom distance. Normal camera zoom ranges between 500 and 5000. (3.2+ only)
+	bool cameraZoom(float z, float speed);
+	//-- \subsection{addSpotter(x, y, player, range, type, expiry)}
+	//-- Add an invisible viewer at a given position for given player that shows map in given range. \emph{type}
+	//-- is zero for vision reveal, or one for radar reveal. The difference is that a radar reveal can be obstructed
+	//-- by ECM jammers. \emph{expiry}, if non-zero, is the game time at which the spotter shall automatically be
+	//-- removed. The function returns a unique ID that can be used to remove the spotter with \emph{removeSpotter}. (3.2+ only)
+	unsigned int _addSpotter(int x, int y, int player, int range, bool radar, unsigned int expiry);
 }

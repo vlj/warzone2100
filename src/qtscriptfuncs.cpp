@@ -69,6 +69,7 @@
 #include "warcam.h"
 #include "projectile.h"
 #include "component.h"
+#include "wzapi.h"
 
 #define FAKE_REF_LASSAT 999
 #define ALL_PLAYERS -1
@@ -1504,12 +1505,6 @@ namespace
 		}
 	};
 
-	struct structure_id_player
-	{
-		int id;
-		int player;
-	};
-
 	template<>
 	struct unbox<structure_id_player>
 	{
@@ -1522,13 +1517,6 @@ namespace
 			int player = structVal.property("player").toInt32();
 			return { id, player };
 		}
-	};
-
-	struct object_id_player_type
-	{
-		int id;
-		int player;
-		OBJECT_TYPE type;
 	};
 
 	template<>
@@ -1558,15 +1546,6 @@ namespace
 		size_t idx = 0;
 		return box(f(unbox<Args>{}(idx, context)...));
 	}
-}
-
-
-static bool activateStructure(structure_id_player structVal, object_id_player_type objVal)
-{
-	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
-	BASE_OBJECT *psObj = IdToObject(objVal.type, objVal.id, objVal.player);
-	orderStructureObj(structVal.player, psObj);
-	return true;
 }
 
 //-- \subsection{activateStructure(structure, [target[, ability]])}
@@ -2464,61 +2443,14 @@ endstructloc:
 	return QScriptValue();
 }
 
-//-- \subsection{structureIdle(structure)}
-//-- Is given structure idle?
-static bool structureIdle_(structure_id_player structVal)
-{
-	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
-	return structureIdle(psStruct);
-}
-
 static QScriptValue js_structureIdle(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(structureIdle_, context, engine);
 }
 
-//-- \subsection{removeStruct(structure)}
-//-- Immediately remove the given structure from the map. Returns a boolean that is true on success.
-//-- No special effects are applied. Deprecated since 3.2.
-static bool removeStruct_(structure_id_player structVal)
-{
-	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
-	return removeStruct(psStruct, true);
-}
-
 static QScriptValue js_removeStruct(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(removeStruct_, context, engine);
-}
-
-//-- \subsection{removeObject(game object[, special effects?])}
-//-- Remove the given game object with special effects. Returns a boolean that is true on success.
-//-- A second, optional boolean parameter specifies whether special effects are to be applied. (3.2+ only)
-static bool removeObject(object_id_player_type qval, bool sfx)
-{
-	BASE_OBJECT *psObj = IdToObject(qval.type, qval.id, qval.player);
-	bool retval = false;
-	if (sfx)
-	{
-		switch (psObj->type)
-		{
-		case OBJ_STRUCTURE: destroyStruct((STRUCTURE *)psObj, gameTime); break;
-		case OBJ_DROID: retval = destroyDroid((DROID *)psObj, gameTime); break;
-		case OBJ_FEATURE: retval = destroyFeature((FEATURE *)psObj, gameTime); break;
-		default: break;
-		}
-	}
-	else
-	{
-		switch (psObj->type)
-		{
-		case OBJ_STRUCTURE: retval = removeStruct((STRUCTURE *)psObj, true); break;
-		case OBJ_DROID: retval = removeDroidBase((DROID *)psObj); break;
-		case OBJ_FEATURE: retval = removeFeature((FEATURE *)psObj); break;
-		default: break;
-		}
-	}
-	return retval;
 }
 
 static QScriptValue js_removeObject(QScriptContext *context, QScriptEngine *engine)
@@ -2609,11 +2541,6 @@ static QScriptValue js_groupAdd(QScriptContext *context, QScriptEngine *engine)
 	return QScriptValue();
 }
 
-static float distBetweenTwoPoints(float x1, float y1, float x2, float y2)
-{
-	return iHypot(x1 - x2, y1 - y2);
-}
-
 //-- \subsection{distBetweenTwoPoints(x1, y1, x2, y2)}
 //-- Return distance between two points.
 static QScriptValue js_distBetweenTwoPoints(QScriptContext *context, QScriptEngine *engine)
@@ -2630,28 +2557,9 @@ static QScriptValue js_groupSize(QScriptContext *context, QScriptEngine *engine)
 	return groups.property(groupId).toInt32();
 }
 
-//-- \subsection{droidCanReach(droid, x, y)}
-//-- Return whether or not the given droid could possibly drive to the given position. Does
-//-- not take player built blockades into account.
-static bool droidCanReach(DROID* psDroid, int x, int y)
-{
-	const PROPULSION_STATS *psPropStats = asPropulsionStats + psDroid->asBits[COMP_PROPULSION];
-	return fpathCheck(psDroid->pos, Vector3i(world_coord(x), world_coord(y), 0), psPropStats->propulsionType);
-}
-
 static QScriptValue js_droidCanReach(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(droidCanReach, context, engine);
-}
-
-//-- \subsection{propulsionCanReach(propulsion, x1, y1, x2, y2)}
-//-- Return true if a droid with a given propulsion is able to travel from (x1, y1) to (x2, y2).
-//-- Does not take player built blockades into account. (3.2+ only)
-static bool propulsionCanReach(const char* propulsionValueName, int x1, int y1, int x2, int y2)
-{
-	int propulsion = getCompFromName(COMP_PROPULSION, propulsionValueName);
-	const PROPULSION_STATS *psPropStats = asPropulsionStats + propulsion;
-	return fpathCheck(Vector3i(world_coord(x1), world_coord(y1), 0), Vector3i(world_coord(x2), world_coord(y2), 0), psPropStats->propulsionType);
 }
 
 static QScriptValue js_propulsionCanReach(QScriptContext *context, QScriptEngine *engine)
@@ -2659,38 +2567,9 @@ static QScriptValue js_propulsionCanReach(QScriptContext *context, QScriptEngine
 	return wrap_(propulsionCanReach, context, engine);
 }
 
-//-- \subsection{terrainType(x, y)}
-//-- Returns tile type of a given map tile, such as TER_WATER for water tiles or TER_CLIFFFACE for cliffs.
-//-- Tile types regulate which units may pass through this tile. (3.2+ only)
-static unsigned char terrainType_(int x, int y)
-{
-	return terrainType(mapTile(x, y));
-}
-
 static QScriptValue js_terrainType(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(terrainType_, context, engine);
-}
-
-static bool orderDroid_(DROID* psDroid, int _order)
-{
-	DROID_ORDER order = (DROID_ORDER)_order;
-	if (order == DORDER_REARM)
-	{
-		if (STRUCTURE *psStruct = findNearestReArmPad(psDroid, psDroid->psBaseStruct, false))
-		{
-			orderDroidObj(psDroid, order, psStruct, ModeQueue);
-		}
-		else
-		{
-			orderDroid(psDroid, DORDER_RTB, ModeQueue);
-		}
-	}
-	else
-	{
-		orderDroid(psDroid, order, ModeQueue);
-	}
-	return true;
 }
 
 //-- \subsection{orderDroid(droid, order)}
@@ -2700,34 +2579,9 @@ static QScriptValue js_orderDroid(QScriptContext *context, QScriptEngine *engine
 	return wrap_(orderDroid_, context, engine);
 }
 
-//-- \subsection{orderDroidObj(droid, order, object)}
-//-- Give a droid an order to do something to something.
-static bool orderDroidObj_(DROID* psDroid, int order_, object_id_player_type objVal)
-{
-	BASE_OBJECT *psObj = IdToObject(objVal.type, objVal.id, objVal.player);
-	DROID_ORDER order = (DROID_ORDER)order_;
-	orderDroidObj(psDroid, order, psObj, ModeQueue);
-	return true;
-}
-
 static QScriptValue js_orderDroidObj(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(orderDroidObj_, context, engine);
-}
-
-static bool orderDroidBuild5(DROID* psDroid, int _order, const char* statName, int x, int y, float _direction)
-{
-	int index = getStructStatFromName(statName);
-	DROID_ORDER order = (DROID_ORDER)_order;
-	STRUCTURE_STATS	*psStats = &asStructureStats[index];
-	uint16_t direction = DEG(_direction);
-	orderDroidStatsLocDir(psDroid, order, psStats, world_coord(x) + TILE_UNITS / 2, world_coord(y) + TILE_UNITS / 2, direction, ModeQueue);
-	return true;
-}
-
-static bool orderDroidBuild4(DROID* psDroid, int _order, const char* statName, int x, int y)
-{
-	return orderDroidBuild5(psDroid, _order, statName, x, y, 0.f);
 }
 
 //-- \subsection{orderDroidBuild(droid, order, structure type, x, y[, direction])}
@@ -2741,38 +2595,9 @@ static QScriptValue js_orderDroidBuild(QScriptContext *context, QScriptEngine *e
 	return wrap_(orderDroidBuild4, context, engine);
 }
 
-//-- \subsection{orderDroidLoc(droid, order, x, y)}
-//-- Give a droid an order to do something at the given location.
-static bool orderDroidLoc_(DROID* psDroid, int order_, int x, int y)
-{
-	DROID_ORDER order = (DROID_ORDER)order_;
-	orderDroidLoc(psDroid, order, world_coord(x), world_coord(y), ModeQueue);
-	return true;
-}
-
 static QScriptValue js_orderDroidLoc(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(orderDroidLoc_, context, engine);
-}
-
-//-- \subsection{setMissionTime(time)} Set mission countdown in seconds.
-static bool SetMissionTime(int time)
-{
-	int value = time * GAME_TICKS_PER_SEC;
-	mission.startTime = gameTime;
-	mission.time = value;
-	setMissionCountDown();
-	if (mission.time >= 0)
-	{
-		mission.startTime = gameTime;
-		addMissionTimerInterface();
-	}
-	else
-	{
-		intRemoveMissionTimer();
-		mission.cheatTime = 0;
-	}
-	return true;
 }
 
 static QScriptValue js_setMissionTime(QScriptContext *context, QScriptEngine *engine)
@@ -2780,23 +2605,9 @@ static QScriptValue js_setMissionTime(QScriptContext *context, QScriptEngine *en
 	return wrap_(SetMissionTime, context, engine);
 }
 
-//-- \subsection{getMissionTime()} Get time remaining on mission countdown in seconds. (3.2+ only)
-static int getMissionTime()
-{
-	return (mission.time - (gameTime - mission.startTime)) / GAME_TICKS_PER_SEC;
-}
-
 static QScriptValue js_getMissionTime(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(getMissionTime, context, engine);
-}
-
-//-- \subsection{setTransporterExit(x, y, player)}
-//-- Set the exit position for the mission transporter. (3.2+ only)
-static bool setTransporterExit(int x, int y, int player)
-{
-	missionSetTransporterExit(player, x, y);
-	return true;
 }
 
 static QScriptValue js_setTransporterExit(QScriptContext *context, QScriptEngine *engine)
@@ -2804,31 +2615,9 @@ static QScriptValue js_setTransporterExit(QScriptContext *context, QScriptEngine
 	return wrap_(setTransporterExit, context, engine);
 }
 
-//-- \subsection{startTransporterEntry(x, y, player)}
-//-- Set the entry position for the mission transporter, and make it start flying in
-//-- reinforcements. If you want the camera to follow it in, use cameraTrack() on it.
-//-- The transport needs to be set up with the mission droids, and the first transport
-//-- found will be used. (3.2+ only)
-static bool startTransporterEntry(int x, int y, int player)
-{
-	missionSetTransporterEntry(player, x, y);
-	missionFlyTransportersIn(player, false);
-	return true;
-}
-
 static QScriptValue js_startTransporterEntry(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(startTransporterEntry, context, engine);
-}
-
-//-- \subsection{useSafetyTransport(flag)}
-//-- Change if the mission transporter will fetch droids in non offworld missions
-//-- setReinforcementTime() is be used to hide it before coming back after the set time
-//-- which is handled by the campaign library in the victory data section (3.2.4+ only).
-static bool useSafetyTransport(bool flag)
-{
-	setDroidsToSafetyFlag(flag);
-	return true;
 }
 
 static QScriptValue js_useSafetyTransport(QScriptContext *context, QScriptEngine *engine)
@@ -2836,54 +2625,9 @@ static QScriptValue js_useSafetyTransport(QScriptContext *context, QScriptEngine
 	return wrap_(useSafetyTransport, context, engine);
 }
 
-//-- \subsection{restoreLimboMissionData()}
-//-- Swap mission type and bring back units previously stored at the start
-//-- of the mission (see cam3-c mission). (3.2.4+ only).
-static bool restoreLimboMissionData()
-{
-	resetLimboMission();
-	return true;
-}
-
 static QScriptValue js_restoreLimboMissionData(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(restoreLimboMissionData, context, engine);
-}
-
-//-- \subsection{setReinforcementTime(time)} Set time for reinforcements to arrive. If time is
-//-- negative, the reinforcement GUI is removed and the timer stopped. Time is in seconds.
-//-- If time equals to the magic LZ_COMPROMISED_TIME constant, reinforcement GUI ticker
-//-- is set to "--:--" and reinforcements are suppressed until this function is called
-//-- again with a regular time value.
-static bool setReinforcementTime(int time)
-{
-	int value = time * GAME_TICKS_PER_SEC;
-	mission.ETA = value;
-	if (missionCanReEnforce())
-	{
-		addTransporterTimerInterface();
-	}
-	if (value < 0)
-	{
-		DROID *psDroid;
-
-		intRemoveTransporterTimer();
-		/* Only remove the launch if haven't got a transporter droid since the scripts set the
-		* time to -1 at the between stage if there are not going to be reinforcements on the submap  */
-		for (psDroid = apsDroidLists[selectedPlayer]; psDroid != nullptr; psDroid = psDroid->psNext)
-		{
-			if (isTransporter(psDroid))
-			{
-				break;
-			}
-		}
-		// if not found a transporter, can remove the launch button
-		if (psDroid == nullptr)
-		{
-			intRemoveTransporterLaunch();
-		}
-	}
-	return true;
 }
 
 static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngine *engine)
@@ -2915,14 +2659,6 @@ static QScriptValue js_setStructureLimits(QScriptContext *context, QScriptEngine
 	psStructLimits[structInc].globalLimit = limit;
 
 	return QScriptValue();
-}
-
-//-- \subsection{centreView(x, y)}
-//-- Center the player's camera at the given position.
-static bool centreView(int x, int y)
-{
-	setViewPos(x, y, false);
-	return true;
 }
 
 static QScriptValue js_centreView(QScriptContext *context, QScriptEngine *engine)
@@ -3166,23 +2902,9 @@ static QScriptValue js_enableStructure(QScriptContext *context, QScriptEngine *e
 	return QScriptValue();
 }
 
-//-- \subsection{setTutorialMode(bool)} Sets a number of restrictions appropriate for tutorial if set to true.
-static bool setTutorialMode(bool intutorial)
-{
-	bInTutorial = intutorial;
-	return true;
-}
-
 static QScriptValue js_setTutorialMode(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(setTutorialMode, context, engine);
-}
-
-//-- \subsection{setMiniMap(bool)} Turns visible minimap on or off in the GUI.
-static bool setMiniMap(bool radarpermitted)
-{
-	radarPermitted = radarpermitted;
-	return true;
 }
 
 static QScriptValue js_setMiniMap(QScriptContext *context, QScriptEngine *engine)
@@ -3190,99 +2912,14 @@ static QScriptValue js_setMiniMap(QScriptContext *context, QScriptEngine *engine
 	return wrap_(setMiniMap, context, engine);
 }
 
-//-- \subsection{setDesign(bool)} Whether to allow player to design stuff.
-static bool setDesign(bool allowdesign)
-{
-	DROID_TEMPLATE *psCurr;
-	allowDesign = allowdesign;
-	// Switch on or off future templates
-	// FIXME: This dual data structure for templates is just plain insane.
-	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
-	{
-		bool researched = researchedTemplate(keyvaluepair.second, selectedPlayer);
-		keyvaluepair.second->enabled = (researched || allowDesign);
-	}
-	for (auto &localTemplate : localTemplates)
-	{
-		psCurr = &localTemplate;
-		bool researched = researchedTemplate(psCurr, selectedPlayer);
-		psCurr->enabled = (researched || allowDesign);
-	}
-	return true;
-}
-
 static QScriptValue js_setDesign(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(setDesign, context, engine);
 }
 
-//-- \subsection{enableTemplate(template name)} Enable a specific template (even if design is disabled).
-static bool enableTemplate(const char* templateName)
-{
-	DROID_TEMPLATE *psCurr;
-	bool found = false;
-	// FIXME: This dual data structure for templates is just plain insane.
-	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
-	{
-		if (QString(templateName).compare(keyvaluepair.second->id) == 0)
-		{
-			keyvaluepair.second->enabled = true;
-			found = true;
-			break;
-		}
-	}
-	if (!found)
-	{
-		debug(LOG_ERROR, "Template %s was not found!", templateName);
-		return false;
-	}
-	for (auto &localTemplate : localTemplates)
-	{
-		psCurr = &localTemplate;
-		if (QString(templateName).compare(psCurr->id) == 0)
-		{
-			psCurr->enabled = true;
-			break;
-		}
-	}
-	return true;
-}
-
 static QScriptValue js_enableTemplate(QScriptContext *context, QScriptEngine *engine)
 {
 	return wrap_(enableTemplate, context, engine);
-}
-
-//-- \subsection{removeTemplate(template name)} Remove a template.
-static bool removeTemplate(const char* templateName)
-{
-	DROID_TEMPLATE *psCurr;
-	bool found = false;
-	// FIXME: This dual data structure for templates is just plain insane.
-	for (auto &keyvaluepair : droidTemplates[selectedPlayer])
-	{
-		if (QString(templateName).compare(keyvaluepair.second->id) == 0)
-		{
-			keyvaluepair.second->enabled = false;
-			found = true;
-			break;
-		}
-	}
-	if (!found)
-	{
-		debug(LOG_ERROR, "Template %s was not found!", templateName);
-		return false;
-	}
-	for (std::list<DROID_TEMPLATE>::iterator i = localTemplates.begin(); i != localTemplates.end(); ++i)
-	{
-		psCurr = &*i;
-		if (QString(templateName).compare(psCurr->id) == 0)
-		{
-			localTemplates.erase(i);
-			break;
-		}
-	}
-	return true;
 }
 
 static QScriptValue js_removeTemplate(QScriptContext *context, QScriptEngine *engine)
@@ -3505,12 +3142,6 @@ static QScriptValue js_objFromId(QScriptContext *context, QScriptEngine *engine)
 	SCRIPT_ASSERT(context, psObj, "No such object id %d", id);
 	return QScriptValue(convMax(psObj, engine));
 }
-
-bool setDroidExperience(DROID* psDroid, float exp)
-{
-	psDroid->experience = exp * 65536;
-	return true;
-};
 
 //-- \subsection{setDroidExperience(droid, experience)}
 //-- Set the amount of experience a droid has. Experience is read using floating point precision.
@@ -3996,13 +3627,6 @@ static QScriptValue js_setAlliance(QScriptContext *context, QScriptEngine *engin
 		breakAlliance(player1, player2, true, true);
 	}
 	return QScriptValue(true);
-}
-
-static bool setAssemblyPoint_(structure_id_player structVal, int x, int y)
-{
-	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
-	setAssemblyPoint(((FACTORY *)psStruct->pFunctionality)->psAssemblyPoint, x, y, structVal.player, true);
-	return true;
 }
 
 //-- \subsection{setAssemblyPoint(structure, x, y)}

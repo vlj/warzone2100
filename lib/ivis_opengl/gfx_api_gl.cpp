@@ -852,6 +852,12 @@ void gl_context::bind_streamed_vertex_buffers(const void* data, const std::size_
 {
 	glBindBuffer(GL_ARRAY_BUFFER, scratchbuffer);
 	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW);
+	const auto& buffer_desc = current_program->vertex_buffer_desc[0];
+	for (const auto& attribute : buffer_desc.attributes)
+	{
+		glEnableVertexAttribArray(attribute.id);
+		glVertexAttribPointer(attribute.id, get_size(attribute.type), get_type(attribute.type), get_normalisation(attribute.type), buffer_desc.stride, nullptr);
+	}
 }
 
 void gl_context::bind_index_buffer(gfx_api::buffer& _buffer, const gfx_api::index_type&)

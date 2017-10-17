@@ -12,6 +12,14 @@
 #include "display3d.h"
 #include "template.h"
 #include "hci.h"
+#include "lighting.h"
+#include "radar.h"
+#include "multigifts.h"
+#include "projectile.h"
+#include "atmos.h"
+#include "warcam.h"
+#include "frontend.h"
+#include "loop.h"
 
 BASE_OBJECT *IdToObject(OBJECT_TYPE type, int id, int player);
 
@@ -613,7 +621,7 @@ unsigned int _addSpotter(int x, int y, int player, int range, bool radar, unsign
 
 //-- \subsection{removeSpotter(id)}
 //-- Remove a spotter given its unique ID. (3.2+ only)
-bool removeSpotter(unsigned int id)
+bool _removeSpotter(unsigned int id)
 {
 	removeSpotter(id);
 	return true;

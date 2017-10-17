@@ -154,4 +154,7 @@ extern "C" {
 	//-- by ECM jammers. \emph{expiry}, if non-zero, is the game time at which the spotter shall automatically be
 	//-- removed. The function returns a unique ID that can be used to remove the spotter with \emph{removeSpotter}. (3.2+ only)
 	unsigned int _addSpotter(int x, int y, int player, int range, bool radar, unsigned int expiry);
+	//-- \subsection{removeSpotter(id)}
+	//-- Remove a spotter given its unique ID. (3.2+ only)
+	bool _removeSpotter(unsigned int id);
 }

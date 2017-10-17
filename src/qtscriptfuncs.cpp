@@ -1438,7 +1438,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return context->argument(idx++).toInt32();
+			return context->argument(idx++).toUInt32();
 		}
 	};
 
@@ -3313,14 +3313,14 @@ static QScriptValue js_countDroid(QScriptContext *context, QScriptEngine *engine
 // every level start instead of through scripts
 static QScriptValue js_setNoGoArea(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(_setNoGoArea, context, engine);
+	return wrap_(_setNoGoArea, context, engine);
 }
 
 //-- \subsection{setScrollLimits(x1, y1, x2, y2)}
 //-- Limit the scrollable area of the map to the given rectangle. (3.2+ only)
 static QScriptValue js_setScrollLimits(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(setScrollLimits, context, engine);
+	return wrap_(setScrollLimits, context, engine);
 }
 
 //-- \subsection{getScrollLimits()}
@@ -3340,7 +3340,7 @@ static QScriptValue js_getScrollLimits(QScriptContext *context, QScriptEngine *e
 //-- Load the level with the given name.
 static QScriptValue js_loadLevel(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(loadLevel, context, engine);
+	return wrap_(loadLevel, context, engine);
 }
 
 //-- \subsection{enumRange(x, y, range[, filter[, seen]])}
@@ -3528,7 +3528,7 @@ static QScriptValue js_chat(QScriptContext *context, QScriptEngine *engine)
 //-- Set alliance status between two players to either true or false. (3.2+ only)
 static QScriptValue js_setAlliance(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(setAlliance, context, engine);
+	return wrap_(setAlliance, context, engine);
 }
 
 //-- \subsection{setAssemblyPoint(structure, x, y)}
@@ -3615,14 +3615,14 @@ static QScriptValue js_getDroidLimit(QScriptContext *context, QScriptEngine *eng
 //-- Get the percentage of experience this player droids are going to gain. (3.2+ only)
 static QScriptValue js_getExperienceModifier(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(getExperienceModifier, context, engine);
+	return wrap_(getExperienceModifier, context, engine);
 }
 
 //-- \subsection{setExperienceModifier(player, percent)}
 //-- Set the percentage of experience this player droids are going to gain. (3.2+ only)
 static QScriptValue js_setExperienceModifier(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(setExperienceModifier, context, engine);
+	return wrap_(setExperienceModifier, context, engine);
 }
 
 //-- \subsection{setDroidLimit(player, value[, droid type])}
@@ -3943,7 +3943,7 @@ static QScriptValue js_addSpotter(QScriptContext *context, QScriptEngine *engine
 //-- Remove a spotter given its unique ID. (3.2+ only)
 static QScriptValue js_removeSpotter(QScriptContext *context, QScriptEngine *engine)
 {
-	return wrap_(removeSpotter, context, engine);
+	return wrap_(_removeSpotter, context, engine);
 }
 
 //-- \subsection{syncRandom(limit)}

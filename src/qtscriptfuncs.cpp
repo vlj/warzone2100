@@ -3950,10 +3950,9 @@ static QScriptValue js_removeSpotter(QScriptContext *context, QScriptEngine *eng
 //-- Generate a synchronized random number in range 0...(limit - 1) that will be the same if this function is
 //-- run on all network peers in the same game frame. If it is called on just one peer (such as would be
 //-- the case for AIs, for instance), then game sync will break. (3.2+ only)
-static QScriptValue js_syncRandom(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_syncRandom(QScriptContext *context, QScriptEngine *engine)
 {
-	uint32_t limit = context->argument(0).toInt32();
-	return QScriptValue(gameRand(limit));
+	return wrap_(syncRandom, context, engine);
 }
 
 //-- \subsection{syncRequest(req_id, x, y[, obj[, obj2]])}
@@ -3991,46 +3990,24 @@ static QScriptValue js_syncRequest(QScriptContext *context, QScriptEngine *)
 //-- \subsection{replaceTexture(old_filename, new_filename)}
 //-- Replace one texture with another. This can be used to for example give buildings on a specific tileset different
 //-- looks, or to add variety to the looks of droids in campaign missions. (3.2+ only)
-static QScriptValue js_replaceTexture(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_replaceTexture(QScriptContext *context, QScriptEngine *engine)
 {
-	QString oldfile = context->argument(0).toString();
-	QString newfile = context->argument(1).toString();
-	replaceTexture(oldfile, newfile);
-	return QScriptValue();
+	return wrap_(_replaceTexture, context, engine);
 }
 
 //-- \subsection{fireWeaponAtLoc(x, y, weapon_name)}
 //-- Fires a weapon at the given coordinates (3.2.4+ only).
-static QScriptValue js_fireWeaponAtLoc(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_fireWeaponAtLoc(QScriptContext *context, QScriptEngine *engine)
 {
-	int xLocation = context->argument(0).toInt32();
-	int yLocation = context->argument(1).toInt32();
-
-	QScriptValue weaponValue = context->argument(2);
-	int weapon = getCompFromName(COMP_WEAPON, weaponValue.toString());
-	SCRIPT_ASSERT(context, weapon > 0, "No such weapon: %s", weaponValue.toString().toUtf8().constData());
-
-	Vector3i target;
-	target.x = xLocation;
-	target.y = yLocation;
-	target.z = map_Height(xLocation, yLocation);
-
-	WEAPON sWeapon;
-	sWeapon.nStat = weapon;
-	// send the projectile using the selectedPlayer so that it can always be seen
-	proj_SendProjectile(&sWeapon, nullptr, selectedPlayer, target, nullptr, true, 0);
-	return QScriptValue();
+	return wrap_(fireWeaponAtLoc, context, engine);
 }
 
 //-- \subsection{changePlayerColour(player, colour)}
 //-- Change a player's colour slot. The current player colour can be read from the playerData array. There are as many
 //-- colour slots as the maximum number of players. (3.2.3+ only)
-static QScriptValue js_changePlayerColour(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_changePlayerColour(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	int colour = context->argument(1).toInt32();
-	setPlayerColour(player, colour);
-	return QScriptValue();
+	return wrap_(changePlayerColour, context, engine);
 }
 
 // ----------------------------------------------------------------------------------------

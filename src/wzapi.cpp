@@ -20,6 +20,8 @@
 #include "warcam.h"
 #include "frontend.h"
 #include "loop.h"
+#include "random.h"
+#include "component.h"
 
 BASE_OBJECT *IdToObject(OBJECT_TYPE type, int id, int player);
 
@@ -627,5 +629,48 @@ bool _removeSpotter(unsigned int id)
 	return true;
 }
 
+//-- \subsection{syncRandom(limit)}
+//-- Generate a synchronized random number in range 0...(limit - 1) that will be the same if this function is
+//-- run on all network peers in the same game frame. If it is called on just one peer (such as would be
+//-- the case for AIs, for instance), then game sync will break. (3.2+ only)
+int syncRandom(unsigned int limit)
+{
+	return gameRand(limit);
+}
 
+//-- \subsection{replaceTexture(old_filename, new_filename)}
+//-- Replace one texture with another. This can be used to for example give buildings on a specific tileset different
+//-- looks, or to add variety to the looks of droids in campaign missions. (3.2+ only)
+bool _replaceTexture(const char* oldfile, const char* newfile)
+{
+	_replaceTexture(oldfile, newfile);
+	return true;
+}
 
+//-- \subsection{fireWeaponAtLoc(x, y, weapon_name)}
+//-- Fires a weapon at the given coordinates (3.2.4+ only).
+bool fireWeaponAtLoc(int xLocation, int yLocation, const char *weaponName)
+{
+	int weapon = getCompFromName(COMP_WEAPON, weaponName);
+	//	SCRIPT_ASSERT(context, weapon > 0, "No such weapon: %s", weaponValue.toString().toUtf8().constData());
+
+	Vector3i target;
+	target.x = xLocation;
+	target.y = yLocation;
+	target.z = map_Height(xLocation, yLocation);
+
+	WEAPON sWeapon;
+	sWeapon.nStat = weapon;
+	// send the projectile using the selectedPlayer so that it can always be seen
+	proj_SendProjectile(&sWeapon, nullptr, selectedPlayer, target, nullptr, true, 0);
+	return true;
+}
+
+//-- \subsection{changePlayerColour(player, colour)}
+//-- Change a player's colour slot. The current player colour can be read from the playerData array. There are as many
+//-- colour slots as the maximum number of players. (3.2.3+ only)
+bool changePlayerColour(int player, int colour)
+{
+	setPlayerColour(player, colour);
+	return true;
+}

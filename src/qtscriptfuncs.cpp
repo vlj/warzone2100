@@ -1423,7 +1423,7 @@ namespace
 	template<>
 	struct unbox<int>
 	{
-		int operator()(size_t& idx, QScriptContext *context)
+		int operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1434,7 +1434,7 @@ namespace
 	template<>
 	struct unbox<unsigned int>
 	{
-		unsigned int operator()(size_t& idx, QScriptContext *context)
+		unsigned int operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1445,7 +1445,7 @@ namespace
 	template<>
 	struct unbox<bool>
 	{
-		bool operator()(size_t& idx, QScriptContext *context)
+		bool operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1458,7 +1458,7 @@ namespace
 	template<>
 	struct unbox<float>
 	{
-		float operator()(size_t& idx, QScriptContext *context)
+		float operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1469,7 +1469,7 @@ namespace
 	template<>
 	struct unbox<const DROID*>
 	{
-		const DROID* operator()(size_t& idx, QScriptContext *context)
+		const DROID* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1483,18 +1483,22 @@ namespace
 	template<>
 	struct unbox<const char*>
 	{
-		const char* operator()(size_t& idx, QScriptContext *context)
+		const char* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return context->argument(idx++).toString().toUtf8().constData();
+			auto&& tmp = context->argument(idx++).toString().toUtf8();
+			auto* result = (char*)stack_space;
+			strcpy(result, tmp.constData());
+			stack_space = (char*)stack_space + strlen(tmp) + 1;
+			return result;
 		}
 	};
 
 	template<>
 	struct unbox<DROID*>
 	{
-		DROID* operator()(size_t& idx, QScriptContext *context)
+		DROID* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1508,7 +1512,7 @@ namespace
 	template<>
 	struct unbox<structure_id_player>
 	{
-		structure_id_player operator()(size_t& idx, QScriptContext *context)
+		structure_id_player operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1523,7 +1527,7 @@ namespace
 	template<>
 	struct unbox<droid_id_player>
 	{
-		droid_id_player operator()(size_t& idx, QScriptContext *context)
+		droid_id_player operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1537,7 +1541,7 @@ namespace
 	template<>
 	struct unbox<object_id_player_type>
 	{
-		object_id_player_type operator()(size_t& idx, QScriptContext *context)
+		object_id_player_type operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1552,7 +1556,7 @@ namespace
 	template<>
 	struct unbox<string_list>
 	{
-		string_list operator()(size_t& idx, QScriptContext *context)
+		string_list operator()(size_t& idx, QScriptContext *context, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1600,8 +1604,10 @@ namespace
 	template<typename R, typename...Args>
 	QScriptValue wrap_(R(*f)(Args...), QScriptContext *context, QScriptEngine *engine)
 	{
+		uint8_t stack_space[10000];
+		void* stack_ptr = stack_space;
 		size_t idx = 0;
-		return box(f(unbox<Args>{}(idx, context)...), engine);
+		return box(f(unbox<Args>{}(idx, context, stack_ptr)...), engine);
 	}
 }
 

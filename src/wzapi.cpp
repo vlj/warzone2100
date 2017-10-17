@@ -805,3 +805,92 @@ bool addDroidToTransporter(droid_id_player transporter, droid_id_player droid)
 	psTransporter->psGroup->add(psDroid);
 	return true;
 }
+
+extern bool structDoubleCheck(BASE_STATS *psStat, UDWORD xx, UDWORD yy, SDWORD maxBlockingTiles);
+
+//-- \subsection{pickStructLocation(droid, structure type, x, y)}
+//-- Pick a location for constructing a certain type of building near some given position.
+//-- Returns an object containing "type" POSITION, and "x" and "y" values, if successful.
+optional_position pickStructLocation(droid_id_player droidVal, const char* statName, int startX, int startY, int maxBlockingTiles)
+{
+	DROID *psDroid = IdToDroid(droidVal.id, droidVal.player);
+	int index = getStructStatFromName(statName);
+	//SCRIPT_ASSERT(context, index >= 0, "%s not found", statName.toUtf8().constData());
+	STRUCTURE_STATS	*psStat = &asStructureStats[index];
+	int numIterations = 30;
+	bool found = false;
+	int incX, incY, x, y;
+
+//	SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
+//	SCRIPT_ASSERT(context, psStat, "No such stat found: %s", statName.toUtf8().constData());
+//	SCRIPT_ASSERT_PLAYER(context, player);
+//	SCRIPT_ASSERT(context, startX >= 0 && startX < mapWidth && startY >= 0 && startY < mapHeight, "Bad position (%d, %d)", startX, startY);
+
+	x = startX;
+	y = startY;
+
+	Vector2i offset(psStat->baseWidth * (TILE_UNITS / 2), psStat->baseBreadth * (TILE_UNITS / 2));
+
+	// save a lot of typing... checks whether a position is valid
+#define LOC_OK(_x, _y) (tileOnMap(_x, _y) && \
+                        (!psDroid || fpathCheck(psDroid->pos, Vector3i(world_coord(_x), world_coord(_y), 0), PROPULSION_TYPE_WHEELED)) \
+                        && validLocation(psStat, world_coord(Vector2i(_x, _y)) + offset, 0, droidVal.player, false) && structDoubleCheck(psStat, _x, _y, maxBlockingTiles))
+
+	// first try the original location
+	if (LOC_OK(startX, startY))
+	{
+		found = true;
+	}
+
+	// try some locations nearby
+	for (incX = 1, incY = 1; incX < numIterations && !found; incX++, incY++)
+	{
+		y = startY - incY;	// top
+		for (x = startX - incX; x < startX + incX; x++)
+		{
+			if (LOC_OK(x, y))
+			{
+				found = true;
+				goto endstructloc;
+			}
+		}
+		x = startX + incX;	// right
+		for (y = startY - incY; y < startY + incY; y++)
+		{
+			if (LOC_OK(x, y))
+			{
+				found = true;
+				goto endstructloc;
+			}
+		}
+		y = startY + incY;	// bottom
+		for (x = startX + incX; x > startX - incX; x--)
+		{
+			if (LOC_OK(x, y))
+			{
+				found = true;
+				goto endstructloc;
+			}
+		}
+		x = startX - incX;	// left
+		for (y = startY + incY; y > startY - incY; y--)
+		{
+			if (LOC_OK(x, y))
+			{
+				found = true;
+				goto endstructloc;
+			}
+		}
+	}
+
+endstructloc:
+	if (found)
+	{
+		return { true, x + map_coord(offset.x) , y + map_coord(offset.y) };
+	}
+	else
+	{
+		debug(LOG_SCRIPT, "Did not find valid positioning for %s", getName(psStat));
+	}
+	return { false };
+}

@@ -27,6 +27,13 @@ extern "C" {
 		size_t count;
 	};
 
+	struct optional_position
+	{
+		bool valid;
+		int x;
+		int y;
+	};
+
 	bool activateStructure(structure_id_player structVal, object_id_player_type objVal);
 	//-- \subsection{structureIdle(structure)}
 	//-- Is given structure idle?
@@ -201,4 +208,8 @@ extern "C" {
 	//-- into a transporter, which is also currently on the campaign off-world mission list.
 	//-- (3.2+ only)
 	bool addDroidToTransporter(droid_id_player transporter, droid_id_player droid);
+	//-- \subsection{pickStructLocation(droid, structure type, x, y)}
+	//-- Pick a location for constructing a certain type of building near some given position.
+	//-- Returns an object containing "type" POSITION, and "x" and "y" values, if successful.
+	optional_position pickStructLocation(droid_id_player droidVal, const char* statName, int startX, int startY, int maxBlockingTiles);
 }

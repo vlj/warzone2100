@@ -1586,6 +1586,17 @@ namespace
 		return convFeature(psFeature, engine);
 	}
 
+	QScriptValue box(optional_position pos, QScriptEngine* engine)
+	{
+		if (!pos.valid)
+			return {};
+		QScriptValue retval = engine->newObject();
+		retval.setProperty("x", pos.x, QScriptValue::ReadOnly);
+		retval.setProperty("y", pos.y, QScriptValue::ReadOnly);
+		retval.setProperty("type", SCRIPT_POSITION, QScriptValue::ReadOnly);
+		return retval;
+	}
+
 	template<typename R, typename...Args>
 	QScriptValue wrap_(R(*f)(Args...), QScriptContext *context, QScriptEngine *engine)
 	{
@@ -2273,102 +2284,7 @@ static QScriptValue js_debug(QScriptContext *context, QScriptEngine *engine)
 //-- Returns an object containing "type" POSITION, and "x" and "y" values, if successful.
 static QScriptValue js_pickStructLocation(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue droidVal = context->argument(0);
-	const int id = droidVal.property("id").toInt32();
-	const int player = droidVal.property("player").toInt32();
-	DROID *psDroid = IdToDroid(id, player);
-	QString statName = context->argument(1).toString();
-	int index = getStructStatFromName(statName.toUtf8().constData());
-	SCRIPT_ASSERT(context, index >= 0, "%s not found", statName.toUtf8().constData());
-	STRUCTURE_STATS	*psStat = &asStructureStats[index];
-	const int startX = context->argument(2).toInt32();
-	const int startY = context->argument(3).toInt32();
-	int numIterations = 30;
-	bool found = false;
-	int incX, incY, x, y;
-	int maxBlockingTiles = 0;
-
-	SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
-	SCRIPT_ASSERT(context, psStat, "No such stat found: %s", statName.toUtf8().constData());
-	SCRIPT_ASSERT_PLAYER(context, player);
-	SCRIPT_ASSERT(context, startX >= 0 && startX < mapWidth && startY >= 0 && startY < mapHeight, "Bad position (%d, %d)", startX, startY);
-
-	if (context->argumentCount() > 4) // final optional argument
-	{
-		maxBlockingTiles = context->argument(4).toInt32();
-	}
-
-	x = startX;
-	y = startY;
-
-	Vector2i offset(psStat->baseWidth * (TILE_UNITS / 2), psStat->baseBreadth * (TILE_UNITS / 2));
-
-	// save a lot of typing... checks whether a position is valid
-#define LOC_OK(_x, _y) (tileOnMap(_x, _y) && \
-                        (!psDroid || fpathCheck(psDroid->pos, Vector3i(world_coord(_x), world_coord(_y), 0), PROPULSION_TYPE_WHEELED)) \
-                        && validLocation(psStat, world_coord(Vector2i(_x, _y)) + offset, 0, player, false) && structDoubleCheck(psStat, _x, _y, maxBlockingTiles))
-
-	// first try the original location
-	if (LOC_OK(startX, startY))
-	{
-		found = true;
-	}
-
-	// try some locations nearby
-	for (incX = 1, incY = 1; incX < numIterations && !found; incX++, incY++)
-	{
-		y = startY - incY;	// top
-		for (x = startX - incX; x < startX + incX; x++)
-		{
-			if (LOC_OK(x, y))
-			{
-				found = true;
-				goto endstructloc;
-			}
-		}
-		x = startX + incX;	// right
-		for (y = startY - incY; y < startY + incY; y++)
-		{
-			if (LOC_OK(x, y))
-			{
-				found = true;
-				goto endstructloc;
-			}
-		}
-		y = startY + incY;	// bottom
-		for (x = startX + incX; x > startX - incX; x--)
-		{
-			if (LOC_OK(x, y))
-			{
-				found = true;
-				goto endstructloc;
-			}
-		}
-		x = startX - incX;	// left
-		for (y = startY + incY; y > startY - incY; y--)
-		{
-			if (LOC_OK(x, y))
-			{
-				found = true;
-				goto endstructloc;
-			}
-		}
-	}
-
-endstructloc:
-	if (found)
-	{
-		QScriptValue retval = engine->newObject();
-		retval.setProperty("x", x + map_coord(offset.x), QScriptValue::ReadOnly);
-		retval.setProperty("y", y + map_coord(offset.y), QScriptValue::ReadOnly);
-		retval.setProperty("type", SCRIPT_POSITION, QScriptValue::ReadOnly);
-		return retval;
-	}
-	else
-	{
-		debug(LOG_SCRIPT, "Did not find valid positioning for %s", getName(psStat));
-	}
-	return QScriptValue();
+	return wrap_(pickStructLocation, context, engine);
 }
 
 static QScriptValue js_structureIdle(QScriptContext *context, QScriptEngine *engine)

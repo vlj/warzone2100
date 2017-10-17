@@ -1427,7 +1427,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return context->argument(idx++).toInt32();
+			return context->argument(idx--).toInt32();
 		}
 	};
 
@@ -1438,7 +1438,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return context->argument(idx++).toUInt32();
+			return context->argument(idx--).toUInt32();
 		}
 	};
 
@@ -1449,7 +1449,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return 	context->argument(idx++).toBool();
+			return 	context->argument(idx--).toBool();
 		}
 	};
 
@@ -1462,7 +1462,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			return context->argument(idx++).toNumber();
+			return context->argument(idx--).toNumber();
 		}
 	};
 
@@ -1473,7 +1473,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue droidVal = context->argument(idx++);
+			QScriptValue droidVal = context->argument(idx--);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
 			return IdToDroid(id, player);
@@ -1487,7 +1487,12 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			auto&& tmp = context->argument(idx++).toString().toUtf8();
+			auto&& tmp = context->argument(idx--).toString().toUtf8();
+			auto&& tmp2 = tmp.constData();
+			if (strcmp(tmp2, "Crate") == 0)
+			{
+				printf("here");
+			}
 			auto* result = (char*)stack_space;
 			strcpy(result, tmp.constData());
 			stack_space = (char*)stack_space + strlen(tmp) + 1;
@@ -1502,7 +1507,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue droidVal = context->argument(idx++);
+			QScriptValue droidVal = context->argument(idx--);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
 			return IdToDroid(id, player);
@@ -1516,7 +1521,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue structVal = context->argument(idx++);
+			QScriptValue structVal = context->argument(idx--);
 			int id = structVal.property("id").toInt32();
 			int player = structVal.property("player").toInt32();
 			return { id, player };
@@ -1531,7 +1536,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue droidVal = context->argument(idx++);
+			QScriptValue droidVal = context->argument(idx--);
 			int id = droidVal.property("id").toInt32();
 			int player = droidVal.property("player").toInt32();
 			return { id, player };
@@ -1545,7 +1550,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue objVal = context->argument(idx++);
+			QScriptValue objVal = context->argument(idx--);
 			int id = objVal.property("id").toInt32();
 			int player = objVal.property("player").toInt32();
 			OBJECT_TYPE type = (OBJECT_TYPE)objVal.property("type").toInt32();
@@ -1560,7 +1565,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
-			QScriptValue list = context->argument(idx++);
+			QScriptValue list = context->argument(idx--);
 			if (list.isArray())
 			{
 				size_t length = list.property("length").toInt32();
@@ -1606,7 +1611,7 @@ namespace
 	{
 		uint8_t stack_space[10000];
 		void* stack_ptr = stack_space;
-		size_t idx = 0;
+		size_t idx = sizeof...(Args) - 1;
 		return box(f(unbox<Args>{}(idx, context, stack_ptr)...), engine);
 	}
 }

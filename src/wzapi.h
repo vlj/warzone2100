@@ -15,6 +15,18 @@ extern "C" {
 		int player;
 	};
 
+	struct droid_id_player
+	{
+		int id;
+		int player;
+	};
+
+	struct string_list
+	{
+		const char** strings;
+		size_t count;
+	};
+
 	bool activateStructure(structure_id_player structVal, object_id_player_type objVal);
 	//-- \subsection{structureIdle(structure)}
 	//-- Is given structure idle?
@@ -173,4 +185,20 @@ extern "C" {
 	//-- Change a player's colour slot. The current player colour can be read from the playerData array. There are as many
 	//-- colour slots as the maximum number of players. (3.2.3+ only)
 	bool changePlayerColour(int player, int colour);
+	//-- \subsection{pursueResearch(lab, research)}
+	//-- Start researching the first available technology on the way to the given technology.
+	//-- First parameter is the structure to research in, which must be a research lab. The
+	//-- second parameter is the technology to pursue, as a text string as defined in "research.json".
+	//-- The second parameter may also be an array of such strings. The first technology that has
+	//-- not yet been researched in that list will be pursued.
+	bool pursueResearch(structure_id_player structVal, string_list list);
+	//-- \subsection{addFeature(name, x, y)}
+	//-- Create and place a feature at the given x, y position. Will cause a desync in multiplayer.
+	//-- Returns the created game object on success, null otherwise. (3.2+ only)
+	FEATURE* _addFeature(const char* featName, int x, int y);
+	//-- \subsection{addDroidToTransporter(transporter, droid)}
+	//-- Load a droid, which is currently located on the campaign off-world mission list,
+	//-- into a transporter, which is also currently on the campaign off-world mission list.
+	//-- (3.2+ only)
+	bool addDroidToTransporter(droid_id_player transporter, droid_id_player droid);
 }

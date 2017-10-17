@@ -22,6 +22,8 @@
 #include "loop.h"
 #include "random.h"
 #include "component.h"
+#include "research.h"
+#include "lib/netplay/netplay.h"
 
 BASE_OBJECT *IdToObject(OBJECT_TYPE type, int id, int player);
 
@@ -672,5 +674,134 @@ bool fireWeaponAtLoc(int xLocation, int yLocation, const char *weaponName)
 bool changePlayerColour(int player, int colour)
 {
 	setPlayerColour(player, colour);
+	return true;
+}
+
+//-- \subsection{pursueResearch(lab, research)}
+//-- Start researching the first available technology on the way to the given technology.
+//-- First parameter is the structure to research in, which must be a research lab. The
+//-- second parameter is the technology to pursue, as a text string as defined in "research.json".
+//-- The second parameter may also be an array of such strings. The first technology that has
+//-- not yet been researched in that list will be pursued.
+bool pursueResearch(structure_id_player structVal, string_list list)
+{
+	STRUCTURE *psStruct = IdToStruct(structVal.id, structVal.player);
+//	SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
+	RESEARCH *psResearch = nullptr;  // Dummy initialisation.
+	int k;
+	if (list.count > 1)
+	{
+		for (k = 0; k < list.count; ++k)
+		{
+			psResearch = getResearch(list.strings[k]);
+			//			SCRIPT_ASSERT(context, psResearch, "No such research: %s", resName.toUtf8().constData());
+			PLAYER_RESEARCH *plrRes = &asPlayerResList[structVal.player][psResearch->index];
+			if (!IsResearchStartedPending(plrRes) && !IsResearchCompleted(plrRes))
+			{
+				break; // use this one
+			}
+		}
+		if (k == list.count)
+		{
+			debug(LOG_SCRIPT, "Exhausted research list -- doing nothing");
+			return false;
+		}
+	}
+	else
+	{
+		psResearch = getResearch(list.strings[0]);
+//		SCRIPT_ASSERT(context, psResearch, "No such research: %s", resName.toUtf8().constData());
+		PLAYER_RESEARCH *plrRes = &asPlayerResList[structVal.player][psResearch->index];
+		if (IsResearchStartedPending(plrRes) || IsResearchCompleted(plrRes))
+		{
+			debug(LOG_SCRIPT, "%s has already been researched!", list.strings[0]);
+			return false;
+		}
+	}
+//	SCRIPT_ASSERT(context, psStruct->pStructureType->type == REF_RESEARCH, "Not a research lab: %s", objInfo(psStruct));
+	RESEARCH_FACILITY *psResLab = (RESEARCH_FACILITY *)psStruct->pFunctionality;
+//	SCRIPT_ASSERT(context, psResLab->psSubject == nullptr, "Research lab not ready");
+	// Go down the requirements list for the desired tech
+	QList<RESEARCH *> reslist;
+	RESEARCH *cur = psResearch;
+	int iterations = 0;  // Only used to assert we're not stuck in the loop.
+	while (cur)
+	{
+		if (researchAvailable(cur->index, structVal.player, ModeQueue))
+		{
+			bool started = false;
+			for (int i = 0; i < game.maxPlayers; i++)
+			{
+				if (i == structVal.player || (aiCheckAlliances(structVal.player, i) && alliancesSharedResearch(game.alliance)))
+				{
+					int bits = asPlayerResList[i][cur->index].ResearchStatus;
+					started = started || (bits & STARTED_RESEARCH) || (bits & STARTED_RESEARCH_PENDING)
+						|| (bits & RESBITS_PENDING_ONLY) || (bits & RESEARCHED);
+				}
+			}
+			if (!started) // found relevant item on the path?
+			{
+				sendResearchStatus(psStruct, cur->index, structVal.player, true);
+#if defined (DEBUG)
+				char sTemp[128];
+				sprintf(sTemp, "player:%d starts topic from script: %s", player, getID(cur));
+				NETlogEntry(sTemp, SYNC_FLAG, 0);
+#endif
+				debug(LOG_SCRIPT, "Started research in %d's %s(%d) of %s", player,
+					objInfo(psStruct), psStruct->id, getName(cur));
+				return true;
+			}
+		}
+		RESEARCH *prev = cur;
+		cur = nullptr;
+		if (!prev->pPRList.empty())
+		{
+			cur = &asResearch[prev->pPRList[0]]; // get first pre-req
+		}
+		for (int i = 1; i < prev->pPRList.size(); i++)
+		{
+			// push any other pre-reqs on the stack
+			reslist += &asResearch[prev->pPRList[i]];
+		}
+		if (!cur && !reslist.empty())
+		{
+			cur = reslist.takeFirst(); // retrieve options from the stack
+		}
+		ASSERT_OR_RETURN(false, ++iterations < asResearch.size() * 100 || !cur, "Possible cyclic dependencies in prerequisites, possibly of research \"%s\".", getName(cur));
+	}
+	debug(LOG_SCRIPT, "No research topic found for %s(%d)", objInfo(psStruct), psStruct->id);
+	return false; // none found
+}
+
+//-- \subsection{addFeature(name, x, y)}
+//-- Create and place a feature at the given x, y position. Will cause a desync in multiplayer.
+//-- Returns the created game object on success, null otherwise. (3.2+ only)
+FEATURE* _addFeature(const char* featName, int x, int y)
+{
+	int feature = getFeatureStatFromName(featName);
+	FEATURE_STATS *psStats = &asFeatureStats[feature];
+	for (FEATURE *psFeat = apsFeatureLists[0]; psFeat; psFeat = psFeat->psNext)
+	{
+//		SCRIPT_ASSERT(context, map_coord(psFeat->pos.x) != x || map_coord(psFeat->pos.y) != y,
+//			"Building feature on tile already occupied");
+	}
+	return buildFeature(psStats, world_coord(x), world_coord(y), false);
+}
+
+//-- \subsection{addDroidToTransporter(transporter, droid)}
+//-- Load a droid, which is currently located on the campaign off-world mission list,
+//-- into a transporter, which is also currently on the campaign off-world mission list.
+//-- (3.2+ only)
+bool addDroidToTransporter(droid_id_player transporter, droid_id_player droid)
+{
+	DROID *psTransporter = IdToMissionDroid(transporter.id, transporter.player);
+//	SCRIPT_ASSERT(context, psTransporter, "No such transporter id %d belonging to player %d", transporterId, transporterPlayer);
+//	SCRIPT_ASSERT(context, isTransporter(psTransporter), "Droid id %d belonging to player %d is not a transporter", transporterId, transporterPlayer);
+	DROID *psDroid = IdToMissionDroid(droid.id, droid.player);
+//	SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", droidId, droidPlayer);
+//	SCRIPT_ASSERT(context, checkTransporterSpace(psTransporter, psDroid), "Not enough room in transporter %d for droid %d", transporterId, droidId);
+	bool removeSuccessful = droidRemove(psDroid, mission.apsDroidLists);
+//	SCRIPT_ASSERT(context, removeSuccessful, "Could not remove droid id %d from mission list", droidId);
+	psTransporter->psGroup->add(psDroid);
 	return true;
 }

@@ -34,6 +34,11 @@ extern "C" {
 		int y;
 	};
 
+	struct me
+	{
+		int player;
+	};
+
 	bool activateStructure(structure_id_player structVal, object_id_player_type objVal);
 	//-- \subsection{structureIdle(structure)}
 	//-- Is given structure idle?
@@ -212,4 +217,10 @@ extern "C" {
 	//-- Pick a location for constructing a certain type of building near some given position.
 	//-- Returns an object containing "type" POSITION, and "x" and "y" values, if successful.
 	optional_position pickStructLocation(droid_id_player droidVal, const char* statName, int startX, int startY, int maxBlockingTiles);
+	//-- \subsection{donatePower(amount, to)}
+	//-- Donate power to another player. Returns true. (3.2+ only)
+	bool donatePower(int amount, int to, me from);
+	//-- \subsection{addStructure(structure type, player, x, y)}
+	//-- Create a structure on the given position. Returns the structure on success, null otherwise.
+	STRUCTURE* _addStructure(const char* building, int player, int x, int y);
 }

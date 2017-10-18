@@ -1423,7 +1423,7 @@ namespace
 	template<>
 	struct unbox<int>
 	{
-		int operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		int operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1434,7 +1434,7 @@ namespace
 	template<>
 	struct unbox<unsigned int>
 	{
-		unsigned int operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		unsigned int operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1445,7 +1445,7 @@ namespace
 	template<>
 	struct unbox<bool>
 	{
-		bool operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		bool operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1458,7 +1458,7 @@ namespace
 	template<>
 	struct unbox<float>
 	{
-		float operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		float operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1469,7 +1469,7 @@ namespace
 	template<>
 	struct unbox<const DROID*>
 	{
-		const DROID* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		const DROID* operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1483,7 +1483,7 @@ namespace
 	template<>
 	struct unbox<const char*>
 	{
-		const char* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		const char* operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1503,7 +1503,7 @@ namespace
 	template<>
 	struct unbox<DROID*>
 	{
-		DROID* operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		DROID* operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1517,7 +1517,7 @@ namespace
 	template<>
 	struct unbox<structure_id_player>
 	{
-		structure_id_player operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		structure_id_player operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1532,7 +1532,7 @@ namespace
 	template<>
 	struct unbox<droid_id_player>
 	{
-		droid_id_player operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		droid_id_player operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1546,7 +1546,7 @@ namespace
 	template<>
 	struct unbox<object_id_player_type>
 	{
-		object_id_player_type operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		object_id_player_type operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1559,9 +1559,20 @@ namespace
 	};
 
 	template<>
+	struct unbox<me>
+	{
+		me operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
+		{
+			if (context->argumentCount() < idx)
+				return {};
+			return { engine->globalObject().property("me").toInt32() };
+		}
+	};
+
+	template<>
 	struct unbox<string_list>
 	{
-		string_list operator()(size_t& idx, QScriptContext *context, void*& stack_space)
+		string_list operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
 		{
 			if (context->argumentCount() < idx)
 				return {};
@@ -1595,6 +1606,11 @@ namespace
 		return convFeature(psFeature, engine);
 	}
 
+	QScriptValue box(STRUCTURE* psStruct, QScriptEngine* engine)
+	{
+		return convStructure(psStruct, engine);
+	}
+
 	QScriptValue box(optional_position pos, QScriptEngine* engine)
 	{
 		if (!pos.valid)
@@ -1612,7 +1628,7 @@ namespace
 		uint8_t stack_space[10000];
 		void* stack_ptr = stack_space;
 		size_t idx = sizeof...(Args) - 1;
-		return box(f(unbox<Args>{}(idx, context, stack_ptr)...), engine);
+		return box(f(unbox<Args>{}(idx, context, engine, stack_ptr)...), engine);
 	}
 }
 
@@ -3036,11 +3052,7 @@ static QScriptValue js_donateObject(QScriptContext *context, QScriptEngine *engi
 //-- Donate power to another player. Returns true. (3.2+ only)
 static QScriptValue js_donatePower(QScriptContext *context, QScriptEngine *engine)
 {
-	int amount = context->argument(0).toInt32();
-	int to = context->argument(1).toInt32();
-	int from = engine->globalObject().property("me").toInt32();
-	giftPower(from, to, amount, true);
-	return QScriptValue(true);
+	return wrap_(donatePower, context, engine);
 }
 
 //-- \subsection{safeDest(player, x, y)} Returns true if given player is safe from hostile fire at
@@ -3054,22 +3066,7 @@ static QScriptValue js_safeDest(QScriptContext *context, QScriptEngine *engine)
 //-- Create a structure on the given position. Returns the structure on success, null otherwise.
 static QScriptValue js_addStructure(QScriptContext *context, QScriptEngine *engine)
 {
-	QString building = context->argument(0).toString();
-	int index = getStructStatFromName(building.toUtf8().constData());
-	SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
-	int player = context->argument(1).toInt32();
-	SCRIPT_ASSERT_PLAYER(context, player);
-	int x = context->argument(2).toInt32();
-	int y = context->argument(3).toInt32();
-	STRUCTURE_STATS *psStat = &asStructureStats[index];
-	STRUCTURE *psStruct = buildStructure(psStat, x, y, player, false);
-	if (psStruct)
-	{
-		psStruct->status = SS_BUILT;
-		buildingComplete(psStruct);
-		return QScriptValue(convStructure(psStruct, engine));
-	}
-	return QScriptValue::NullValue;
+	return wrap_(_addStructure, context, engine);
 }
 
 //-- \subsection{getStructureLimit(structure type[, player])}

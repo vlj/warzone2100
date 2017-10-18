@@ -894,3 +894,30 @@ endstructloc:
 	}
 	return { false };
 }
+
+//-- \subsection{donatePower(amount, to)}
+//-- Donate power to another player. Returns true. (3.2+ only)
+bool donatePower(int amount, int to, me from)
+{
+	giftPower(from.player, to, amount, true);
+	return true;
+}
+
+//-- \subsection{addStructure(structure type, player, x, y)}
+//-- Create a structure on the given position. Returns the structure on success, null otherwise.
+STRUCTURE* _addStructure(const char* building, int player, int x, int y)
+{
+	int index = getStructStatFromName(building);
+//	SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
+//	SCRIPT_ASSERT_PLAYER(context, player);
+	STRUCTURE_STATS *psStat = &asStructureStats[index];
+	STRUCTURE *psStruct = buildStructure(psStat, x, y, player, false);
+	if (psStruct)
+	{
+		psStruct->status = SS_BUILT;
+		buildingComplete(psStruct);
+		return psStruct;
+	}
+	return nullptr;
+}
+

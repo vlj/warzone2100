@@ -39,6 +39,11 @@ extern "C" {
 		int player;
 	};
 
+	struct me_or_int
+	{
+		int player;
+	};
+
 	bool activateStructure(structure_id_player structVal, object_id_player_type objVal);
 	//-- \subsection{structureIdle(structure)}
 	//-- Is given structure idle?
@@ -223,4 +228,20 @@ extern "C" {
 	//-- \subsection{addStructure(structure type, player, x, y)}
 	//-- Create a structure on the given position. Returns the structure on success, null otherwise.
 	STRUCTURE* _addStructure(const char* building, int player, int x, int y);
+	//-- \subsection{addBeacon(x, y, target player[, message])}
+	//-- Send a beacon message to target player. Target may also be \emph{ALLIES}.
+	//-- Message is currently unused. Returns a boolean that is true on success. (3.2+ only)
+	bool addBeacon(int _x, int _y, int target, const char* message, me id);
+	//-- \subsection{removeBeacon(target player)}
+	//-- Remove a beacon message sent to target player. Target may also be \emph{ALLIES}.
+	//-- Returns a boolean that is true on success. (3.2+ only)
+	bool removeBeacon(int target, me id);
+	//-- \subsection{setStructureLimits(structure type, limit[, player])} Set build limits for a structure.
+	bool setStructureLimits(const char* building, int limit, me_or_int player);
+	//-- \subsection{completeResearch(research[, player])}
+	//-- Finish a research for the given player.
+	bool completeResearch(const char* researchName, me_or_int player);
+	//-- \subsection{enableResearch(research[, player])}
+	//-- Enable a research for the given player, allowing it to be researched.
+	bool _enableResearch(const char* researchName, me_or_int player);
 }

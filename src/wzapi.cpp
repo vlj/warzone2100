@@ -24,6 +24,8 @@
 #include "component.h"
 #include "research.h"
 #include "lib/netplay/netplay.h"
+#include "scriptfuncs.h"
+#include "qtscript.h"
 
 BASE_OBJECT *IdToObject(OBJECT_TYPE type, int id, int player);
 
@@ -919,5 +921,100 @@ STRUCTURE* _addStructure(const char* building, int player, int x, int y)
 		return psStruct;
 	}
 	return nullptr;
+}
+
+#define ALLIES -2
+
+//-- \subsection{addBeacon(x, y, target player[, message])}
+//-- Send a beacon message to target player. Target may also be \emph{ALLIES}.
+//-- Message is currently unused. Returns a boolean that is true on success. (3.2+ only)
+bool addBeacon(int _x, int _y, int target, const char* message, me id)
+{
+	int x = world_coord(_x);
+	int y = world_coord(_y);
+//	SCRIPT_ASSERT(context, target >= 0 || target == ALLIES, "Message to invalid player %d", target);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (i != id.player && (i == target || (target == ALLIES && aiCheckAlliances(i, id.player))))
+		{
+			debug(LOG_MSG, "adding script beacon to %d from %d", i, id.player);
+			sendBeaconToPlayer(x, y, i, id.player, message);
+		}
+	}
+	return true;
+}
+
+//-- \subsection{removeBeacon(target player)}
+//-- Remove a beacon message sent to target player. Target may also be \emph{ALLIES}.
+//-- Returns a boolean that is true on success. (3.2+ only)
+bool removeBeacon(int target, me id)
+{
+	//SCRIPT_ASSERT(context, target >= 0 || target == ALLIES, "Message to invalid player %d", target);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (i == target || (target == ALLIES && aiCheckAlliances(i, id.player)))
+		{
+			MESSAGE *psMessage = findBeaconMsg(i, id.player);
+			if (psMessage)
+			{
+				removeMessage(psMessage, i);
+				triggerEventBeaconRemoved(id.player, i);
+			}
+		}
+	}
+	jsDebugMessageUpdate();
+	return true;
+}
+
+//-- \subsection{setStructureLimits(structure type, limit[, player])} Set build limits for a structure.
+bool setStructureLimits(const char* building, int limit, me_or_int player)
+{
+	int structInc = getStructStatFromName(building);
+	//SCRIPT_ASSERT_PLAYER(context, player);
+	//SCRIPT_ASSERT(context, limit < LOTS_OF && limit >= 0, "Invalid limit");
+	//SCRIPT_ASSERT(context, structInc < numStructureStats && structInc >= 0, "Invalid structure");
+
+	STRUCTURE_LIMITS *psStructLimits = asStructLimits[player.player];
+	psStructLimits[structInc].limit = limit;
+	psStructLimits[structInc].globalLimit = limit;
+
+	return true;
+}
+
+//-- \subsection{completeResearch(research[, player])}
+//-- Finish a research for the given player.
+bool completeResearch(const char* researchName, me_or_int player)
+{
+	RESEARCH *psResearch = getResearch(researchName);
+	PLAYER_RESEARCH *plrRes = &asPlayerResList[player.player][psResearch->index];
+	if (IsResearchCompleted(plrRes))
+	{
+		return false;
+	}
+	//SCRIPT_ASSERT(context, psResearch, "No such research %s for player %d", researchName.toUtf8().constData(), player);
+	//SCRIPT_ASSERT(context, psResearch->index < asResearch.size(), "Research index out of bounds");
+	if (bMultiMessages && (gameTime > 2))
+	{
+		SendResearch(player.player, psResearch->index, false);
+		// Wait for our message before doing anything.
+	}
+	else
+	{
+		researchResult(psResearch->index, player.player, false, nullptr, false);
+	}
+	return true;
+}
+
+//-- \subsection{enableResearch(research[, player])}
+//-- Enable a research for the given player, allowing it to be researched.
+bool _enableResearch(const char* researchName, me_or_int player)
+{
+	RESEARCH *psResearch = getResearch(researchName);
+	//SCRIPT_ASSERT(context, psResearch, "No such research %s for player %d", researchName.toUtf8().constData(), player);
+	if (!enableResearch(psResearch, player.player))
+	{
+		debug(LOG_ERROR, "Unable to enable research %s for player %d", researchName, player.player);
+	}
+	return true;
 }
 

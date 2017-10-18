@@ -1565,6 +1565,7 @@ namespace
 		{
 			if (context->argumentCount() < idx)
 				return {};
+			idx--;
 			return { engine->globalObject().property("me").toInt32() };
 		}
 	};
@@ -2509,27 +2510,7 @@ static QScriptValue js_setReinforcementTime(QScriptContext *context, QScriptEngi
 //-- \subsection{setStructureLimits(structure type, limit[, player])} Set build limits for a structure.
 static QScriptValue js_setStructureLimits(QScriptContext *context, QScriptEngine *engine)
 {
-	QString building = context->argument(0).toString();
-	int limit = context->argument(1).toInt32();
-	int player;
-	int structInc = getStructStatFromName(building.toUtf8().constData());
-	if (context->argumentCount() > 2)
-	{
-		player = context->argument(2).toInt32();
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	SCRIPT_ASSERT_PLAYER(context, player);
-	SCRIPT_ASSERT(context, limit < LOTS_OF && limit >= 0, "Invalid limit");
-	SCRIPT_ASSERT(context, structInc < numStructureStats && structInc >= 0, "Invalid structure");
-
-	STRUCTURE_LIMITS *psStructLimits = asStructLimits[player];
-	psStructLimits[structInc].limit = limit;
-	psStructLimits[structInc].globalLimit = limit;
-
-	return QScriptValue();
+	return wrap_(setStructureLimits, context, engine);
 }
 
 static QScriptValue js_centreView(QScriptContext *context, QScriptEngine *engine)
@@ -2620,57 +2601,14 @@ static QScriptValue js_gameOverMessage(QScriptContext *context, QScriptEngine *e
 //-- Finish a research for the given player.
 static QScriptValue js_completeResearch(QScriptContext *context, QScriptEngine *engine)
 {
-	QString researchName = context->argument(0).toString();
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	RESEARCH *psResearch = getResearch(researchName.toUtf8().constData());
-	PLAYER_RESEARCH *plrRes = &asPlayerResList[player][psResearch->index];
-	if (IsResearchCompleted(plrRes))
-	{
-		return QScriptValue(false);
-	}
-	SCRIPT_ASSERT(context, psResearch, "No such research %s for player %d", researchName.toUtf8().constData(), player);
-	SCRIPT_ASSERT(context, psResearch->index < asResearch.size(), "Research index out of bounds");
-	if (bMultiMessages && (gameTime > 2))
-	{
-		SendResearch(player, psResearch->index, false);
-		// Wait for our message before doing anything.
-	}
-	else
-	{
-		researchResult(psResearch->index, player, false, nullptr, false);
-	}
-	return QScriptValue();
+	wrap_(completeResearch, context, engine);
 }
 
 //-- \subsection{enableResearch(research[, player])}
 //-- Enable a research for the given player, allowing it to be researched.
 static QScriptValue js_enableResearch(QScriptContext *context, QScriptEngine *engine)
 {
-	QString researchName = context->argument(0).toString();
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	RESEARCH *psResearch = getResearch(researchName.toUtf8().constData());
-	SCRIPT_ASSERT(context, psResearch, "No such research %s for player %d", researchName.toUtf8().constData(), player);
-	if (!enableResearch(psResearch, player))
-	{
-		debug(LOG_ERROR, "Unable to enable research %s for player %d", researchName.toUtf8().constData(), player);
-	}
-	return QScriptValue();
+	return wrap_(_enableResearch, context, engine);
 }
 
 //-- \subsection{extraPowerTime(time, player)}
@@ -3311,21 +3249,7 @@ static QScriptValue js_enumArea(QScriptContext *context, QScriptEngine *engine)
 //-- Message is currently unused. Returns a boolean that is true on success. (3.2+ only)
 static QScriptValue js_addBeacon(QScriptContext *context, QScriptEngine *engine)
 {
-	int x = world_coord(context->argument(0).toInt32());
-	int y = world_coord(context->argument(1).toInt32());
-	int target = context->argument(2).toInt32();
-	QString message = context->argument(3).toString();
-	int me = engine->globalObject().property("me").toInt32();
-	SCRIPT_ASSERT(context, target >= 0 || target == ALLIES, "Message to invalid player %d", target);
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (i != me && (i == target || (target == ALLIES && aiCheckAlliances(i, me))))
-		{
-			debug(LOG_MSG, "adding script beacon to %d from %d", i, me);
-			sendBeaconToPlayer(x, y, i, me, message.toUtf8().constData());
-		}
-	}
-	return QScriptValue(true);
+	return wrap_(addBeacon, context, engine);
 }
 
 //-- \subsection{removeBeacon(target player)}
@@ -3333,23 +3257,7 @@ static QScriptValue js_addBeacon(QScriptContext *context, QScriptEngine *engine)
 //-- Returns a boolean that is true on success. (3.2+ only)
 static QScriptValue js_removeBeacon(QScriptContext *context, QScriptEngine *engine)
 {
-	int me = engine->globalObject().property("me").toInt32();
-	int target = context->argument(0).toInt32();
-	SCRIPT_ASSERT(context, target >= 0 || target == ALLIES, "Message to invalid player %d", target);
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (i == target || (target == ALLIES && aiCheckAlliances(i, me)))
-		{
-			MESSAGE *psMessage = findBeaconMsg(i, me);
-			if (psMessage)
-			{
-				removeMessage(psMessage, i);
-				triggerEventBeaconRemoved(me, i);
-			}
-		}
-	}
-	jsDebugMessageUpdate();
-	return QScriptValue(true);
+	return wrap_(removeBeacon, context, engine);
 }
 
 //-- \subsection{chat(target player, message)}

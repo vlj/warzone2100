@@ -3343,7 +3343,7 @@ static QScriptValue js_setCommanderLimit(QScriptContext *context, QScriptEngine 
 //-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
 static QScriptValue js_setConstructorLimit(QScriptContext *context, QScriptEngine *engine)
 {
-	return wrap_(setMaxConstructors, context, engine);
+	return wrap_(setConstructorLimit, context, engine);
 }
 
 //-- \subsection{hackAddMessage(message, type, player, immediate)}

@@ -2770,20 +2770,7 @@ static QScriptValue js_queuedPower(QScriptContext *context, QScriptEngine *engin
 //-- Returns true if given structure can be built. It checks both research and unit limits.
 static QScriptValue js_isStructureAvailable(QScriptContext *context, QScriptEngine *engine)
 {
-	QString building = context->argument(0).toString();
-	int index = getStructStatFromName(building.toUtf8().constData());
-	SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	return QScriptValue(apStructTypeLists[player][index] == AVAILABLE
-	                    && asStructLimits[player][index].currentQuantity < asStructLimits[player][index].limit);
+	return wrap_(isStructureAvailable, context, engine);
 }
 
 //-- \subsection{isVTOL(droid)}
@@ -2951,19 +2938,7 @@ static QScriptValue js_addStructure(QScriptContext *context, QScriptEngine *engi
 //-- Returns build limits for a structure.
 static QScriptValue js_getStructureLimit(QScriptContext *context, QScriptEngine *engine)
 {
-	QString building = context->argument(0).toString();
-	int index = getStructStatFromName(building.toUtf8().constData());
-	SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	return QScriptValue(asStructLimits[player][index].limit);
+	return wrap_(getStructureLimit, context, engine);
 }
 
 //-- \subsection{countStruct(structure type[, player])}
@@ -3358,23 +3333,17 @@ static QScriptValue js_setDroidLimit(QScriptContext *context, QScriptEngine *)
 //-- \subsection{setCommanderLimit(player, value)}
 //-- Set the maximum number of commanders that this player can produce.
 //-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
-static QScriptValue js_setCommanderLimit(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setCommanderLimit(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	int value = context->argument(1).toInt32();
-	setMaxCommanders(player, value);
-	return QScriptValue();
+	return wrap_(setCommanderLimit, context, engine);
 }
 
 //-- \subsection{setConstructorLimit(player, value)}
 //-- Set the maximum number of constructors that this player can produce.
 //-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
-static QScriptValue js_setConstructorLimit(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setConstructorLimit(QScriptContext *context, QScriptEngine *engine)
 {
-	int player = context->argument(0).toInt32();
-	int value = context->argument(1).toInt32();
-	setMaxConstructors(player, value);
-	return QScriptValue();
+	return wrap_(setMaxConstructors, context, engine);
 }
 
 //-- \subsection{hackAddMessage(message, type, player, immediate)}
@@ -3579,54 +3548,18 @@ static QScriptValue js_cameraTrack(QScriptContext *context, QScriptEngine *)
 //-- \subsection{setHealth(object, health)}
 //-- Change the health of the given game object, in percentage. Does not take care of network sync, so for multiplayer games,
 //-- needs wrapping in a syncRequest. (3.2.3+ only.)
-static QScriptValue js_setHealth(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setHealth(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue objVal = context->argument(0);
-	int health = context->argument(1).toInt32();
-	SCRIPT_ASSERT(context, health >= 1, "Bad health value %d", health);
-	int id = objVal.property("id").toInt32();
-	int player = objVal.property("player").toInt32();
-	OBJECT_TYPE type = (OBJECT_TYPE)objVal.property("type").toInt32();
-	SCRIPT_ASSERT(context, type == OBJ_DROID || type == OBJ_STRUCTURE || type == OBJ_FEATURE, "Bad object type");
-	if (type == OBJ_DROID)
-	{
-		DROID *psDroid = IdToDroid(id, player);
-		SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
-		psDroid->body = health * (double)psDroid->originalBody / 100;
-	}
-	else if (type == OBJ_STRUCTURE)
-	{
-		STRUCTURE *psStruct = IdToStruct(id, player);
-		SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
-		psStruct->body = health * MAX(1, structureBody(psStruct)) / 100;
-	}
-	else
-	{
-		FEATURE *psFeat = IdToFeature(id, player);
-		SCRIPT_ASSERT(context, psFeat, "No such feature id %d belonging to player %d", id, player);
-		psFeat->body = health * psFeat->psStats->body / 100;
-	}
-	return QScriptValue();
+	return wrap_(setHealth, context, engine);
 }
 
 //-- \subsection{setObjectFlag(object, flag, value)}
 //-- Set or unset an object flag on a given game object. Does not take care of network sync, so for multiplayer games,
 //-- needs wrapping in a syncRequest. (3.2.4+ only.)
 //-- Recognized object flags: OBJECT_FLAG_UNSELECTABLE - makes object unavailable for selection from player UI.
-static QScriptValue js_setObjectFlag(QScriptContext *context, QScriptEngine *)
+static QScriptValue js_setObjectFlag(QScriptContext *context, QScriptEngine *engine)
 {
-	QScriptValue obj = context->argument(0);
-	OBJECT_FLAG flag = (OBJECT_FLAG)context->argument(1).toInt32();
-	SCRIPT_ASSERT(context, flag < OBJECT_FLAG_COUNT, "Bad flag value %d", context->argument(1).toInt32());
-	int id = obj.property("id").toInt32();
-	int player = obj.property("player").toInt32();
-	OBJECT_TYPE type = (OBJECT_TYPE)obj.property("type").toInt32();
-	SCRIPT_ASSERT(context, type == OBJ_DROID || type == OBJ_STRUCTURE || type == OBJ_FEATURE, "Bad object type");
-	BASE_OBJECT *psObj = IdToObject(type, id, player);
-	SCRIPT_ASSERT(context, psObj, "Object not found!");
-	bool value = context->argument(2).toBool();
-	psObj->flags.set(flag, value);
-	return QScriptValue();
+	return wrap_(setObjectFlag, context, engine);
 }
 
 //-- \subsection{addSpotter(x, y, player, range, type, expiry)}

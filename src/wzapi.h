@@ -275,4 +275,27 @@ extern "C" {
 	bool _removeReticuleButton();
 	//-- \subsection{applyLimitSet()} Mix user set limits with script set limits and defaults.
 	bool _applyLimitSet();
+	//-- \subsection{isStructureAvailable(structure type[, player])}
+	//-- Returns true if given structure can be built. It checks both research and unit limits.
+	bool isStructureAvailable(const char* building, me_or_int player);
+	//-- \subsection{getStructureLimit(structure type[, player])}
+	//-- Returns build limits for a structure.
+	unsigned int getStructureLimit(const char* building, me_or_int player);
+	//-- \subsection{setCommanderLimit(player, value)}
+	//-- Set the maximum number of commanders that this player can produce.
+	//-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
+	bool setCommanderLimit(int player, int value);
+	//-- \subsection{setConstructorLimit(player, value)}
+	//-- Set the maximum number of constructors that this player can produce.
+	//-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
+	bool setConstructorLimit(int player, int value);
+	//-- \subsection{setHealth(object, health)}
+	//-- Change the health of the given game object, in percentage. Does not take care of network sync, so for multiplayer games,
+	//-- needs wrapping in a syncRequest. (3.2.3+ only.)
+	bool setHealth(object_id_player_type objVal, int health);
+	//-- \subsection{setObjectFlag(object, flag, value)}
+	//-- Set or unset an object flag on a given game object. Does not take care of network sync, so for multiplayer games,
+	//-- needs wrapping in a syncRequest. (3.2.4+ only.)
+	//-- Recognized object flags: OBJECT_FLAG_UNSELECTABLE - makes object unavailable for selection from player UI.
+	bool setObjectFlag(object_id_player_type objval, int _flag, bool value);
 }

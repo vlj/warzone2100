@@ -1106,3 +1106,83 @@ bool _applyLimitSet()
 	applyLimitSet();
 	return true;
 }
+
+//-- \subsection{isStructureAvailable(structure type[, player])}
+//-- Returns true if given structure can be built. It checks both research and unit limits.
+bool isStructureAvailable(const char* building, me_or_int player)
+{
+	int index = getStructStatFromName(building);
+	//SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
+	return (apStructTypeLists[player.player][index] == AVAILABLE
+		&& asStructLimits[player.player][index].currentQuantity < asStructLimits[player.player][index].limit);
+}
+
+//-- \subsection{getStructureLimit(structure type[, player])}
+//-- Returns build limits for a structure.
+unsigned int getStructureLimit(const char* building, me_or_int player)
+{
+	int index = getStructStatFromName(building);
+	//SCRIPT_ASSERT(context, index >= 0, "%s not found", building.toUtf8().constData());
+	return asStructLimits[player.player][index].limit;
+}
+
+//-- \subsection{setCommanderLimit(player, value)}
+//-- Set the maximum number of commanders that this player can produce.
+//-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
+bool setCommanderLimit(int player, int value)
+{
+	setMaxCommanders(player, value);
+	return true;
+}
+
+//-- \subsection{setConstructorLimit(player, value)}
+//-- Set the maximum number of constructors that this player can produce.
+//-- THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED! (3.2+ only)
+bool setConstructorLimit(int player, int value)
+{
+	setMaxConstructors(player, value);
+	return true;
+}
+
+//-- \subsection{setHealth(object, health)}
+//-- Change the health of the given game object, in percentage. Does not take care of network sync, so for multiplayer games,
+//-- needs wrapping in a syncRequest. (3.2.3+ only.)
+bool setHealth(object_id_player_type objVal, int health)
+{
+	//SCRIPT_ASSERT(context, health >= 1, "Bad health value %d", health);
+	//SCRIPT_ASSERT(context, type == OBJ_DROID || type == OBJ_STRUCTURE || type == OBJ_FEATURE, "Bad object type");
+	if (objVal.type == OBJ_DROID)
+	{
+		DROID *psDroid = IdToDroid(objVal.id, objVal.player);
+		//SCRIPT_ASSERT(context, psDroid, "No such droid id %d belonging to player %d", id, player);
+		psDroid->body = health * (double)psDroid->originalBody / 100;
+	}
+	else if (objVal.type == OBJ_STRUCTURE)
+	{
+		STRUCTURE *psStruct = IdToStruct(objVal.id, objVal.player);
+		//SCRIPT_ASSERT(context, psStruct, "No such structure id %d belonging to player %d", id, player);
+		psStruct->body = health * MAX(1, structureBody(psStruct)) / 100;
+	}
+	else
+	{
+		FEATURE *psFeat = IdToFeature(objVal.id, objVal.player);
+		//SCRIPT_ASSERT(context, psFeat, "No such feature id %d belonging to player %d", id, player);
+		psFeat->body = health * psFeat->psStats->body / 100;
+	}
+	return true;
+}
+
+//-- \subsection{setObjectFlag(object, flag, value)}
+//-- Set or unset an object flag on a given game object. Does not take care of network sync, so for multiplayer games,
+//-- needs wrapping in a syncRequest. (3.2.4+ only.)
+//-- Recognized object flags: OBJECT_FLAG_UNSELECTABLE - makes object unavailable for selection from player UI.
+bool setObjectFlag(object_id_player_type objval, int _flag, bool value)
+{
+	OBJECT_FLAG flag = (OBJECT_FLAG)_flag;
+	//SCRIPT_ASSERT(context, flag < OBJECT_FLAG_COUNT, "Bad flag value %d", context->argument(1).toInt32());
+	//SCRIPT_ASSERT(context, type == OBJ_DROID || type == OBJ_STRUCTURE || type == OBJ_FEATURE, "Bad object type");
+	BASE_OBJECT *psObj = IdToObject(objval.type, objval.id, objval.player);
+	//SCRIPT_ASSERT(context, psObj, "Object not found!");
+	psObj->flags.set(flag, value);
+	return true;
+}

@@ -1571,6 +1571,22 @@ namespace
 	};
 
 	template<>
+	struct unbox<me_or_int>
+	{
+		me_or_int operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
+		{
+			const auto& tmp = context->argumentCount();
+			if (context->argumentCount() < idx)
+				return {};
+			if (context->argumentCount() > idx--)
+			{
+				return { context->argument(idx + 1).toInt32() };
+			}
+			return { engine->globalObject().property("me").toInt32() };
+		}
+	};
+
+	template<>
 	struct unbox<string_list>
 	{
 		string_list operator()(size_t& idx, QScriptContext *context, QScriptEngine *engine, void*& stack_space)
@@ -2601,7 +2617,7 @@ static QScriptValue js_gameOverMessage(QScriptContext *context, QScriptEngine *e
 //-- Finish a research for the given player.
 static QScriptValue js_completeResearch(QScriptContext *context, QScriptEngine *engine)
 {
-	wrap_(completeResearch, context, engine);
+	return wrap_(completeResearch, context, engine);
 }
 
 //-- \subsection{enableResearch(research[, player])}
@@ -2616,76 +2632,28 @@ static QScriptValue js_enableResearch(QScriptContext *context, QScriptEngine *en
 //-- over the given amount of extra time. (3.2+ only)
 static QScriptValue js_extraPowerTime(QScriptContext *context, QScriptEngine *engine)
 {
-	int ticks = context->argument(0).toInt32() * GAME_UPDATES_PER_SEC;
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-		SCRIPT_ASSERT_PLAYER(context, player);
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	updatePlayerPower(player, ticks);
-	return QScriptValue();
+	return wrap_(extraPowerTime, context, engine);
 }
 
 //-- \subsection{setPower(power[, player])}
 //-- Set a player's power directly. (Do not use this in an AI script.)
 static QScriptValue js_setPower(QScriptContext *context, QScriptEngine *engine)
 {
-	int power = context->argument(0).toInt32();
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-		SCRIPT_ASSERT_PLAYER(context, player);
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	setPower(player, power);
-	return QScriptValue();
+	return wrap_(_setPower, context, engine);
 }
 
 //-- \subsection{setPowerModifier(power[, player])}
 //-- Set a player's power modifier percentage. (Do not use this in an AI script.) (3.2+ only)
 static QScriptValue js_setPowerModifier(QScriptContext *context, QScriptEngine *engine)
 {
-	int power = context->argument(0).toInt32();
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-		SCRIPT_ASSERT_PLAYER(context, player);
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	setPowerModifier(player, power);
-	return QScriptValue();
+	return wrap_(_setPowerModifier, context, engine);
 }
 
 //-- \subsection{setPowerStorageMaximum(maximum[, player])}
 //-- Set a player's power storage maximum. (Do not use this in an AI script.) (3.2+ only)
 static QScriptValue js_setPowerStorageMaximum(QScriptContext *context, QScriptEngine *engine)
 {
-	int power = context->argument(0).toInt32();
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-		SCRIPT_ASSERT_PLAYER(context, player);
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	setPowerMaxStorage(player, power);
-	return QScriptValue();
+	return wrap_(_setPowerStorageMaximum, context, engine);
 }
 
 //-- \subsection{enableStructure(structure type[, player])}
@@ -2693,22 +2661,7 @@ static QScriptValue js_setPowerStorageMaximum(QScriptContext *context, QScriptEn
 //-- player's build list.
 static QScriptValue js_enableStructure(QScriptContext *context, QScriptEngine *engine)
 {
-	QString building = context->argument(0).toString();
-	int index = getStructStatFromName(building.toUtf8().constData());
-	int player;
-	if (context->argumentCount() > 1)
-	{
-		player = context->argument(1).toInt32();
-		SCRIPT_ASSERT_PLAYER(context, player);
-	}
-	else
-	{
-		player = engine->globalObject().property("me").toInt32();
-	}
-	SCRIPT_ASSERT(context, index >= 0 && index < numStructureStats, "Invalid structure stat");
-	// enable the appropriate structure
-	apStructTypeLists[player][index] = AVAILABLE;
-	return QScriptValue();
+	return wrap_(_enableStructure, context, engine);
 }
 
 static QScriptValue js_setTutorialMode(QScriptContext *context, QScriptEngine *engine)
@@ -2743,44 +2696,31 @@ static QScriptValue js_removeTemplate(QScriptContext *context, QScriptEngine *en
 //-- for such changes to take effect. (3.2+ only)
 static QScriptValue js_setReticuleButton(QScriptContext *context, QScriptEngine *engine)
 {
-	int button = context->argument(0).toInt32();
-	SCRIPT_ASSERT(context, button >= 0 && button <= 6, "Invalid button %d", button);
-	QString tip = context->argument(1).toString();
-	QString file = context->argument(2).toString();
-	QString fileDown = context->argument(3).toString();
-	setReticuleStats(button, tip, file, fileDown);
-	return QScriptValue();
+	return wrap_(setReticuleButton, context, engine);
 }
 
 //-- \subsection{showInterface()} Show user interface. (3.2+ only)
 static QScriptValue js_showInterface(QScriptContext *context, QScriptEngine *engine)
 {
-	intAddReticule();
-	intShowPowerBar();
-	return QScriptValue();
+	return wrap_(_showInterface, context, engine);
 }
 
 //-- \subsection{hideInterface(button type)} Hide user interface. (3.2+ only)
 static QScriptValue js_hideInterface(QScriptContext *context, QScriptEngine *engine)
 {
-	intRemoveReticule();
-	intHidePowerBar();
-	return QScriptValue();
+	return wrap_(_hideInterface, context, engine);
 }
 
 //-- \subsection{removeReticuleButton(button type)} Remove reticule button. DO NOT USE FOR ANYTHING.
 static QScriptValue js_removeReticuleButton(QScriptContext *context, QScriptEngine *engine)
 {
-	return QScriptValue();
+	return wrap_(_removeReticuleButton, context, engine);
 }
 
 //-- \subsection{applyLimitSet()} Mix user set limits with script set limits and defaults.
 static QScriptValue js_applyLimitSet(QScriptContext *context, QScriptEngine *engine)
 {
-	Q_UNUSED(context);
-	Q_UNUSED(engine);
-	applyLimitSet();
-	return QScriptValue();
+	return wrap_(_applyLimitSet, context, engine);
 }
 
 //-- \subsection{enableComponent(component, player)}

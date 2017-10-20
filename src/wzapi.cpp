@@ -1018,3 +1018,91 @@ bool _enableResearch(const char* researchName, me_or_int player)
 	return true;
 }
 
+//-- \subsection{extraPowerTime(time, player)}
+//-- Increase a player's power as if that player had power income equal to current income
+//-- over the given amount of extra time. (3.2+ only)
+bool extraPowerTime(int _ticks, me_or_int player)
+{
+	int ticks = _ticks * GAME_UPDATES_PER_SEC;
+	updatePlayerPower(player.player, ticks);
+	return true;
+}
+
+//-- \subsection{setPower(power[, player])}
+//-- Set a player's power directly. (Do not use this in an AI script.)
+bool _setPower(int power, me_or_int player)
+{
+	setPower(player.player, power);
+	return true;
+}
+
+//-- \subsection{setPowerModifier(power[, player])}
+//-- Set a player's power modifier percentage. (Do not use this in an AI script.) (3.2+ only)
+bool _setPowerModifier(int power, me_or_int player)
+{
+	setPowerModifier(player.player, power);
+	return true;
+}
+
+//-- \subsection{setPowerStorageMaximum(maximum[, player])}
+//-- Set a player's power storage maximum. (Do not use this in an AI script.) (3.2+ only)
+bool _setPowerStorageMaximum(int power, me_or_int player)
+{
+	setPowerMaxStorage(player.player, power);
+	return true;
+}
+
+//-- \subsection{enableStructure(structure type[, player])}
+//-- The given structure type is made available to the given player. It will appear in the
+//-- player's build list.
+bool _enableStructure(const char* building, me_or_int player)
+{
+	int index = getStructStatFromName(building);
+	//SCRIPT_ASSERT(context, index >= 0 && index < numStructureStats, "Invalid structure stat");
+	// enable the appropriate structure
+	apStructTypeLists[player.player][index] = AVAILABLE;
+	return true;
+}
+
+//-- \subsection{setReticuleButton(id, filename, filenameHigh, tooltip, callback)} Add reticule button. id is which
+//-- button to change, where zero is zero is the middle button, then going clockwise from the uppermost
+//-- button. filename is button graphics and filenameHigh is for highlighting. The tooltip is the text you see when you
+//-- mouse over the button. Finally, the callback is which scripting function to call. Hide and show the user interface
+//-- for such changes to take effect. (3.2+ only)
+bool setReticuleButton(int button, const char* tip, const char* file, const char* fileDown)
+{
+	//SCRIPT_ASSERT(context, button >= 0 && button <= 6, "Invalid button %d", button);
+	setReticuleStats(button, tip, file, fileDown);
+	return true;
+}
+
+//-- \subsection{showInterface()} Show user interface. (3.2+ only)
+bool _showInterface()
+{
+	intAddReticule();
+	intShowPowerBar();
+	return true;
+}
+
+//-- \subsection{hideInterface(button type)} Hide user interface. (3.2+ only)
+bool _hideInterface()
+{
+	intRemoveReticule();
+	intHidePowerBar();
+	return true;
+}
+
+//-- \subsection{removeReticuleButton(button type)} Remove reticule button. DO NOT USE FOR ANYTHING.
+bool _removeReticuleButton()
+{
+	return true;
+}
+
+extern void applyLimitSet();
+
+//-- \subsection{applyLimitSet()} Mix user set limits with script set limits and defaults.
+bool _applyLimitSet()
+{
+	applyLimitSet();
+	return true;
+}

@@ -244,4 +244,35 @@ extern "C" {
 	//-- \subsection{enableResearch(research[, player])}
 	//-- Enable a research for the given player, allowing it to be researched.
 	bool _enableResearch(const char* researchName, me_or_int player);
+	//-- \subsection{extraPowerTime(time, player)}
+	//-- Increase a player's power as if that player had power income equal to current income
+	//-- over the given amount of extra time. (3.2+ only)
+	bool extraPowerTime(int _ticks, me_or_int player);
+	//-- \subsection{setPower(power[, player])}
+	//-- Set a player's power directly. (Do not use this in an AI script.)
+	bool _setPower(int power, me_or_int player);
+	//-- \subsection{setPowerModifier(power[, player])}
+	//-- Set a player's power modifier percentage. (Do not use this in an AI script.) (3.2+ only)
+	bool _setPowerModifier(int power, me_or_int player);
+	//-- \subsection{setPowerStorageMaximum(maximum[, player])}
+	//-- Set a player's power storage maximum. (Do not use this in an AI script.) (3.2+ only)
+	bool _setPowerStorageMaximum(int power, me_or_int player);
+	//-- \subsection{enableStructure(structure type[, player])}
+	//-- The given structure type is made available to the given player. It will appear in the
+	//-- player's build list.
+	bool _enableStructure(const char* building, me_or_int player);
+	//-- \subsection{setReticuleButton(id, filename, filenameHigh, tooltip, callback)} Add reticule button. id is which
+	//-- button to change, where zero is zero is the middle button, then going clockwise from the uppermost
+	//-- button. filename is button graphics and filenameHigh is for highlighting. The tooltip is the text you see when you
+	//-- mouse over the button. Finally, the callback is which scripting function to call. Hide and show the user interface
+	//-- for such changes to take effect. (3.2+ only)
+	bool setReticuleButton(int button, const char* tip, const char* file, const char* fileDown);
+	//-- \subsection{showInterface()} Show user interface. (3.2+ only)
+	bool _showInterface();
+	//-- \subsection{hideInterface(button type)} Hide user interface. (3.2+ only)
+	bool _hideInterface();
+	//-- \subsection{removeReticuleButton(button type)} Remove reticule button. DO NOT USE FOR ANYTHING.
+	bool _removeReticuleButton();
+	//-- \subsection{applyLimitSet()} Mix user set limits with script set limits and defaults.
+	bool _applyLimitSet();
 }

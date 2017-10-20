@@ -53,4 +53,6 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     )
 endif()
 
+target_include_directories(warzone2100 PRIVATE "${CMAKE_SOURCE_DIR}/3rdparty")
+
 install(TARGETS warzone2100 DESTINATION ".")

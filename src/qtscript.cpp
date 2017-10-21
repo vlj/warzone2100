@@ -56,6 +56,7 @@
 
 #include "qtscriptdebug.h"
 #include "qtscriptfuncs.h"
+#include "clr.h"
 
 #define ATTACK_THROTTLE 1000
 
@@ -674,8 +675,11 @@ QScriptEngine *loadPlayerScript(const QString& path, int player, int difficulty)
 	return engine;
 }
 
+NetCoreRuntime* test;
+
 bool loadGlobalScript(QString path)
 {
+	test = new NetCoreRuntime();
 	return loadPlayerScript(std::move(path), selectedPlayer, 0);
 }
 

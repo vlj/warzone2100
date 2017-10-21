@@ -73,19 +73,26 @@ NetCoreRuntime::NetCoreRuntime()
 		propertyKeys.get(),
 		propertyValues.get(),
 		&domainId);
+}
 
-//	DWORD exitCode = -1;
-//	hr = runtimeHost->ExecuteAssembly(domainId, (assemblyPath + L"\\AITest.dll").data(), 0, nullptr, &exitCode);
-
-	void *pfnDelegate = NULL;
-	hr = runtimeHost->CreateDelegate(
-		domainId,
-		L"AITest, Version=1.0.0.0, Culture=neutral",  // Target managed assembly
-		L"AITest.Class1",            // Target managed type
-		L"Main",                                  // Target entry point (static method)
-		(INT_PTR*)&pfnDelegate);
-
-	((MainMethodFp*)pfnDelegate)(NULL);
+NetCoreScript::NetCoreScript(ICLRRuntimeHost2* runtimeHost, const DWORD& domainId, const std::wstring& ScriptName)
+{
+	const auto& get_callback = [&](const std::wstring& name, auto* ptr)
+	{
+		HRESULT hr = runtimeHost->CreateDelegate(
+			domainId,
+			(ScriptName + L", Version=1.0.0.0, Culture=neutral").data(),  // Target managed assembly
+			(ScriptName + L"AITest.Class1").data(),            // Target managed type
+			name.data(),                                  // Target entry point (static method)
+			(INT_PTR*)&ptr);
+	};
+	get_callback(L"eventGameInit", &eventGameInit);
+	get_callback(L"eventStartLevel", &eventStartLevel);
+	get_callback(L"eventMissionTimeout", &eventMissionTimeout);
+	get_callback(L"eventVideoDone", &eventVideoDone);
+	get_callback(L"eventGameLoaded", &eventGameLoaded);
+	get_callback(L"eventGameSaved", &eventGameSaved);
+	get_callback(L"eventGameSaving", &eventGameSaving);
 }
 
 NetCoreRuntime::~NetCoreRuntime()

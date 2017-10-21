@@ -298,4 +298,6 @@ extern "C" {
 	//-- needs wrapping in a syncRequest. (3.2.4+ only.)
 	//-- Recognized object flags: OBJECT_FLAG_UNSELECTABLE - makes object unavailable for selection from player UI.
 	bool setObjectFlag(object_id_player_type objval, int _flag, bool value);
+	_declspec(dllexport)
+	void check_sanity();
 }

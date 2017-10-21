@@ -1186,3 +1186,8 @@ bool setObjectFlag(object_id_player_type objval, int _flag, bool value)
 	psObj->flags.set(flag, value);
 	return true;
 }
+
+void check_sanity()
+{
+	printf("here !!");
+}

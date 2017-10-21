@@ -3,6 +3,9 @@
 #include "netcore/mscoree.h"
 #include <memory>
 
+
+typedef void (MainMethodFp)(LPWSTR* args);
+
 NetCoreRuntime::NetCoreRuntime()
 {
 	std::string dll = "C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.0\\coreclr.dll";
@@ -46,7 +49,8 @@ NetCoreRuntime::NetCoreRuntime()
 															// More sophisticated hosts may also include their own Framework extensions (such as AppDomain managers)
 															// in this list.
 
-	const auto& properties = createAppDomain(L"", L"");
+	std::wstring assemblyPath = L"C:\\Users\\vlj\\Documents\\GitHub\\warzone2100\\data\\mp\\multiplay\\script\\AITest\\bin\\Debug\\netcoreapp2.0";
+	const auto& properties = createAppDomain(L"C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.0", assemblyPath);
 
 	auto&& propertyKeys = std::unique_ptr<const wchar_t*[]>(new const wchar_t*[properties.size()]);
 	auto&& propertyValues = std::unique_ptr<const wchar_t*[]>(new const wchar_t*[properties.size()]);
@@ -70,15 +74,18 @@ NetCoreRuntime::NetCoreRuntime()
 		propertyValues.get(),
 		&domainId);
 
+//	DWORD exitCode = -1;
+//	hr = runtimeHost->ExecuteAssembly(domainId, (assemblyPath + L"\\AITest.dll").data(), 0, nullptr, &exitCode);
+
 	void *pfnDelegate = NULL;
 	hr = runtimeHost->CreateDelegate(
 		domainId,
-		L"HW, Version=1.0.0.0, Culture=neutral",  // Target managed assembly
-		L"ConsoleApplication.Program",            // Target managed type
+		L"AITest, Version=1.0.0.0, Culture=neutral",  // Target managed assembly
+		L"AITest.Class1",            // Target managed type
 		L"Main",                                  // Target entry point (static method)
 		(INT_PTR*)&pfnDelegate);
 
-	//((MainMethodFp*)pfnDelegate)(NULL);
+	((MainMethodFp*)pfnDelegate)(NULL);
 }
 
 NetCoreRuntime::~NetCoreRuntime()
@@ -133,7 +140,7 @@ std::map<std::wstring, std::wstring> NetCoreRuntime::createAppDomain(const std::
 
 	// NATIVE_DLL_SEARCH_DIRECTORIES
 	// Native dll search directories are paths that the runtime will probe for native DLLs called via PInvoke
-	const std::wstring& nativeDllSearchDirectories = targetAppPath + L";" + corepath;
+	const std::wstring& nativeDllSearchDirectories = targetAppPath + L";" + corepath + L";C:\\Users\\vlj\\CMakeBuilds\\062b0da3-5612-ab3c-832a-ec4738fa63b1\\build\\x86-Debug\\src";
 
 
 	// PLATFORM_RESOURCE_ROOTS

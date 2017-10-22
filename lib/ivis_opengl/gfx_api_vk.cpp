@@ -1344,7 +1344,7 @@ void VkRoot::startRenderPass()
 		.setRenderPass(rp)
 		.setRenderArea(vk::Rect2D(vk::Offset2D(), vk::Extent2D(swapChainWidth, swapChainHeight))),
 		vk::SubpassContents::eInline);
-	buffering_mechanism::get_current_resources().cmdDraw.setViewport(0, { vk::Viewport{}.setHeight(swapChainHeight).setWidth(swapChainWidth).setMaxDepth(1.f) });
+	buffering_mechanism::get_current_resources().cmdDraw.setViewport(0, { vk::Viewport{}.setHeight(swapChainHeight).setWidth(swapChainWidth).setMinDepth(0.f).setMaxDepth(1.f) });
 	buffering_mechanism::get_current_resources().cmdDraw.setScissor(0, { vk::Rect2D{}.setExtent(vk::Extent2D{}.setHeight(swapChainHeight).setWidth(swapChainWidth)) });
 }
 
@@ -1353,3 +1353,7 @@ void VkRoot::set_polygon_offset(const float& offset, const float& slope)
 	buffering_mechanism::get_current_resources().cmdDraw.setDepthBias(offset, 1.0f, slope);
 }
 
+void VkRoot::set_depth_range(const float& min, const float& max)
+{
+	buffering_mechanism::get_current_resources().cmdDraw.setViewport(0, { vk::Viewport{}.setHeight(swapChainHeight).setWidth(swapChainWidth).setMinDepth(min).setMaxDepth(max) });
+}

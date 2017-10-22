@@ -1099,3 +1099,8 @@ void gl_context::set_polygon_offset(const float& offset, const float& slope)
 {
 	glPolygonOffset(offset, slope);
 }
+
+void gl_context::set_depth_range(const float& min, const float& max)
+{
+	glDepthRange(min, max);
+}

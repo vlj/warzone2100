@@ -157,6 +157,7 @@ namespace gfx_api
 		virtual void setSwapchain(struct SDL_Window* window) = 0;
 		virtual void flip() = 0;
 		virtual void set_polygon_offset(const float& offset, const float& slope) = 0;
+		virtual void set_depth_range(const float& min, const float& max) = 0;
 		static context& get();
 	};
 

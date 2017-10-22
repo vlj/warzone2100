@@ -1088,6 +1088,7 @@ static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 
 		}
 	}
 	finishDrawRangeElements<gfx_api::TerrainDepth>();
+	gfx_api::context::get().set_polygon_offset(0.f, 0.f);
 }
 
 static void drawTerrainLayers(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight, const glm::mat4 &textureMatrix)

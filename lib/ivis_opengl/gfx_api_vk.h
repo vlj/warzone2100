@@ -235,6 +235,7 @@ public:
 
 	virtual void flip() override;
 	virtual void set_polygon_offset(const float& offset, const float& slope) override;
+	virtual void set_depth_range(const float& min, const float& max) override;
 private:
 	void startRenderPass();
 };

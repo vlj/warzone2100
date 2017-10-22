@@ -801,7 +801,10 @@ gl_context::~gl_context()
 gfx_api::texture* gl_context::create_texture(const size_t& mipmap_count, const size_t & width, const size_t & height, const gfx_api::texel_format & internal_format, const std::string& filename)
 {
 	auto* new_texture = new gl_texture();
+	new_texture->mip_count = mipmap_count;
 	new_texture->bind();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmap_count - 1);
 	if (!filename.empty() && (GLEW_VERSION_4_3 || GLEW_KHR_debug))
 	{
 		glObjectLabel(GL_TEXTURE, new_texture->id(), -1, filename.c_str());

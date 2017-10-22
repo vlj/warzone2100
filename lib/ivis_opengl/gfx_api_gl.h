@@ -10,11 +10,12 @@
 #include <functional>
 
 
-struct gl_texture : public gfx_api::texture
+struct gl_texture final : public gfx_api::texture
 {
 private:
 	friend struct gl_context;
 	GLuint _id;
+	uint8_t mip_count;
 
 	gl_texture();
 	virtual ~gl_texture();
@@ -25,7 +26,7 @@ public:
 	virtual void generate_mip_levels() override;
 };
 
-struct gl_buffer : public gfx_api::buffer
+struct gl_buffer final : public gfx_api::buffer
 {
 	gfx_api::buffer::usage usage;
 	GLuint buffer;
@@ -36,7 +37,7 @@ struct gl_buffer : public gfx_api::buffer
 	virtual void upload(const size_t & start, const size_t & size, const void * data) override;
 };
 
-struct gl_pipeline_state_object : public gfx_api::pipeline_state_object
+struct gl_pipeline_state_object final : public gfx_api::pipeline_state_object
 {
 	gfx_api::state_description desc;
 	GLuint program;
@@ -126,7 +127,7 @@ private:
 	void set_constants(const gfx_api::constant_buffer_type<SHADER_TEXT>& cbuf);
 };
 
-struct gl_context : public gfx_api::context
+struct gl_context final : public gfx_api::context
 {
 	gl_pipeline_state_object* current_program = nullptr;
 	SDL_Window* WZwindow;

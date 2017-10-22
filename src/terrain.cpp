@@ -1063,15 +1063,15 @@ static void cullTerrain()
 
 static void drawDepthOnly(const glm::mat4 &ModelViewProjection, const glm::vec4 &paramsXLight, const glm::vec4 &paramsYLight)
 {
-	// draw slightly higher distance than it actually is so it will not
-	// by accident obscure the actual terrain
-//	glPolygonOffset(0.1f, 1.0f);
-
 	// bind the vertex buffer
 	gfx_api::TerrainDepth::get().bind();
 	gfx_api::TerrainDepth::get().bind_vertex_buffers(geometryVBO);
 	gfx_api::TerrainDepth::get().bind_constants({ ModelViewProjection, paramsXLight, paramsYLight, glm::vec4{}, glm::vec4{} });
 	gfx_api::context::get().bind_index_buffer(*geometryIndexVBO, gfx_api::index_type::u32);
+
+	// draw slightly higher distance than it actually is so it will not
+	// by accident obscure the actual terrain
+	gfx_api::context::get().set_polygon_offset(0.1f, 1.f);
 
 	for (int x = 0; x < xSectors; x++)
 	{

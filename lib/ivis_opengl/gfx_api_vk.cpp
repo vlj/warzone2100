@@ -413,9 +413,7 @@ vk::PipelineRasterizationStateCreateInfo VkPSO::to_vk(const bool& offset, const 
 		.setPolygonMode(vk::PolygonMode::eFill);
 	if (offset)
 	{
-		result = result.setDepthBiasEnable(true)
-			.setDepthBiasSlopeFactor(1.f)
-			.setDepthBiasConstantFactor(.1f);
+		result = result.setDepthBiasEnable(true);
 	}
 	switch (cull)
 	{
@@ -575,11 +573,11 @@ VkPSO::VkPSO(vk::Device _dev,
 		.setPSetLayouts(layout_desc.data())
 		.setSetLayoutCount(layout_desc.size()));
 
-	const auto dynamicStates = std::array<vk::DynamicState, 2>{vk::DynamicState::eScissor, vk::DynamicState::eViewport};
+	const auto dynamicStates = std::array<vk::DynamicState, 3>{vk::DynamicState::eScissor, vk::DynamicState::eViewport, vk::DynamicState::eDepthBias};
 	const auto multisampleState = vk::PipelineMultisampleStateCreateInfo{}
 	.setRasterizationSamples(vk::SampleCountFlagBits::e1);
 	const auto dynamicS = vk::PipelineDynamicStateCreateInfo{}
-		.setDynamicStateCount(2)
+		.setDynamicStateCount(3)
 		.setPDynamicStates(dynamicStates.data());
 	const auto viewportState = vk::PipelineViewportStateCreateInfo{}
 		.setViewportCount(1)
@@ -1349,3 +1347,9 @@ void VkRoot::startRenderPass()
 	buffering_mechanism::get_current_resources().cmdDraw.setViewport(0, { vk::Viewport{}.setHeight(swapChainHeight).setWidth(swapChainWidth).setMaxDepth(1.f) });
 	buffering_mechanism::get_current_resources().cmdDraw.setScissor(0, { vk::Rect2D{}.setExtent(vk::Extent2D{}.setHeight(swapChainHeight).setWidth(swapChainWidth)) });
 }
+
+void VkRoot::set_polygon_offset(const float& offset, const float& slope)
+{
+	buffering_mechanism::get_current_resources().cmdDraw.setDepthBias(offset, 1.0f, slope);
+}
+

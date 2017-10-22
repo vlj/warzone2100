@@ -1091,3 +1091,8 @@ void gl_context::flip()
 {
 	SDL_GL_SwapWindow(WZwindow);
 }
+
+void gl_context::set_polygon_offset(const float& offset, const float& slope)
+{
+	glPolygonOffset(offset, slope);
+}

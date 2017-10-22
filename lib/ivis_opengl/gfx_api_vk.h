@@ -233,8 +233,8 @@ public:
 
 	virtual void bind_pipeline(gfx_api::pipeline_state_object* pso) override;
 
-	void flip() override;
-
+	virtual void flip() override;
+	virtual void set_polygon_offset(const float& offset, const float& slope) override;
 private:
 	void startRenderPass();
 };

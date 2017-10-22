@@ -153,4 +153,5 @@ struct gl_context : public gfx_api::context
 	virtual void draw(const size_t& offset, const size_t &count, const gfx_api::primitive_type &primitive) override;
 	virtual void draw_elements(const size_t& offset, const size_t &count, const gfx_api::primitive_type &primitive, const gfx_api::index_type& index) override;
 	virtual void flip() override;
+	virtual void set_polygon_offset(const float& offset, const float& slope) override;
 };

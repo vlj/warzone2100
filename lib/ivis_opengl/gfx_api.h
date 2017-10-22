@@ -156,6 +156,7 @@ namespace gfx_api
 		virtual void draw_elements(const std::size_t& offset, const std::size_t&, const primitive_type&, const index_type&) = 0;
 		virtual void setSwapchain(struct SDL_Window* window) = 0;
 		virtual void flip() = 0;
+		virtual void set_polygon_offset(const float& offset, const float& slope) = 0;
 		static context& get();
 	};
 

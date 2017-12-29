@@ -1,15 +1,7 @@
 project(data)
 
-include(ExternalProject)
-	if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-	ExternalProject_Add(
-	  nvidia-texture-tools
-	  GIT_REPOSITORY "https://github.com/vlj/nvidia-texture-tools.git"
-	  GIT_TAG "master"
-	  SOURCE_DIR "${CMAKE_BINARY_DIR}/nvtt"
-	  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/nvtt/install
-	)
-	set (nvcompress "${CMAKE_BINARY_DIR}/nvtt/install/bin/nvcompress.exe")
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+	find_program (compressonator "CompressonatorCLI" HINTS "C:\\Program Files\\Compressonator")
 else()
 	find_program (nvcompress "nvcompress")
 endif()
@@ -44,27 +36,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
 		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
 		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
 		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
-			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "-nomips" "${TEXTURE}"# "${CMAKE_CURRENT_BINARY_DIR}/data/base/texpages/bdrops/backdrop0.dds"
-			DEPENDS "${TEXTURE}" nvidia-texture-tools
-			)
-		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")
-	endforeach()
-
-	foreach(TEXTURE ${TEXTURE_3D})
-		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
-		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
-		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
-			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "${TEXTURE}"# "${CMAKE_CURRENT_BINARY_DIR}/data/base/texpages/bdrops/backdrop0.dds"
-			DEPENDS "${TEXTURE}" nvidia-texture-tools
-			)
-		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")
-	endforeach()
-else()
-	foreach(TEXTURE ${TEXTURES_INTERFACE})
-		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
-		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
-		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
-			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "-nomips" "${TEXTURE}"# "${CMAKE_CURRENT_BINARY_DIR}/data/base/texpages/bdrops/backdrop0.dds"
+			COMMAND "${compressonator}" "-fd ARGB_8888" "-nomipmap" "${TEXTURE}" "${PNG_FILE_PATH}/${PNG_FILE}.dds"
 			DEPENDS "${TEXTURE}"
 			)
 		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")
@@ -74,7 +46,27 @@ else()
 		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
 		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
 		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
-			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "${TEXTURE}"# "${CMAKE_CURRENT_BINARY_DIR}/data/base/texpages/bdrops/backdrop0.dds"
+			COMMAND "${compressonator}" "-fd ARGB_8888" "${TEXTURE}" "${PNG_FILE_PATH}/${PNG_FILE}.dds"
+			DEPENDS "${TEXTURE}"
+			)
+		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")
+	endforeach()
+else()
+	foreach(TEXTURE ${TEXTURES_INTERFACE})
+		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
+		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
+		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
+			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "-nomips" "${TEXTURE}"
+			DEPENDS "${TEXTURE}"
+			)
+		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")
+	endforeach()
+
+	foreach(TEXTURE ${TEXTURE_3D})
+		get_filename_component(PNG_FILE_PATH ${TEXTURE} DIRECTORY)
+		get_filename_component(PNG_FILE ${TEXTURE} NAME_WE)
+		add_custom_command(OUTPUT "${PNG_FILE_PATH}/${PNG_FILE}.dds"
+			COMMAND "${nvcompress}" "-color" "-alpha" "-rgb" "${TEXTURE}"
 			DEPENDS "${TEXTURE}"
 			)
 		list(APPEND DDS_FILES "${PNG_FILE_PATH}/${PNG_FILE}.dds;")

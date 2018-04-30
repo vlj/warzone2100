@@ -38,6 +38,7 @@
 #include "lib/ivis_opengl/tex.h"
 #include "lib/ivis_opengl/pieclip.h"
 #include "screen.h"
+#include <glog/logging.h>
 
 /***************************************************************************/
 /*
@@ -67,17 +68,17 @@ bool pie_Initialise()
 	/* Find texture compression extension */
 	if (GLEW_ARB_texture_compression && wz_texture_compression)
 	{
-		debug(LOG_TEXTURE, "Texture compression: Yes");
+		LOG(INFO) << "Texture compression: Yes";
 	}
 	else
 	{
-		debug(LOG_TEXTURE, "Texture compression: No");
+		LOG(INFO) << "Texture compression: No";
 	}
 
 	pie_UpdateSurfaceGeometry();
 
 	pie_SetDefaultStates();
-	debug(LOG_3D, "xcentre %d; ycentre %d", rendSurface.xcentre, rendSurface.ycentre);
+	LOG(INFO) << "xcentre " << rendSurface.xcentre << "; ycentre " << rendSurface.ycentre;
 
 	return true;
 }

@@ -42,6 +42,7 @@
 #include "screen.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glog/logging.h>
 
 /***************************************************************************/
 /*
@@ -78,7 +79,7 @@ void GFX::loadTexture(const char *filename, GLenum filter)
 	iV_Image image;
 	if (!extension || strcmp(extension, ".png") != 0)
 	{
-		debug(LOG_ERROR, "Bad image filename: %s", filename);
+		LOG(ERROR) << "Bad image filename: " << filename;
 		return;
 	}
 	if (iV_loadImage_PNG(filename, &image))

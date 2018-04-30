@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include "lib/framework/frame.h"
+#include <glog/logging.h>
 
 static GLenum to_gl(const gfx_api::pixel_format& format)
 {
@@ -18,7 +19,7 @@ static GLenum to_gl(const gfx_api::pixel_format& format)
 	case gfx_api::pixel_format::compressed_rgba:
 		return GL_RGBA_S3TC;
 	default:
-		debug(LOG_FATAL, "Unrecognised pixel format");
+		LOG(FATAL) << "Unrecognised pixel format";
 	}
 	return GL_INVALID_ENUM;
 }

@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <QtCore/QHash>
 #include <QtCore/QString>
+#include <glog/logging.h>
 
 static QHash<QString, ImageDef *> images;
 static QList<IMAGEFILE *> files;
@@ -68,7 +69,7 @@ ImageDef *iV_GetImage(const QString &filename)
 {
 	if (!images.contains(filename))
 	{
-		debug(LOG_ERROR, "%s not found in image list!", filename.toUtf8().constData());
+    LOG(ERROR) << filename.toUtf8().constData() << " not found in image list!";
 		return nullptr;
 	}
 	return images.value(filename);
@@ -81,11 +82,11 @@ void checkRect(const ImageMergeRectangle& rect, const int pageSize)
 {
 	if ((rect.loc.x + rect.siz.x) > pageSize)
 	{
-		debug(LOG_ERROR, "Merge rectangle bounds extend outside of pageSize bounds: %d > %d", (rect.loc.x + rect.siz.x), pageSize);
+		LOG(ERROR) << "Merge rectangle bounds extend outside of pageSize bounds: " << (rect.loc.x + rect.siz.x) << " > " << pageSize;
 	}
 	if ((rect.loc.y + rect.siz.y) > pageSize)
 	{
-		debug(LOG_ERROR, "Merge rectangle bounds extend outside of pageSize bounds: %d > %d", (rect.loc.y + rect.siz.y), pageSize);
+		LOG(ERROR) << "Merge rectangle bounds extend outside of pageSize bounds: " << (rect.loc.y + rect.siz.y) << " > " << pageSize;
 	}
 	assert(rect.loc.x >= 0);
 	assert(rect.loc.y >= 0);
@@ -172,7 +173,7 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 	unsigned pFileSize;
 	if (!loadFile(fileName, &pFileData, &pFileSize))
 	{
-		debug(LOG_ERROR, "iV_LoadImageFile: failed to open %s", fileName);
+		LOG(ERROR) << "iV_LoadImageFile: failed to open %s" << fileName;
 		return nullptr;
 	}
 
@@ -200,7 +201,7 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 		retval = sscanf(ptr, "%d,%d,%255[^\r\n\",]%n", &ImageDef->XOffset, &ImageDef->YOffset, tmpName, &temp);
 		if (retval != 3)
 		{
-			debug(LOG_ERROR, "Bad line in \"%s\".", fileName);
+			LOG(ERROR) << "Bad line in \"" << fileName << "\".";
 			delete imageFile;
 			free(pFileData);
 			return nullptr;
@@ -214,7 +215,7 @@ IMAGEFILE *iV_LoadImageFile(const char *fileName)
 		imageRect->data = new iV_Image;
 		if (!iV_loadImage_PNG(spriteName.c_str(), imageRect->data))
 		{
-			debug(LOG_ERROR, "Failed to find image \"%s\" listed in \"%s\".", spriteName.c_str(), fileName);
+			LOG(ERROR) << "Failed to find image \"" << spriteName.c_str() << "\" listed in \"" << fileName << "\".";
 			delete imageFile;
 			free(pFileData);
 			return nullptr;

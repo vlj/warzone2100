@@ -5,11 +5,13 @@ if(ENABLE_NLS)
 	find_package (Intl REQUIRED)
 endif()
 
+find_package(glog REQUIRED)
+
 file(GLOB HEADERS "*.h")
 file(GLOB SRC "*.cpp")
 
 add_library(framework STATIC ${HEADERS} ${SRC})
-target_link_libraries(framework PUBLIC Qt5::Core ${PHYSFS_LIBRARY})
+target_link_libraries(framework PUBLIC Qt5::Core ${PHYSFS_LIBRARY} glog::glog)
 target_link_libraries(framework PRIVATE microecc sha2)
 if(ENABLE_NLS)
 	target_include_directories(framework PRIVATE "${Intl_INCLUDE_DIRS}")

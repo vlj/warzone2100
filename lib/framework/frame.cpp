@@ -29,6 +29,7 @@
 #include "wzapp.h"
 
 #include <physfs.h>
+#include <glog/logging.h>
 #include "physfs_ext.h"
 
 #include "frameresource.h"
@@ -124,7 +125,7 @@ void frameUpdate()
 void frameShutDown()
 {
 	// Shutdown the resource stuff
-	debug(LOG_NEVER, "No more resources!");
+	LOG(INFO) << "No more resources!";
 	resShutDown();
 }
 
@@ -141,7 +142,7 @@ bool getMouseWarp()
 PHYSFS_file *openLoadFile(const char *fileName, bool hard_fail)
 {
 	PHYSFS_file *fileHandle = PHYSFS_openRead(fileName);
-	debug(LOG_NEVER, "Reading...[directory: %s] %s", PHYSFS_getRealDir(fileName), fileName);
+  LOG(INFO) << "Reading...[directory: " << PHYSFS_getRealDir(fileName) << "] " << fileName;
 	if (!fileHandle)
 	{
 		if (hard_fail)
@@ -150,7 +151,7 @@ PHYSFS_file *openLoadFile(const char *fileName, bool hard_fail)
 		}
 		else
 		{
-			debug(LOG_WZ, "optional file %s could not be opened: %s", fileName, WZ_PHYSFS_getLastError());
+			LOG(WARNING) << "optional file " << fileName << " could not be opened: " << WZ_PHYSFS_getLastError();
 		}
 	}
 
@@ -193,7 +194,7 @@ static bool loadFile2(const char *pFileName, char **ppFileData, UDWORD *pFileSiz
 	{
 		if (filesize > *pFileSize)
 		{
-			debug(LOG_ERROR, "No room for file %s, buffer is too small! Got: %d Need: %ld", pFileName, *pFileSize, (long)filesize);
+			LOG(ERROR) << "No room for file " << pFileName << ", buffer is too small! Got: " << *pFileSize << " Need: " << (long)filesize;
 			assert(false);
 			return false;
 		}
@@ -210,7 +211,7 @@ static bool loadFile2(const char *pFileName, char **ppFileData, UDWORD *pFileSiz
 			*ppFileData = nullptr;
 		}
 
-		debug(LOG_ERROR, "Reading %s short: %s", pFileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "Reading " << pFileName << " short: " << WZ_PHYSFS_getLastError();
 		assert(false);
 		return false;
 	}
@@ -223,7 +224,7 @@ static bool loadFile2(const char *pFileName, char **ppFileData, UDWORD *pFileSiz
 			*ppFileData = nullptr;
 		}
 
-		debug(LOG_ERROR, "Error closing %s: %s", pFileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "Error closing " << pFileName << ": " << WZ_PHYSFS_getLastError();
 		assert(false);
 		return false;
 	}
@@ -244,10 +245,10 @@ PHYSFS_file *openSaveFile(const char *fileName)
 	{
 		const char *found = PHYSFS_getRealDir(fileName);
 
-		debug(LOG_ERROR, "%s could not be opened: %s", fileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << fileName << " could not be opened: " << WZ_PHYSFS_getLastError();
 		if (found)
 		{
-			debug(LOG_ERROR, "%s found as %s", fileName, found);
+			LOG(ERROR) << fileName << " found as " << found;
 		}
 
 		assert(!"openSaveFile: couldn't open file for writing");
@@ -265,7 +266,7 @@ bool saveFile(const char *pFileName, const char *pFileData, UDWORD fileSize)
 	PHYSFS_file *pfile;
 	PHYSFS_uint32 size = fileSize;
 
-	debug(LOG_WZ, "We are to write (%s) of size %d", pFileName, fileSize);
+	LOG(INFO) << "We are to write (" << pFileName << ") of size " << fileSize;
 	pfile = openSaveFile(pFileName);
 	if (!pfile)
 	{
@@ -275,13 +276,13 @@ bool saveFile(const char *pFileName, const char *pFileData, UDWORD fileSize)
 
 	if (WZ_PHYSFS_writeBytes(pfile, pFileData, size) != size)
 	{
-		debug(LOG_ERROR, "%s could not write: %s", pFileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << pFileName << " could not write: " << WZ_PHYSFS_getLastError();
 		assert(false);
 		return false;
 	}
 	if (!PHYSFS_close(pfile))
 	{
-		debug(LOG_ERROR, "Error closing %s: %s", pFileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "Error closing " << pFileName  << ": " << WZ_PHYSFS_getLastError();
 		assert(false);
 		return false;
 	}
@@ -289,11 +290,11 @@ bool saveFile(const char *pFileName, const char *pFileData, UDWORD fileSize)
 	if (PHYSFS_getRealDir(pFileName) == nullptr)
 	{
 		// weird
-		debug(LOG_ERROR, "PHYSFS_getRealDir(%s) returns NULL (%s)?!", pFileName, WZ_PHYSFS_getLastError());
+    LOG(ERROR) << "PHYSFS_getRealDir(" << pFileName << ") returns NULL (" << WZ_PHYSFS_getLastError() << ")?!";
 	}
 	else
 	{
-		debug(LOG_WZ, "Successfully wrote to %s%s with %d bytes", PHYSFS_getRealDir(pFileName), pFileName, size);
+		LOG(INFO) << "Successfully wrote to " << PHYSFS_getRealDir(pFileName) << pFileName <<" with " << size << " bytes";
 	}
 	return true;
 }

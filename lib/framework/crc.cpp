@@ -23,6 +23,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <glog/logging.h>
 
 //================================================================================
 // MARK: - CRC
@@ -86,7 +87,7 @@ Sha256 sha256Sum(void const *data, size_t dataLen)
 	Sha256 ret;
 	if (dataLen > std::numeric_limits<unsigned long>::max())
 	{
-		debug(LOG_FATAL, "Attempting to calculate SHA256 on data length exceeding std::numeric_limits<unsigned long>::max()=(%lu)", std::numeric_limits<unsigned long>::max());
+    LOG(FATAL) << "Attempting to calculate SHA256 on data length exceeding std::numeric_limits<unsigned long>::max()=" << std::numeric_limits<unsigned long>::max();
 		ret.setZero();
 		return ret;
 	}
@@ -327,7 +328,7 @@ private:
 			case secp256r1:
 				return curveData_secp256r1();
 			default:
-				debug(LOG_FATAL, "Unimplemented curve ID");
+        LOG(FATAL) << "Unimplemented curve ID";
 				#pragma GCC diagnostic push
 				// for gcc < 5 bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55805
 				#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -376,18 +377,18 @@ private:
 	{
 		if (curve.numPrivateKeyBytes != privateKeyBytes.size())
 		{
-			debug(LOG_ERROR, "Unexpected private key bytes length provided.");
+      LOG(ERROR) << "Unexpected private key bytes length provided.";
 			return nullptr;
 		}
 		if (curve.numPublicKeyBytes != publicKeyBytes.size())
 		{
-			debug(LOG_ERROR, "Unexpected public key bytes length provided.");
+			LOG(ERROR) << "Unexpected public key bytes length provided.";
 			return nullptr;
 		}
 		// verify that public key is uncompressed (should always start with byte 0x04)
 		if (publicKeyBytes[0] != 0x04)
 		{
-			debug(LOG_ERROR, "Public key is compressed, or is in an unexpected format.");
+			LOG(ERROR) << "Public key is compressed, or is in an unexpected format.";
 			return nullptr;
 		}
 
@@ -398,25 +399,25 @@ private:
 	{
 		if (derECPrivateKey.size() != curve.totalSize())
 		{
-			debug(LOG_ERROR, "Unexpected external private key format length.");
+			LOG(ERROR) << "Unexpected external private key format length.";
 			return nullptr;
 		}
 		// check that the DER ECPrivateKey begins with the expected prelude bytes
 		if (!match(curve.prelude, curve.prelude_len, derECPrivateKey.begin()))
 		{
-			debug(LOG_ERROR, "Unexpected external private key format: prelude bytes do not match");
+			LOG(ERROR) << "Unexpected external private key format: prelude bytes do not match";
 			return nullptr;
 		}
 		// check that the DER ECPrivateKey has the expected ECDomainParameters
 		if (!match(curve.ecDomainParameters, curve.ecDomainParameters_len,  derECPrivateKey.begin() + curve.bytesBeforeECDomainParameters()))
 		{
-			debug(LOG_ERROR, "Unexpected external private key format: ECDomainParameters do not match");
+			LOG(ERROR) << "Unexpected external private key format: ECDomainParameters do not match";
 			return nullptr;
 		}
 		// check that the DER ECPrivateKey has the expected public key prelude
 		if (!match(curve.publicKeyPrelude, curve.publicKeyPrelude_len,  derECPrivateKey.begin() + curve.bytesBeforePublicKeyPrelude()))
 		{
-			debug(LOG_ERROR, "Unexpected external private key format: public key prelude bytes do not match");
+			LOG(ERROR) << "Unexpected external private key format: public key prelude bytes do not match";
 			return nullptr;
 		}
 
@@ -458,7 +459,7 @@ uECC_Curve _currentCurve() {
 		case secp256r1:
 			return uECC_secp256r1();
 		default:
-			debug(LOG_ERROR, "Unsupported EC curve - falling back to secp224r1");
+			LOG(ERROR) << "Unsupported EC curve - falling back to secp224r1";
 			return uECC_secp224r1();
 	}
 }
@@ -522,14 +523,14 @@ EcKey::Key ecPublicKey_ExternalToMicroECCFormat(const std::vector<uint8_t>& exte
 	// External public key should have an additional byte at the beginning
 	if (uECC_curve_public_key_size(currentECCurve) + 1 != externalPublicKey.size())
 	{
-		debug(LOG_ERROR, "Invalid public key length");
+		LOG(ERROR) << "Invalid public key length";
 		return EcKey::Key();
 	}
 
 	// Check the first byte (only uncompressed public keys are supported)
 	if (externalPublicKey[0] != 0x04)
 	{
-		debug(LOG_ERROR, "Only uncompressed public keys are supported.");
+		LOG(ERROR) << "Only uncompressed public keys are supported.";
 		return EcKey::Key();
 	}
 
@@ -613,7 +614,7 @@ EcKey::Sig EcKey::sign(void const *data, size_t dataLen) const
 {
 	if (vKey == nullptr || EC_KEY_CAST(vKey)->privateKey.empty())
 	{
-		debug(LOG_ERROR, "No key");
+		LOG(ERROR) << "No key";
 		return Sig();
 	}
 
@@ -621,7 +622,7 @@ EcKey::Sig EcKey::sign(void const *data, size_t dataLen) const
 
 	if (dataLen > std::numeric_limits<unsigned int>::max())
 	{
-		debug(LOG_ERROR, "Overflow. Data to sign has a greater length than supported. You should probably be hashing and signing the hash.");
+		LOG(ERROR) << "Overflow. Data to sign has a greater length than supported. You should probably be hashing and signing the hash.";
 		return Sig();
 	}
 	unsigned int uIntDataLen = (unsigned int)dataLen;
@@ -633,7 +634,7 @@ EcKey::Sig EcKey::sign(void const *data, size_t dataLen) const
 
 	if (signSuccess == 0)
 	{
-		debug(LOG_ERROR, "Creating a signature failed");
+		LOG(ERROR) << "Creating a signature failed";
 		return Sig();
 	}
 
@@ -646,20 +647,20 @@ bool EcKey::verify(Sig const &sig, void const *data, size_t dataLen) const
 {
 	if (vKey == nullptr || EC_KEY_CAST(vKey)->publicKey.empty())
 	{
-		debug(LOG_ERROR, "No key");
+		LOG(ERROR) << "No key";
 		return false;
 	}
 
 	if (sig.size() != currentSignatureSizeInBytes)
 	{
-		debug(LOG_ERROR, "Signature is the wrong size");
+		LOG(ERROR) << "Signature is the wrong size";
 		return false;
 	}
 
 	int verifyResult = uECC_verify(&(EC_KEY_CAST(vKey)->publicKey[0]), (const uint8_t *)data, dataLen, &sig[0], currentECCurve);
 	if (verifyResult == 0)
 	{
-		debug(LOG_ERROR, "Invalid signature");
+		LOG(ERROR) << "Invalid signature";
 		return false;
 	}
 
@@ -691,7 +692,7 @@ EcKey::Key EcKey::toBytes(Privacy privacy) const
 
 		if (!externalPrivateKey)
 		{
-			debug(LOG_ERROR, "Failed to create external representation of private key");
+			LOG(ERROR) << "Failed to create external representation of private key";
 			return Key();
 		}
 
@@ -699,7 +700,7 @@ EcKey::Key EcKey::toBytes(Privacy privacy) const
 	}
 	else
 	{
-		debug(LOG_FATAL, "Unsupported privacy level");
+		LOG(FATAL) << "Unsupported privacy level";
 		return Key();
 	}
 }
@@ -714,14 +715,14 @@ void EcKey::fromBytes(EcKey::Key const &key, EcKey::Privacy privacy)
 		EcKey::Key publicKeyInternalFormat = ecPublicKey_ExternalToMicroECCFormat(key);
 		if (publicKeyInternalFormat.empty())
 		{
-			debug(LOG_ERROR, "Failed to convert public key from external representation to internal format");
+			LOG(ERROR) << "Failed to convert public key from external representation to internal format";
 			return;
 		}
 
 		int validResult = uECC_valid_public_key(&publicKeyInternalFormat[0], currentECCurve);
 		if (validResult == 0)
 		{
-			debug(LOG_ERROR, "Invalid public key");
+			LOG(ERROR) << "Invalid public key";
 			return;
 		}
 		assert(validResult == 1);
@@ -735,14 +736,14 @@ void EcKey::fromBytes(EcKey::Key const &key, EcKey::Privacy privacy)
 		if (!externalKey)
 		{
 			// Invalid input
-			debug(LOG_ERROR, "Failed to import private key from external representation");
+			LOG(ERROR) << "Failed to import private key from external representation";
 			return;
 		}
 
 		// Verify the expected curve has been provided
 		if (externalKey->curve != curveID)
 		{
-			debug(LOG_ERROR, "External key is not of the expected EC curve");
+			LOG(ERROR) << "External key is not of the expected EC curve";
 			return;
 		}
 
@@ -750,20 +751,20 @@ void EcKey::fromBytes(EcKey::Key const &key, EcKey::Privacy privacy)
 		EcKey::Key publicKeyInternalFormat = ecPublicKey_ExternalToMicroECCFormat(externalKey->publicKeyBytes);
 		if (publicKeyInternalFormat.empty())
 		{
-			debug(LOG_ERROR, "Failed to convert public key from external representation to internal format");
+			LOG(ERROR) << "Failed to convert public key from external representation to internal format";
 			return;
 		}
 
 		// Verify public key is valid
 		if (uECC_curve_public_key_size(currentECCurve) != publicKeyInternalFormat.size())
 		{
-			debug(LOG_ERROR, "Invalid public key length");
+			LOG(ERROR) << "Invalid public key length";
 			return;
 		}
 		int validResult = uECC_valid_public_key(&publicKeyInternalFormat[0], currentECCurve);
 		if (validResult == 0)
 		{
-			debug(LOG_ERROR, "Invalid public key");
+			LOG(ERROR) << "Invalid public key";
 			return;
 		}
 		assert(validResult == 1);
@@ -771,7 +772,7 @@ void EcKey::fromBytes(EcKey::Key const &key, EcKey::Privacy privacy)
 		// Verify private key is expected length
 		if (uECC_curve_private_key_size(currentECCurve) != externalKey->privateKeyBytes.size())
 		{
-			debug(LOG_ERROR, "Invalid private key length");
+			LOG(ERROR) << "Invalid private key length";
 			return;
 		}
 
@@ -779,7 +780,7 @@ void EcKey::fromBytes(EcKey::Key const &key, EcKey::Privacy privacy)
 	}
 	else
 	{
-		debug(LOG_FATAL, "Unsupported privacy level");
+		LOG(FATAL) << "Unsupported privacy level";
 	}
 }
 
@@ -791,7 +792,7 @@ EcKey EcKey::generate()
 	if (genResult == 0)
 	{
 		// uECC_make_key failed
-		debug(LOG_ERROR, "Failed to generate key pair");
+		LOG(ERROR) << "Failed to generate key pair";
 		delete key;
 		return EcKey();
 	}

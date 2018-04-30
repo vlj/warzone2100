@@ -29,6 +29,7 @@
 
 #include "file.h"
 #include "resly.h"
+#include <glog/logging.h>
 
 // Local prototypes
 static RES_TYPE *psResTypes = nullptr;
@@ -161,7 +162,7 @@ void resShutDown()
 {
 	if (psResTypes != nullptr)
 	{
-		debug(LOG_WZ, "resShutDown: warning resources still allocated");
+		LOG(WARNING) << "resShutDown: warning resources still allocated";
 		resReleaseAll();
 	}
 }
@@ -190,14 +191,14 @@ bool resLoad(const char *pResFile, SDWORD blockID)
 	// Note the block id number
 	resBlockID = blockID;
 
-	debug(LOG_WZ, "resLoad: loading [directory: %s] %s", PHYSFS_getRealDir(pResFile), pResFile);
+	LOG(INFO) << "resLoad: loading [directory: " << PHYSFS_getRealDir(pResFile) << "] " << pResFile;
 
 	// Load the RES file; allocate memory for a wrf, and load it
 	input.type = LEXINPUT_PHYSFS;
 	input.input.physfsfile = openLoadFile(pResFile, true);
 	if (!input.input.physfsfile)
 	{
-		debug(LOG_FATAL, "Could not open file %s", pResFile);
+		LOG(FATAL) << "Could not open file " << pResFile;
 		return false;
 	}
 
@@ -205,7 +206,7 @@ bool resLoad(const char *pResFile, SDWORD blockID)
 	res_set_extra(&input);
 	if (res_parse() != 0)
 	{
-		debug(LOG_FATAL, "Failed to parse %s", pResFile);
+		LOG(FATAL) << "Failed to parse " << pResFile;
 		retval = false;
 	}
 
@@ -389,7 +390,7 @@ static void FreeResourceFile(RESOURCEFILE *OldResource)
 		break;
 
 	default:
-		debug(LOG_WARNING, "resource not freed");
+		LOG(WARNING) << "resource not freed";
 	}
 
 
@@ -406,7 +407,7 @@ static inline RES_DATA *resDataInit(const char *DebugName, UDWORD DataIDHash, vo
 	RES_DATA *psRes = (RES_DATA *)malloc(sizeof(RES_DATA) + strlen(DebugName) + 1);
 	if (!psRes)
 	{
-		debug(LOG_ERROR, "resDataInit: Out of memory");
+		LOG(ERROR) << "resDataInit: Out of memory";
 		return nullptr;
 	}
 
@@ -451,7 +452,7 @@ static void makeLocaleFile(char *fileName, size_t maxlen)  // given string must 
 	if (PHYSFS_exists(localeFile))
 	{
 		strlcpy(fileName, localeFile, maxlen);
-		debug(LOG_WZ, "Found translated file: %s", fileName);
+		LOG(INFO) << "Found translated file: " << fileName;
 	}
 #endif // ENABLE_NLS
 
@@ -483,7 +484,7 @@ bool resLoadFile(const char *pType, const char *pFile)
 
 	if (psT == nullptr)
 	{
-		debug(LOG_WZ, "resLoadFile: Unknown type: %s", pType);
+		LOG(INFO) << "resLoadFile: Unknown type: " << pType;
 		return false;
 	}
 
@@ -494,8 +495,7 @@ bool resLoadFile(const char *pType, const char *pFile)
 		if (psRes->HashedID == HashedName)
 		{
 			ASSERT(strcasecmp(psRes->aID, pFile) == 0, "Hash collision \"%s\" vs \"%s\"", psRes->aID, pFile);
-			debug(LOG_WZ, "Duplicate file name: %s (hash %x) for type %s",
-			      pFile, HashedName, psT->aType);
+      LOG(INFO) << "Duplicate file name: " << pFile << " (hash " << HashedName << ") for type " << psT->aType;
 			// assume that they are actually both the same and silently fail
 			// lovely little hack to allow some files to be loaded from disk (believe it or not!).
 			return true;
@@ -505,7 +505,7 @@ bool resLoadFile(const char *pType, const char *pFile)
 	// Create the file name
 	if (strlen(aCurrResDir) + strlen(pFile) + 1 >= PATH_MAX)
 	{
-		debug(LOG_ERROR, "resLoadFile: Filename too long!! %s%s", aCurrResDir, pFile);
+		LOG(ERROR) << "resLoadFile: Filename too long!! " << aCurrResDir << pFile;
 		return false;
 	}
 	sstrcpy(aFileName, aCurrResDir);
@@ -523,7 +523,7 @@ bool resLoadFile(const char *pType, const char *pFile)
 		// Load the file in a buffer
 		if (!RetreiveResourceFile(aFileName, &Resource))
 		{
-			debug(LOG_ERROR, "resLoadFile: Unable to retreive resource - %s", aFileName);
+			LOG(ERROR) << "resLoadFile: Unable to retreive resource - " << aFileName;
 			return false;
 		}
 
@@ -793,7 +793,7 @@ void resReleaseAllData()
 		{
 			if (psRes->usage == 0)
 			{
-				debug(LOG_NEVER, "resReleaseAllData: %s resource: %s(%04x) not used", psT->aType, psRes->aID, psRes->HashedID);
+        LOG(INFO) << "resReleaseAllData: " << psT->aType << " resource: " << psRes->aID << "(" << psRes->HashedID << ") not used";
 			}
 
 			if (psT->release != nullptr)
@@ -827,8 +827,7 @@ void resReleaseBlockData(SDWORD blockID)
 			{
 				if (psRes->usage == 0)
 				{
-					debug(LOG_NEVER, "resReleaseBlockData: %s resource: %s(%04x) not used", psT->aType, psRes->aID,
-					      psRes->HashedID);
+          LOG(INFO) << "resReleaseBlockData: " << psT->aType << " resource: " << psRes->aID << "(" << psRes->HashedID << ") not used";
 				}
 				if (psT->release != nullptr)
 				{

@@ -60,47 +60,47 @@ static void check_pie(const fs::path& input)
   std::string s;
   std::string keyword;
 
-  fp >> keyword >> x;
+  EXPECT_TRUE(fp >> keyword >> x);
   EXPECT_EQ(keyword, "PIE") << "Bad PIE file";
   EXPECT_FALSE(x != 2 && x != 3) << "Unknown PIE version";
 
-  fp >> keyword >> std::hex >> x;
+  EXPECT_TRUE(fp >> keyword >> std::hex >> x);
   EXPECT_EQ(keyword, "TYPE") << "Bad TYPE directive";
   EXPECT_FALSE(!(x & iV_IMD_TEX)) << "Missing texture flag";
 
-  fp >> keyword >> std::hex >> z >> s >> x >> y;
+  EXPECT_TRUE(fp >> keyword >> std::hex >> z >> s >> x >> y);
   EXPECT_EQ(keyword, "TEXTURE") << "Bad TEXTURE directive";
 
   // Either event or level
-  fp >> keyword;
+  EXPECT_TRUE(fp >> keyword);
   while (keyword == "EVENT")
   {
-    fp >> x >> s;
+    EXPECT_TRUE(fp >> x >> s);
     EXPECT_FALSE(x < 1 || x > 3) << "Bad type for EVENT directive";
     fp >> keyword;
   }
 
   EXPECT_EQ(keyword, "LEVELS") << "Bad LEVELS directive";
-  fp >> std::dec >> levels;
+  EXPECT_TRUE(fp >> std::dec >> levels);
 
-  fp >> keyword;
+  EXPECT_TRUE(fp >> keyword);
 	for (int level = 0; level < levels; level++)
 	{
 		int j, points, faces;
 
     EXPECT_EQ(keyword, "LEVEL") << "Bad LEVEL directive  in " << input.string() << " for level " << level + 1;
-    fp >> std::dec >> x;
+    EXPECT_TRUE(fp >> std::dec >> x);
     EXPECT_EQ(x, level + 1) << "LEVEL directive  was " << x << " should be " << level + 1;
 
-    fp >> keyword >> std::dec >> points;
+    EXPECT_TRUE(fp >> keyword >> std::dec >> points);
     EXPECT_EQ(keyword, "POINTS") << "Bad POINTS directive";
 
 		for (int j = 0; j < points; j++)
 		{
 			double a, b, c;
-      fp >> a >> b >> c;
+      EXPECT_TRUE(fp >> a >> b >> c);
     }
-    fp >> keyword >> faces;
+    EXPECT_TRUE(fp >> keyword >> faces);
     EXPECT_EQ(keyword, "POLYGONS") << "Bad POLYGONS directive in " << input.string() << " in level " << x;
 
 		for (int j = 0; j < faces; ++j)
@@ -108,57 +108,57 @@ static void check_pie(const fs::path& input)
 			int k;
 			unsigned int flags;
 
-      fp >> std::hex >> flags;
+      EXPECT_TRUE(fp >> std::hex >> flags);
 
       EXPECT_FALSE(!(flags & iV_IMD_TEX)) << "in " << input.string() << " Bad polygon flag entry level" << level << " number " << j << "- no texture flag!";
       EXPECT_FALSE(flags & iV_IMD_XNOCUL) << "in" << input.string() << "Bad polygon flag entry level " << level << " number " << j << " - face culling not supported anymore!";
-      fp >> std::dec >> k;
+      EXPECT_TRUE(fp >> std::dec >> k);
       EXPECT_EQ(k, 3) << "Bad POLYGONS vertices entry level " << level << " number " << j << "-- non-triangle polygon found";
 
 			// Read in vertex indices and texture coordinates
 			for (int k = 0; k < 3; k++)
 			{
 				int l;
-        fp >> l;
+        EXPECT_TRUE(fp >> l);
 			}
 			if (flags & iV_IMD_TEXANIM)
 			{
 				int frames, rate;
         float width, height;
-        fp >> std::dec >> frames >> rate >> width >> height;
+        EXPECT_TRUE(fp >> std::dec >> frames >> rate >> width >> height);
         EXPECT_GT(frames, 1) << "Level " << level << " Polygon " << j << "has a single animation frame";
 			}
 			for (int k = 0; k < 3; k++)
 			{
 				double t, u;
-        fp >> t >> u;
+        EXPECT_TRUE(fp >> t >> u);
 			}
 		}
 
     fp >> keyword;
     if (keyword == "CONNECTORS")
 		{
-      fp >> std::dec >> x;
+      EXPECT_TRUE(fp >> std::dec >> x);
       EXPECT_GE(x, 0) << "Bad CONNECTORS directive in level " << level;
 			for (int j = 0; j < x; ++j)
 			{
 				int a, b, c;
 
-        fp >> a >> b >> c;
+        EXPECT_TRUE(fp >> a >> b >> c);
 			}
       fp >> keyword;
 		}
 		if (keyword == "ANIMOBJECT")
 		{
       int unused0, unused1;
-      fp >> unused0 >> unused1 >> x;
+      EXPECT_TRUE(fp >> unused0 >> unused1 >> x);
       EXPECT_GE(x, 0) << "Bad ANIMOBJECT directive in level " << level;
 			for (int j = 0; j < x; ++j)
 			{
 				int frame;
 				float xpos, ypos, zpos, xrot, yrot, zrot, xscale, yscale, zscale;
 
-        fp >> std::dec >> frame >> xpos >> ypos >> zpos >> xrot >> yrot >> zrot >> xscale >> yscale >> zscale;
+        EXPECT_TRUE(fp >> std::dec >> frame >> xpos >> ypos >> zpos >> xrot >> yrot >> zrot >> xscale >> yscale >> zscale);
 			}
       fp >> keyword;
 		}

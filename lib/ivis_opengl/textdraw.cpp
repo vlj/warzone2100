@@ -36,6 +36,7 @@
 #include <numeric>
 #include <array>
 #include <physfs.h>
+#include <glog/logging.h>
 
 #define ASCII_SPACE			(32)
 #define ASCII_NEWLINE			('@')
@@ -95,21 +96,21 @@ struct FTFace
 		UDWORD pFileSize = 0;
 		if (!loadFile(fileName.c_str(), &pFileData, &pFileSize))
 		{
-			debug(LOG_FATAL, "Unknown font file format for %s", fileName.c_str());
+			LOG(FATAL) << "Unknown font file format for " << fileName.c_str();
 		}
 		FT_Error error = FT_New_Memory_Face(lib, (const FT_Byte*)pFileData, pFileSize, 0, &m_face);
 		if (error == FT_Err_Unknown_File_Format)
 		{
-			debug(LOG_FATAL, "Unknown font file format for %s", fileName.c_str());
+			LOG(FATAL) << "Unknown font file format for " << fileName.c_str();
 		}
 		else if (error != FT_Err_Ok)
 		{
-			debug(LOG_FATAL, "Font file %s not found, or other error", fileName.c_str());
+      LOG(FATAL) << "Font file " << fileName.c_str() << " not found, or other error";
 		}
 		error = FT_Set_Char_Size(m_face, 0, charSize, horizDPI, vertDPI);
 		if (error != FT_Err_Ok)
 		{
-			debug(LOG_FATAL, "Could not set character size");
+			LOG(FATAL) << "Could not set character size";
 		}
 		m_font = hb_ft_font_create(m_face, nullptr);
 	}
@@ -176,7 +177,7 @@ struct FTFace
 		);
 		if (error != FT_Err_Ok)
 		{
-			debug(LOG_FATAL, "unable to load glyph");
+			LOG(FATAL) << "unable to load glyph";
 		}
 
 		FT_GlyphSlot slot = m_face->glyph;
@@ -465,7 +466,9 @@ void iV_TextInit(float horizScaleFactor, float vertScaleFactor)
 	_vertScaleFactor = vertScaleFactor;
 	float horizDPI = DEFAULT_DPI * horizScaleFactor;
 	float vertDPI = DEFAULT_DPI * vertScaleFactor;
-	debug(LOG_WZ, "Text-Rendering Scaling Factor: %f x %f; Internal Font DPI: %f x %f", _horizScaleFactor, _vertScaleFactor, horizDPI, vertDPI);
+	LOG(INFO) << "Text-Rendering Scaling Factor: " << _horizScaleFactor
+    << " x " << _vertScaleFactor << "; Internal Font DPI: "
+    << horizDPI << " x " << vertDPI;
 
 	regular = new FTFace(getGlobalFTlib().lib, "fonts/DejaVuSans.ttf", 12 * 64, horizDPI, vertDPI);
 	bold = new FTFace(getGlobalFTlib().lib, "fonts/DejaVuSans-Bold.ttf", 21 * 64, horizDPI, vertDPI);

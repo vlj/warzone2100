@@ -26,21 +26,21 @@ find_path(WZ_BUILD_DIR config.h
 #    message (SEND_ERROR "Warzone's framework library not found")
 #endif ()
 if (NOT WZ_BUILD_DIR)
-    message (SEND_ERROR "Warzone's config.h not found")
+#    message (SEND_ERROR "Warzone's config.h not found")
 endif ()
 if (NOT WZ_SOURCE_DIR)
-    message (SEND_ERROR "Warzone's source dir not found")
+#    message (SEND_ERROR "Warzone's source dir not found")
 else ()
-    set (WZ_FRAMEWORK_INCLUDE_DIRS ${WZ_SOURCE_DIR} ${WZ_BUILD_DIR} CACHE INTERNAL "")
+#    set (WZ_FRAMEWORK_INCLUDE_DIRS ${WZ_SOURCE_DIR} ${WZ_BUILD_DIR} CACHE INTERNAL "")
 endif ()
 
 if (NOT APPLE)
     add_definitions(-DHAVE_CONFIG_H)
 endif ()
 
-find_package (Qt4 REQUIRED)
-include (${QT_USE_FILE})
-add_definitions (${QT_DEFINITIONS})
+#find_package (Qt4 REQUIRED)
+#include (${QT_USE_FILE})
+#add_definitions (${QT_DEFINITIONS})
 
 if (QT_IS_STATIC)
     add_definitions ("-DQT_STATIC")
@@ -102,44 +102,41 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 include_directories(${WZ_FRAMEWORK_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${QT_INCLUDES} ${PHYSFS_INCLUDE_DIR})
+find_package(Qt5 COMPONENTS Core REQUIRED)
 
-set(MAPTOOLS_LIBS ${PNG_LIBRARIES} ${PHYSFS_LIBRARY} ${QT_LIBRARIES})
+add_library(maputils mapload.cpp)
+target_link_libraries(maputils PUBLIC PNG::PNG Qt5::Core ${PHYSFS_LIBRARY})
 
 # map2lnd
 ADD_EXECUTABLE(map2lnd
                 map2lnd.cpp
-                maplib.cpp
-                mapload.cpp)
-TARGET_LINK_LIBRARIES(map2lnd ${MAPTOOLS_LIBS})
+                maplib.cpp)
+TARGET_LINK_LIBRARIES(map2lnd maputils)
 
 # map2png
 ADD_EXECUTABLE(map2png
                 map2png.cpp
                 maplib.cpp
-                mapload.cpp
                 pngsave.cpp)
-TARGET_LINK_LIBRARIES(map2png ${MAPTOOLS_LIBS})
+TARGET_LINK_LIBRARIES(map2png maputils)
 
 # map2preview
 ADD_EXECUTABLE(map2preview
                 map2preview.cpp
                 maplib.cpp
-                mapload.cpp
                 pngsave.cpp)
-TARGET_LINK_LIBRARIES(map2preview ${MAPTOOLS_LIBS})
+TARGET_LINK_LIBRARIES(map2preview maputils)
 
 # mapconv
 ADD_EXECUTABLE(mapconv
                 mapconv.cpp
-                maplib.cpp
-                mapload.cpp)
-TARGET_LINK_LIBRARIES(mapconv ${MAPTOOLS_LIBS})
+                maplib.cpp)
+TARGET_LINK_LIBRARIES(mapconv maputils)
 
 # mapinfo
 add_executable(mapinfo
-               mapinfo.cpp
-               mapload.cpp)
-TARGET_LINK_LIBRARIES(mapinfo ${MAPTOOLS_LIBS})
+               mapinfo.cpp)
+TARGET_LINK_LIBRARIES(mapinfo maputils)
 
 ## Other stuff
 set (CONFIGURED YES CACHE INTERNAL "")

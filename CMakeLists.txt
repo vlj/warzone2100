@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(wz2100)
 
 if(MSVC)
-	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD 17)
 else()
 	set(CMAKE_CXX_STANDARD 11)
 endif()
@@ -121,6 +121,8 @@ add_subdirectory(po)
 add_subdirectory(data)
 add_subdirectory(doc)
 add_subdirectory(pkg)
+add_subdirectory(tools)
+add_subdirectory(tests)
 
 # Install base text / info files
 set(ROOT_FILES ChangeLog AUTHORS COPYING.NONGPL COPYING COPYING.README README.md)

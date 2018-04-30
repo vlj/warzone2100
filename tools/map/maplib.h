@@ -1,7 +1,6 @@
 #ifndef __INCLUDED_TOOLS_MAPLIB_H__
 #define __INCLUDED_TOOLS_MAPLIB_H__
 
-#include <QtCore/qglobal.h>
 
 // framework
 #include "lib/framework/wzglobal.h"

@@ -4,6 +4,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cstring>
 #include <errno.h>
 
 #include "pngsave.h"
@@ -61,11 +62,11 @@ int main(int argc, char **argv)
 	if (p_filename)
 	{
 		p_filename++;
-		base = strdup(p_filename);
+		base = _strdup(p_filename);
 	}
 	else
 	{
-		base = strdup(filename);
+		base = _strdup(filename);
 	}
 	if (!PHYSFS_exists(base))
 	{
@@ -76,11 +77,11 @@ int main(int argc, char **argv)
 	p_filename = strstr(base, "c-");
 	if (p_filename)
 	{
-		mapname = strdup(p_filename + 2);
+		mapname = _strdup(p_filename + 2);
 	}
 	else
 	{
-		mapname = strdup(base);
+		mapname = _strdup(base);
 	}
 
 	/*** Map configuration ***/

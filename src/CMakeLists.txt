@@ -76,6 +76,8 @@ endif()
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	# Build warzone exe as a Windows app (not a console app)
 	SET_TARGET_PROPERTIES(warzone2100 PROPERTIES WIN32_EXECUTABLE TRUE)
+  # game.cpp has too many nested struct, not supported by c++17 std and msvc
+  set_target_properties(warzone2100 PROPERTIES CXX_STANDARD 14)
 
 	# Add the "/MANIFEST:NO" linker flag (if supported) because a manifest is already included by warzone2100.rc
 	# (This is required for MSVC builds)

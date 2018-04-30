@@ -121,11 +121,11 @@ int main(int argc, char **argv)
 	if (p_filename)
 	{
 		p_filename++;
-		base = strdup(p_filename);
+		base = _strdup(p_filename);
 	}
 	else
 	{
-		base = strdup(filename);
+		base = _strdup(filename);
 	}
 	
 	map = mapLoad(filename);

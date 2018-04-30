@@ -25,6 +25,7 @@
 #include <QtCore/QJsonParseError>
 #include <QtCore/QJsonValue>
 #include <QtCore/QJsonDocument>
+#include <glog/logging.h>
 
 // Get platform defines before checking for them.
 // Qt headers MUST come before platform specific stuff!
@@ -40,7 +41,7 @@ WzConfig::~WzConfig()
 		QByteArray json = doc.toJson();
 		saveFile(mFilename.toUtf8().constData(), json.constData(), json.size());
 	}
-	debug(LOG_SAVE, "%s %s", mWarning == ReadAndWrite? "Saving" : "Closing", mFilename.toUtf8().constData());
+	LOG(INFO) << (mWarning == ReadAndWrite ? "Saving" : "Closing") << mFilename.toUtf8().constData();
 }
 
 static QJsonObject jsonMerge(QJsonObject original, const QJsonObject& override)
@@ -82,7 +83,7 @@ WzConfig::WzConfig(const QString &name, WzConfig::warning warning, QObject *pare
 		}
 		else if (warning == ReadOnlyAndRequired)
 		{
-			debug(LOG_FATAL, "Missing required file %s", name.toUtf8().constData());
+			LOG(FATAL) << "Missing required file " << name.toUtf8().constData();
 			abort();
 		}
 		else if (warning == ReadAndWrite)
@@ -92,7 +93,7 @@ WzConfig::WzConfig(const QString &name, WzConfig::warning warning, QObject *pare
 	}
 	if (!loadFile(name.toUtf8().constData(), &data, &size))
 	{
-		debug(LOG_FATAL, "Could not open \"%s\"", name.toUtf8().constData());
+    LOG(FATAL) << "Could not open \"" << name.toUtf8().constData() << "\"";
 	}
 	QJsonDocument mJson = QJsonDocument::fromJson(QByteArray(data, size), &error);
 	ASSERT(!mJson.isNull(), "JSON document from %s is invalid: %s", name.toUtf8().constData(), error.errorString().toUtf8().constData());
@@ -109,7 +110,7 @@ WzConfig::WzConfig(const QString &name, WzConfig::warning warning, QObject *pare
 		}
 		if (!loadFile(str.c_str(), &data, &size))
 		{
-			debug(LOG_FATAL, "jsondiff file \"%s\" could not be opened!", name.toUtf8().constData());
+			LOG(FATAL) << "jsondiff file \"" << name.toUtf8().constData() << "\" could not be opened!";
 		}
 		QJsonDocument tmpJson = QJsonDocument::fromJson(QByteArray(data, size), &error);
 		ASSERT(!tmpJson.isNull(), "JSON diff from %s is invalid: %s", name.toUtf8().constData(), error.errorString().toUtf8().constData());
@@ -117,10 +118,10 @@ WzConfig::WzConfig(const QString &name, WzConfig::warning warning, QObject *pare
 		QJsonObject tmpObj = tmpJson.object();
 		mObj = jsonMerge(mObj, tmpObj);
 		free(data);
-		debug(LOG_INFO, "jsondiff \"%s\" loaded and merged", str.c_str());
+		LOG(INFO) << "jsondiff \"" << str.c_str() << "\" loaded and merged";
 	}
 	PHYSFS_freeList(diffList);
-	debug(LOG_SAVE, "Opening %s", name.toUtf8().constData());
+	LOG(INFO) << "Opening " << name.toUtf8().constData();
 }
 
 QStringList WzConfig::childGroups() const

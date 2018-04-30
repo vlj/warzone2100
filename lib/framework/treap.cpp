@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <glog/logging.h>
 
 /* Allow frame header files to be singly included */
 #define FRAME_LIB_INCLUDE
@@ -68,7 +69,7 @@ TREAP_NODE **treapCreate()
 	TREAP_NODE **const psTreap = (TREAP_NODE **)malloc(sizeof(*psTreap));
 	if (!psTreap)
 	{
-		debug(LOG_FATAL, "Out of memory");
+		LOG(FATAL) << "Out of memory";
 		abort();
 		return nullptr;
 	}
@@ -154,7 +155,7 @@ bool treapAdd(TREAP_NODE **psTreap, const char *key, const char *string)
 
 	if (psNew == nullptr)
 	{
-		debug(LOG_FATAL, "treapAdd: Out of memory");
+		LOG(FATAL) << "treapAdd: Out of memory";
 		abort();
 		return false;
 	}

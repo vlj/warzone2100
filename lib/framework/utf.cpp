@@ -29,6 +29,7 @@
 #include "utf.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <glog/logging.h>
 
 #if defined(LIB_COMPILE)
 # define ASSERT(expr, ...) (assert(expr))
@@ -350,7 +351,7 @@ char *UTF16toUTF8(const utf_16_char *unicode_string, size_t *nbytes)
 
 	if (utf8_string == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory");
+		LOG(ERROR) << "Out of memory";
 		return nullptr;
 	}
 
@@ -413,7 +414,7 @@ utf_16_char *UTF8toUTF16(const char *utf8_string, size_t *nbytes)
 
 	if (unicode_string == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory");
+    LOG(ERROR) << "Out of memory";
 		return nullptr;
 	}
 
@@ -480,7 +481,7 @@ char *UTF32toUTF8(const utf_32_char *unicode_string, size_t *nbytes)
 
 	if (utf8_string == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory");
+		LOG(ERROR) << "Out of memory";
 		return nullptr;
 	}
 
@@ -512,7 +513,7 @@ utf_32_char *UTF8toUTF32(const char *utf8_string, size_t *nbytes)
 
 	if (unicode_string == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory");
+		LOG(ERROR) << "Out of memory";
 		return nullptr;
 	}
 

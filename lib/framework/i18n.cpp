@@ -20,6 +20,7 @@
 
 #include <locale.h>
 #include <physfs.h>
+#include <glog/logging.h>
 
 #ifdef WZ_OS_MAC
 # include <CoreFoundation/CoreFoundation.h>
@@ -303,7 +304,7 @@ static bool setLocaleWindows(USHORT usPrimaryLanguage, USHORT usSubLanguage)
 	}
 	else
 	{
-		debug(LOG_WZ, "Requested locale \"%d\"", usPrimaryLanguage);
+    LOG(INFO) << "Requested locale \"" << usPrimaryLanguage << "\"";
 	}
 
 	setlocale(LC_NUMERIC, "C"); // set radix character to the period (".")
@@ -328,7 +329,7 @@ static bool setLocaleUnix(const char *locale)
 	{
 		if (strcmp(locale, actualLocale))
 		{
-			debug(LOG_WZ, "Requested locale \"%s\", got \"%s\" instead", locale, actualLocale);
+      LOG(INFO) << "Requested locale \"" << locale << "\", got \"" << actualLocale << "\" instead";
 		}
 	}
 
@@ -352,7 +353,7 @@ bool setLanguage(const char *language)
 		if (strcmp(language, map[i].language) == 0)
 		{
 			selectedLanguage = i;
-			debug(LOG_WZ, "Setting language to \"%s\" (%s)", map[i].name, map[i].language);
+      LOG(INFO) << "Setting language to \"" << map[i].name << "\" (" << map[i].language << ")";
 
 #  if defined(WZ_OS_WIN)
 			return setLocaleWindows(map[i].usPrimaryLanguage, map[i].usSubLanguage);
@@ -362,7 +363,7 @@ bool setLanguage(const char *language)
 		}
 	}
 
-	debug(LOG_ERROR, "Requested language \"%s\" not supported.", language);
+  LOG(ERROR) << "Requested language \"" << language << "\" not supported.";
 
 	return false;
 #endif
@@ -387,7 +388,7 @@ void initI18n()
 	if (!setLanguage("")) // set to system default
 	{
 		// no system default?
-		debug(LOG_ERROR, "initI18n: No system language found");
+    LOG(ERROR) << "initI18n: No system language found";
 	}
 #if defined(WZ_OS_WIN)
 	{
@@ -411,7 +412,7 @@ void initI18n()
 		}
 		else
 		{
-			debug(LOG_ERROR, "Could not change to resources directory.");
+			LOG(ERROR) << "Could not change to resources directory.";
 		}
 
 		if (resourceURL != NULL)
@@ -419,7 +420,7 @@ void initI18n()
 			CFRelease(resourceURL);
 		}
 
-		debug(LOG_INFO, "resourcePath is %s", resourcePath);
+		LOG(INFO) << "resourcePath is " << resourcePath;
 	}
 #else
 	textdomainDirectory = bindtextdomain(PACKAGE, LOCALEDIR);
@@ -427,7 +428,7 @@ void initI18n()
 #endif
 	if (!textdomainDirectory)
 	{
-		debug(LOG_ERROR, "initI18n: bindtextdomain failed!");
+		LOG(ERROR) << "initI18n: bindtextdomain failed!";
 	}
 
 	(void)bind_textdomain_codeset(PACKAGE, "UTF-8");

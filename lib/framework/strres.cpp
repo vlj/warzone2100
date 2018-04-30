@@ -36,6 +36,7 @@
 #include "strres.h"
 #include "strresly.h"
 #include "physfs_ext.h"
+#include <glog/logging.h>
 
 /* A String Resource */
 struct STR_RES
@@ -49,7 +50,7 @@ STR_RES *strresCreate()
 	STR_RES *const psRes = (STR_RES *)malloc(sizeof(*psRes));
 	if (!psRes)
 	{
-		debug(LOG_FATAL, "Out of memory");
+		LOG(FATAL) << "Out of memory";
 		abort();
 		return nullptr;
 	}
@@ -57,7 +58,7 @@ STR_RES *strresCreate()
 	psRes->psIDTreap = treapCreate();
 	if (!psRes->psIDTreap)
 	{
-		debug(LOG_FATAL, "Out of memory");
+		LOG(FATAL) << "Out of memory";
 		abort();
 		free(psRes);
 		return nullptr;
@@ -81,7 +82,7 @@ bool strresStoreString(STR_RES *psRes, const char *pID, const char *pString)
 	// Make sure that this ID string hasn't been used before
 	if (treapFind(psRes->psIDTreap, pID) != nullptr)
 	{
-		debug(LOG_FATAL, "Duplicate string for id: \"%s\"", pID);
+		LOG(FATAL) << "Duplicate string for id: \"" << pID << "\"";
 		abort();
 		return false;
 	}
@@ -102,10 +103,10 @@ bool strresLoad(STR_RES *psRes, const char *fileName)
 
 	input.type = LEXINPUT_PHYSFS;
 	input.input.physfsfile = PHYSFS_openRead(fileName);
-	debug(LOG_WZ, "Reading...[directory %s] %s", PHYSFS_getRealDir(fileName), fileName);
+	LOG(INFO) << "Reading...[directory " << PHYSFS_getRealDir(fileName)  << "] " << fileName;
 	if (!input.input.physfsfile)
 	{
-		debug(LOG_ERROR, "strresLoadFile: PHYSFS_openRead(\"%s\") failed with error: %s\n", fileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "strresLoadFile: PHYSFS_openRead(\"" << fileName << "\") failed with error: " << WZ_PHYSFS_getLastError();
 		return false;
 	}
 

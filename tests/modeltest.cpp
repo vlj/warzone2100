@@ -83,16 +83,18 @@ static void check_pie(const fs::path& input)
   EXPECT_EQ(keyword, "LEVELS") << "Bad LEVELS directive";
   fp >> std::dec >> levels;
 
+  fp >> keyword;
 	for (int level = 0; level < levels; level++)
 	{
 		int j, points, faces;
 
-    fp >> keyword >> std::dec >> x;
     EXPECT_EQ(keyword, "LEVEL") << "Bad LEVEL directive  in " << input.string() << " for level " << level + 1;
+    fp >> std::dec >> x;
     EXPECT_EQ(x, level + 1) << "LEVEL directive  was " << x << " should be " << level + 1;
 
     fp >> keyword >> std::dec >> points;
     EXPECT_EQ(keyword, "POINTS") << "Bad POINTS directive";
+
 		for (int j = 0; j < points; j++)
 		{
 			double a, b, c;
@@ -100,7 +102,7 @@ static void check_pie(const fs::path& input)
     }
     fp >> keyword >> faces;
     EXPECT_EQ(keyword, "POLYGONS") << "Bad POLYGONS directive in " << input.string() << " in level " << x;
-    
+
 		for (int j = 0; j < faces; ++j)
 		{
 			int k;
@@ -132,6 +134,7 @@ static void check_pie(const fs::path& input)
         fp >> t >> u;
 			}
 		}
+
     fp >> keyword;
     if (keyword == "CONNECTORS")
 		{
@@ -147,7 +150,8 @@ static void check_pie(const fs::path& input)
 		}
 		if (keyword == "ANIMOBJECT")
 		{
-      fp >> x;
+      int unused0, unused1;
+      fp >> unused0 >> unused1 >> x;
       EXPECT_GE(x, 0) << "Bad ANIMOBJECT directive in level " << level;
 			for (int j = 0; j < x; ++j)
 			{
@@ -156,6 +160,7 @@ static void check_pie(const fs::path& input)
 
         fp >> std::dec >> frame >> xpos >> ypos >> zpos >> xrot >> yrot >> zrot >> xscale >> yscale >> zscale;
 			}
+      fp >> keyword;
 		}
 	}
 }

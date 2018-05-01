@@ -4,35 +4,32 @@
 #include <limits.h>
 #include <QtCore/QCoreApplication>
 #include "lint.h"
+#include <filesystem>
+#include <range/v3/all.hpp>
+#include <gtest/gtest.h>
 
-int main(int argc, char **argv)
+namespace fs = std::filesystem;
+
+auto get_js_files = [](const auto& datapath) {
+  return fs::recursive_directory_iterator(datapath) |
+    ranges::view::transform([](auto&& e) {return e.path(); }) |
+    ranges::view::filter([](auto&& p) { return p.extension() == fs::path(".js"); });
+};
+
+TEST(jsTest, FoundJS)
 {
-	QCoreApplication app(argc, argv);
-	char datapath[PATH_MAX], fullpath[PATH_MAX], filename[PATH_MAX];
-	FILE *fp = fopen("jslist.txt", "r");
-	if (!fp)
-	{
-		fprintf(stderr, "%s: Failed to open list file\n", argv[0]);
-		return -1;
-	}
-	if (getenv("srcdir"))
-	{
-		strcpy(datapath, getenv("srcdir"));
-	}
-	strcat(datapath, "/../data/");
-	while (!feof(fp))
-	{
-		if (fscanf(fp, "%254s\n", filename) != 1)
-		{
-			fprintf(stderr, "%s: Failed to fscanf jslist.txt.\n", argv[0]);
-			return -1;
-		}
-		printf("Testing script: %s\n", filename);
-		strcpy(fullpath, datapath);
-		strcat(fullpath, filename);
-		testGlobalScript(fullpath);
-	}
-	fclose(fp);
+  int n = 0;
+  for (const auto& file : get_js_files(fs::current_path())) n++;
+  EXPECT_NE(n, 0) << "JS files not found";
+}
 
-	return 0;
+TEST(jsTest, loadJS)
+{
+  int argc = 0;
+  char* argv = "";
+  QCoreApplication app(argc, &argv);
+  for (const auto& file : get_js_files(fs::current_path()))
+  {
+    testGlobalScript(QString::fromStdString(file.generic_string()));
+  }
 }

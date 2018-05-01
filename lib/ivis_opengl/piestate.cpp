@@ -35,6 +35,7 @@
 #include "pieclip.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glog/logging.h>
 
 #ifndef GLEW_VERSION_4_3
 #define GLEW_VERSION_4_3 false
@@ -94,7 +95,7 @@ void pie_EnableFog(bool val)
 {
 	if (rendStates.fogEnabled != val)
 	{
-		debug(LOG_FOG, "pie_EnableFog: Setting fog to %s", val ? "ON" : "OFF");
+		LOG(INFO) << "pie_EnableFog: Setting fog to " << (val ? "ON" : "OFF");
 		rendStates.fogEnabled = val;
 		if (val)
 		{
@@ -135,7 +136,7 @@ static char *readShaderBuf(const char *name)
 	char *buffer;
 
 	fp = PHYSFS_openRead(name);
-	debug(LOG_3D, "Reading...[directory: %s] %s", PHYSFS_getRealDir(name), name);
+	LOG(INFO) << "Reading...[directory: " << PHYSFS_getRealDir(name) << "] %s" << name;
 	ASSERT_OR_RETURN(nullptr, fp != nullptr, "Could not open %s", name);
 	filesize = PHYSFS_fileLength(fp);
 	buffer = (char *)malloc(filesize + 1);
@@ -161,7 +162,7 @@ static void printShaderInfoLog(code_part part, GLuint shader)
 		GLchar *infoLog = (GLchar *)malloc(infologLen);
 
 		glGetShaderInfoLog(shader, infologLen, &charsWritten, infoLog);
-		debug(part, "Shader info log: %s", infoLog);
+		LOG(INFO) << "Shader info log: %s" << infoLog;
 		free(infoLog);
 	}
 }
@@ -178,7 +179,7 @@ static void printProgramInfoLog(code_part part, GLuint program)
 		GLchar *infoLog = (GLchar *)malloc(infologLen);
 
 		glGetProgramInfoLog(program, infologLen, &charsWritten, infoLog);
-		debug(part, "Program info log: %s", infoLog);
+		LOG(INFO) << "Program info log: " << infoLog;
 		free(infoLog);
 	}
 }
@@ -506,7 +507,7 @@ SHADER_VERSION autodetectShaderVersion_FromLevelLoad(const char* filePath, const
 	SHADER_VERSION version = pie_detectShaderVersion(shaderContents);
 	if (version == SHADER_VERSION::VERSION_FIXED_IN_FILE)
 	{
-		debug(LOG_WARNING, "SHADER '%s' specifies a fixed #version directive. This may not work with Warzone's ability to use either OpenGL < 3.2 Compatibility Profiles, or OpenGL 3.2+ Core Profiles.", filePath);
+		LOG(WARNING) << "SHADER '" << filePath << "' specifies a fixed #version directive. This may not work with Warzone's ability to use either OpenGL < 3.2 Compatibility Profiles, or OpenGL 3.2+ Core Profiles.";
 	}
 	return version;
 }
@@ -549,7 +550,7 @@ SHADER_MODE pie_LoadShader(SHADER_VERSION vertex_version, SHADER_VERSION fragmen
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 			if (!status)
 			{
-				debug(LOG_ERROR, "Vertex shader compilation has failed [%s]", vertexPath.c_str());
+				LOG(ERROR) << "Vertex shader compilation has failed [" << vertexPath.c_str() << "]";
 				printShaderInfoLog(LOG_ERROR, shader);
 			}
 			else
@@ -589,7 +590,7 @@ SHADER_MODE pie_LoadShader(SHADER_VERSION vertex_version, SHADER_VERSION fragmen
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 			if (!status)
 			{
-				debug(LOG_ERROR, "Fragment shader compilation has failed [%s]", fragmentPath.c_str());
+        LOG(ERROR) << "Fragment shader compilation has failed [" << fragmentPath.c_str() << "]";
 				printShaderInfoLog(LOG_ERROR, shader);
 			}
 			else
@@ -615,7 +616,7 @@ SHADER_MODE pie_LoadShader(SHADER_VERSION vertex_version, SHADER_VERSION fragmen
 		glGetProgramiv(program.program, GL_LINK_STATUS, &status);
 		if (!status)
 		{
-			debug(LOG_ERROR, "Shader program linkage has failed [%s, %s]", vertexPath.c_str(), fragmentPath.c_str());
+			LOG(ERROR) << "Shader program linkage has failed [" << vertexPath.c_str() << ", " << fragmentPath.c_str() << "]";
 			printProgramInfoLog(LOG_ERROR, program.program);
 			success = false;
 		}
@@ -660,7 +661,7 @@ bool pie_LoadShaders()
 	int shaderEnum = 0;
 
 	// TCMask shader for map-placed models with advanced lighting
-	debug(LOG_3D, "Loading shader: SHADER_COMPONENT");
+	LOG(INFO) << "Loading shader: SHADER_COMPONENT";
 	result = pie_LoadShader(version, "Component program", "shaders/tcmask.vert", "shaders/tcmask.frag",
 		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle",
 		"ModelViewMatrix", "ModelViewProjectionMatrix", "NormalMatrix", "lightPosition", "sceneColor", "ambient", "diffuse", "specular",
@@ -668,7 +669,7 @@ bool pie_LoadShaders()
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_COMPONENT, "Failed to load component shader");
 
 	// TCMask shader for buttons with flat lighting
-	debug(LOG_3D, "Loading shader: SHADER_BUTTON");
+  LOG(INFO) << "Loading shader: SHADER_BUTTON";
 	result = pie_LoadShader(version, "Button program", "shaders/button.vert", "shaders/button.frag",
 		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle",
 		"ModelViewMatrix", "ModelViewProjectionMatrix", "NormalMatrix", "lightPosition", "sceneColor", "ambient", "diffuse", "specular",
@@ -676,68 +677,68 @@ bool pie_LoadShaders()
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_BUTTON, "Failed to load button shader");
 
 	// Plain shader for no lighting
-	debug(LOG_3D, "Loading shader: SHADER_NOLIGHT");
+  LOG(INFO) << "Loading shader: SHADER_NOLIGHT";
 	result = pie_LoadShader(version, "Plain program", "shaders/nolight.vert", "shaders/nolight.frag",
 		{ "colour", "teamcolour", "stretch", "tcmask", "fogEnabled", "normalmap", "specularmap", "ecmEffect", "alphaTest", "graphicsCycle",
 		"ModelViewMatrix", "ModelViewProjectionMatrix", "NormalMatrix", "lightPosition", "sceneColor", "ambient", "diffuse", "specular",
 		"fogEnd", "fogStart", "fogColor" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_NOLIGHT, "Failed to load no-lighting shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_TERRAIN");
+  LOG(INFO) << "Loading shader: SHADER_TERRAIN";
 	result = pie_LoadShader(version, "terrain program", "shaders/terrain_water.vert", "shaders/terrain.frag",
 		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex", "lightmap_tex", "textureMatrix1", "textureMatrix2",
 		"fogEnabled", "fogEnd", "fogStart", "fogColor" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_TERRAIN, "Failed to load terrain shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_TERRAIN_DEPTH");
+  LOG(INFO) << "Loading shader: SHADER_TERRAIN_DEPTH";
 	result = pie_LoadShader(version, "terrain_depth program", "shaders/terrain_water.vert", "shaders/terraindepth.frag",
 	{ "ModelViewProjectionMatrix", "paramx2", "paramy2", "lightmap_tex", "textureMatrix1", "textureMatrix2" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_TERRAIN_DEPTH, "Failed to load terrain_depth shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_DECALS");
+  LOG(INFO) << "Loading shader: SHADER_DECALS";
 	result = pie_LoadShader(version, "decals program", "shaders/decals.vert", "shaders/decals.frag",
 		{ "ModelViewProjectionMatrix", "paramxlight", "paramylight", "tex", "lightmap_tex", "lightTextureMatrix",
 		"fogEnabled", "fogEnd", "fogStart", "fogColor" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_DECALS, "Failed to load decals shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_WATER");
+  LOG(INFO) << "Loading shader: SHADER_WATER";
 	result = pie_LoadShader(version, "water program", "shaders/terrain_water.vert", "shaders/water.frag",
 		{ "ModelViewProjectionMatrix", "paramx1", "paramy1", "paramx2", "paramy2", "tex1", "tex2", "textureMatrix1", "textureMatrix2",
 		"fogEnabled", "fogEnd", "fogStart" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_WATER, "Failed to load water shader");
 
 	// Rectangular shader
-	debug(LOG_3D, "Loading shader: SHADER_RECT");
+  LOG(INFO) << "Loading shader: SHADER_RECT";
 	result = pie_LoadShader(version, "Rect program", "shaders/rect.vert", "shaders/rect.frag",
 		{ "transformationMatrix", "color" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_RECT, "Failed to load rect shader");
 
 	// Textured rectangular shader
-	debug(LOG_3D, "Loading shader: SHADER_TEXRECT");
+  LOG(INFO) << "Loading shader: SHADER_TEXRECT";
 	result = pie_LoadShader(version, "Textured rect program", "shaders/rect.vert", "shaders/texturedrect.frag",
 		{ "transformationMatrix", "tuv_offset", "tuv_scale", "color", "theTexture" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_TEXRECT, "Failed to load textured rect shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_GFX_COLOUR");
+  LOG(INFO) << "Loading shader: SHADER_GFX_COLOUR";
 	result = pie_LoadShader(version, "gfx_color program", "shaders/gfx.vert", "shaders/gfx.frag",
 		{ "posMatrix" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_GFX_COLOUR, "Failed to load textured gfx shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_GFX_TEXT");
+  LOG(INFO) << "Loading shader: SHADER_GFX_TEXT";
 	result = pie_LoadShader(version, "gfx_text program", "shaders/gfx.vert", "shaders/texturedrect.frag",
 		{ "posMatrix", "color", "theTexture" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_GFX_TEXT, "Failed to load textured gfx shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_GENERIC_COLOR");
+  LOG(INFO) << "Loading shader: SHADER_GENERIC_COLOR";
 	result = pie_LoadShader(version, "generic color program", "shaders/generic.vert", "shaders/rect.frag", { "ModelViewProjectionMatrix", "color" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_GENERIC_COLOR, "Failed to load generic color shader");
 
-	debug(LOG_3D, "Loading shader: SHADER_LINE");
+  LOG(INFO) << "Loading shader: SHADER_LINE";
 	result = pie_LoadShader(version, "line program", "shaders/line.vert", "shaders/rect.frag", { "from", "to", "color", "ModelViewProjectionMatrix" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_LINE, "Failed to load line shader");
 
 	// Text shader
-	debug(LOG_3D, "Loading shader: SHADER_TEXT");
+  LOG(INFO) << "Loading shader: SHADER_TEXT";
 	result = pie_LoadShader(version, "Text program", "shaders/rect.vert", "shaders/text.frag",
 		{ "transformationMatrix", "tuv_offset", "tuv_scale", "color", "theTexture" });
 	ASSERT_OR_RETURN(false, result && ++shaderEnum == SHADER_TEXT, "Failed to load text shader");
@@ -1008,7 +1009,7 @@ bool _glerrors(const char *function, const char *file, int line)
 	while (err != GL_NO_ERROR)
 	{
 		ret = true;
-		debug(LOG_ERROR, "OpenGL error in function %s at %s:%u: %s\n", function, file, line, gluErrorString(err));
+		LOG(ERROR) << "OpenGL error in function " << function  << " at " << file << ":" << line << ": " << gluErrorString(err);
 		err = glGetError();
 	}
 	return ret;

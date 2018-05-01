@@ -25,6 +25,7 @@
 #include "lib/ivis_opengl/tex.h"
 #include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/png_util.h"
+#include <glog/logging.h>
 
 #include <QtCore/QList>
 #include "screen.h"
@@ -98,7 +99,7 @@ int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page
 		sstrcpy(_TEX_PAGE[page].name, filename);
 
 	}
-	debug(LOG_TEXTURE, "%s page=%d", filename, page);
+  LOG(INFO) << filename << " page=" << page;
 
 	if (gameTexture) // this is a game texture, use texture compression
 	{
@@ -112,7 +113,7 @@ int pie_AddTexPage(iV_Image *s, const char *filename, bool gameTexture, int page
 			format = wz_texture_compression ? gfx_api::pixel_format::compressed_rgb : gfx_api::pixel_format::rgb;
 			break;
 		default:
-			debug(LOG_FATAL, "getPixelFormat only returns rgb or rgba at the moment");
+			LOG(FATAL) << "getPixelFormat only returns rgb or rgba at the moment";
 		}
 		if (_TEX_PAGE[page].id)
 			delete _TEX_PAGE[page].id;
@@ -216,7 +217,7 @@ int iV_GetTexture(const char *filename, bool compression)
 	sstrcat(path, filename);
 	if (!iV_loadImage_PNG(path, &sSprite))
 	{
-		debug(LOG_ERROR, "Failed to load %s", path);
+		LOG(ERROR) << "Failed to load " << path;
 		return -1;
 	}
 	sstrcpy(path, filename);
@@ -232,7 +233,7 @@ bool replaceTexture(const QString &oldfile, const QString &newfile)
 	iV_Image image;
 	if (!iV_loadImage_PNG(QString("texpages/" + newfile).toUtf8().constData(), &image))
 	{
-		debug(LOG_ERROR, "Failed to load image: %s", newfile.toUtf8().constData());
+		LOG(ERROR) << "Failed to load image: " << newfile.toUtf8().constData();
 		return false;
 	}
 	sstrcpy(tmpname, oldfile.toUtf8().constData());
@@ -243,7 +244,7 @@ bool replaceTexture(const QString &oldfile, const QString &newfile)
 		if (strcmp(tmpname, _TEX_PAGE[i].name) == 0)
 		{
 			GL_DEBUG("Replacing texture");
-			debug(LOG_TEXTURE, "Replacing texture %s with %s from index %d (tex id %u)", _TEX_PAGE[i].name, newfile.toUtf8().constData(), i, _TEX_PAGE[i].id->id());
+      LOG(INFO) << "Replacing texture " << _TEX_PAGE[i].name << " with " << newfile.toUtf8().constData() << " from index " << i << " (tex id " << _TEX_PAGE[i].id->id() << ")";
 			sstrcpy(tmpname, newfile.toUtf8().constData());
 			pie_MakeTexPageName(tmpname);
 			pie_AddTexPage(&image, tmpname, true, i);
@@ -252,20 +253,20 @@ bool replaceTexture(const QString &oldfile, const QString &newfile)
 		}
 	}
 	iV_unloadImage(&image);
-	debug(LOG_ERROR, "Nothing to replace!");
+	LOG(ERROR) << "Nothing to replace!";
 	return false;
 }
 
 void pie_TexShutDown()
 {
 	// TODO, lazy deletions for faster loading of next level
-	debug(LOG_TEXTURE, "Cleaning out %u textures", static_cast<unsigned>(_TEX_PAGE.size()));
+  LOG(INFO) << "Cleaning out " << static_cast<unsigned>(_TEX_PAGE.size()) << " textures";
 	_TEX_PAGE.clear();
 }
 
 void pie_TexInit()
 {
-	debug(LOG_TEXTURE, "pie_TexInit successful");
+	LOG(INFO) << "pie_TexInit successful";
 }
 
 void iV_unloadImage(iV_Image *image)
@@ -280,7 +281,7 @@ void iV_unloadImage(iV_Image *image)
 	}
 	else
 	{
-		debug(LOG_ERROR, "Tried to free invalid image!");
+		LOG(ERROR) << "Tried to free invalid image!";
 	}
 }
 
@@ -293,7 +294,7 @@ gfx_api::pixel_format iV_getPixelFormat(const iV_Image *image)
 	case 4:
 		return gfx_api::pixel_format::rgba;
 	default:
-		debug(LOG_FATAL, "iV_getPixelFormat: Unsupported image depth: %u", image->depth);
+		LOG(FATAL) << "iV_getPixelFormat: Unsupported image depth: " << image->depth;
 		return gfx_api::pixel_format::invalid;
 	}
 }

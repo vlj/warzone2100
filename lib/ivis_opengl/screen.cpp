@@ -53,6 +53,7 @@
 #include <vector>
 #include <cstring>
 #include <glm/gtx/transform.hpp>
+#include <glog/logging.h>
 
 /* global used to indicate preferred internal OpenGL format */
 bool wz_texture_compression = 0;
@@ -139,7 +140,7 @@ static void khr_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
 	(void)userParam; // we pass in NULL here
 	(void)length; // length of message, buggy on some drivers, don't use
 	(void)id; // message id
-	debug(LOG_ERROR, "GL::%s(%s:%s) : %s", cbsource(source), cbtype(type), cbseverity(severity), message);
+	LOG(ERROR) << "GL::" << cbsource(source) << "(" << cbtype(type) << ":" << cbseverity(severity) << ") : " << message;
 }
 
 /* Initialise the double buffered display */
@@ -167,7 +168,7 @@ bool screenInitialise()
 	err = glewInit();
 	if (GLEW_OK != err)
 	{
-		debug(LOG_FATAL, "Error: %s", glewGetErrorString(err));
+		LOG(FATAL) << "Error: " << glewGetErrorString(err);
 		exit(1);
 	}
 #if defined(WZ_USE_OPENGL_3_2_CORE_PROFILE)
@@ -182,17 +183,17 @@ bool screenInitialise()
 	/* Dump general information about OpenGL implementation to the console and the dump file */
 	ssprintf(opengl.vendor, "OpenGL Vendor: %s", glGetString(GL_VENDOR));
 	addDumpInfo(opengl.vendor);
-	debug(LOG_3D, "%s", opengl.vendor);
+	LOG(INFO) << opengl.vendor;
 	ssprintf(opengl.renderer, "OpenGL Renderer: %s", glGetString(GL_RENDERER));
 	addDumpInfo(opengl.renderer);
-	debug(LOG_3D, "%s", opengl.renderer);
+	LOG(INFO) << opengl.renderer;
 	ssprintf(opengl.version, "OpenGL Version: %s", glGetString(GL_VERSION));
 	addDumpInfo(opengl.version);
-	debug(LOG_3D, "%s", opengl.version);
+	LOG(INFO) << opengl.version;
 	ssprintf(opengl.GLEWversion, "GLEW Version: %s", glewGetString(GLEW_VERSION));
 	if (strncmp(opengl.GLEWversion, "1.9.", 4) == 0) // work around known bug with KHR_debug extension support in this release
 	{
-		debug(LOG_WARNING, "Your version of GLEW is old and buggy, please upgrade to at least version 1.10.");
+		LOG(WARNING) << "Your version of GLEW is old and buggy, please upgrade to at least version 1.10.";
 		khr_debug = false;
 	}
 	else
@@ -200,7 +201,7 @@ bool screenInitialise()
 		khr_debug = GLEW_KHR_debug;
 	}
 	addDumpInfo(opengl.GLEWversion);
-	debug(LOG_3D, "%s", opengl.GLEWversion);
+	LOG(INFO) << opengl.GLEWversion;
 
 	GLubyte const *extensionsBegin = glGetString(GL_EXTENSIONS);
 	if (extensionsBegin == nullptr)
@@ -230,53 +231,56 @@ bool screenInitialise()
 		}
 		if (line.size() + word.size() > 160)
 		{
-			debug(LOG_3D, "OpenGL Extensions:%s", line.c_str());
+			LOG(INFO) << "OpenGL Extensions:" << line.c_str();
 			line.clear();
 		}
 		line += word;
 	}
-	debug(LOG_3D, "OpenGL Extensions:%s", line.c_str());
-	debug(LOG_3D, "Notable OpenGL features:");
-	debug(LOG_3D, "  * OpenGL 1.2 %s supported!", GLEW_VERSION_1_2 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.3 %s supported!", GLEW_VERSION_1_3 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.4 %s supported!", GLEW_VERSION_1_4 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 1.5 %s supported!", GLEW_VERSION_1_5 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 2.0 %s supported!", GLEW_VERSION_2_0 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 2.1 %s supported!", GLEW_VERSION_2_1 ? "is" : "is NOT");
-	debug(LOG_3D, "  * OpenGL 3.0 %s supported!", GLEW_VERSION_3_0 ? "is" : "is NOT");
+  const auto& print_debug = [](const std::string& feature, const bool is_supported) {
+    LOG(INFO) << "  * " << feature << (is_supported ? "is" : "is NOT") << " supported.";
+  };
+	LOG(INFO) << "OpenGL Extensions:%s", line.c_str();
+	LOG(INFO) << "Notable OpenGL features:";
+  print_debug("OpenGL 1.2 ", GLEW_VERSION_1_2);
+  print_debug("OpenGL 1.3 ", GLEW_VERSION_1_3);
+  print_debug("OpenGL 1.4 ", GLEW_VERSION_1_4);
+  print_debug("OpenGL 1.5", GLEW_VERSION_1_5);
+  print_debug("OpenGL 2.0", GLEW_VERSION_2_0);
+  print_debug("OpenGL 2.1", GLEW_VERSION_2_1);
+  print_debug("OpenGL 3.0", GLEW_VERSION_3_0);
 #ifdef GLEW_VERSION_3_1
-	debug(LOG_3D, "  * OpenGL 3.1 %s supported!", GLEW_VERSION_3_1 ? "is" : "is NOT");
+  print_debug("OpenGL 3.1", GLEW_VERSION_3_1);
 #endif
 #ifdef GLEW_VERSION_3_2
-	debug(LOG_3D, "  * OpenGL 3.2 %s supported!", GLEW_VERSION_3_2 ? "is" : "is NOT");
+  print_debug("OpenGL 3.2", GLEW_VERSION_3_2);
 #endif
 #ifdef GLEW_VERSION_3_3
-	debug(LOG_3D, "  * OpenGL 3.3 %s supported!", GLEW_VERSION_3_3 ? "is" : "is NOT");
+  print_debug("OpenGL 3.3", GLEW_VERSION_3_3);
 #endif
 #ifdef GLEW_VERSION_4_0
-	debug(LOG_3D, "  * OpenGL 4.0 %s supported!", GLEW_VERSION_4_0 ? "is" : "is NOT");
+  print_debug("OpenGL 4.0", GLEW_VERSION_4_0);
 #endif
 #ifdef GLEW_VERSION_4_1
-	debug(LOG_3D, "  * OpenGL 4.1 %s supported!", GLEW_VERSION_4_1 ? "is" : "is NOT");
+  print_debug("OpenGL 4.1", GLEW_VERSION_4_1);
 #endif
-	debug(LOG_3D, "  * Texture compression %s supported.", GLEW_ARB_texture_compression ? "is" : "is NOT");
-	debug(LOG_3D, "  * Two side stencil %s supported.", GLEW_EXT_stencil_two_side ? "is" : "is NOT");
-	debug(LOG_3D, "  * ATI separate stencil is%s supported.", GLEW_ATI_separate_stencil ? "" : " NOT");
-	debug(LOG_3D, "  * Stencil wrap %s supported.", GLEW_EXT_stencil_wrap ? "is" : "is NOT");
-	debug(LOG_3D, "  * Anisotropic filtering %s supported.", GLEW_EXT_texture_filter_anisotropic ? "is" : "is NOT");
-	debug(LOG_3D, "  * Rectangular texture %s supported.", GLEW_ARB_texture_rectangle ? "is" : "is NOT");
-	debug(LOG_3D, "  * FrameBuffer Object (FBO) %s supported.", GLEW_EXT_framebuffer_object ? "is" : "is NOT");
-	debug(LOG_3D, "  * ARB Vertex Buffer Object (VBO) %s supported.", GLEW_ARB_vertex_buffer_object ? "is" : "is NOT");
-	debug(LOG_3D, "  * NPOT %s supported.", GLEW_ARB_texture_non_power_of_two ? "is" : "is NOT");
-	debug(LOG_3D, "  * texture cube_map %s supported.", GLEW_ARB_texture_cube_map ? "is" : "is NOT");
+  print_debug("Texture compression %s supported.", GLEW_ARB_texture_compression);
+  print_debug("Two side stencil %s supported.", GLEW_EXT_stencil_two_side);
+  print_debug("ATI separate stencil is%s supported.", GLEW_ATI_separate_stencil);
+  print_debug("Stencil wrap %s supported.", GLEW_EXT_stencil_wrap);
+  print_debug("Anisotropic filtering %s supported.", GLEW_EXT_texture_filter_anisotropic);
+  print_debug("Rectangular texture %s supported.", GLEW_ARB_texture_rectangle);
+  print_debug("FrameBuffer Object (FBO) %s supported.", GLEW_EXT_framebuffer_object);
+  print_debug("ARB Vertex Buffer Object (VBO) %s supported.", GLEW_ARB_vertex_buffer_object);
+  print_debug("NPOT %s supported.", GLEW_ARB_texture_non_power_of_two);
+  print_debug("texture cube_map %s supported.", GLEW_ARB_texture_cube_map);
 	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &glMaxTUs);
-	debug(LOG_3D, "  * Total number of Texture Units (TUs) supported is %d.", (int) glMaxTUs);
-	debug(LOG_3D, "  * GL_ARB_timer_query %s supported!", GLEW_ARB_timer_query ? "is" : "is NOT");
-	debug(LOG_3D, "  * KHR_DEBUG support %s detected", khr_debug ? "was" : "was NOT");
+	LOG(INFO) << "  * Total number of Texture Units (TUs) supported is " << (int) glMaxTUs;
+  print_debug("GL_ARB_timer_query %s supported!", GLEW_ARB_timer_query);
+  print_debug("KHR_DEBUG support %s detected", khr_debug);
 
 	if (!GLEW_VERSION_2_0)
 	{
-		debug(LOG_FATAL, "OpenGL 2.0 not supported! Please upgrade your drivers.");
+		LOG(FATAL) << "OpenGL 2.0 not supported! Please upgrade your drivers.";
 		return false;
 	}
 
@@ -289,20 +293,20 @@ bool screenInitialise()
 	/* Dump information about OpenGL 2.0+ implementation to the console and the dump file */
 	GLint glMaxTIUs, glMaxTCs, glMaxTIUAs, glmaxSamples, glmaxSamplesbuf;
 
-	debug(LOG_3D, "  * OpenGL GLSL Version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG(INFO) << "  * OpenGL GLSL Version : " << glGetString(GL_SHADING_LANGUAGE_VERSION);
 	ssprintf(opengl.GLSLversion, "OpenGL GLSL Version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	addDumpInfo(opengl.GLSLversion);
 
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &glMaxTIUs);
-	debug(LOG_3D, "  * Total number of Texture Image Units (TIUs) supported is %d.", (int) glMaxTIUs);
+	LOG(INFO) << "  * Total number of Texture Image Units (TIUs) supported is " << (int) glMaxTIUs;
 	glGetIntegerv(GL_MAX_TEXTURE_COORDS, &glMaxTCs);
-	debug(LOG_3D, "  * Total number of Texture Coords (TCs) supported is %d.", (int) glMaxTCs);
+	LOG(INFO) << "  * Total number of Texture Coords (TCs) supported is " << (int) glMaxTCs;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB, &glMaxTIUAs);
-	debug(LOG_3D, "  * Total number of Texture Image Units ARB(TIUAs) supported is %d.", (int) glMaxTIUAs);
+	LOG(INFO) << "  * Total number of Texture Image Units ARB(TIUAs) supported is " << (int) glMaxTIUAs;
 	glGetIntegerv(GL_SAMPLE_BUFFERS, &glmaxSamplesbuf);
-	debug(LOG_3D, "  * (current) Max Sample buffer is %d.", (int) glmaxSamplesbuf);
+	LOG(INFO) << "  * (current) Max Sample buffer is " << (int) glmaxSamplesbuf;
 	glGetIntegerv(GL_SAMPLES, &glmaxSamples);
-	debug(LOG_3D, "  * (current) Max Sample level is %d.", (int) glmaxSamples);
+	LOG(INFO) << "  * (current) Max Sample level is " << (int) glmaxSamples;
 
 #if defined(WZ_USE_OPENGL_3_2_CORE_PROFILE)
 	// Very simple VAO code - just bind a single global VAO (this gets things working, but is not optimal)
@@ -334,7 +338,7 @@ bool screenInitialise()
 		glEnable(GL_DEBUG_OUTPUT);
 		// Do not want to output notifications. Some drivers spam them too much.
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-		debug(LOG_3D, "Enabling KHR_debug message callback");
+		LOG(INFO) << "Enabling KHR_debug message callback";
 	}
 
 	return true;
@@ -694,7 +698,7 @@ static int saveScreenshotThreadFunc(void * saveRequest)
 		// dispatch logging the error to the main thread
 		wzAsyncExecOnMainThread([pngerror]
 			{
-				debug(LOG_ERROR, "%s\n", pngerror.text.c_str());
+				LOG(ERROR) << pngerror.text.c_str();
 			}
 		);
 	}
@@ -734,7 +738,7 @@ void screenDoDumpToDiskIfRequired()
 	{
 		return;
 	}
-	debug(LOG_3D, "Saving screenshot %s", fileName);
+	LOG(INFO) << "Saving screenshot " <<  fileName;
 
 	// IMPORTANT: Must get the size of the viewport directly from the viewport, to account for
 	//            high-DPI / display scaling factors (or only a sub-rect of the full viewport
@@ -768,7 +772,7 @@ void screenDoDumpToDiskIfRequired()
 	WZ_THREAD * pSaveThread = wzThreadCreate(saveScreenshotThreadFunc, pSaveRequest);
 	if (pSaveThread == nullptr)
 	{
-		debug(LOG_ERROR, "Failed to create thread for PNG encoding");
+		LOG(ERROR) << "Failed to create thread for PNG encoding";
 		delete pSaveRequest;
 	}
 	else

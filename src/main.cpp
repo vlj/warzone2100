@@ -77,6 +77,7 @@
 #include "map.h"
 #include "keybind.h"
 #include <time.h>
+#include <glog/logging.h>
 
 #if defined(WZ_OS_MAC)
 // NOTE: Moving these defines is likely to (and has in the past) break the mac builds
@@ -925,7 +926,7 @@ int realmain(int argc, char *argv[])
 	int utfargc = argc;
 	const char **utfargv = (const char **)argv;
 	wzMain(argc, argv);		// init Qt integration first
-
+  google::InitGoogleLogging(argv[0]);
 	debug_init();
 	debug_register_callback(debug_callback_stderr, nullptr, nullptr, nullptr);
 #if defined(WZ_OS_WIN) && defined(DEBUG_INSANE)

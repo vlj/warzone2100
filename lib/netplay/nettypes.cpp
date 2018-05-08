@@ -41,6 +41,7 @@
 #include "netlog.h"
 #include "src/order.h"
 #include <cstring>
+#include <glog/logging.h>
 
 /// There is a game queue representing each player. The game queues are synchronised among all players, so that all players process the same game queue
 /// messages at the same game time. The game queues should be used, even in single-player. Players should write to their own queue, not to other player's
@@ -470,7 +471,8 @@ bool NETend()
 		// Push the message onto the list.
 		NetQueue *queue = sendQueue(queueInfo);
 		if (queue == nullptr) {
-			debug(LOG_WARNING, "Sending %s to null queue, type %d.", messageTypeToString(message.type), queueInfo.queueType);
+			LOG(WARNING) << "Sending " << messageTypeToString(message.type) << " to null queue, type "
+						 << queueInfo.queueType;
 			return true;
 		}
 		queue->pushMessage(message);
@@ -655,7 +657,8 @@ void NETstring(char *str, uint16_t maxlen)
 	// Truncate length if necessary
 	if (len > maxlen - 1)
 	{
-		debug(LOG_ERROR, "NETstring: %s packet, length %u truncated at %u", NETgetPacketDir() == PACKET_ENCODE ? "Encoding" : "Decoding", len, maxlen);
+		LOG(ERROR) << "NETstring: " << (NETgetPacketDir() == PACKET_ENCODE ? "Encoding" : "Decoding")
+				   << " packet, length " << len << " truncated at " << maxlen;
 		len = maxlen - 1;
 	}
 
@@ -714,7 +717,8 @@ void NETbytes(std::vector<uint8_t> *vec, unsigned maxLen)
 
 	if (len > maxLen)
 	{
-		debug(LOG_ERROR, "NETstring: %s packet, length %u truncated at %u", NETgetPacketDir() == PACKET_ENCODE ? "Encoding" : "Decoding", len, maxLen);
+		LOG(ERROR) << "NETstring: " << (NETgetPacketDir() == PACKET_ENCODE ? "Encoding" : "Decoding")
+				   << " packet, length " << len << " truncated at " << maxLen;
 	}
 
 	len = std::min<unsigned>(len, maxLen);  // Truncate length if necessary.

@@ -49,6 +49,7 @@
 #include <map>
 #include <locale.h>
 #include <atomic>
+#include <glog/logging.h>
 
 // This is for the cross-compiler, for static QT 5 builds to avoid the 'plugins' crap on windows
 #if defined(QT_STATICPLUGIN)
@@ -200,7 +201,7 @@ bool put_scrap(char *src)
 {
 	if (SDL_SetClipboardText(src))
 	{
-		debug(LOG_ERROR, "Could not put clipboard text because : %s", SDL_GetError());
+		LOG(ERROR) << "Could not put clipboard text because : " << SDL_GetError();
 		return false;
 	}
 	return true;
@@ -214,7 +215,7 @@ bool get_scrap(char **dst)
 		char *cliptext = SDL_GetClipboardText();
 		if (!cliptext)
 		{
-			debug(LOG_ERROR, "Could not get clipboard text because : %s", SDL_GetError());
+			LOG(ERROR) << "Could not get clipboard text because : " << SDL_GetError();
 			return false;
 		}
 		*dst = cliptext;
@@ -235,7 +236,7 @@ void StartTextInput()
 		memset(text, 0x0, sizeof(text));
 		CurrentKey = 0;
 		GetTextEvents = true;
-		debug(LOG_INPUT, "SDL text events started");
+		LOG(INFO) << "INPUT:SDL text events started";
 	}
 }
 
@@ -245,7 +246,7 @@ void StopTextInput()
 	CurrentKey = 0;
 	memset(text, 0x0, sizeof(text));
 	GetTextEvents = false;
-	debug(LOG_INPUT, "SDL text events stopped");
+	LOG(INFO) << "INPUT:SDL text events stopped";
 }
 
 QString wzGetCurrentText()
@@ -945,13 +946,13 @@ void inputNewFrame(void)
 		if (aKeyState[i].state == KEY_PRESSED)
 		{
 			aKeyState[i].state = KEY_DOWN;
-			debug(LOG_NEVER, "This key is DOWN! %x, %d [%s]", i, i, SDL_GetKeyName(keyCodeToSDLKey((KEY_CODE)i)));
+			LOG(INFO) << "This key is DOWN! " << i << "[" << SDL_GetKeyName(keyCodeToSDLKey((KEY_CODE)i)) << "]";
 		}
 		else if (aKeyState[i].state == KEY_RELEASED  ||
 		         aKeyState[i].state == KEY_PRESSRELEASE)
 		{
 			aKeyState[i].state = KEY_UP;
-			debug(LOG_NEVER, "This key is UP! %x, %d [%s]", i, i, SDL_GetKeyName(keyCodeToSDLKey((KEY_CODE)i)));
+			LOG(INFO) << "This key is UP! " << i << " [" << SDL_GetKeyName(keyCodeToSDLKey((KEY_CODE)i)) << "]";
 		}
 	}
 
@@ -1146,7 +1147,7 @@ static void inputHandleKeyEvent(SDL_KeyboardEvent *keyEvent)
 		{
 			// Take care of 'editing' keys that were pressed
 			inputAddBuffer(vk, 0);
-			debug(LOG_INPUT, "Editing key: 0x%x, %d SDLkey=[%s] pressed", vk, vk, SDL_GetKeyName(CurrentKey));
+			LOG(INFO) << "INPUT:Editing key: " << vk << " SDLkey=[" << SDL_GetKeyName(CurrentKey) << "] pressed";
 		}
 		else
 		{
@@ -1154,7 +1155,9 @@ static void inputHandleKeyEvent(SDL_KeyboardEvent *keyEvent)
 			inputAddBuffer(CurrentKey, 0);
 		}
 
-		debug(LOG_INPUT, "Key Code (pressed): 0x%x, %d, [%c] SDLkey=[%s]", CurrentKey, CurrentKey, (CurrentKey < 128) && (CurrentKey > 31) ? (char)CurrentKey : '?', SDL_GetKeyName(CurrentKey));
+		LOG(INFO) << "INPUT:Key Code (pressed): " << CurrentKey << ", ["
+				  << ((CurrentKey < 128) && (CurrentKey > 31) ? (char)CurrentKey : '?') << "] SDLkey=["
+				  << SDL_GetKeyName(CurrentKey) << "]";
 
 		code = sdlKeyToKeyCode(CurrentKey);
 		if (code >= KEY_MAXSCAN)
@@ -1173,7 +1176,8 @@ static void inputHandleKeyEvent(SDL_KeyboardEvent *keyEvent)
 
 	case SDL_KEYUP:
 		code = keyEvent->keysym.sym;
-		debug(LOG_INPUT, "Key Code (*Depressed*): 0x%x, %d, [%c] SDLkey=[%s]", code, code, (code < 128) && (code > 31) ? (char)code : '?', SDL_GetKeyName(code));
+		LOG(INFO) << "INPUT:Key Code (*Depressed*): " << code << ", ["
+				  << ((code < 128) && (code > 31) ? (char)code : '?') << "] SDLkey=[" << SDL_GetKeyName(code) << "]";
 		code = sdlKeyToKeyCode(keyEvent->keysym.sym);
 		if (code >= KEY_MAXSCAN)
 		{
@@ -1209,13 +1213,13 @@ void inputhandleText(SDL_TextInputEvent *Tevent)
 			utf8Buf = nullptr;
 		}
 		utf8Buf = UTF8toUTF32(Tevent->text, newtextsize);
-		debug(LOG_INPUT, "Keyboard: text input \"%s\"", Tevent->text);
+		LOG(INFO) << "INPUT:Keyboard: text input \"" << Tevent->text << "\"";
 		inputAddBuffer(CurrentKey, *utf8Buf);
 		if (SDL_strlen(text) + SDL_strlen(Tevent->text) < sizeof(text))
 		{
 			SDL_strlcat(text, Tevent->text, sizeof(text));
 		}
-		debug(LOG_INPUT, "adding text inputed: %s, to string [%s]", Tevent->text, text);
+		LOG(INFO) << "INPUT:adding text inputed: " << Tevent->text << ", to string [" << text << "]";
 	}
 }
 
@@ -1411,7 +1415,8 @@ void handleWindowSizeChange(unsigned int oldWidth, unsigned int oldHeight, unsig
 	// if SDL's built-in high-DPI support is enabled and functioning).
 	int drawableWidth = 0, drawableHeight = 0;
 	SDL_GL_GetDrawableSize(WZwindow, &drawableWidth, &drawableHeight);
-	debug(LOG_WZ, "Logical Size: %d x %d; Drawable Size: %d x %d", screenWidth, screenHeight, drawableWidth, drawableHeight);
+	LOG(INFO) << "WZ:Logical Size: " << screenWidth << " x " << screenHeight << "; Drawable Size: " << drawableWidth
+			  << " x " << drawableHeight;
 	glViewport(0, 0, drawableWidth, drawableHeight);
 	glCullFace(GL_FRONT);
 	glEnable(GL_CULL_FACE);
@@ -1526,10 +1531,10 @@ bool wzChangeDisplayScale(unsigned int displayScale)
 	//
 	int windowMouseXPos = 0, windowMouseYPos = 0;
 	SDL_GetMouseState(&windowMouseXPos, &windowMouseYPos);
-	debug(LOG_WZ, "Old mouse position: %d, %d", mouseXPos, mouseYPos);
+	LOG(INFO) << "WZ:Old mouse position: "<<mouseXPos<<", "<<mouseYPos;
 	mouseXPos = (int)((float)windowMouseXPos / current_displayScaleFactor);
 	mouseYPos = (int)((float)windowMouseYPos / current_displayScaleFactor);
-	debug(LOG_WZ, "New mouse position: %d, %d", mouseXPos, mouseYPos);
+	LOG(INFO) << "WZ:New mouse position: " << mouseXPos << ", " << mouseYPos;
 
 
 	processScreenSizeChangeNotificationIfNeeded();
@@ -1540,7 +1545,7 @@ bool wzChangeDisplayScale(unsigned int displayScale)
 bool wzChangeWindowResolution(int screen, unsigned int width, unsigned int height)
 {
 	assert(WZwindow != nullptr);
-	debug(LOG_WZ, "Attempt to change resolution to [%d] %dx%d", screen, width, height);
+	LOG(INFO) << "WZ:Attempt to change resolution to [" << screen << "] " << width << "x" << height;
 
 #if defined(WZ_OS_MAC)
 	// Workaround for SDL (2.0.5) quirk on macOS:
@@ -1555,7 +1560,7 @@ bool wzChangeWindowResolution(int screen, unsigned int width, unsigned int heigh
 	//		  prevent window resolution changes.
 	if (cocoaIsSDLWindowFullscreened(WZwindow) && !wzIsFullscreen())
 	{
-		debug(LOG_WZ, "The main window is fullscreened, but SDL doesn't think it is. Changing window resolution is not possible in this state. (SDL Bug).");
+		LOG(INFO) << "WZ:The main window is fullscreened, but SDL doesn't think it is. Changing window resolution is not possible in this state. (SDL Bug).");
 		return false;
 	}
 #endif
@@ -1571,24 +1576,27 @@ bool wzChangeWindowResolution(int screen, unsigned int width, unsigned int heigh
 	{
 		// When in fullscreen mode, obtain the screen's overall bounds
 		if (SDL_GetDisplayBounds(screen, &bounds) != 0) {
-			debug(LOG_ERROR, "Failed to get display bounds for screen: %d", screen);
+			LOG(ERROR) << "Failed to get display bounds for screen: " << screen;
 			return false;
 		}
-		debug(LOG_WZ, "SDL_GetDisplayBounds for screen [%d]: pos %d x %d : res %d x %d", screen, (int)bounds.x, (int)bounds.y, (int)bounds.w, (int)bounds.h);
+		LOG(INFO) << "WZ:SDL_GetDisplayBounds for screen [" << screen << "]: pos " << (int)bounds.x << " x "
+				  << (int)bounds.y << " : res " << (int)bounds.w << " x " << (int)bounds.h;
 	}
 	else
 	{
 		// When in windowed mode, obtain the screen's *usable* display bounds
 		if (SDL_GetDisplayUsableBounds(screen, &bounds) != 0) {
-			debug(LOG_ERROR, "Failed to get usable display bounds for screen: %d", screen);
+			LOG(ERROR) << "Failed to get usable display bounds for screen: " << screen;
 			return false;
 		}
-		debug(LOG_WZ, "SDL_GetDisplayUsableBounds for screen [%d]: pos %d x %d : WxH %d x %d", screen, (int)bounds.x, (int)bounds.y, (int)bounds.w, (int)bounds.h);
+		LOG(INFO) << "WZ:SDL_GetDisplayUsableBounds for screen [" << screen << "]: pos " << (int)bounds.x << " x "
+				  << (int)bounds.y << " : WxH " << (int)bounds.w << "x" << (int)bounds.h;
 
 		// Verify that the desired window size does not exceed the usable bounds of the specified display.
 		if ((width > bounds.w) || (height > bounds.h))
 		{
-			debug(LOG_WZ, "Unable to change window size to (%d x %d) because it is larger than the screen's usable bounds", width, height);
+			LOG(INFO) << "WZ:Unable to change window size to (" << width << " x " << height
+					  << ") because it is larger than the screen's usable bounds";
 			return false;
 		}
 	}
@@ -1603,12 +1611,16 @@ bool wzChangeWindowResolution(int screen, unsigned int width, unsigned int heigh
 		if (maxDisplayScale < 100)
 		{
 			// Cannot adjust display scale factor below 1. Desired window size is below the minimum supported.
-			debug(LOG_WZ, "Unable to change window size to (%d x %d) because it is smaller than the minimum supported at a 100%% display scale", width, height);
+			LOG(INFO) << "WZ:Unable to change window size to (" << width << "x" << height
+					  << ") because it is smaller than the minimum supported at a 100%% display scale";
 			return false;
 		}
 
 		// Adjust the current display scale level to the nearest supported level.
-		debug(LOG_WZ, "The current Display Scale (%d%%) is too high for the desired window size. Reducing the current Display Scale to the maximum possible for the desired window size: %d%%.", current_displayScale, maxDisplayScale);
+		LOG(INFO) << "WZ:The current Display Scale (" << current_displayScale
+				  << ") is too high for the desired window size. Reducing the current Display Scale to the maximum "
+					 "possible for the desired window size: "
+				  << maxDisplayScale;
 		wzChangeDisplayScale(maxDisplayScale);
 
 		// Store the new display scale
@@ -1627,7 +1639,8 @@ bool wzChangeWindowResolution(int screen, unsigned int width, unsigned int heigh
 	SDL_GetWindowSize(WZwindow, &resultingWidth, &resultingHeight);
 	if (resultingWidth != width || resultingHeight != height) {
 		// Attempting to set the resolution failed
-		debug(LOG_WZ, "Attempting to change the resolution to %dx%d seems to have failed (result: %dx%d).", width, height, resultingWidth, resultingHeight);
+		LOG(INFO) << "WZ:Attempting to change the resolution to " << width << "x" << height
+				  << " seems to have failed (result: " << resultingWidth << "x" << resultingHeight;
 
 		// Revert to the prior position + resolution + display scale, and return false
 		SDL_SetWindowSize(WZwindow, prev_width, prev_height);
@@ -1682,14 +1695,14 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
 	{
-		debug(LOG_ERROR, "Error: Could not initialise SDL (%s).", SDL_GetError());
+		LOG(ERROR) << "Error: Could not initialise SDL (" << SDL_GetError() << ").";
 		return false;
 	}
 
 	wzSDLAppEvent = SDL_RegisterEvents(1);
 	if (wzSDLAppEvent == ((Uint32)-1)) {
 		// Failed to register app-defined event with SDL
-		debug(LOG_ERROR, "Error: Failed to register app-defined SDL event (%s).", SDL_GetError());
+		LOG(ERROR) << "Error: Failed to register app-defined SDL event (" << SDL_GetError() << ").";
 		return false;
 	}
 
@@ -1733,19 +1746,21 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 			displaymode.driverdata = 0;
 			if (SDL_GetDisplayMode(i, j, &displaymode) < 0)
 			{
-				debug(LOG_FATAL, "SDL_LOG_CATEGORY_APPLICATION error:%s", SDL_GetError());
+				LOG(FATAL) << "SDL_LOG_CATEGORY_APPLICATION error:" << SDL_GetError();
 				SDL_Quit();
 				exit(EXIT_FAILURE);
 			}
 
-			debug(LOG_WZ, "Monitor [%d] %dx%d %d %s", i, displaymode.w, displaymode.h, displaymode.refresh_rate, SDL_GetPixelFormatName(displaymode.format));
+			LOG(INFO) << "WZ:Monitor [" << i << "] " << displaymode.w << "x" << displaymode.h << " "
+					  << displaymode.refresh_rate << " " << SDL_GetPixelFormatName(displaymode.format);
 			if ((displaymode.w < MIN_WZ_GAMESCREEN_WIDTH) || (displaymode.h < MIN_WZ_GAMESCREEN_HEIGHT))
 			{
-				debug(LOG_WZ, "Monitor mode resolution < %d x %d -- discarding entry", MIN_WZ_GAMESCREEN_WIDTH, MIN_WZ_GAMESCREEN_HEIGHT);
+				LOG(INFO) << "WZ:Monitor mode resolution < " << MIN_WZ_GAMESCREEN_WIDTH << "x"
+						  << MIN_WZ_GAMESCREEN_HEIGHT << " -- discarding entry";
 			}
 			else if (displaymode.refresh_rate < 59)
 			{
-				debug(LOG_WZ, "Monitor mode refresh rate < 59 -- discarding entry");
+				LOG(INFO) << "WZ:Monitor mode refresh rate < 59 -- discarding entry";
 				// only store 60Hz & higher modes, some display report 59 on Linux
 			}
 			else
@@ -1765,11 +1780,11 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 		int display = SDL_GetCurrentDisplayMode(i, &current);
 		if (display != 0)
 		{
-			debug(LOG_FATAL, "Can't get the current display mode, because: %s", SDL_GetError());
+			LOG(FATAL) << "Can't get the current display mode, because: " << SDL_GetError();
 			SDL_Quit();
 			exit(EXIT_FAILURE);
 		}
-		debug(LOG_WZ, "Monitor [%d] %dx%d %d", i, current.w, current.h, current.refresh_rate);
+		LOG(INFO) << "WZ:Monitor [" << i << "] " << current.w << "x" << current.h << " " << current.refresh_rate;
 	}
 
 	if (width == 0 || height == 0)
@@ -1828,19 +1843,21 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 	for (int i = 0; i < SDL_GetNumVideoDisplays(); i++)
 	{
 		SDL_GetDisplayBounds(i, &bounds);
-		debug(LOG_WZ, "Monitor %d: pos %d x %d : res %d x %d", i, (int)bounds.x, (int)bounds.y, (int)bounds.w, (int)bounds.h);
+		LOG(INFO) << "WZ:Monitor " << i << ": pos " << (int)bounds.x << "x" << (int)bounds.y << " : res "
+				  << (int)bounds.w << " x " << (int)bounds.h;
 	}
 	screenIndex = war_GetScreen();
 	const int currentNumDisplays = SDL_GetNumVideoDisplays();
 	if (currentNumDisplays < 1)
 	{
-		debug(LOG_FATAL, "SDL_GetNumVideoDisplays returned: %d, with error: %s", currentNumDisplays, SDL_GetError());
+		LOG(FATAL) << "SDL_GetNumVideoDisplays returned: " << currentNumDisplays << ", with error: " << SDL_GetError();
 		SDL_Quit();
 		exit(EXIT_FAILURE);
 	}
 	if (screenIndex > currentNumDisplays)
 	{
-		debug(LOG_WARNING, "Invalid screen [%d] defined in configuration; there are only %d displays; falling back to display 0", screenIndex, currentNumDisplays);
+		LOG(WARNING)<< "Invalid screen [" << screenIndex << "] defined in configuration; there are only "
+											  << currentNumDisplays << " displays; falling back to display 0";
 		screenIndex = 0;
 		war_SetScreen(0);
 	}
@@ -1848,7 +1865,7 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 
 	if (!WZwindow)
 	{
-		debug(LOG_FATAL, "Can't create a window, because: %s", SDL_GetError());
+		LOG(FATAL) << "Can't create a window, because: " << SDL_GetError();
 		SDL_Quit();
 		exit(EXIT_FAILURE);
 	}
@@ -1858,7 +1875,10 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 	SDL_GetWindowSize(WZwindow, &resultingWidth, &resultingHeight);
 	if (resultingWidth != windowWidth || resultingHeight != windowHeight) {
 		// Failed to create window at desired size (This can happen for a number of reasons)
-		debug(LOG_ERROR, "Failed to create window at desired resolution: [%d] %d x %d; instead, received window of resolution: [%d] %d x %d; Reverting to default resolution of %d x %d", war_GetScreen(), windowWidth, windowHeight, war_GetScreen(), resultingWidth, resultingHeight, minWindowWidth, minWindowHeight);
+		LOG(ERROR) << "Failed to create window at desired resolution: [" << war_GetScreen() << "] " << windowWidth
+				   << " x " << windowHeight << "; instead, received window of resolution: [" << war_GetScreen() << "] "
+				   << resultingWidth << " x " << resultingHeight << "; Reverting to default resolution of "
+				   << minWindowWidth << " x " << minWindowHeight;
 
 		// Default to base resolution
 		SDL_SetWindowSize(WZwindow, minWindowWidth, minWindowHeight);
@@ -1886,7 +1906,7 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 	WZglcontext = SDL_GL_CreateContext(WZwindow);
 	if (!WZglcontext)
 	{
-		debug(LOG_ERROR, "Failed to create a openGL context! [%s]", SDL_GetError());
+		LOG(ERROR) << "Failed to create a openGL context! [" << SDL_GetError() << "]";
 		return false;
 	}
 
@@ -1900,14 +1920,15 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 		// size may be set inappropriately.
 
 		SDL_GL_GetDrawableSize(WZwindow, &width, &height);
-		debug(LOG_WZ, "Logical Size: %d x %d; Drawable Size: %d x %d", windowWidth, windowHeight, width, height);
+		LOG(INFO) << "WZ:Logical Size: " << windowWidth << " x " << windowHeight << "; Drawable Size: " << width
+				  << " x " << height;
 	}
 
 	int bpp = SDL_BITSPERPIXEL(SDL_GetWindowPixelFormat(WZwindow));
-	debug(LOG_WZ, "Bpp = %d format %s" , bpp, SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(WZwindow)));
+	LOG(INFO) << "WZ:Bpp = " << bpp << " format " << SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(WZwindow));
 	if (!bpp)
 	{
-		debug(LOG_ERROR, "Video mode %dx%d@%dbpp is not supported!", width, height, bitDepth);
+		LOG(ERROR) << "Video mode " << width << " x " << height << "@" << bitDepth << " bpp is not supported!";
 		return false;
 	}
 	switch (bpp)
@@ -1920,12 +1941,12 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 		info("You will experience graphics glitches!");
 		break;
 	case 8:
-		debug(LOG_FATAL, "You don't want to play Warzone with a bit depth of %i, do you?", bpp);
+		LOG(FATAL) << "You don't want to play Warzone with a bit depth of " << bpp << ", do you?";
 		SDL_Quit();
 		exit(1);
 		break;
 	default:
-		debug(LOG_FATAL, "Unsupported bit depth: %i", bpp);
+		LOG(FATAL) << "Unsupported bit depth: " << bpp;
 		exit(1);
 		break;
 	}
@@ -1936,8 +1957,8 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 	int value = 0;
 	if (SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value) == -1 || value == 0)
 	{
-		debug(LOG_FATAL, "OpenGL initialization did not give double buffering!");
-		debug(LOG_FATAL, "Double buffering is required for this game!");
+		LOG(FATAL) << "OpenGL initialization did not give double buffering!";
+		LOG(FATAL) << "Double buffering is required for this game!";
 		SDL_Quit();
 		exit(1);
 	}
@@ -1965,7 +1986,7 @@ bool wzMainScreenSetup(int antialiasing, bool fullscreen, bool vsync, bool highD
 	}
 	else
 	{
-		debug(LOG_ERROR, "Could not set window icon because %s", SDL_GetError());
+		LOG(ERROR) << "Could not set window icon because " << SDL_GetError();
 	}
 #endif
 
@@ -2027,7 +2048,8 @@ void wzGetWindowToRendererScaleFactor(float *horizScaleFactor, float *vertScaleF
 	int windowWidth, windowHeight = 0;
 	SDL_GetWindowSize(WZwindow, &windowWidth, &windowHeight);
 
-	debug(LOG_WZ, "Window Logical Size (%d, %d) vs Drawable Size in Pixels (%d, %d)", windowWidth, windowHeight, drawableWidth, drawableHeight);
+	LOG(INFO) << "WZ:Window Logical Size (" << windowWidth << ", " << windowHeight << ") vs Drawable Size in Pixels ("
+			  << drawableWidth << ", " << drawableHeight << ")";
 
 	if (horizScaleFactor != nullptr)
 	{
@@ -2041,17 +2063,17 @@ void wzGetWindowToRendererScaleFactor(float *horizScaleFactor, float *vertScaleF
 	int displayIndex = SDL_GetWindowDisplayIndex(WZwindow);
 	if (displayIndex < 0)
 	{
-		debug(LOG_ERROR, "Failed to get the display index for the window because : %s", SDL_GetError());
+		LOG(ERROR) << "Failed to get the display index for the window because : " << SDL_GetError();
 	}
 
 	float hdpi, vdpi;
 	if (SDL_GetDisplayDPI(displayIndex, nullptr, &hdpi, &vdpi) < 0)
 	{
-		debug(LOG_ERROR, "Failed to get the display DPI because : %s", SDL_GetError());
+		LOG(ERROR) << "Failed to get the display DPI because : " << SDL_GetError();
 	}
 	else
 	{
-		debug(LOG_WZ, "Display DPI: %f, %f", hdpi, vdpi);
+		LOG(INFO) << "WZ:Display DPI: " << hdpi << ", " << vdpi;
 	}
 }
 
@@ -2119,27 +2141,29 @@ static void handleActiveEvent(SDL_Event *event)
 		switch (event->window.event)
 		{
 		case SDL_WINDOWEVENT_SHOWN:
-			debug(LOG_WZ, "Window %d shown", event->window.windowID);
+			LOG(INFO) << "WZ:Window "<<event->window.windowID<<" shown";
 			break;
 		case SDL_WINDOWEVENT_HIDDEN:
-			debug(LOG_WZ, "Window %d hidden", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " hidden";
 			break;
 		case SDL_WINDOWEVENT_EXPOSED:
-			debug(LOG_WZ, "Window %d exposed", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " exposed";
 			break;
 		case SDL_WINDOWEVENT_MOVED:
-			debug(LOG_WZ, "Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " moved to " << event->window.data1 << ","
+					  << event->window.data2;
 				// FIXME: Handle detecting which screen the window was moved to, and update saved war_SetScreen?
 			break;
 		case SDL_WINDOWEVENT_RESIZED:
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
-			debug(LOG_WZ, "Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " resized to " << event->window.data1 << "x"
+					  << event->window.data2;
 			{
 				unsigned int oldWindowWidth = windowWidth;
 				unsigned int oldWindowHeight = windowHeight;
 
 				Uint32 windowFlags = SDL_GetWindowFlags(WZwindow);
-				debug(LOG_WZ, "Window resized to window flags: %u", windowFlags);
+				LOG(INFO) << "WZ:Window resized to window flags: " << windowFlags;
 
 				int newWindowWidth = 0, newWindowHeight = 0;
 				SDL_GetWindowSize(WZwindow, &newWindowWidth, &newWindowHeight);
@@ -2148,7 +2172,9 @@ static void handleActiveEvent(SDL_Event *event)
 				{
 					// This can happen - so we use the values retrieved from SDL_GetWindowSize in any case - but
 					// log it for tracking down the SDL-related causes later.
-					debug(LOG_WARNING, "Received width and height (%d x %d) do not match those from GetWindowSize (%d x %d)", event->window.data1, event->window.data2, newWindowWidth, newWindowHeight);
+					LOG(WARNING) << "Received width and height (" << event->window.data1 << " x " << event->window.data2
+								 << ") do not match those from GetWindowSize (" << newWindowWidth << " x "
+								 << newWindowHeight << ")";
 				}
 
 				handleWindowSizeChange(oldWindowWidth, oldWindowHeight, newWindowWidth, newWindowHeight);
@@ -2159,33 +2185,33 @@ static void handleActiveEvent(SDL_Event *event)
 			}
 			break;
 		case SDL_WINDOWEVENT_MINIMIZED:
-			debug(LOG_WZ, "Window %d minimized", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " minimized";
 			break;
 		case SDL_WINDOWEVENT_MAXIMIZED:
-			debug(LOG_WZ, "Window %d maximized", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " maximized";
 			break;
 		case SDL_WINDOWEVENT_RESTORED:
-			debug(LOG_WZ, "Window %d restored", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " restored";
 			break;
 		case SDL_WINDOWEVENT_ENTER:
-			debug(LOG_WZ, "Mouse entered window %d", event->window.windowID);
+			LOG(INFO) << "WZ:Mouse entered window " << event->window.windowID;
 			break;
 		case SDL_WINDOWEVENT_LEAVE:
-			debug(LOG_WZ, "Mouse left window %d", event->window.windowID);
+			LOG(INFO) << "WZ:Mouse left window " << event->window.windowID;
 			break;
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
 			mouseInWindow = SDL_TRUE;
-			debug(LOG_WZ, "Window %d gained keyboard focus", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " gained keyboard focus";
 			break;
 		case SDL_WINDOWEVENT_FOCUS_LOST:
 			mouseInWindow = SDL_FALSE;
-			debug(LOG_WZ, "Window %d lost keyboard focus", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " lost keyboard focus";
 			break;
 		case SDL_WINDOWEVENT_CLOSE:
-			debug(LOG_WZ, "Window %d closed", event->window.windowID);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " closed";
 			break;
 		default:
-			debug(LOG_WZ, "Window %d got unknown event %d", event->window.windowID, event->window.event);
+			LOG(INFO) << "WZ:Window " << event->window.windowID << " got unknown event " << event->window.event;
 			break;
 		}
 	}

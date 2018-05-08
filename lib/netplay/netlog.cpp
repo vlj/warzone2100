@@ -23,6 +23,7 @@
 
 #include <time.h>
 #include <physfs.h>
+#include <glog/logging.h>
 #include "lib/framework/physfs_ext.h"
 
 #include "netlog.h"
@@ -61,8 +62,7 @@ bool NETstartLogging(void)
 	pFileHandle = PHYSFS_openWrite(filename);   // open the file
 	if (!pFileHandle)
 	{
-		debug(LOG_ERROR, "Could not create net log %s: %s", filename,
-		      WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "Could not create net log " << filename << ": " << WZ_PHYSFS_getLastError();
 		return false;
 	}
 	snprintf(buf, sizeof(buf), "NETPLAY log: %s\n", asctime(newtime));
@@ -130,7 +130,7 @@ bool NETstopLogging(void)
 
 	if (!PHYSFS_close(pFileHandle))
 	{
-		debug(LOG_ERROR, "Could not close net log: %s", WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "Could not close net log: " << WZ_PHYSFS_getLastError();
 		return false;
 	}
 	pFileHandle = nullptr;
@@ -170,7 +170,7 @@ bool NETlogEntry(const char *str, UDWORD a, UDWORD b)
 
 	if (!newtime || !pFileHandle)
 	{
-		debug(LOG_ERROR, "Fatal error averted in NETlog");
+		LOG(ERROR) << "Fatal error averted in NETlog";
 		return false;
 	}
 

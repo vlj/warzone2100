@@ -19,7 +19,7 @@
 */
 
 #include "lib/framework/frame.h"
-#include "lib/framework/debug.h"
+#include <glog/logging.h>
 #include "jpeg_encoder.h"
 #include "png_util.h"
 #include <png.h>
@@ -101,7 +101,8 @@ bool iV_loadImage_PNG(const char *fileName, iV_Image *image)
 	readSize = WZ_PHYSFS_readBytes(fileHandle, PNGheader, PNG_BYTES_TO_CHECK);
 	if (readSize < PNG_BYTES_TO_CHECK)
 	{
-		debug(LOG_FATAL, "pie_PNGLoadFile: WZ_WZ_PHYSFS_readBytes(%s) failed with error: %s\n", fileName, WZ_PHYSFS_getLastError());
+		LOG(FATAL) << "pie_PNGLoadFile: WZ_WZ_PHYSFS_readBytes(" << fileName
+				   << ") failed with error: " << WZ_PHYSFS_getLastError();
 		PNGReadCleanup(&info_ptr, &png_ptr, fileHandle);
 		return false;
 	}
@@ -109,7 +110,7 @@ bool iV_loadImage_PNG(const char *fileName, iV_Image *image)
 	// Verify the PNG header to be correct
 	if (png_sig_cmp(PNGheader, 0, PNG_BYTES_TO_CHECK))
 	{
-		debug(LOG_FATAL, "pie_PNGLoadMem: Did not recognize PNG header in %s", fileName);
+		LOG(FATAL) << "pie_PNGLoadMem: Did not recognize PNG header in " << fileName;
 		PNGReadCleanup(&info_ptr, &png_ptr, fileHandle);
 		return false;
 	}
@@ -117,7 +118,7 @@ bool iV_loadImage_PNG(const char *fileName, iV_Image *image)
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (png_ptr == nullptr)
 	{
-		debug(LOG_FATAL, "pie_PNGLoadMem: Unable to create png struct");
+		LOG(FATAL) << "pie_PNGLoadMem: Unable to create png struct";
 		PNGReadCleanup(&info_ptr, &png_ptr, fileHandle);
 		return false;
 	}
@@ -125,7 +126,7 @@ bool iV_loadImage_PNG(const char *fileName, iV_Image *image)
 	info_ptr = png_create_info_struct(png_ptr);
 	if (info_ptr == nullptr)
 	{
-		debug(LOG_FATAL, "pie_PNGLoadMem: Unable to create png info struct");
+		LOG(FATAL) << "pie_PNGLoadMem: Unable to create png info struct";
 		PNGReadCleanup(&info_ptr, &png_ptr, fileHandle);
 		return false;
 	}
@@ -134,7 +135,7 @@ bool iV_loadImage_PNG(const char *fileName, iV_Image *image)
 	// setjmp evaluates to false so the else branch will be executed at first
 	if (setjmp(png_jmpbuf(png_ptr)))
 	{
-		debug(LOG_FATAL, "pie_PNGLoadMem: Error decoding PNG data in %s", fileName);
+		LOG(FATAL) << "pie_PNGLoadMem: Error decoding PNG data in " << fileName;
 		PNGReadCleanup(&info_ptr, &png_ptr, fileHandle);
 		return false;
 	}
@@ -325,14 +326,15 @@ void iV_saveImage_JPEG(const char *fileName, const iV_Image *image)
 	fileHandle = PHYSFS_openWrite(newfilename);
 	if (fileHandle == nullptr)
 	{
-		debug(LOG_ERROR, "pie_JPEGSaveFile: PHYSFS_openWrite failed (while opening file %s) with error: %s\n", fileName, WZ_PHYSFS_getLastError());
+		LOG(FATAL) << "pie_JPEGSaveFile: PHYSFS_openWrite failed (while opening file " << fileName
+				   << ") with error: " << WZ_PHYSFS_getLastError();
 		return;
 	}
 
 	buffer = (unsigned char *)malloc(sizeof(const char *) * image->height * image->width); // Suspect it should be sizeof(unsigned char)*3 == 3 here, not sizeof(const char *) == 8.
 	if (buffer == nullptr)
 	{
-		debug(LOG_ERROR, "pie_JPEGSaveFile: Couldn't allocate memory\n");
+		LOG(ERROR) << "pie_JPEGSaveFile: Couldn't allocate memory";
 		return;
 	}
 
@@ -347,7 +349,7 @@ void iV_saveImage_JPEG(const char *fileName, const iV_Image *image)
 	jpeg = (unsigned char *)malloc(sizeof(const char *) * image->height * image->width); // Suspect it should be something else here, but sizeof(const char *) == 8 is hopefully big enough...
 	if (jpeg == nullptr)
 	{
-		debug(LOG_ERROR, "pie_JPEGSaveFile: Couldn't allocate memory\n");
+		LOG(ERROR) << "pie_JPEGSaveFile: Couldn't allocate memory";
 		free(buffer);
 		return;
 	}

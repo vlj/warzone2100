@@ -32,6 +32,7 @@
 #include <map>
 
 #include <zlib.h>
+#include <glog/logging.h>
 
 enum
 {
@@ -145,7 +146,7 @@ static int getaddrinfo(const char *node, const char *service,
 	case 3:
 	// Windows 95, 98 and ME
 	case 4:
-		debug(LOG_ERROR, "Name resolution isn't supported on this version (%u) of Windows", major_windows_version);
+		LOG(ERROR) <<  "Name resolution isn't supported on this version (" << major_windows_version <<") of Windows";
 		return EAI_FAIL;
 
 	// Windows 2000, XP and Server 2003
@@ -161,13 +162,13 @@ static int getaddrinfo(const char *node, const char *service,
 	default:
 		if (!winsock2_dll)
 		{
-			debug(LOG_ERROR, "Failed to load winsock2 DLL. Required for name resolution.");
+			LOG(ERROR) <<  "Failed to load winsock2 DLL. Required for name resolution.";
 			return EAI_FAIL;
 		}
 
 		if (!getaddrinfo_dll_func)
 		{
-			debug(LOG_ERROR, "Failed to retrieve \"getaddrinfo\" function from winsock2 DLL. Required for name resolution.");
+			LOG(ERROR) <<  "Failed to retrieve \"getaddrinfo\" function from winsock2 DLL. Required for name resolution.";
 			return EAI_FAIL;
 		}
 
@@ -185,7 +186,7 @@ static void freeaddrinfo(struct addrinfo *res)
 	case 3:
 	// Windows 95, 98 and ME
 	case 4:
-		debug(LOG_ERROR, "Name resolution isn't supported on this version (%u) of Windows", major_windows_version);
+		LOG(ERROR) << "Name resolution isn't supported on this version (" << major_windows_version << ") of Windows";
 		return;
 
 	// Windows 2000, XP and Server 2003
@@ -196,13 +197,13 @@ static void freeaddrinfo(struct addrinfo *res)
 	default:
 		if (!winsock2_dll)
 		{
-			debug(LOG_ERROR, "Failed to load winsock2 DLL. Required for name resolution.");
+			LOG(ERROR) <<  "Failed to load winsock2 DLL. Required for name resolution.";
 			return;
 		}
 
 		if (!freeaddrinfo_dll_func)
 		{
-			debug(LOG_ERROR, "Failed to retrieve \"freeaddrinfo\" function from winsock2 DLL. Required for name resolution.");
+			LOG(ERROR) <<  "Failed to retrieve \"freeaddrinfo\" function from winsock2 DLL. Required for name resolution.";
 			return;
 		}
 
@@ -356,14 +357,14 @@ static bool connectionIsOpen(Socket *sock)
 #endif
 		if (ret == SOCKET_ERROR)
 		{
-			debug(LOG_NET, "socket error");
+			LOG(INFO) << "NET:socket error";
 			return false;
 		}
 		else if (readQueue == 0)
 		{
 			// Disconnected
 			setSockErr(ECONNRESET);
-			debug(LOG_NET, "Read queue empty - failing (ECONNRESET)");
+			LOG(INFO) << "NET:Read queue empty - failing (ECONNRESET)";
 			return false;
 		}
 	}
@@ -443,7 +444,7 @@ static int socketThreadFunction(void *)
 #endif
 						if (!connectionIsOpen(sock))
 						{
-							debug(LOG_NET, "Socket error");
+							LOG(INFO) << "NET:Socket error";
 							sock->writeError = true;
 							socketThreadWrites.erase(w);  // Socket broken, don't try writing to it again.
 							if (sock->deleteLater)
@@ -495,7 +496,7 @@ ssize_t readNoInt(Socket *sock, void *buf, size_t max_size, size_t *rawByteCount
 
 	if (sock->fd[SOCK_CONNECTION] == INVALID_SOCKET)
 	{
-		debug(LOG_ERROR, "Invalid socket");
+		LOG(ERROR) <<  "Invalid socket";
 		setSockErr(EBADF);
 		return SOCKET_ERROR;
 	}
@@ -547,7 +548,7 @@ ssize_t readNoInt(Socket *sock, void *buf, size_t max_size, size_t *rawByteCount
 		}
 		if (err != nullptr)
 		{
-			debug(LOG_ERROR, "Couldn't decompress data from socket. zlib error %s", err);
+			LOG(ERROR) << "Couldn't decompress data from socket. zlib error " << err;
 			return -1;  // Bad data!
 		}
 
@@ -596,7 +597,7 @@ ssize_t writeAll(Socket *sock, const void *buf, size_t size, size_t *rawByteCoun
 
 	if (sock->fd[SOCK_CONNECTION] == INVALID_SOCKET)
 	{
-		debug(LOG_ERROR, "Invalid socket (EBADF)");
+		LOG(ERROR) <<  "Invalid socket (EBADF)";
 		setSockErr(EBADF);
 		return SOCKET_ERROR;
 	}
@@ -763,12 +764,12 @@ void SocketSet_AddSocket(SocketSet *set, Socket *socket)
 	size_t i = std::find(set->fds.begin(), set->fds.end(), socket) - set->fds.begin();
 	if (i != set->fds.size())
 	{
-		debug(LOG_NET, "Already found, socket: (set->fds[%lu]) %p", (unsigned long)i, socket);
+		LOG(INFO) << "NET:Already found, socket: (set->fds[" << (unsigned long)i << "]) " << socket;
 		return;
 	}
 
 	set->fds.push_back(socket);
-	debug(LOG_NET, "Socket added: set->fds[%lu] = %p", (unsigned long)i, socket);
+	LOG(INFO) << "NET:Socket added: set->fds[" << (unsigned long)i << "] = " << socket;
 }
 
 /**
@@ -779,7 +780,7 @@ void SocketSet_DelSocket(SocketSet *set, Socket *socket)
 	size_t i = std::find(set->fds.begin(), set->fds.end(), socket) - set->fds.begin();
 	if (i != set->fds.size())
 	{
-		debug(LOG_NET, "Socket %p erased (set->fds[%lu])", socket, (unsigned long)i);
+		LOG(INFO) << "NET:Socket " << socket << " erased (set->fds[" << (unsigned long)i << "])";
 		set->fds.erase(set->fds.begin() + i);
 	}
 }
@@ -790,7 +791,7 @@ static bool setSocketBlocking(const SOCKET fd, bool blocking)
 	int sockopts = fcntl(fd, F_GETFL);
 	if (sockopts == SOCKET_ERROR)
 	{
-		debug(LOG_NET, "Failed to retrieve current socket options: %s", strSockError(getSockErr()));
+		LOG(INFO) << "NET:Failed to retrieve current socket options: %s", strSockError(getSockErr()));
 		return false;
 	}
 
@@ -810,11 +811,12 @@ static bool setSocketBlocking(const SOCKET fd, bool blocking)
 	if (ioctlsocket(fd, FIONBIO, &nonblocking) == SOCKET_ERROR)
 #endif
 	{
-		debug(LOG_NET, "Failed to set socket %sblocking: %s", (blocking ? "" : "non-"), strSockError(getSockErr()));
+		LOG(INFO) << "NET:Failed to set socket " << (blocking ? "" : "non-")
+				  << "blocking: " << strSockError(getSockErr());
 		return false;
 	}
 
-	debug(LOG_NET, "Socket is set to %sblocking.", (blocking ? "" : "non-"));
+	LOG(INFO) << "NET:Socket is set to " << (blocking ? "" : "non-") << "blocking.";
 	return true;
 }
 
@@ -828,7 +830,7 @@ static void socketBlockSIGPIPE(const SOCKET fd, bool block_sigpipe)
 		debug(LOG_INFO, "Failed to set SO_NOSIGPIPE on socket, SIGPIPE might be raised when connections gets broken. Error: %s", strSockError(getSockErr()));
 	}
 	// this is only for unix, windows don't have SIGPIPE
-	debug(LOG_NET, "Socket fd %x sets SIGPIPE to %sblocked.", fd, (block_sigpipe ? "" : "non-"));
+	LOG(INFO) << "NET:Socket fd %x sets SIGPIPE to %sblocked.", fd, (block_sigpipe ? "" : "non-"));
 #else
 	// Prevent warnings
 	(void)fd;
@@ -896,7 +898,7 @@ int checkSockets(const SocketSet *set, unsigned int timeout)
 
 	if (ret == SOCKET_ERROR)
 	{
-		debug(LOG_ERROR, "select failed: %s", strSockError(getSockErr()));
+		LOG(ERROR) <<  "select failed: " << strSockError(getSockErr());
 		return SOCKET_ERROR;
 	}
 
@@ -932,7 +934,8 @@ ssize_t readAll(Socket *sock, void *buf, size_t size, unsigned int timeout)
 
 	if (sock->fd[SOCK_CONNECTION] == INVALID_SOCKET)
 	{
-		debug(LOG_ERROR, "Invalid socket (%p), sock->fd[SOCK_CONNECTION]=%x  (error: EBADF)", sock, sock->fd[SOCK_CONNECTION]);
+		LOG(ERROR) << "Invalid socket (" << sock << "), sock->fd[SOCK_CONNECTION]=" << sock->fd[SOCK_CONNECTION]
+				   << "  (error: EBADF)";
 		setSockErr(EBADF);
 		return SOCKET_ERROR;
 	}
@@ -950,10 +953,10 @@ ssize_t readAll(Socket *sock, void *buf, size_t size, unsigned int timeout)
 			{
 				if (ret == 0)
 				{
-					debug(LOG_NET, "socket (%p) has timed out.", socket);
+					LOG(INFO) << "NET:socket (" << socket << ") has timed out.";
 					setSockErr(ETIMEDOUT);
 				}
-				debug(LOG_NET, "socket (%p) error.", socket);
+				LOG(INFO) << "NET:socket (" << socket << ") error.";
 				return SOCKET_ERROR;
 			}
 		}
@@ -962,7 +965,7 @@ ssize_t readAll(Socket *sock, void *buf, size_t size, unsigned int timeout)
 		sock->ready = false;
 		if (ret == 0)
 		{
-			debug(LOG_NET, "Socket %x disconnected.", sock->fd[SOCK_CONNECTION]);
+			LOG(INFO) << "NET:Socket " << sock->fd[SOCK_CONNECTION] << " disconnected.";
 			sock->readDisconnected = true;
 			setSockErr(ECONNRESET);
 			return received;
@@ -1003,7 +1006,7 @@ static void socketCloseNow(Socket *sock)
 #endif
 			if (err)
 			{
-				debug(LOG_ERROR, "Failed to close socket %p: %s", sock, strSockError(getSockErr()));
+				LOG(ERROR) <<  "Failed to close socket " << sock << ": " << strSockError(getSockErr());
 			}
 
 			/* Make sure that dangling pointers to this
@@ -1056,7 +1059,7 @@ Socket *socketAccept(Socket *sock)
 				if (getSockErr() != EAGAIN
 				    && getSockErr() != EWOULDBLOCK)
 				{
-					debug(LOG_ERROR, "accept failed for socket %p: %s", sock, strSockError(getSockErr()));
+					LOG(ERROR) <<  "accept failed for socket " << sock << ": " << strSockError(getSockErr());
 				}
 
 				continue;
@@ -1065,15 +1068,15 @@ Socket *socketAccept(Socket *sock)
 			conn = new Socket;
 			if (conn == nullptr)
 			{
-				debug(LOG_ERROR, "Out of memory!");
+				LOG(ERROR) <<  "Out of memory!";
 				abort();
 				return nullptr;
 			}
 
-			debug(LOG_NET, "setting socket (%p) blocking status (false).", conn);
+			LOG(INFO) << "NET:setting socket (" << conn << ") blocking status (false).";
 			if (!setSocketBlocking(newConn, false))
 			{
-				debug(LOG_NET, "Couldn't set socket (%p) blocking status (false).  Closing.", conn);
+				LOG(INFO) << "NET:Couldn't set socket (" << conn << ") blocking status (false).  Closing.";
 				socketClose(conn);
 				return nullptr;
 			}
@@ -1091,8 +1094,11 @@ Socket *socketAccept(Socket *sock)
 			sock->ready = false;
 
 			addressToText((const struct sockaddr *)&addr, conn->textAddress, sizeof(conn->textAddress));
-			debug(LOG_NET, "Incoming connection from [%s]:/*%%d*/ (FIXME: gives strict-aliasing error)", conn->textAddress/*, (unsigned int)ntohs(((const struct sockaddr_in*)&addr)->sin_port)*/);
-			debug(LOG_NET, "Using socket %p", conn);
+			LOG(INFO)
+				<< "NET:Incoming connection from [" << conn->textAddress
+				<< "]:/*%%d*/ (FIXME: gives strict-aliasing error)" /*, (unsigned int)ntohs(((const struct sockaddr_in*)&addr)->sin_port)*/
+				;
+			LOG(INFO) << "NET:Using socket "<< conn;
 			return conn;
 		}
 	}
@@ -1108,7 +1114,7 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 	Socket *const conn = new Socket;
 	if (conn == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory!");
+		LOG(ERROR) <<  "Out of memory!";
 		abort();
 		return nullptr;
 	}
@@ -1116,7 +1122,8 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 	ASSERT(addr != nullptr, "NULL Socket provided");
 
 	addressToText(addr->ai_addr, conn->textAddress, sizeof(conn->textAddress));
-	debug(LOG_NET, "Connecting to [%s]:%d", conn->textAddress, (int)ntohs(((const struct sockaddr_in *)addr->ai_addr)->sin_port));
+	LOG(INFO) << "NET:Connecting to [" << conn->textAddress
+			  << "]:" << (int)ntohs(((const struct sockaddr_in *)addr->ai_addr)->sin_port);
 
 	// Mark all unused socket handles as invalid
 	for (i = 0; i < ARRAY_SIZE(conn->fd); ++i)
@@ -1128,15 +1135,15 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 
 	if (conn->fd[SOCK_CONNECTION] == INVALID_SOCKET)
 	{
-		debug(LOG_ERROR, "Failed to create a socket (%p): %s", conn, strSockError(getSockErr()));
+		LOG(ERROR) <<  "Failed to create a socket (" << conn << "): " << strSockError(getSockErr());
 		socketClose(conn);
 		return nullptr;
 	}
 
-	debug(LOG_NET, "setting socket (%p) blocking status (false).", conn);
+	LOG(INFO) << "NET:setting socket (" << conn << ") blocking status (false).";
 	if (!setSocketBlocking(conn->fd[SOCK_CONNECTION], false))
 	{
-		debug(LOG_NET, "Couldn't set socket (%p) blocking status (false).  Closing.", conn);
+		LOG(INFO) << "NET:Couldn't set socket (" << conn << ") blocking status (false).  Closing.";
 		socketClose(conn);
 		return nullptr;
 	}
@@ -1159,7 +1166,7 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 #endif
 		    || timeout == 0)
 		{
-			debug(LOG_NET, "Failed to start connecting: %s, using socket %p", strSockError(getSockErr()), conn);
+			LOG(INFO) << "NET:Failed to start connecting: " << strSockError(getSockErr()) << ", using socket " << conn;
 			socketClose(conn);
 			return nullptr;
 		}
@@ -1185,7 +1192,8 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 
 		if (ret == SOCKET_ERROR)
 		{
-			debug(LOG_NET, "Failed to wait for connection: %s, socket %p.  Closing.", strSockError(getSockErr()), conn);
+			LOG(INFO) << "NET:Failed to wait for connection: " << strSockError(getSockErr()) << ", socket " << conn
+					  << ".  Closing.";
 			socketClose(conn);
 			return nullptr;
 		}
@@ -1193,7 +1201,8 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 		if (ret == 0)
 		{
 			setSockErr(ETIMEDOUT);
-			debug(LOG_NET, "Timed out while waiting for connection to be established: %s, using socket %p.  Closing.", strSockError(getSockErr()), conn);
+			LOG(INFO) << "NET:Timed out while waiting for connection to be established: " << strSockError(getSockErr())
+					  << ", using socket " << conn << ".  Closing.";
 			socketClose(conn);
 			return nullptr;
 		}
@@ -1211,7 +1220,8 @@ Socket *socketOpen(const SocketAddress *addr, unsigned timeout)
 		    && getSockErr() != EISCONN)
 #endif
 		{
-			debug(LOG_NET, "Failed to connect: %s, with socket %p.  Closing.", strSockError(getSockErr()), conn);
+			LOG(INFO) << "NET:Failed to connect: " << strSockError(getSockErr()) << ", with socket " << conn
+					  << ".  Closing.";
 			socketClose(conn);
 			return nullptr;
 		}
@@ -1237,7 +1247,7 @@ Socket *socketListen(unsigned int port)
 	Socket *const conn = new Socket;
 	if (conn == nullptr)
 	{
-		debug(LOG_ERROR, "Out of memory!");
+		LOG(ERROR) <<  "Out of memory!";
 		abort();
 		return nullptr;
 	}
@@ -1267,19 +1277,20 @@ Socket *socketListen(unsigned int port)
 	if (conn->fd[SOCK_IPV4_LISTEN] == INVALID_SOCKET
 	    && conn->fd[SOCK_IPV6_LISTEN] == INVALID_SOCKET)
 	{
-		debug(LOG_ERROR, "Failed to create an IPv4 and IPv6 (only supported address families) socket (%p): %s.  Closing.", conn, strSockError(getSockErr()));
+		LOG(ERROR) << "Failed to create an IPv4 and IPv6 (only supported address families) socket (" << conn
+				   << "): " << strSockError(getSockErr()) << ".Closing.";
 		socketClose(conn);
 		return nullptr;
 	}
 
 	if (conn->fd[SOCK_IPV4_LISTEN] != INVALID_SOCKET)
 	{
-		debug(LOG_NET, "Successfully created an IPv4 socket (%p)", conn);
+		LOG(INFO) << "NET:Successfully created an IPv4 socket (" << conn <<")";
 	}
 
 	if (conn->fd[SOCK_IPV6_LISTEN] != INVALID_SOCKET)
 	{
-		debug(LOG_NET, "Successfully created an IPv6 socket (%p)", conn);
+		LOG(INFO) << "NET:Successfully created an IPv6 socket (" << conn << ")";
 	}
 
 #if defined(IPV6_V6ONLY)
@@ -1287,11 +1298,13 @@ Socket *socketListen(unsigned int port)
 	{
 		if (setsockopt(conn->fd[SOCK_IPV6_LISTEN], IPPROTO_IPV6, IPV6_V6ONLY, (char *)&ipv6_v6only, sizeof(ipv6_v6only)) == SOCKET_ERROR)
 		{
-			debug(LOG_INFO, "Failed to set IPv6 socket to perform IPv4 to IPv6 mapping. Falling back to using two sockets. Error: %s", strSockError(getSockErr()));
+			LOG(INFO) << "Failed to set IPv6 socket to perform IPv4 to IPv6 mapping. Falling back to using two "
+						 "sockets. Error: "
+					  << strSockError(getSockErr());
 		}
 		else
 		{
-			debug(LOG_NET, "Successfully enabled IPv4 to IPv6 mapping. Cleaning up IPv4 socket.");
+			LOG(INFO) << "NET:Successfully enabled IPv4 to IPv6 mapping. Cleaning up IPv4 socket.";
 #if   defined(WZ_OS_WIN)
 			closesocket(conn->fd[SOCK_IPV4_LISTEN]);
 #else
@@ -1306,15 +1319,15 @@ Socket *socketListen(unsigned int port)
 	{
 		if (setsockopt(conn->fd[SOCK_IPV4_LISTEN], SOL_SOCKET, SO_REUSEADDR, (char *)&so_reuseaddr, sizeof(so_reuseaddr)) == SOCKET_ERROR)
 		{
-			debug(LOG_WARNING, "Failed to set SO_REUSEADDR on IPv4 socket. Error: %s", strSockError(getSockErr()));
+			LOG(WARNING) << "Failed to set SO_REUSEADDR on IPv4 socket. Error: " << strSockError(getSockErr());
 		}
 
-		debug(LOG_NET, "setting socket (%p) blocking status (false, IPv4).", conn);
+		LOG(INFO) << "NET:setting socket (" << conn << ") blocking status (false, IPv4).";
 		if (bind(conn->fd[SOCK_IPV4_LISTEN], (const struct sockaddr *)&addr4, sizeof(addr4)) == SOCKET_ERROR
 		    || listen(conn->fd[SOCK_IPV4_LISTEN], 5) == SOCKET_ERROR
 		    || !setSocketBlocking(conn->fd[SOCK_IPV4_LISTEN], false))
 		{
-			debug(LOG_ERROR, "Failed to set up IPv4 socket for listening on port %u: %s", port, strSockError(getSockErr()));
+			LOG(ERROR) <<  "Failed to set up IPv4 socket for listening on port " << port <<": " << strSockError(getSockErr());
 #if   defined(WZ_OS_WIN)
 			closesocket(conn->fd[SOCK_IPV4_LISTEN]);
 #else
@@ -1328,15 +1341,15 @@ Socket *socketListen(unsigned int port)
 	{
 		if (setsockopt(conn->fd[SOCK_IPV6_LISTEN], SOL_SOCKET, SO_REUSEADDR, (char *)&so_reuseaddr, sizeof(so_reuseaddr)) == SOCKET_ERROR)
 		{
-			debug(LOG_INFO, "Failed to set SO_REUSEADDR on IPv6 socket. Error: %s", strSockError(getSockErr()));
+			LOG(INFO) << "Failed to set SO_REUSEADDR on IPv6 socket. Error: " << strSockError(getSockErr());
 		}
 
-		debug(LOG_NET, "setting socket (%p) blocking status (false, IPv6).", conn);
+		LOG(INFO) << "NET:setting socket ("<<conn<<") blocking status (false, IPv6).";
 		if (bind(conn->fd[SOCK_IPV6_LISTEN], (const struct sockaddr *)&addr6, sizeof(addr6)) == SOCKET_ERROR
 		    || listen(conn->fd[SOCK_IPV6_LISTEN], 5) == SOCKET_ERROR
 		    || !setSocketBlocking(conn->fd[SOCK_IPV6_LISTEN], false))
 		{
-			debug(LOG_ERROR, "Failed to set up IPv6 socket for listening on port %u: %s", port, strSockError(getSockErr()));
+			LOG(ERROR) <<  "Failed to set up IPv6 socket for listening on port " << port << ": " << strSockError(getSockErr());
 #if   defined(WZ_OS_WIN)
 			closesocket(conn->fd[SOCK_IPV6_LISTEN]);
 #else
@@ -1350,7 +1363,7 @@ Socket *socketListen(unsigned int port)
 	if (conn->fd[SOCK_IPV4_LISTEN] == INVALID_SOCKET
 	    && conn->fd[SOCK_IPV6_LISTEN] == INVALID_SOCKET)
 	{
-		debug(LOG_NET, "No IPv4 or IPv6 sockets created.");
+		LOG(INFO) << "NET:No IPv4 or IPv6 sockets created.";
 		socketClose(conn);
 		return nullptr;
 	}
@@ -1426,7 +1439,7 @@ SocketAddress *resolveHost(const char *host, unsigned int port)
 	error = getaddrinfo(host, service, &hint, &results);
 	if (error != 0)
 	{
-		debug(LOG_NET, "getaddrinfo failed for %s:%s: %s", host, service, gai_strerror(error));
+		LOG(INFO) << "NET:getaddrinfo failed for " << host << ":" << service << ": " << gai_strerror(error);
 		return nullptr;
 	}
 
@@ -1452,7 +1465,7 @@ void SOCKETinit()
 		WORD ver_required = (2 << 8) + 2;
 		if (WSAStartup(ver_required, &stuff) != 0)
 		{
-			debug(LOG_ERROR, "Failed to initialize Winsock: %s", strSockError(getSockErr()));
+			LOG(ERROR) <<  "Failed to initialize Winsock: " << strSockError(getSockErr());
 			return;
 		}
 

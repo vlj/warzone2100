@@ -28,6 +28,7 @@
 #include "src/frontend.h"
 #include "cursors_sdl.h"
 #include <SDL.h>
+#include <glog/logging.h>
 
 static CURSOR currentCursor = CURSOR_MAX;
 static SDL_Cursor *aCursors[CURSOR_MAX];
@@ -1267,13 +1268,13 @@ SDL_Cursor *init_system_ColorCursor(CURSOR cur, const char *fileName)
 	iV_Image *psSprite = (iV_Image *)malloc(sizeof(iV_Image));
 	if (!psSprite)
 	{
-		debug(LOG_FATAL, "Could not allocate memory for cursor sprite. Exiting.");
+		LOG(FATAL) << "Could not allocate memory for cursor sprite. Exiting.";
 		exit(-1);
 	}
 
 	if (!iV_loadImage_PNG(fileName, psSprite))
 	{
-		debug(LOG_FATAL, "Could not load cursor sprite. Exiting.");
+		LOG(FATAL) << "Could not load cursor sprite. Exiting.";
 		exit(-1);
 	}
 
@@ -1293,7 +1294,7 @@ SDL_Cursor *init_system_ColorCursor(CURSOR cur, const char *fileName)
 	SDL_Cursor *pointer = SDL_CreateColorCursor(surface, psSprite->width / 2, psSprite->height / 2);	// We center the hotspot for all (FIXME ?)
 	if (!pointer)
 	{
-		debug(LOG_FATAL, "Could not create cursor because %s", SDL_GetError());
+		LOG(FATAL) << "Could not create cursor because " << SDL_GetError();
 		exit(-1);
 	}
 

@@ -2039,7 +2039,7 @@ const char *getPlayerColourName(int player)
 		N_("Ultraviolet"),
 		N_("Brown"),
 	};
-	STATIC_ASSERT(MAX_PLAYERS <= ARRAY_SIZE(playerColors));
+	static_assert(MAX_PLAYERS <= ARRAY_SIZE(playerColors), "");
 
 	ASSERT(player < ARRAY_SIZE(playerColors), "player number (%d) exceeds maximum (%lu)", player, (unsigned long) ARRAY_SIZE(playerColors));
 

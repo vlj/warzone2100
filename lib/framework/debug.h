@@ -116,35 +116,6 @@ extern bool assertEnabled;
 #define ASSERT_OR_RETURN(retval, expr, ...) \
 	do { bool _wzeval = likely(expr); if (!_wzeval) { ASSERT_FAILURE(expr, #expr, AT_MACRO, __FUNCTION__, __VA_ARGS__); return retval; } } while (0)
 
-
-/**
- * Compile time assert
- *
- * Forces a compilation error if condition is true, but also produce a result
- * (of value 0 and type size_t), so the expression can be used anywhere that
- * a comma expression isn't permitted.
- *
- * \param expr Expression to evaluate
- *
- * \note BUILD_BUG_ON_ZERO from <linux/kernel.h>
- */
-template<bool> class StaticAssert;
-template<> class StaticAssert<true> {};
-#define STATIC_ASSERT_EXPR(expr) \
-	(0*sizeof(StaticAssert<(expr)>))
-/**
- * Compile time assert
- * Not to be used in global context!
- * \param expr Expression to evaluate
- */
-#define STATIC_ASSERT( expr ) \
-	(void)STATIC_ASSERT_EXPR(expr)
-
-#ifndef WZ_CXX11
-#define static_assert(expr, str) STATIC_ASSERT(expr)
-#endif
-
-
 /***
  ***
  ***  New debug logging output interface below. Heavily inspired

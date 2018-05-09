@@ -38,6 +38,7 @@
 #include "lib/ivis_opengl/piefunc.h"
 #include "lib/ivis_opengl/piemode.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
+#include "lib/framework/debug.h"
 
 #include "screen.h"
 #include "src/console.h"

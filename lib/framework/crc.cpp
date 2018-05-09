@@ -24,6 +24,7 @@
 #include <limits>
 #include <memory>
 #include <glog/logging.h>
+#include "lib/framework/debug.h"
 
 //================================================================================
 // MARK: - CRC

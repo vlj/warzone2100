@@ -24,6 +24,7 @@
 
 #include "lib/framework/frame.h"
 #include "lib/framework/math_ext.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 #include "audio.h"

@@ -49,6 +49,7 @@
 #include <map>
 #include <locale.h>
 #include <atomic>
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 // This is for the cross-compiler, for static QT 5 builds to avoid the 'plugins' crap on windows

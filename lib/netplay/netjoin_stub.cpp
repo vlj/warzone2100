@@ -23,6 +23,7 @@
  */
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "netplay.h"
 
 int32_t NETgetGameFlagsUnjoined(unsigned int gameid, unsigned int flag)

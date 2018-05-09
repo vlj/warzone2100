@@ -20,6 +20,7 @@
 %defines
 %{
 
+#include "lib/framework/debug.h"
 #include "lib/framework/frame.h"
 #include "lib/gamelib/parser.h"
 #include "lib/sound/audio.h"

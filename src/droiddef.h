@@ -35,6 +35,7 @@
 #include "weapondef.h"
 #include "orderdef.h"
 #include "actiondef.h"
+#include "lib/framework/debug.h"
 
 /*!
  * The number of components in the asParts / asBits arrays.

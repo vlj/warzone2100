@@ -19,6 +19,7 @@
 */
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 #include "jpeg_encoder.h"
 #include "png_util.h"

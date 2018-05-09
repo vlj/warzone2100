@@ -20,6 +20,7 @@
 #include "lib/framework/frame.h"
 #include <physfs.h>
 #include "lib/framework/physfs_ext.h"
+#include "lib/framework/debug.h"
 
 #include <vorbis/vorbisfile.h>
 #include <vorbis/codec.h>

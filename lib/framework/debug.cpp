@@ -33,6 +33,7 @@
 #include "wzapp.h"
 #include <map>
 #include <string>
+#include "lib/framework/debug.h"
 
 #ifdef WZ_OS_LINUX
 #include <execinfo.h>  // Nonfatal runtime backtraces.

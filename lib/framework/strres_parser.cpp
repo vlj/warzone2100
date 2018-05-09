@@ -65,6 +65,7 @@
  *  Parser for string resource files
  */
 
+#include "lib/framework/debug.h"
 #include "lib/framework/frame.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/strresly.h"

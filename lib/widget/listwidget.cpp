@@ -24,6 +24,7 @@
 #include "listwidget.h"
 #include "button.h"
 #include "lib/framework/math_ext.h"
+#include "lib/framework/debug.h"
 
 TabSelectionStyle::TabSelectionStyle(Image tab, Image tabDown, Image tabHighlight, Image prev, Image prevDown, Image prevHighlight, Image next, Image nextDown, Image nextHighlight, int gap)
 	: tabSize(tab.width(), tab.height())

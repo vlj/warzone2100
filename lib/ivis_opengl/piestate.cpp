@@ -26,6 +26,7 @@
 #include <physfs.h>
 #include "lib/framework/physfs_ext.h"
 
+#include "lib/framework/debug.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/piedef.h"

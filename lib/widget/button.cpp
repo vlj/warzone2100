@@ -29,6 +29,7 @@
 #include "tip.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/gamelib/gtime.h"
+#include "lib/framework/debug.h"
 
 
 W_BUTINIT::W_BUTINIT()

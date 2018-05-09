@@ -26,6 +26,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "lib/framework/debug.h"
+
 
 #include "lib/framework/frame.h"
 #include "lib/framework/string_ext.h"

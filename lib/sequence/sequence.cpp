@@ -56,6 +56,7 @@
  */
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "lib/framework/opengl.h"
 #include "sequence.h"
 #include "timer.h"

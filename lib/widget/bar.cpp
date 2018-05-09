@@ -28,6 +28,7 @@
 #include "bar.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include "lib/ivis_opengl/piepalette.h"
+#include "lib/framework/debug.h"
 
 W_BARINIT::W_BARINIT()
 	: orientation(WBAR_LEFT)

@@ -30,6 +30,7 @@
 #include "tip.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 #include <QtCore/QStringList>
+#include "lib/framework/debug.h"
 
 /* Time delay before showing the tool tip */
 #define TIP_PAUSE	200

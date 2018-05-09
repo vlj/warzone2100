@@ -38,6 +38,7 @@
 #include "lib/ivis_opengl/piefunc.h"
 #include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/tex.h"
+#include "lib/framework/debug.h"
 #include "piematrix.h"
 #include "screen.h"
 #include <glm/gtc/type_ptr.hpp>

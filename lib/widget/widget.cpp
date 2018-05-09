@@ -29,6 +29,7 @@
 #include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/screen.h"
 #include "lib/gamelib/gtime.h"
+#include "lib/framework/debug.h"
 
 #include "widget.h"
 

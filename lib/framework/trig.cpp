@@ -30,6 +30,7 @@
 #include "types.h"
 #include "trig.h"
 #include "crc.h"
+#include "lib/framework/debug.h"
 
 #include <assert.h>
 #include <stdlib.h>

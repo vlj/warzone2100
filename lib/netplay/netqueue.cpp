@@ -22,6 +22,7 @@
  * Basic netqueue.
  */
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "netqueue.h"
 
 // See comments in netqueue.h.

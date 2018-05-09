@@ -23,6 +23,7 @@
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/pietypes.h"
 #include "lib/framework/physfs_ext.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 #include "tracklib.h"

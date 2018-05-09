@@ -30,6 +30,7 @@
 #include "objectdef.h"
 #include "stats.h"
 #include "visibility.h"
+#include "lib/framework/debug.h"
 
 #include <queue>
 

@@ -19,6 +19,7 @@
 */
 
 #include "string_ext.h"
+#include "debug.h"
 
 char *strdup2(const char *s, char *fileName, int line)
 {

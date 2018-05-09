@@ -30,6 +30,7 @@
  */
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "lib/framework/input.h"
 #include "lib/gamelib/gtime.h"
 #include "lib/netplay/netplay.h"

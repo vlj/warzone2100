@@ -35,6 +35,7 @@
 #endif
 
 #include "../framework/frame.h"
+#include "lib/framework/debug.h"
 #include "netplay.h"
 #include "nettypes.h"
 #include "netqueue.h"

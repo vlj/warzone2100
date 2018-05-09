@@ -26,6 +26,7 @@
 #include "lib/framework/math_ext.h"
 #include "lib/framework/frameresource.h"
 #include "lib/exceptionhandler/dumpinfo.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 #ifdef WZ_OS_MAC

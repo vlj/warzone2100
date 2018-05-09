@@ -28,6 +28,7 @@
 #include "src/frontend.h"
 #include "cursors_sdl.h"
 #include <SDL.h>
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 static CURSOR currentCursor = CURSOR_MAX;

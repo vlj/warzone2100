@@ -31,6 +31,7 @@
 #include "editbox.h"
 #include "form.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 

@@ -26,6 +26,7 @@
 #include "frameresource.h"
 
 #include "string_ext.h"
+#include "lib/framework/debug.h"
 
 #include "file.h"
 #include "resly.h"

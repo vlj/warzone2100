@@ -24,6 +24,8 @@
 #include "widget.h"
 #include "widgint.h"
 #include "slider.h"
+
+#include "lib/framework/debug.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
 
 static bool DragEnabled = true;

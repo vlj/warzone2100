@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "widget.h"
 #include "widgint.h"
 #include "form.h"

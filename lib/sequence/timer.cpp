@@ -20,6 +20,7 @@
 
 #include "lib/framework/frame.h"
 #include "timer.h"
+#include "lib/framework/debug.h"
 
 #if defined(WZ_OS_UNIX)
 # include <sys/time.h>

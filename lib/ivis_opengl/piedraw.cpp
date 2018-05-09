@@ -35,6 +35,7 @@
 #include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/pieclip.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
+#include "lib/framework/debug.h"
 #include "piematrix.h"
 #include "screen.h"
 

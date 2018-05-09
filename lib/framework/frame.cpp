@@ -28,6 +28,8 @@
 #include "file.h"
 #include "wzapp.h"
 
+#include "lib/framework/debug.h"
+
 #include <physfs.h>
 #include <glog/logging.h>
 #include "physfs_ext.h"

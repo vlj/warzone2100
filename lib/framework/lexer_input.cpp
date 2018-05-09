@@ -20,6 +20,7 @@
 #include "frame.h"
 #include "lexer_input.h"
 #include "physfs_ext.h"
+#include "lib/framework/debug.h"
 
 int lexer_input(lexerinput_t *input, char *buf, size_t max_size, int nullvalue)
 {

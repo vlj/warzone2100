@@ -20,6 +20,7 @@
 
 #include <locale.h>
 #include <physfs.h>
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 #ifdef WZ_OS_MAC

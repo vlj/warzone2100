@@ -25,6 +25,8 @@
 #ifndef _interp_h
 #define _interp_h
 
+#include "lib/framework/debug.h"
+
 /* The type of function called by an OP_CALL */
 typedef bool (*SCRIPT_FUNC)();
 

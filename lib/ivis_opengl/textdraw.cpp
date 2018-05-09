@@ -21,6 +21,7 @@
 #include "lib/framework/frame.h"
 #include "lib/framework/file.h"
 #include "lib/framework/opengl.h"
+#include "lib/framework/debug.h"
 #include <stdlib.h>
 #include <string.h>
 #include "lib/framework/string_ext.h"

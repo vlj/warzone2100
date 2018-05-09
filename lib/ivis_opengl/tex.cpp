@@ -25,6 +25,7 @@
 #include "lib/ivis_opengl/tex.h"
 #include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/png_util.h"
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 #include <QtCore/QList>

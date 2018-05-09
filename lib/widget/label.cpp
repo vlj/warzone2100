@@ -22,6 +22,7 @@
  */
 
 #include "lib/framework/frame.h"
+#include "lib/framework/debug.h"
 #include "widget.h"
 #include "widgint.h"
 #include "label.h"

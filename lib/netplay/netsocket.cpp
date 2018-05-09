@@ -26,6 +26,7 @@
 #include "lib/framework/frame.h"
 #include "lib/framework/wzapp.h"
 #include "netsocket.h"
+#include "lib/framework/debug.h"
 
 #include <vector>
 #include <algorithm>

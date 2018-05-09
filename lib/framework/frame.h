@@ -44,7 +44,6 @@
 #include "string_ext.h"
 
 #include "macros.h"
-#include "debug.h"
 
 #include "i18n.h"
 #include "trig.h"

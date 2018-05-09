@@ -25,6 +25,7 @@
 #include <QtCore/QJsonParseError>
 #include <QtCore/QJsonValue>
 #include <QtCore/QJsonDocument>
+#include "lib/framework/debug.h"
 #include <glog/logging.h>
 
 // Get platform defines before checking for them.

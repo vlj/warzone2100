@@ -31,6 +31,7 @@
 #include "gtime.h"
 #include "src/multiplay.h"
 #include "lib/netplay/netplay.h"
+#include "lib/framework/debug.h"
 
 
 #include <time.h>

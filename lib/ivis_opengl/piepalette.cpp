@@ -19,6 +19,7 @@
 */
 #include "lib/framework/frame.h"
 #include "lib/framework/file.h"
+#include "lib/framework/debug.h"
 #include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/piepalette.h"
 #include "screen.h"

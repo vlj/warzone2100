@@ -31,6 +31,7 @@
 #include "editbox.h"
 #include "form.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
+#include <glog/logging.h>
 
 
 /* Pixel gap between edge of edit box and text */
@@ -329,7 +330,7 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 				printStart = MAX(printStart - WEDB_CHARJUMP, 0);
 				fitStringStart();
 			}
-			debug(LOG_INPUT, "EditBox cursor left");
+			LOG(INFO) << "INPUT: EditBox cursor left";
 			break;
 		case INPBUF_RIGHT :
 			/* Move the cursor right */
@@ -344,20 +345,20 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 				printStart = MIN(printStart + WEDB_CHARJUMP, len - 1);
 				fitStringStart();
 			}
-			debug(LOG_INPUT, "EditBox cursor right (%d, %d, %d)", insPos, printStart, printChars);
+			LOG(INFO) << "INPUT: EditBox cursor right (" << insPos << ", " << printStart << ", " << printChars << ")";
 			break;
 		case INPBUF_UP :
-			debug(LOG_INPUT, "EditBox cursor up");
+			LOG(INFO) << "INPUT: EditBox cursor up";
 			break;
 		case INPBUF_DOWN :
-			debug(LOG_INPUT, "EditBox cursor down");
+			LOG(INFO) << "INPUT: EditBox cursor down";
 			break;
 		case INPBUF_HOME :
 			/* Move the cursor to the start of the buffer */
 			insPos = 0;
 			printStart = 0;
 			fitStringStart();
-			debug(LOG_INPUT, "EditBox cursor home");
+			LOG(INFO) << "INPUT: EditBox cursor home";
 			break;
 		case INPBUF_END :
 			/* Move the cursor to the end of the buffer */
@@ -366,7 +367,7 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 			{
 				fitStringEnd();
 			}
-			debug(LOG_INPUT, "EditBox cursor end");
+			LOG(INFO) << "INPUT: EditBox cursor end";
 			break;
 		case INPBUF_INS :
 			if (editState == WEDBS_INSERT)
@@ -377,20 +378,20 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 			{
 				editState = WEDBS_INSERT;
 			}
-			debug(LOG_INPUT, "EditBox cursor insert");
+			LOG(INFO) << "INPUT: EditBox cursor insert";
 			break;
 		case INPBUF_DEL :
 			delCharRight();
 
 			/* Update the printable text */
 			fitStringStart();
-			debug(LOG_INPUT, "EditBox cursor delete");
+			LOG(INFO) << "INPUT: EditBox cursor delete";
 			break;
 		case INPBUF_PGUP :
-			debug(LOG_INPUT, "EditBox cursor page up");
+			LOG(INFO) << "INPUT: EditBox cursor page up";
 			break;
 		case INPBUF_PGDN :
-			debug(LOG_INPUT, "EditBox cursor page down");
+			LOG(INFO) << "INPUT: EditBox cursor page down";
 			break;
 		case INPBUF_BKSPACE :
 			/* Delete the character to the left of the cursor */
@@ -402,21 +403,21 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 				printStart = MAX(printStart - WEDB_CHARJUMP, 0);
 			}
 			fitStringStart();
-			debug(LOG_INPUT, "EditBox cursor backspace");
+			LOG(INFO) << "INPUT: EditBox cursor backspace";
 			break;
 		case INPBUF_TAB :
-			debug(LOG_INPUT, "EditBox cursor tab");
+			LOG(INFO) << "INPUT: EditBox cursor tab";
 			break;
 		case INPBUF_CR :
 		case KEY_KPENTER:					// either normal return key || keypad enter
 			/* Finish editing */
 			StopTextInput();
 			screenPointer->setFocus(nullptr);
-			debug(LOG_INPUT, "EditBox cursor return");
+			LOG(INFO) << "INPUT: EditBox cursor return";
 			return;
 			break;
 		case INPBUF_ESC :
-			debug(LOG_INPUT, "EditBox cursor escape");
+			LOG(INFO) << "INPUT: EditBox cursor escape";
 			break;
 
 		default:
@@ -433,7 +434,7 @@ void W_EDITBOX::run(W_CONTEXT *psContext)
 					insPos = aText.length();
 					/* Update the printable text */
 					fitStringEnd();
-					debug(LOG_INPUT, "EditBox paste");
+					LOG(INFO) << "INPUT: EditBox paste";
 					break;
 				default:
 					break;

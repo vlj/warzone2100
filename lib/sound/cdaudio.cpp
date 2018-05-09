@@ -24,6 +24,7 @@
 
 #include "lib/framework/frame.h"
 #include "lib/framework/math_ext.h"
+#include <glog/logging.h>
 
 #include "audio.h"
 #include "track.h"
@@ -50,7 +51,7 @@ bool cdAudio_Open(const char *user_musicdir)
 		return false;
 	}
 
-	debug(LOG_SOUND, "called(%s)", user_musicdir);
+	LOG(INFO) << "SOUND: called " << user_musicdir;
 
 	music_initialized = true;
 	stopping = true;
@@ -60,7 +61,7 @@ bool cdAudio_Open(const char *user_musicdir)
 
 void cdAudio_Close(void)
 {
-	debug(LOG_SOUND, "called");
+	LOG(INFO) << "SOUND: called";
 	cdAudio_Stop();
 	PlayList_Quit();
 
@@ -77,17 +78,18 @@ static bool cdAudio_OpenTrack(const char *filename)
 		return false;
 	}
 
-	debug(LOG_SOUND, "called(%s)", filename);
+	LOG(INFO) << "SOUND: called " << filename;
 	cdAudio_Stop();
 
 	if (strncasecmp(filename + strlen(filename) - 4, ".ogg", 4) == 0)
 	{
 		PHYSFS_file *music_file = PHYSFS_openRead(filename);
 
-		debug(LOG_WZ, "Reading...[directory: %s] %s", PHYSFS_getRealDir(filename), filename);
+		LOG(INFO) << "WZ:Reading...[directory: " << PHYSFS_getRealDir(filename) << "] " << filename;
 		if (music_file == nullptr)
 		{
-			debug(LOG_ERROR, "Failed opening file [directory: %s] %s, with error %s", PHYSFS_getRealDir(filename), filename, WZ_PHYSFS_getLastError());
+			LOG(ERROR) << "Failed opening file [directory: " << PHYSFS_getRealDir(filename) << "] " << filename
+					   << ", with error " << WZ_PHYSFS_getLastError();
 			return false;
 		}
 
@@ -95,11 +97,11 @@ static bool cdAudio_OpenTrack(const char *filename)
 		if (cdStream == nullptr)
 		{
 			PHYSFS_close(music_file);
-			debug(LOG_ERROR, "Failed creating audio stream for %s", filename);
+			LOG(ERROR) << "Failed creating audio stream for " << filename;
 			return false;
 		}
 
-		debug(LOG_SOUND, "successful(%s)", filename);
+		LOG(INFO) << "SOUND: successful " << filename;
 		stopping = false;
 		return true;
 	}
@@ -116,19 +118,19 @@ static void cdAudio_TrackFinished(void *user_data)
 
 	if (filename == nullptr)
 	{
-		debug(LOG_ERROR, "Out of playlist?! was playing %s", (char *)user_data);
+		LOG(ERROR) << "Out of playlist?! was playing " << (char *)user_data;
 		return;
 	}
 
 	if (!stopping && cdAudio_OpenTrack(filename))
 	{
-		debug(LOG_SOUND, "Now playing %s (was playing %s)", filename, (char *)user_data);
+		LOG(INFO) << "SOUND: Now playing " << filename << " (was playing " << (char *)user_data << ")";
 	}
 }
 
 bool cdAudio_PlayTrack(SONG_CONTEXT context)
 {
-	debug(LOG_SOUND, "called(%d)", (int)context);
+	LOG(INFO) << "SOUND: called " << (int)context;
 
 	switch (context)
 	{
@@ -156,7 +158,7 @@ bool cdAudio_PlayTrack(SONG_CONTEXT context)
 void cdAudio_Stop()
 {
 	stopping = true;
-	debug(LOG_SOUND, "called, cdStream=%p", cdStream);
+	LOG(INFO) << "SOUND: called, cdStream=" << cdStream;
 
 	if (cdStream)
 	{
@@ -168,7 +170,7 @@ void cdAudio_Stop()
 
 void cdAudio_Pause()
 {
-	debug(LOG_SOUND, "called");
+	LOG(INFO) << "SOUND:called";
 	if (cdStream)
 	{
 		sound_PauseStream(cdStream);
@@ -177,7 +179,7 @@ void cdAudio_Pause()
 
 void cdAudio_Resume()
 {
-	debug(LOG_SOUND, "called");
+	LOG(INFO) << "SOUND: called";
 	if (cdStream)
 	{
 		sound_ResumeStream(cdStream);

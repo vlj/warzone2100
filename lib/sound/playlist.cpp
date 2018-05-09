@@ -22,6 +22,7 @@
 #include "lib/framework/string_ext.h"
 #include "lib/framework/stdio_ext.h"
 #include "lib/framework/physfs_ext.h"
+#include <glog/logging.h>
 
 #include "playlist.h"
 #include "cdaudio.h"
@@ -71,10 +72,10 @@ bool PlayList_Read(const char *path)
 
 	// Attempt to open the playlist file
 	fileHandle = PHYSFS_openRead(listName);
-	debug(LOG_WZ, "Reading...[directory: %s] %s", PHYSFS_getRealDir(listName), listName);
+	LOG(INFO) << "WZ: Reading...[directory: " << PHYSFS_getRealDir(listName) << "] " << listName;
 	if (fileHandle == nullptr)
 	{
-		debug(LOG_INFO, "PHYSFS_openRead(\"%s\") failed with error: %s\n", listName, WZ_PHYSFS_getLastError());
+		LOG(INFO) << "PHYSFS_openRead(\"" << listName << "\") failed with error: " << WZ_PHYSFS_getLastError();
 		return false;
 	}
 
@@ -108,7 +109,7 @@ bool PlayList_Read(const char *path)
 		song = (WZ_TRACK *)malloc(sizeof(*songList));
 		if (song == nullptr)
 		{
-			debug(LOG_FATAL, "Out of memory!");
+			LOG(FATAL) << "Out of memory!";
 			PHYSFS_close(fileHandle);
 			abort();
 			return false;
@@ -124,7 +125,7 @@ bool PlayList_Read(const char *path)
 		last = &song->next;
 
 		numSongs++;
-		debug(LOG_SOUND, "Added song %s to playlist", filename);
+		LOG(INFO) << "SOUND: Added song " << filename << " to playlist";
 	}
 	PHYSFS_close(fileHandle);
 	currentSong = songList;

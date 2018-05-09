@@ -18,6 +18,7 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include "lib/framework/frame.h"
+#include <glog/logging.h>
 
 #include "openal_error.h"
 
@@ -69,7 +70,7 @@ ALenum __sound_GetError(const char *location_description)
 		break;
 	}
 
-	debug(LOG_SOUND, "OpenAL raised an error: \"%s\"; at %s", errorString, location_description);
+	LOG(INFO) << "SOUND: OpenAL raised an error: \"" << errorString << "\"; at " << location_description;
 
 	return error;
 }
@@ -112,7 +113,7 @@ ALenum __sound_GetContextError(ALCdevice *device, const char *location_descripti
 		break;
 	}
 
-	debug(LOG_SOUND, "OpenAL raised a context error: \"%s\"; at %s", errorString, location_description);
+	LOG(INFO) << "SOUND:OpenAL raised a context error: \"" << errorString << "\"; at " << location_description;
 
 	return error;
 }

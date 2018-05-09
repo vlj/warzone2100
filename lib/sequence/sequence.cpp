@@ -68,6 +68,7 @@
 #include "lib/sound/mixer.h"
 #include <glm/gtx/transform.hpp>
 #include "lib/ivis_opengl/pieclip.h"
+#include <glog/logging.h>
 
 #include <theora/theora.h>
 #include <physfs.h>
@@ -423,7 +424,7 @@ static void audio_write(void)
 			alGetBufferi(oldbuffer, AL_SIZE, &buffer_size);
 			// audio time sync
 			audioTime += (double) buffer_size / (videodata.vi.rate * videodata.vi.channels);
-			debug(LOG_VIDEO, "Audio sync");
+			LOG(INFO) << "VIDEO: Audio sync";
 			current_sample = audiobuf_granulepos - audiodata.audiobuf_fill / 2 / videodata.vi.channels;
 			sampletimeOffset -= getTimeNow() - 1000 * current_sample / videodata.vi.rate;
 		}
@@ -440,7 +441,7 @@ static void audio_write(void)
 
 		if (sourcestate != AL_PLAYING)
 		{
-			debug(LOG_VIDEO, "starting source\n");
+			LOG(INFO) << "VIDEO: starting source";
 			alSourcePlay(audiodata.source);
 		}
 
@@ -451,7 +452,7 @@ static void audio_write(void)
 
 static void seq_InitOgg(void)
 {
-	debug(LOG_VIDEO, "seq_InitOgg");
+	LOG(INFO) << "VIDEO: seq_InitOgg";
 
 	stateflag = false;
 	theora_p = 0;
@@ -495,11 +496,11 @@ bool seq_Play(const char *filename)
 	int pp_level = 0;
 	ogg_packet op;
 
-	debug(LOG_VIDEO, "starting playback of: %s", filename);
+	LOG(INFO) << "VIDEO: starting playback of: " << filename;
 
 	if (videoplaying)
 	{
-		debug(LOG_VIDEO, "previous movie is not yet finished");
+		LOG(INFO) << "VIDEO: previous movie is not yet finished";
 		seq_Shutdown();
 	}
 
@@ -580,13 +581,13 @@ bool seq_Play(const char *filename)
 		{
 			if (ret < 0)
 			{
-				debug(LOG_ERROR, "Error parsing Theora stream headers; corrupt stream?\n");
+				LOG(ERROR) << "Error parsing Theora stream headers; corrupt stream?";
 				return false;
 			}
 
 			if (theora_decode_header(&videodata.ti, &videodata.tc, &op))
 			{
-				debug(LOG_ERROR, "Error parsing Theora stream headers; corrupt stream?\n");
+				LOG(ERROR) << "Error parsing Theora stream headers; corrupt stream?";
 				return false;
 			}
 
@@ -598,13 +599,13 @@ bool seq_Play(const char *filename)
 		{
 			if (ret < 0)
 			{
-				debug(LOG_ERROR, "Error parsing Vorbis stream headers; corrupt stream?\n");
+				LOG(ERROR) << "Error parsing Vorbis stream headers; corrupt stream?";
 				return false;
 			}
 
 			if (vorbis_synthesis_headerin(&videodata.vi, &videodata.vc, &op))
 			{
-				debug(LOG_ERROR, "Error parsing Vorbis stream headers; corrupt stream?\n");
+				LOG(ERROR) << "Error parsing Vorbis stream headers; corrupt stream?";
 				return false;
 			}
 
@@ -623,7 +624,7 @@ bool seq_Play(const char *filename)
 
 			if (ret == 0)
 			{
-				debug(LOG_ERROR, "End of file while searching for codec headers.\n");
+				LOG(ERROR) << "End of file while searching for codec headers.";
 				return false;
 			}
 		}
@@ -633,13 +634,13 @@ bool seq_Play(const char *filename)
 	if (theora_p)
 	{
 		theora_decode_init(&videodata.td, &videodata.ti);
-		debug(LOG_VIDEO, "Ogg logical stream %x is Theora %dx%d %.02f fps video",
-		      (unsigned int) videodata.to.serialno, (int) videodata.ti.width, (int) videodata.ti.height,
-		      (double) videodata.ti.fps_numerator / videodata.ti.fps_denominator);
+		LOG(INFO) << "VIDEO: Ogg logical stream " << (unsigned int)videodata.to.serialno << " is Theora "
+				  << (int)videodata.ti.width << "x" << (int)videodata.ti.height << " "
+				  << (double)videodata.ti.fps_numerator / videodata.ti.fps_denominator << " fps video";
 		if (videodata.ti.width != videodata.ti.frame_width || videodata.ti.height != videodata.ti.frame_height)
 		{
-			debug(LOG_VIDEO, "  Frame content is %dx%d with offset (%d,%d)", videodata.ti.frame_width,
-			      videodata.ti.frame_height, videodata.ti.offset_x, videodata.ti.offset_y);
+			LOG(INFO) << "VIDEO: Frame content is " << videodata.ti.frame_width << "x" << videodata.ti.frame_height
+					  << " with offset (" << videodata.ti.offset_x << "," << videodata.ti.offset_y << ")";
 		}
 
 		// hmm
@@ -658,8 +659,8 @@ bool seq_Play(const char *filename)
 	{
 		vorbis_synthesis_init(&videodata.vd, &videodata.vi);
 		vorbis_block_init(&videodata.vd, &videodata.vb);
-		debug(LOG_VIDEO, "Ogg logical stream %x is Vorbis %d channel %d Hz audio",
-		      (unsigned int) videodata.vo.serialno, videodata.vi.channels, (int) videodata.vi.rate);
+		LOG(INFO) << "VIDEO:Ogg logical stream " << (unsigned int)videodata.vo.serialno << " is Vorbis "
+				  << videodata.vi.channels << " channel " << (int)videodata.vi.rate << " Hz audio";
 	}
 	else
 	{
@@ -680,15 +681,14 @@ bool seq_Play(const char *filename)
 	{
 		if (videodata.ti.frame_width > texture_width || videodata.ti.frame_height > texture_height)
 		{
-			debug(LOG_ERROR, "Video size too large, must be below %.gx%.g!",
-			      texture_width, texture_height);
+			LOG(ERROR)<< "Video size too large, must be below "<<   texture_width << "x"<< texture_height;
 			delete videoGfx;
 			videoGfx = nullptr;
 			return false;
 		}
 		if (videodata.ti.pixelformat != OC_PF_420)
 		{
-			debug(LOG_ERROR, "Video not in YUV420 format!");
+			LOG(ERROR) << "Video not in YUV420 format!";
 			delete videoGfx;
 			videoGfx = nullptr;
 			return false;
@@ -745,7 +745,7 @@ bool seq_Update()
 		   ogg do the buffering) */
 	if (!videoplaying)
 	{
-		debug(LOG_VIDEO, "no movie playing");
+		LOG(INFO) << "VIDEO: no movie playing";
 		return false;
 	}
 
@@ -854,7 +854,7 @@ bool seq_Update()
 	{
 		video_write(false);
 		seq_Shutdown();
-		debug(LOG_VIDEO, "video finished");
+		LOG(INFO) << "VIDEO:video finished";
 		return false;
 	}
 
@@ -894,7 +894,7 @@ bool seq_Update()
 		   we can begin playback */
 	if ((!theora_p || videobuf_ready) && (!vorbis_p || audiobuf_ready) && !stateflag)
 	{
-		debug(LOG_VIDEO, "all buffers ready");
+		LOG(INFO) << "VIDEO: all buffers ready";
 		stateflag = true;
 	}
 
@@ -910,11 +910,11 @@ bool seq_Update()
 void seq_Shutdown()
 {
 	/* tear it all down */
-	debug(LOG_VIDEO, "seq_Shutdown");
+	LOG(INFO) << "VIDEO: seq_Shutdown";
 
 	if (!videoplaying)
 	{
-		debug(LOG_VIDEO, "movie is not playing");
+		LOG(INFO) << "VIDEO: movie is not playing";
 		return;
 	}
 	delete videoGfx;
@@ -958,7 +958,7 @@ void seq_Shutdown()
 	sampletimeOffset = last_time = timer_expire = timer_started = 0;
 	basetime = -1;
 	pie_SetTexturePage(-1);
-	debug(LOG_VIDEO, " **** frames = %d dropped = %d ****", frames, dropped);
+	LOG(INFO) << "VIDEO: **** frames = " << frames << " dropped = " << dropped << " ****";
 }
 
 int seq_GetFrameNumber()

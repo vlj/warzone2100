@@ -23,6 +23,7 @@
 #include "lib/framework/frameresource.h"
 #include "audio_id.h"
 #include "src/droid.h"
+#include <glog/logging.h>
 
 //*
 //
@@ -51,7 +52,7 @@ bool sound_Init()
 	g_iCurTracks = 0;
 	if (!sound_InitLibrary())
 	{
-		debug(LOG_ERROR, "Cannot init sound library");
+		LOG(ERROR) << "Cannot init sound library";
 		return false;
 	}
 
@@ -98,14 +99,14 @@ unsigned int sound_SetTrackVals(const char *fileName, bool loop, unsigned int vo
 
 	if (fileName == nullptr || strlen(fileName) == 0) // check for empty filename.  This is a non fatal error.
 	{
-		debug(LOG_WARNING, "fileName is %s", (fileName == nullptr) ? "a NULL pointer" : "empty");
+		LOG(WARNING) << "fileName is " << ((fileName == nullptr) ? "a NULL pointer" : "empty");
 		return 0;
 	}
 
 	psTrack = (TRACK *)resGetData("WAV", fileName);
 	if (psTrack == nullptr)
 	{
-		debug(LOG_WARNING, "track %s resource not found", fileName);
+		LOG(WARNING) << "track " << fileName << " resource not found";
 		return 0;
 	}
 
@@ -123,7 +124,8 @@ unsigned int sound_SetTrackVals(const char *fileName, bool loop, unsigned int vo
 
 	if (g_apTrack[trackID] != nullptr)
 	{
-		debug(LOG_ERROR, "sound_SetTrackVals: track %i already set (filename: \"%s\"\n", trackID, g_apTrack[trackID]->fileName);
+		LOG(ERROR) << "sound_SetTrackVals: track " << trackID << " already set (filename: \""
+				   << g_apTrack[trackID]->fileName << "\"";
 		return 0;
 	}
 
@@ -217,13 +219,13 @@ bool sound_CheckTrack(SDWORD iTrack)
 {
 	if (iTrack < 0 || iTrack > g_iCurTracks - 1)
 	{
-		debug(LOG_SOUND, "Track number %i outside max %i\n", iTrack, g_iCurTracks);
+		LOG(INFO) << "SOUND: Track number " << iTrack << " outside max " << g_iCurTracks;
 		return false;
 	}
 
 	if (g_apTrack[iTrack] == nullptr)
 	{
-		debug(LOG_SOUND, "Track %i NULL\n", iTrack);
+		LOG(INFO) << "SOUND:Track " << iTrack << " NULL";
 		return false;
 	}
 

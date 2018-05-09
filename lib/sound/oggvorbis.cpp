@@ -23,6 +23,7 @@
 
 #include <vorbis/vorbisfile.h>
 #include <vorbis/codec.h>
+#include <glog/logging.h>
 
 #ifdef __BIG_ENDIAN__
 #define OGG_ENDIAN 1
@@ -190,7 +191,7 @@ struct OggVorbisDecoderState *sound_CreateOggVorbisDecoder(PHYSFS_file *PHYSFS_f
 	struct OggVorbisDecoderState *decoder = (struct OggVorbisDecoderState *)malloc(sizeof(struct OggVorbisDecoderState));
 	if (decoder == nullptr)
 	{
-		debug(LOG_FATAL, "Out of memory");
+		LOG(FATAL) << "Out of memory";
 		abort();
 		return nullptr;
 	}
@@ -203,7 +204,7 @@ struct OggVorbisDecoderState *sound_CreateOggVorbisDecoder(PHYSFS_file *PHYSFS_f
 	error = ov_open_callbacks(decoder, &decoder->oggVorbis_stream, nullptr, 0, wz_oggVorbis_callbacks);
 	if (error < 0)
 	{
-		debug(LOG_ERROR, "ov_open_callbacks failed with errorcode %s", wz_oggVorbis_getErrorStr(error));
+		LOG(ERROR) << "ov_open_callbacks failed with errorcode " << wz_oggVorbis_getErrorStr(error);
 		free(decoder);
 		return nullptr;
 	}
@@ -280,14 +281,15 @@ soundDataBuffer *sound_DecodeOggVorbis(struct OggVorbisDecoderState *decoder, si
 	// If we can't seek nor receive any suggested size for our buffer, just quit
 	if (bufferSize == 0)
 	{
-		debug(LOG_ERROR, "can't find a proper buffer size");
+		LOG(ERROR) << "can't find a proper buffer size";
 		return nullptr;
 	}
 
 	buffer = (soundDataBuffer *)malloc(bufferSize + sizeof(soundDataBuffer));
 	if (buffer == nullptr)
 	{
-		debug(LOG_ERROR, "couldn't allocate memory (%lu bytes requested)", (unsigned long) bufferSize + sizeof(soundDataBuffer));
+		LOG(ERROR) << "couldn't allocate memory (" << (unsigned long)bufferSize + sizeof(soundDataBuffer)
+				   << " bytes requested)";
 		return nullptr;
 	}
 
@@ -307,7 +309,8 @@ soundDataBuffer *sound_DecodeOggVorbis(struct OggVorbisDecoderState *decoder, si
 
 		if (result < 0)
 		{
-			debug(LOG_ERROR, "error decoding from OggVorbis file; errorcode from ov_read: %s", wz_oggVorbis_getErrorStr(result));
+			LOG(ERROR) << "error decoding from OggVorbis file; errorcode from ov_read: "
+					   << wz_oggVorbis_getErrorStr(result);
 			free(buffer);
 			return nullptr;
 		}

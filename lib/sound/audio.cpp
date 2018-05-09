@@ -23,6 +23,7 @@
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/pietypes.h"
 #include "lib/framework/physfs_ext.h"
+#include <glog/logging.h>
 
 #include "tracklib.h"
 #include "aud.h"
@@ -351,7 +352,7 @@ static AUDIO_SAMPLE *audio_QueueSample(SDWORD iTrack)
 	psSample = (AUDIO_SAMPLE *)calloc(1, sizeof(AUDIO_SAMPLE));
 	if (psSample == nullptr)
 	{
-		debug(LOG_ERROR, "audio_QueueSample: Out of memory");
+		LOG(ERROR) << "audio_QueueSample: Out of memory";
 		return nullptr;
 	}
 
@@ -526,7 +527,7 @@ static void audio_UpdateQueue(void)
 	// add sample to list if able to play
 	if (!sound_Play2DTrack(psSample, true))
 	{
-		debug(LOG_NEVER, "audio_UpdateQueue: couldn't play sample\n");
+		LOG(INFO) << "audio_UpdateQueue: couldn't play sample";
 		free(psSample);
 		return;
 	}
@@ -740,7 +741,7 @@ static bool audio_Play3DTrack(SDWORD iX, SDWORD iY, SDWORD iZ, int iTrack, SIMPL
 	psSample = (AUDIO_SAMPLE *)malloc(sizeof(AUDIO_SAMPLE));
 	if (psSample == nullptr)
 	{
-		debug(LOG_ERROR, "audio_Play3DTrack: Out of memory");
+		LOG(ERROR) << "audio_Play3DTrack: Out of memory";
 		return false;
 	}
 
@@ -757,7 +758,7 @@ static bool audio_Play3DTrack(SDWORD iX, SDWORD iY, SDWORD iZ, int iTrack, SIMPL
 	// add sample to list if able to play
 	if (!sound_Play3DTrack(psSample))
 	{
-		debug(LOG_NEVER, "audio_Play3DTrack: couldn't play sample\n");
+		LOG(INFO) << "audio_Play3DTrack: couldn't play sample";
 		free(psSample);
 		return false;
 	}
@@ -878,10 +879,11 @@ AUDIO_STREAM *audio_PlayStream(const char *fileName, float volume, void (*onFini
 
 	// Open up the file
 	fileHandle = PHYSFS_openRead(fileName);
-	debug(LOG_WZ, "Reading...[directory: %s] %s", PHYSFS_getRealDir(fileName), fileName);
+	LOG(INFO) << "WZ: Reading...[directory: " << PHYSFS_getRealDir(fileName) << "] " << fileName;
 	if (fileHandle == nullptr)
 	{
-		debug(LOG_ERROR, "sound_LoadTrackFromFile: PHYSFS_openRead(\"%s\") failed with error: %s\n", fileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "sound_LoadTrackFromFile: PHYSFS_openRead(\"" << fileName
+				   << "\") failed with error: " << WZ_PHYSFS_getLastError();
 		return nullptr;
 	}
 
@@ -951,7 +953,7 @@ void audio_PlayTrack(int iTrack)
 	psSample = (AUDIO_SAMPLE *)malloc(sizeof(AUDIO_SAMPLE));
 	if (psSample == nullptr)
 	{
-		debug(LOG_ERROR, "audio_PlayTrack: Out of memory");
+		LOG(ERROR) << "audio_PlayTrack: Out of memory";
 		return;
 	}
 
@@ -971,7 +973,7 @@ void audio_PlayTrack(int iTrack)
 	// add sample to list if able to play
 	if (!sound_Play2DTrack(psSample, false))
 	{
-		debug(LOG_NEVER, "audio_PlayTrack: couldn't play sample\n");
+		LOG(INFO) << "audio_PlayTrack: couldn't play sample";
 		free(psSample);
 		return;
 	}
@@ -1085,7 +1087,7 @@ SDWORD audio_GetTrackID(const char *fileName)
 
 	if (fileName == nullptr || strlen(fileName) == 0)
 	{
-		debug(LOG_WARNING, "fileName is %s", (fileName == nullptr) ? "a NULL pointer" : "empty");
+		LOG(WARNING) << "fileName is " << (fileName == nullptr) ? "a NULL pointer" : "empty";
 		return SAMPLE_NOT_FOUND;
 	}
 
@@ -1121,7 +1123,7 @@ void audio_RemoveObj(SIMPLE_OBJECT const *psObj)
 			// Make sure to keep our linked list iterator valid
 			psSample = psSample->psNext;
 
-			debug(LOG_MEMORY, "audio_RemoveObj: callback %p sample %d\n", toRemove->pCallback, toRemove->iTrack);
+			LOG(INFO) << "MEMORY: audio_RemoveObj: callback " << toRemove->pCallback << " sample " << toRemove->iTrack;
 			// Remove sound from global active list
 			sound_RemoveActiveSample(toRemove);   //remove from global active list.
 
@@ -1140,7 +1142,8 @@ void audio_RemoveObj(SIMPLE_OBJECT const *psObj)
 
 	if (count)
 	{
-		debug(LOG_MEMORY, "audio_RemoveObj: BASE_OBJECT* 0x%p was found %u times in the audio sample queue", psObj, count);
+		LOG(INFO) << "MEMORY: audio_RemoveObj: BASE_OBJECT* " << psObj << " was found " << count
+				  << " times in the audio sample queue";
 	}
 
 	// Reset the deletion count
@@ -1160,7 +1163,7 @@ void audio_RemoveObj(SIMPLE_OBJECT const *psObj)
 			// Make sure to keep our linked list iterator valid
 			psSample = psSample->psNext;
 
-			debug(LOG_MEMORY, "audio_RemoveObj: callback %p sample %d\n", toRemove->pCallback, toRemove->iTrack);
+			LOG(INFO) << "MEMORY: audio_RemoveObj: callback " << toRemove->pCallback << " sample " << toRemove->iTrack;
 			// Stop this sound sample
 			sound_RemoveActiveSample(toRemove);   //remove from global active list.
 
@@ -1179,6 +1182,7 @@ void audio_RemoveObj(SIMPLE_OBJECT const *psObj)
 
 	if (count)
 	{
-		debug(LOG_MEMORY, "audio_RemoveObj: ***Warning! psOBJ %p was found %u times in the list of playing audio samples", psObj, count);
+		LOG(INFO) << "MEMORY: audio_RemoveObj: ***Warning! psOBJ " << psObj << " was found " << count
+				  << " times in the list of playing audio samples";
 	}
 }

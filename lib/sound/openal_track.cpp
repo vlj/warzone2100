@@ -26,6 +26,7 @@
 #include "lib/framework/math_ext.h"
 #include "lib/framework/frameresource.h"
 #include "lib/exceptionhandler/dumpinfo.h"
+#include <glog/logging.h>
 
 #ifdef WZ_OS_MAC
 #include <OpenAL/al.h>
@@ -132,7 +133,7 @@ bool sound_InitLibrary(void)
 	deviceName = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 	while (deviceName != NULL && *deviceName != '\0')
 	{
-		debug(LOG_SOUND, "available OpenAL device(s) are: %s", deviceName);
+		LOG(INFO) << "SOUND: available OpenAL device(s) are: %s", deviceName);
 		deviceName += strlen(deviceName) + 1;
 	}
 #endif
@@ -155,20 +156,20 @@ bool sound_InitLibrary(void)
 
 	if (!device)
 	{
-		debug(LOG_ERROR, "Couldn't open audio device.");
+		LOG(ERROR) << "Couldn't open audio device.";
 		return false;
 	}
 
 	// Print current device name and add it to dump info
 	deviceName = alcGetString(device, ALC_DEVICE_SPECIFIER);
-	debug(LOG_SOUND, "Current audio device: %s", deviceName);
+	LOG(INFO) << "SOUND: Current audio device: " << deviceName;
 	ssprintf(buf, "OpenAL Device Name: %s", deviceName);
 	addDumpInfo(buf);
 
 	context = alcCreateContext(device, nullptr);		//NULL was contextAttributes
 	if (!context)
 	{
-		debug(LOG_ERROR, "Couldn't open audio context.");
+		LOG(ERROR) << "Couldn't open audio context.";
 		return false;
 	}
 
@@ -177,7 +178,7 @@ bool sound_InitLibrary(void)
 	err = sound_GetContextError(device);
 	if (err != ALC_NO_ERROR)
 	{
-		debug(LOG_ERROR, "Couldn't initialize audio context: %s", alcGetString(device, err));
+		LOG(ERROR) << "Couldn't initialize audio context: " << alcGetString(device, err);
 		return false;
 	}
 
@@ -185,19 +186,19 @@ bool sound_InitLibrary(void)
 	// to the crash handler for the dump file and debug log
 	ssprintf(buf, "OpenAL Vendor: %s", alGetString(AL_VENDOR));
 	addDumpInfo(buf);
-	debug(LOG_SOUND, "%s", buf);
+	LOG(INFO) << "SOUND: " << buf;
 
 	ssprintf(buf, "OpenAL Version: %s", alGetString(AL_VERSION));
 	addDumpInfo(buf);
-	debug(LOG_SOUND, "%s", buf);
+	LOG(INFO) << "SOUND: " << buf;
 
 	ssprintf(buf, "OpenAL Renderer: %s", alGetString(AL_RENDERER));
 	addDumpInfo(buf);
-	debug(LOG_SOUND, "%s", buf);
+	LOG(INFO) << "SOUND: " << buf;
 
 	ssprintf(buf, "OpenAL Extensions: %s", alGetString(AL_EXTENSIONS));
 	addDumpInfo(buf);
-	debug(LOG_SOUND, "%s", buf);
+	LOG(INFO) << "SOUND: " << buf;
 
 	openal_initialized = true;
 
@@ -225,7 +226,7 @@ void sound_ShutdownLibrary(void)
 	{
 		return;
 	}
-	debug(LOG_SOUND, "starting shutdown");
+	LOG(INFO) << "SOUND: starting shutdown";
 
 	// Stop all streams, sound_UpdateStreams() will deallocate all stopped streams
 	for (stream = active_streams; stream != nullptr; stream = stream->next)
@@ -237,18 +238,18 @@ void sound_ShutdownLibrary(void)
 	alcGetError(device);	// clear error codes
 
 	/* On Linux since this caused some versions of OpenAL to hang on exit. - Per */
-	debug(LOG_SOUND, "make default context NULL");
+	LOG(INFO) << "SOUND: make default context NULL";
 	alcMakeContextCurrent(nullptr);
 	sound_GetContextError(device);
 
-	debug(LOG_SOUND, "destroy previous context");
+	LOG(INFO) << "SOUND: destroy previous context";
 	alcDestroyContext(context); // this gives a long delay on some impl.
 	sound_GetContextError(device);
 
-	debug(LOG_SOUND, "close device");
+	LOG(INFO) << "SOUND: close device";
 	if (alcCloseDevice(device) == ALC_FALSE)
 	{
-		debug(LOG_SOUND, "OpenAl could not close the audio device.");
+		LOG(INFO) << "SOUND: OpenAl could not close the audio device.";
 	}
 
 	while (aSample)
@@ -379,7 +380,7 @@ void sound_Update()
 	err = sound_GetContextError(device);
 	if (err != ALC_NO_ERROR)
 	{
-		debug(LOG_ERROR, "Error while processing audio context: %s", alGetString(err));
+		LOG(ERROR) << "Error while processing audio context: " << alGetString(err);
 	}
 }
 
@@ -435,7 +436,7 @@ bool sound_QueueSamplePlaying(void)
 				node = node->next;
 			}
 		}
-		debug(LOG_ERROR, "Sample %u not deleted because it wasn't in the active queue!", current_queue_sample);
+		LOG(ERROR) << "Sample " << current_queue_sample << " not deleted because it wasn't in the active queue!";
 		current_queue_sample = AL_INVALID;
 	}
 	return false;
@@ -461,7 +462,7 @@ static inline TRACK *sound_DecodeOggVorbisTrack(TRACK *psTrack, PHYSFS_file *PHY
 	decoder = sound_CreateOggVorbisDecoder(PHYSFS_fileHandle, true);
 	if (decoder == nullptr)
 	{
-		debug(LOG_WARNING, "Failed to open audio file for decoding");
+		LOG(WARNING) << "Failed to open audio file for decoding";
 		free(psTrack);
 		return nullptr;
 	}
@@ -477,7 +478,7 @@ static inline TRACK *sound_DecodeOggVorbisTrack(TRACK *psTrack, PHYSFS_file *PHY
 
 	if (soundBuffer->size == 0)
 	{
-		debug(LOG_WARNING, "sound_DecodeOggVorbisTrack: OggVorbis track is entirely empty after decoding");
+		LOG(WARNING) << "sound_DecodeOggVorbisTrack: OggVorbis track is entirely empty after decoding";
 // NOTE: I'm not entirely sure if a track that's empty after decoding should be
 //       considered an error condition. Therefore I'll only error out on DEBUG
 //       builds. (Returning NULL here __will__ result in a program termination.)
@@ -518,17 +519,18 @@ TRACK *sound_LoadTrackFromFile(const char *fileName)
 
 	// Use PhysicsFS to open the file
 	fileHandle = PHYSFS_openRead(fileName);
-	debug(LOG_NEVER, "Reading...[directory: %s] %s", PHYSFS_getRealDir(fileName), fileName);
+	LOG(INFO) << "Reading...[directory: " << PHYSFS_getRealDir(fileName) << "] " << fileName;
 	if (fileHandle == nullptr)
 	{
-		debug(LOG_ERROR, "sound_LoadTrackFromFile: PHYSFS_openRead(\"%s\") failed with error: %s\n", fileName, WZ_PHYSFS_getLastError());
+		LOG(ERROR) << "sound_LoadTrackFromFile: PHYSFS_openRead(\"" << fileName
+				   << "\") failed with error: " << WZ_PHYSFS_getLastError();
 		return nullptr;
 	}
 
 	if (GetLastResourceFilename() == nullptr)
 	{
 		// This is a non fatal error.  We just can't find filename for some reason.
-		debug(LOG_WARNING, "sound_LoadTrackFromFile: missing resource filename?");
+		LOG(WARNING) << "sound_LoadTrackFromFile: missing resource filename?";
 		filename_size = 0;
 	}
 	else
@@ -541,7 +543,7 @@ TRACK *sound_LoadTrackFromFile(const char *fileName)
 	pTrack = (TRACK *)malloc(sizeof(TRACK) + filename_size);
 	if (pTrack == nullptr)
 	{
-		debug(LOG_FATAL, "sound_ConstructTrack: couldn't allocate memory\n");
+		LOG(FATAL) << "sound_ConstructTrack: couldn't allocate memory";
 		abort();
 		return nullptr;
 	}
@@ -595,7 +597,7 @@ void sound_RemoveActiveSample(AUDIO_SAMPLE *psSample)
 	{
 		if (node->curr->psObj == psSample->psObj)
 		{
-			debug(LOG_MEMORY, "Removing object 0x%p from active_samples list 0x%p\n", psSample->psObj, node);
+			LOG(INFO) << "MEMORY: Removing object " << psSample->psObj << " from active_samples list " << node;
 
 			// Buginator: should we wait for it to finish, or just stop it?
 			sound_StopSample(node->curr);
@@ -797,14 +799,14 @@ AUDIO_STREAM *sound_PlayStreamWithBuf(PHYSFS_file *fileHandle, float volume, voi
 
 	if (!openal_initialized)
 	{
-		debug(LOG_WARNING, "OpenAL isn't initialized, not creating an audio stream");
+		LOG(WARNING) << "OpenAL isn't initialized, not creating an audio stream";
 		return nullptr;
 	}
 
 	stream = (AUDIO_STREAM *)malloc(sizeof(AUDIO_STREAM));
 	if (stream == nullptr)
 	{
-		debug(LOG_FATAL, "sound_PlayStream: Out of memory");
+		LOG(FATAL) << "sound_PlayStream: Out of memory";
 		abort();
 		return nullptr;
 	}
@@ -819,7 +821,7 @@ AUDIO_STREAM *sound_PlayStreamWithBuf(PHYSFS_file *fileHandle, float volume, voi
 	if (error != AL_NO_ERROR)
 	{
 		// Failed to create OpenAL sound source, so bail out...
-		debug(LOG_SOUND, "alGenSources failed, most likely out of sound sources");
+		LOG(INFO) << "SOUND: alGenSources failed, most likely out of sound sources";
 		free(stream);
 		return nullptr;
 	}
@@ -829,7 +831,7 @@ AUDIO_STREAM *sound_PlayStreamWithBuf(PHYSFS_file *fileHandle, float volume, voi
 	stream->decoder = sound_CreateOggVorbisDecoder(stream->fileHandle, false);
 	if (stream->decoder == nullptr)
 	{
-		debug(LOG_ERROR, "sound_PlayStream: Failed to open audio file for decoding");
+		LOG(ERROR) << "sound_PlayStream: Failed to open audio file for decoding";
 		free(stream);
 		return nullptr;
 	}
@@ -885,7 +887,7 @@ AUDIO_STREAM *sound_PlayStreamWithBuf(PHYSFS_file *fileHandle, float volume, voi
 	// Bail out if we didn't fill any buffers
 	if (i == 0)
 	{
-		debug(LOG_ERROR, "Failed to fill buffers with decoded audio data!");
+		LOG(ERROR) << "Failed to fill buffers with decoded audio data!";
 
 		// Destroy the decoder
 		sound_DestroyOggVorbisDecoder(stream->decoder);
@@ -1126,7 +1128,7 @@ static void sound_DestroyStream(AUDIO_STREAM *stream)
 		 * result of the below alloca() call (due to buffer_count not
 		 * being properly initialised.
 		 */
-		debug(LOG_SOUND, "alGetSourcei(AL_BUFFERS_PROCESSED) failed; bailing out...");
+		LOG(INFO) << "SOUND: alGetSourcei(AL_BUFFERS_PROCESSED) failed; bailing out...";
 		return;
 	}
 
@@ -1210,7 +1212,8 @@ void sound_StopSample(AUDIO_SAMPLE *psSample)
 {
 	if (psSample->iSample == (ALuint)SAMPLE_NOT_ALLOCATED)
 	{
-		debug(LOG_SOUND, "sound_StopSample: sample number (%u) out of range, we probably have run out of available OpenAL sources", psSample->iSample);
+		LOG(INFO) << "SOUND: sound_StopSample: sample number (" << psSample->iSample
+				  << ") out of range, we probably have run out of available OpenAL sources";
 		return;
 	}
 	alGetError();	// clear error codes

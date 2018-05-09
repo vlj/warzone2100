@@ -22,10 +22,9 @@
 
 #define FRAME_LIB_INCLUDE
 #include "debug.h"
-#include <string.h>
-#include <stddef.h>
 #include <assert.h>
-
+#include <stddef.h>
+#include <string.h>
 
 /*!
  * On MSVC, in order to squelch tons of 'memory leaks' we set the allocator
@@ -33,30 +32,15 @@
  *
  */
 #if defined(WZ_CC_MSVC)
-#	ifdef strdup
-#		undef strdup
-#	endif
-#	if defined(DEBUG)
-#		define strdup(s) \
-	strdup2(s,__FILE__,__LINE__)
-static inline char *strdup2(const char *s, char *fileName, int line)
-{
-	char *result;
-
-	(void)debug_MEMCHKOFF();
-	result = (char *)malloc(strlen(s) + 1);
-	(void)debug_MEMCHKON();
-
-	if (result == (char *)0)
-	{
-		return (char *)0;
-	}
-	strcpy(result, s);
-	return result;
-}
-#	else	// for release builds
-#		define strdup _strdup
-#	endif	//debug block
+#ifdef strdup
+#undef strdup
+#endif
+#if defined(DEBUG)
+#define strdup(s) strdup2(s, __FILE__, __LINE__)
+char *strdup2(const char *s, char *fileName, int line);
+#else // for release builds
+#define strdup _strdup
+#endif // debug block
 #endif
 
 /*!
@@ -70,30 +54,16 @@ static inline char *strdup2(const char *s, char *fileName, int line)
  * \note This is the same as strnlen(string, maxlen - 1) + 1 when using the
  *       GNU C library.
  */
-WZ_DECL_PURE static inline size_t strnlen1(const char *string, size_t maxlen)
-{
-	// Find the first NUL char
-	const char *end = (const char *)memchr(string, '\0', maxlen); // Cast required for C++
-
-	if (end != NULL)
-	{
-		return end - string + 1;
-	}
-	else
-	{
-		return maxlen;
-	}
-}
-
+WZ_DECL_PURE size_t strnlen1(const char *string, size_t maxlen);
 
 #ifndef HAVE_VALID_STRLCPY
-# ifdef HAVE_SYSTEM_STRLCPY
+#ifdef HAVE_SYSTEM_STRLCPY
 // If the system provides a non-conformant strlcpy we use our own
-#  ifdef strlcpy
-#   undef strlcpy
-#  endif
-#  define strlcpy wz_strlcpy
-# endif // HAVE_SYSTEM_STRLCPY
+#ifdef strlcpy
+#undef strlcpy
+#endif
+#define strlcpy wz_strlcpy
+#endif // HAVE_SYSTEM_STRLCPY
 
 /*!
  * A safer variant of \c strncpy and its completely unsafe variant \c strcpy.
@@ -104,32 +74,17 @@ WZ_DECL_PURE static inline size_t strnlen1(const char *string, size_t maxlen)
  * \param size the buffer size (in bytes) of buffer \c dest
  * \return Length to string src, if >= size truncation occurred
  */
-static inline size_t strlcpy(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RESTRICT src, size_t size)
-{
-#ifdef DEBUG
-	ASSERT_OR_RETURN(0, src != NULL, "strlcpy was passed an invalid src parameter.");
-	ASSERT_OR_RETURN(0, dest != NULL, "strlcpy was passed an invalid dest parameter.");
-#endif
-
-	if (size > 0)
-	{
-		strncpy(dest, src, size - 1);
-		// Guarantee to nul-terminate
-		dest[size - 1] = '\0';
-	}
-
-	return strlen(src);
-}
+size_t strlcpy(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RESTRICT src, size_t size);
 #endif // HAVE_VALID_STRLCPY
 
 #ifndef HAVE_VALID_STRLCAT
-# ifdef HAVE_SYSTEM_STRLCAT
+#ifdef HAVE_SYSTEM_STRLCAT
 // If the system provides a non-conformant strlcat we use our own
-#  ifdef strlcat
-#   undef strlcat
-#  endif
-#  define strlcat wz_strlcat
-# endif // HAVE_SYSTEM_STRLCAT
+#ifdef strlcat
+#undef strlcat
+#endif
+#define strlcat wz_strlcat
+#endif // HAVE_SYSTEM_STRLCAT
 /**
  * A safer variant of \c strncat and its completely unsafe variant \c strcat.
  * Append src to string dest of size "size" (unlike strncat, size is the
@@ -141,49 +96,28 @@ static inline size_t strlcpy(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RE
  * \param size the buffer size (in bytes) of buffer \c dest
  * \return Length to string src + dest, if >= size truncation occurred.
  */
-static inline size_t strlcat(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RESTRICT src, size_t size)
-{
-	size_t len;
-
-#ifdef DEBUG
-	ASSERT_OR_RETURN(0, src != NULL, "strlcat was passed an invalid src parameter.");
-	ASSERT_OR_RETURN(0, dest != NULL, "strlcat was passed an invalid dest parameter.");
-#endif
-
-	len = strlen(src);
-
-	if (size > 0)
-	{
-		size_t dlen;
-
-		dlen = strnlen1(dest, size);
-		len += dlen;
-
-		assert(dlen > 0);
-
-		strlcpy(&dest[dlen - 1], src, size - dlen);
-	}
-
-	return len;
-}
+size_t strlcat(char *WZ_DECL_RESTRICT dest, const char *WZ_DECL_RESTRICT src, size_t size);
 #endif // HAVE_VALID_STRLCAT
 
 /*
  * Static array versions of common string functions. Safer because one less parameter to screw up.
  */
-template <unsigned N>
-static inline size_t sstrcpy(char (&dest)[N], char const *src) { return strlcpy(dest, src, N); }
-template <unsigned N>
-static inline size_t sstrcat(char (&dest)[N], char const *src) { return strlcat(dest, src, N); }
-template <unsigned N1, unsigned N2>
-static inline int sstrcmp(char const (&str1)[N1], char const (&str2)[N2]) { return strncmp(str1, str2, std::min(N1, N2)); }
-template <unsigned N, typename... P>
-static inline int ssprintf(char (&dest)[N], char const *format, P &&... params) { return snprintf(dest, N, format, std::forward<P>(params)...); }
-template <unsigned N>
-static inline int vssprintf(char (&dest)[N], char const *format, va_list params) { return vsnprintf(dest, N, format, params); }
+template <unsigned N> static inline size_t sstrcpy(char (&dest)[N], char const *src) { return strlcpy(dest, src, N); }
+template <unsigned N> static inline size_t sstrcat(char (&dest)[N], char const *src) { return strlcat(dest, src, N); }
+template <unsigned N1, unsigned N2> static inline int sstrcmp(char const (&str1)[N1], char const (&str2)[N2])
+{
+	return strncmp(str1, str2, std::min(N1, N2));
+}
+template <unsigned N, typename... P> static inline int ssprintf(char (&dest)[N], char const *format, P &&... params)
+{
+	return snprintf(dest, N, format, std::forward<P>(params)...);
+}
+template <unsigned N> static inline int vssprintf(char (&dest)[N], char const *format, va_list params)
+{
+	return vsnprintf(dest, N, format, params);
+}
 
-template <typename... P>
-static inline std::string astringf(char const *format, P &&... params)
+template <typename... P> static inline std::string astringf(char const *format, P &&... params)
 {
 	int len = snprintf(nullptr, 0, format, std::forward<P>(params)...);
 	if (len <= 0)
@@ -197,9 +131,7 @@ static inline std::string astringf(char const *format, P &&... params)
 	return str;
 }
 
-
-template <typename... P>
-static inline void sstringf(std::string &str, char const *format, P &&... params)
+template <typename... P> static inline void sstringf(std::string &str, char const *format, P &&... params)
 {
 	str.resize(str.capacity());
 	int len = snprintf(&str[0], str.size(), format, std::forward<P>(params)...);

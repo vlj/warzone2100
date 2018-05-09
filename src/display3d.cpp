@@ -564,7 +564,8 @@ static void NetworkDisplayImage(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset
 		{
 			if ((playerMaskMapped & 1 << n) != 0)
 			{
-				STATIC_ASSERT(MAX_PLAYERS <= 32);  // If increasing MAX_PLAYERS, check all the 1<<playerNumber shifts, since the 1 is usually a 32-bit type.
+				static_assert(MAX_PLAYERS <= 32, ""); // If increasing MAX_PLAYERS, check all the 1<<playerNumber shifts,
+												  // since the 1 is usually a 32-bit type.
 				players[c++] = "0123456789ABCDEFGHIJKLMNOPQRSTUV"[n];
 			}
 		}

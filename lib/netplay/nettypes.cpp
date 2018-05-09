@@ -69,7 +69,8 @@ static void NETsetPacketDir(PACKETDIR dir)
 	NetDir = dir;
 
 	// Can't put STATIC_ASSERT in global scope, arbitrarily putting it here.
-	STATIC_ASSERT(MAX_PLAYERS == MAX_CONNECTED_PLAYERS);  // Things might break if each connected player doesn't correspond to a player of the same index.
+	static_assert(MAX_PLAYERS == MAX_CONNECTED_PLAYERS); // Things might break if each connected player doesn't
+														 // correspond to a player of the same index.
 }
 
 PACKETDIR NETgetPacketDir()
@@ -148,7 +149,7 @@ static void queue(const Q &q, char &v)
 		v = b;
 	}
 
-	STATIC_ASSERT(sizeof(b) == sizeof(v));
+	static_assert(sizeof(b) == sizeof(v));
 }
 
 template<class Q>
@@ -161,7 +162,7 @@ static void queue(const Q &q, int8_t &v)
 		v = b;
 	}
 
-	STATIC_ASSERT(sizeof(b) == sizeof(v));
+	static_assert(sizeof(b) == sizeof(v));
 }
 
 template<class Q>
@@ -174,7 +175,7 @@ static void queue(const Q &q, int16_t &v)
 		v = b;
 	}
 
-	STATIC_ASSERT(sizeof(b) == sizeof(v));
+	static_assert(sizeof(b) == sizeof(v));
 }
 
 template<class Q>
@@ -192,7 +193,7 @@ static void queue(const Q &q, int32_t &v)
 		v = b >> 1 ^ -(b & 1);
 	}
 
-	STATIC_ASSERT(sizeof(b) == sizeof(v));
+	static_assert(sizeof(b) == sizeof(v));
 }
 
 template<class Q>
@@ -205,7 +206,7 @@ static void queue(const Q &q, int64_t &v)
 		v = b;
 	}
 
-	STATIC_ASSERT(sizeof(b) == sizeof(v));
+	static_assert(sizeof(b) == sizeof(v));
 }
 
 template<class Q>

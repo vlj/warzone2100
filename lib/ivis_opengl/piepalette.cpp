@@ -98,7 +98,7 @@ PIELIGHT pal_GetTeamColour(int team)
 	case 14: return WZCOL_TEAM15;
 	case 15: return WZCOL_TEAM16;
 	default:
-		STATIC_ASSERT(MAX_PLAYERS <= 16);
+		static_assert(MAX_PLAYERS <= 16);
 		ASSERT(false, "Attempting to get colour for non-existing team %u", (unsigned int)team);
 		tcolour = WZCOL_WHITE; //default is white
 		break;

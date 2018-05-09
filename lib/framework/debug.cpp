@@ -274,7 +274,7 @@ void debug_init()
 	_CrtSetDbgFlag(tmpDbgFlag);
 #endif // WZ_CC_MSVC && DEBUG
 
-	STATIC_ASSERT(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST); // enums start at 0
+	static_assert(ARRAY_SIZE(code_part_names) - 1 == LOG_LAST); // enums start at 0
 
 	memset(enabled_debug, false, sizeof(enabled_debug));
 	enabled_debug[LOG_ERROR] = true;

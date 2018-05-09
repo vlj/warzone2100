@@ -419,11 +419,11 @@ static void DrawRadarObjects()
 		else
 		{
 			//original 8-color mode
-			STATIC_ASSERT(MAX_PLAYERS <= ARRAY_SIZE(clanColours));
+			static_assert(MAX_PLAYERS <= ARRAY_SIZE(clanColours), "");
 			playerCol = clanColours[getPlayerColour(clan)];
 		}
 
-		STATIC_ASSERT(MAX_PLAYERS <= ARRAY_SIZE(flashColours));
+		static_assert(MAX_PLAYERS <= ARRAY_SIZE(flashColours), "");
 		flashCol = flashColours[getPlayerColour(clan)];
 
 		/* Go through all droids */

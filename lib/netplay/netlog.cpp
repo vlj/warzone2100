@@ -145,7 +145,8 @@ bool NETstopLogging(void)
 */
 void NETlogPacket(uint8_t type, uint32_t size, bool received)
 {
-	STATIC_ASSERT((1 << (8 * sizeof(type))) == NUM_GAME_PACKETS); // NUM_GAME_PACKETS must be larger than maximum possible type.
+	static_assert((1 << (8 * sizeof(type))) ==
+				  NUM_GAME_PACKETS); // NUM_GAME_PACKETS must be larger than maximum possible type.
 	packetcount[received][type]++;
 	packetsize[received][type] += size;
 }

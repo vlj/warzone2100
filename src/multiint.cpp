@@ -2029,7 +2029,7 @@ static int playerBoxHeight(int player)
 	int gap = MULTIOP_PLAYERSH - MULTIOP_TEAMSHEIGHT * game.maxPlayers;
 	int gapDiv = game.maxPlayers - 1;
 	gap = std::min(gap, 5 * gapDiv);
-	STATIC_ASSERT(MULTIOP_TEAMSHEIGHT == MULTIOP_PLAYERHEIGHT);  // Why are these different defines?
+	static_assert(MULTIOP_TEAMSHEIGHT == MULTIOP_PLAYERHEIGHT, ""); // Why are these different defines?
 	return (MULTIOP_TEAMSHEIGHT * gapDiv + gap) * NetPlay.players[player].position / gapDiv;
 }
 
@@ -3326,7 +3326,7 @@ static void processMultiopWidgets(UDWORD id)
 		addPlayerBox(!ingame.bHostSetup || bHosted);
 	}
 
-	STATIC_ASSERT(MULTIOP_TEAMS_START + MAX_PLAYERS - 1 <= MULTIOP_TEAMS_END);
+	static_assert(MULTIOP_TEAMS_START + MAX_PLAYERS - 1 <= MULTIOP_TEAMS_END, "");
 	if (id >= MULTIOP_TEAMS_START && id <= MULTIOP_TEAMS_START + MAX_PLAYERS - 1 && !locked.teams)  // Clicked on a team chooser
 	{
 		int clickedMenuID = id - MULTIOP_TEAMS_START;
@@ -3339,7 +3339,7 @@ static void processMultiopWidgets(UDWORD id)
 	}
 
 	//clicked on a team
-	STATIC_ASSERT(MULTIOP_TEAMCHOOSER + MAX_PLAYERS - 1 <= MULTIOP_TEAMCHOOSER_END);
+	static_assert(MULTIOP_TEAMCHOOSER + MAX_PLAYERS - 1 <= MULTIOP_TEAMCHOOSER_END, "");
 	if (id >= MULTIOP_TEAMCHOOSER && id <= MULTIOP_TEAMCHOOSER + MAX_PLAYERS - 1)
 	{
 		ASSERT(teamChooserUp >= 0, "teamChooserUp < 0");
@@ -3397,7 +3397,7 @@ static void processMultiopWidgets(UDWORD id)
 	}
 
 	// clicked on a player
-	STATIC_ASSERT(MULTIOP_PLAYER_START + MAX_PLAYERS - 1 <= MULTIOP_PLAYER_END);
+	static_assert(MULTIOP_PLAYER_START + MAX_PLAYERS - 1 <= MULTIOP_PLAYER_END, "");
 	if (id >= MULTIOP_PLAYER_START && id <= MULTIOP_PLAYER_START + MAX_PLAYERS - 1
 	    && !locked.position
 	    && (id - MULTIOP_PLAYER_START == selectedPlayer || NetPlay.isHost
@@ -3436,7 +3436,7 @@ static void processMultiopWidgets(UDWORD id)
 		addPlayerBox(!ingame.bHostSetup || bHosted);
 	}
 
-	STATIC_ASSERT(MULTIOP_COLCHOOSER + MAX_PLAYERS - 1 <= MULTIOP_COLCHOOSER_END);
+	static_assert(MULTIOP_COLCHOOSER + MAX_PLAYERS - 1 <= MULTIOP_COLCHOOSER_END, "");
 	if (id >= MULTIOP_COLCHOOSER && id < MULTIOP_COLCHOOSER + MAX_PLAYERS - 1)  // chose a new colour.
 	{
 		resetReadyStatus(false);		// will reset only locally if not a host
@@ -4536,7 +4536,7 @@ void displayColour(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	if (NetPlay.players[j].wzFiles.empty() && game.skDiff[j])
 	{
 		int player = getPlayerColour(j);
-		STATIC_ASSERT(MAX_PLAYERS <= 16);
+		static_assert(MAX_PLAYERS <= 16, "");
 		iV_DrawImageTc(FrontImages, IMAGE_PLAYERN, IMAGE_PLAYERN_TC, x + 7, y + 9, pal_GetTeamColour(player));
 	}
 }

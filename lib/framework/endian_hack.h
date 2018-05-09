@@ -29,7 +29,7 @@
 
 static inline void endian_uword(UWORD *p)
 {
-	STATIC_ASSERT(sizeof(*p) == 2);
+	static_assert(sizeof(*p) == 2, "");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[1] << 8 | bytes[0];
@@ -37,7 +37,7 @@ static inline void endian_uword(UWORD *p)
 
 static inline void endian_sword(SWORD *p)
 {
-	STATIC_ASSERT(sizeof(*p) == 2);
+	static_assert(sizeof(*p) == 2, "");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[1] << 8 | bytes[0];
@@ -45,7 +45,7 @@ static inline void endian_sword(SWORD *p)
 
 static inline void endian_udword(UDWORD *p)
 {
-	STATIC_ASSERT(sizeof(*p) == 4);
+	static_assert(sizeof(*p) == 4, "");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];
@@ -53,7 +53,7 @@ static inline void endian_udword(UDWORD *p)
 
 static inline void endian_sdword(SDWORD *p)
 {
-	STATIC_ASSERT(sizeof(*p) == 4);
+	static_assert(sizeof(*p) == 4, "");
 	uint8_t bytes[sizeof(*p)];
 	memcpy(bytes, p, sizeof(*p));
 	*p = bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];

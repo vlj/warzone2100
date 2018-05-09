@@ -28,7 +28,7 @@
 
 #define ABSDIF(a,b) ((a)>(b) ? (a)-(b) : (b)-(a))
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]) + WZ_ASSERT_ARRAY_EXPR(x))
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 #define CLIP(val, min, max) do                                                \
 	{                                                                             \

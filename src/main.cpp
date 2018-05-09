@@ -901,7 +901,7 @@ bool getUTF8CmdLine(int *const utfargc WZ_DECL_UNUSED, const char *** const utfa
 	}
 	for (int i = 0; i < wargc; ++i)
 	{
-		STATIC_ASSERT(sizeof(wchar_t) == sizeof(utf_16_char)); // Should be true on windows
+		static_assert(sizeof(wchar_t) == sizeof(utf_16_char), "");			  // Should be true on windows
 		(*utfargv)[i] = UTF16toUTF8((const utf_16_char *)wargv[i], NULL); // only returns null when memory runs out
 		if ((*utfargv)[i] == NULL)
 		{

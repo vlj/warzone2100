@@ -28,41 +28,44 @@
 #include <QtWidgets/QMessageBox>
 
 #if defined(WZ_OS_WIN)
-#  include <shlobj.h> /* For SHGetFolderPath */
-#  include <shellapi.h> /* CommandLineToArgvW */
+#include <shellapi.h> /* CommandLineToArgvW */
+#include <shlobj.h>   /* For SHGetFolderPath */
 #elif defined(WZ_OS_UNIX)
-#  include <errno.h>
+#include <errno.h>
 #endif // WZ_OS_WIN
 
+#include "lib/exceptionhandler/dumpinfo.h"
+#include "lib/exceptionhandler/exceptionhandler.h"
 #include "lib/framework/input.h"
 #include "lib/framework/physfs_ext.h"
-#include "lib/exceptionhandler/exceptionhandler.h"
-#include "lib/exceptionhandler/dumpinfo.h"
 
-#include "lib/sound/playlist.h"
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/pieblitfunc.h"
-#include "lib/ivis_opengl/piestate.h"
-#include "lib/ivis_opengl/piepalette.h"
 #include "lib/ivis_opengl/piemode.h"
+#include "lib/ivis_opengl/piepalette.h"
+#include "lib/ivis_opengl/piestate.h"
 #include "lib/ivis_opengl/screen.h"
 #include "lib/netplay/netplay.h"
 #include "lib/script/script.h"
 #include "lib/sound/audio.h"
 #include "lib/sound/cdaudio.h"
+#include "lib/sound/playlist.h"
 
-#include "clparse.h"
 #include "challenge.h"
+#include "clparse.h"
 #include "configuration.h"
 #include "display.h"
 #include "display3d.h"
 #include "frontend.h"
 #include "game.h"
 #include "init.h"
+#include "keybind.h"
 #include "levels.h"
 #include "lighting.h"
 #include "loadsave.h"
 #include "loop.h"
+#include "main.h"
+#include "map.h"
 #include "mission.h"
 #include "modding.h"
 #include "multiplay.h"
@@ -70,56 +73,53 @@
 #include "research.h"
 #include "scripttabs.h"
 #include "seqdisp.h"
-#include "warzoneconfig.h"
-#include "main.h"
-#include "wrappers.h"
 #include "version.h"
-#include "map.h"
-#include "keybind.h"
+#include "warzoneconfig.h"
+#include "wrappers.h"
+#include <gflags/gflags.h>
 #include <time.h>
 
 #if defined(WZ_OS_MAC)
 // NOTE: Moving these defines is likely to (and has in the past) break the mac builds
-# include <CoreServices/CoreServices.h>
-# include <unistd.h>
-# include "cocoa_wrapper.h"
+#include "cocoa_wrapper.h"
+#include <CoreServices/CoreServices.h>
+#include <unistd.h>
 #endif // WZ_OS_MAC
 
 /* Always use fallbacks on Windows */
 #if defined(WZ_OS_WIN)
-#  undef WZ_DATADIR
+#undef WZ_DATADIR
 #endif
 
 #if !defined(WZ_DATADIR)
-#  define WZ_DATADIR "data"
+#define WZ_DATADIR "data"
 #endif
-
 
 enum FOCUS_STATE
 {
-	FOCUS_OUT,		// Window does not have the focus
-	FOCUS_IN,		// Window has got the focus
+	FOCUS_OUT, // Window does not have the focus
+	FOCUS_IN,  // Window has got the focus
 };
 
-bool customDebugfile = false;		// Default false: user has NOT specified where to store the stdout/err file.
+bool customDebugfile = false; // Default false: user has NOT specified where to store the stdout/err file.
 
-char datadir[PATH_MAX] = ""; // Global that src/clparse.c:ParseCommandLine can write to, so it can override the default datadir on runtime. Needs to be empty on startup for ParseCommandLine to work!
+char datadir[PATH_MAX] = ""; // Global that src/clparse.c:ParseCommandLine can write to, so it can override the default
+							 // datadir on runtime. Needs to be empty on startup for ParseCommandLine to work!
 char configdir[PATH_MAX] = ""; // specifies custom USER directory. Same rules apply as datadir above.
 char rulesettag[40] = "";
 
-//flag to indicate when initialisation is complete
-bool	gameInitialised = false;
-char	SaveGamePath[PATH_MAX];
-char	ScreenDumpPath[PATH_MAX];
-char	MultiCustomMapsPath[PATH_MAX];
-char	MultiPlayersPath[PATH_MAX];
-char	KeyMapPath[PATH_MAX];
+// flag to indicate when initialisation is complete
+bool gameInitialised = false;
+char SaveGamePath[PATH_MAX];
+char ScreenDumpPath[PATH_MAX];
+char MultiCustomMapsPath[PATH_MAX];
+char MultiPlayersPath[PATH_MAX];
+char KeyMapPath[PATH_MAX];
 // Start game in title mode:
 static GS_GAMEMODE gameStatus = GS_TITLE_SCREEN;
 // Status of the gameloop
 static GAMECODE gameLoopStatus = GAMECODE_CONTINUE;
 static FOCUS_STATE focusState = FOCUS_IN;
-
 
 /*!
  * Retrieves the current working directory and copies it into the provided output buffer
@@ -135,7 +135,8 @@ static bool getCurrentDir(char *const dest, size_t const size)
 	{
 		if (errno == ERANGE)
 		{
-			debug(LOG_ERROR, "The buffer to contain our current directory is too small (%u bytes and more needed)", (unsigned int)size);
+			debug(LOG_ERROR, "The buffer to contain our current directory is too small (%u bytes and more needed)",
+				  (unsigned int)size);
 		}
 		else
 		{
@@ -155,7 +156,8 @@ static bool getCurrentDir(char *const dest, size_t const size)
 		char *err_string = NULL;
 
 		// Retrieve a string describing the error number (uses LocalAlloc() to allocate memory for err_string)
-		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, (char *)&err_string, 0, NULL);
+		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, (char *)&err_string,
+					   0, NULL);
 
 		// Print an error message with the above description
 		debug(LOG_ERROR, "GetCurrentDirectory failed (error code: %d): %s", err, err_string);
@@ -167,7 +169,8 @@ static bool getCurrentDir(char *const dest, size_t const size)
 	}
 	else if (len > size)
 	{
-		debug(LOG_ERROR, "The buffer to contain our current directory is too small (%u bytes and %d needed)", (unsigned int)size, len);
+		debug(LOG_ERROR, "The buffer to contain our current directory is too small (%u bytes and %d needed)",
+			  (unsigned int)size, len);
 
 		return false;
 	}
@@ -178,7 +181,7 @@ static bool getCurrentDir(char *const dest, size_t const size)
 		return false;
 	}
 #else
-# error "Provide an implementation here to copy the current working directory in 'dest', which is 'size' bytes large."
+#error "Provide an implementation here to copy the current working directory in 'dest', which is 'size' bytes large."
 #endif
 
 	// If we got here everything went well
@@ -193,10 +196,10 @@ static std::string getPlatformPrefDir_Fallback(const char *org, const char *app)
 {
 	std::string basePath;
 	std::string appendPath;
-	char tmpstr[PATH_MAX] = { '\0' };
+	char tmpstr[PATH_MAX] = {'\0'};
 	const size_t size = sizeof(tmpstr);
 #if defined(WZ_OS_WIN)
-//  When WZ_PORTABLE is passed, that means we want the config directory at the same location as the program file
+	//  When WZ_PORTABLE is passed, that means we want the config directory at the same location as the program file
 	DWORD dwRet;
 	wchar_t tmpWStr[MAX_PATH];
 #ifndef WZ_PORTABLE
@@ -274,7 +277,7 @@ static std::string getPlatformPrefDir_Fallback(const char *org, const char *app)
 	}
 	else
 #endif
-	if (getCurrentDir(tmpstr, size))
+		if (getCurrentDir(tmpstr, size))
 	{
 		basePath = std::string(tmpstr);
 		appendPath = std::string(app);
@@ -289,15 +292,14 @@ static std::string getPlatformPrefDir_Fallback(const char *org, const char *app)
 
 	if (!PHYSFS_setWriteDir(basePath.c_str())) // Workaround for PhysFS not creating the writedir as expected.
 	{
-		debug(LOG_FATAL, "Error setting write directory to \"%s\": %s",
-			  basePath.c_str(), WZ_PHYSFS_getLastError());
+		debug(LOG_FATAL, "Error setting write directory to \"%s\": %s", basePath.c_str(), WZ_PHYSFS_getLastError());
 		exit(1);
 	}
 
 	if (!PHYSFS_mkdir(appendPath.c_str()))
 	{
-		debug(LOG_FATAL, "Error creating directory \"%s\" in \"%s\": %s",
-			  appendPath.c_str(), PHYSFS_getWriteDir(), WZ_PHYSFS_getLastError());
+		debug(LOG_FATAL, "Error creating directory \"%s\" in \"%s\": %s", appendPath.c_str(), PHYSFS_getWriteDir(),
+			  WZ_PHYSFS_getLastError());
 		exit(1);
 	}
 
@@ -307,10 +309,10 @@ static std::string getPlatformPrefDir_Fallback(const char *org, const char *app)
 
 // Retrieves the appropriate storage directory for application-created files / prefs
 // (Ensures the directory exists. Creates folders if necessary.)
-static std::string getPlatformPrefDir(const char * org, const std::string &app)
+static std::string getPlatformPrefDir(const char *org, const std::string &app)
 {
 #if defined(WZ_PHYSFS_2_1_OR_GREATER)
-	const char * prefsDir = PHYSFS_getPrefDir(org, app.c_str());
+	const char *prefsDir = PHYSFS_getPrefDir(org, app.c_str());
 	if (prefsDir == nullptr)
 	{
 		debug(LOG_FATAL, "Failed to obtain prefs directory: %s", WZ_PHYSFS_getLastError());
@@ -329,10 +331,14 @@ static std::string getPlatformPrefDir(const char * org, const std::string &app)
 #endif // defined(WZ_PHYSFS_2_1_OR_GREATER)
 }
 
-bool endsWith (std::string const &fullString, std::string const &endString) {
-	if (fullString.length() >= endString.length()) {
-		return (0 == fullString.compare (fullString.length() - endString.length(), endString.length(), endString));
-	} else {
+bool endsWith(std::string const &fullString, std::string const &endString)
+{
+	if (fullString.length() >= endString.length())
+	{
+		return (0 == fullString.compare(fullString.length() - endString.length(), endString.length(), endString));
+	}
+	else
+	{
 		return false;
 	}
 }
@@ -360,8 +366,7 @@ static void initialize_ConfigDir()
 
 	if (!PHYSFS_setWriteDir(configDir.c_str())) // Workaround for PhysFS not creating the writedir as expected.
 	{
-		debug(LOG_FATAL, "Error setting write directory to \"%s\": %s",
-			  configDir.c_str(), WZ_PHYSFS_getLastError());
+		debug(LOG_FATAL, "Error setting write directory to \"%s\": %s", configDir.c_str(), WZ_PHYSFS_getLastError());
 		exit(1);
 	}
 
@@ -371,7 +376,6 @@ static void initialize_ConfigDir()
 		debug(LOG_ERROR, "Error setting exception handler to use directory %s", configDir.c_str());
 	}
 
-
 	// Config dir first so we always see what we write
 	PHYSFS_mount(PHYSFS_getWriteDir(), NULL, PHYSFS_PREPEND);
 
@@ -380,7 +384,6 @@ static void initialize_ConfigDir()
 	debug(LOG_WZ, "Write dir: %s", PHYSFS_getWriteDir());
 	debug(LOG_WZ, "Base dir: %s", PHYSFS_getBaseDir());
 }
-
 
 /*!
  * Initialize the PhysicsFS library.
@@ -406,10 +409,8 @@ static void check_Physfs()
 	PHYSFS_VERSION(&compiled);
 	PHYSFS_getLinkedVersion(&linked);
 
-	debug(LOG_WZ, "Compiled against PhysFS version: %d.%d.%d",
-	      compiled.major, compiled.minor, compiled.patch);
-	debug(LOG_WZ, "Linked against PhysFS version: %d.%d.%d",
-	      linked.major, linked.minor, linked.patch);
+	debug(LOG_WZ, "Compiled against PhysFS version: %d.%d.%d", compiled.major, compiled.minor, compiled.patch);
+	debug(LOG_WZ, "Linked against PhysFS version: %d.%d.%d", linked.major, linked.minor, linked.patch);
 	if (linked.major < 2)
 	{
 		debug(LOG_FATAL, "At least version 2 of PhysicsFS required!");
@@ -417,7 +418,8 @@ static void check_Physfs()
 	}
 	if (linked.major == 2 && linked.minor == 0 && linked.patch == 2)
 	{
-		debug(LOG_ERROR, "You have PhysicsFS 2.0.2, which is buggy. You may experience random errors/crashes due to spuriously missing files.");
+		debug(LOG_ERROR, "You have PhysicsFS 2.0.2, which is buggy. You may experience random errors/crashes due to "
+						 "spuriously missing files.");
 		debug(LOG_ERROR, "Please upgrade/downgrade PhysicsFS to a different version, such as 2.0.3 or 2.0.1.");
 	}
 
@@ -431,11 +433,11 @@ static void check_Physfs()
 	}
 	if (!zipfound)
 	{
-		debug(LOG_FATAL, "Your Physfs wasn't compiled with zip support.  Please recompile Physfs with zip support.  Exiting program.");
+		debug(LOG_FATAL, "Your Physfs wasn't compiled with zip support.  Please recompile Physfs with zip support.  "
+						 "Exiting program.");
 		exit(-1);
 	}
 }
-
 
 /*!
  * \brief Adds default data dirs
@@ -522,9 +524,7 @@ static void scanDataDirs()
 	{
 		CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
 		char resourcePath[PATH_MAX];
-		if (CFURLGetFileSystemRepresentation(resourceURL, true,
-		                                     (UInt8 *) resourcePath,
-		                                     PATH_MAX))
+		if (CFURLGetFileSystemRepresentation(resourceURL, true, (UInt8 *)resourcePath, PATH_MAX))
 		{
 			chdir(resourcePath);
 			registerSearchPath("data", 7);
@@ -557,7 +557,6 @@ static void scanDataDirs()
 	}
 }
 
-
 /***************************************************************************
 	Make a directory in write path and set a variable to point to it.
 ***************************************************************************/
@@ -580,12 +579,10 @@ static void make_dir(char *dest, const char *dirname, const char *subdir)
 	}
 	if (!PHYSFS_mkdir(dest))
 	{
-		debug(LOG_FATAL, "Unable to create directory \"%s\" in write dir \"%s\"!",
-		      dest, PHYSFS_getWriteDir());
+		debug(LOG_FATAL, "Unable to create directory \"%s\" in write dir \"%s\"!", dest, PHYSFS_getWriteDir());
 		exit(EXIT_FAILURE);
 	}
 }
-
 
 /*!
  * Preparations before entering the title (mainmenu) loop
@@ -604,7 +601,6 @@ static void startTitleLoop()
 	closeLoadingScreen();
 }
 
-
 /*!
  * Shutdown/cleanup after the title (mainmenu) loop
  * Would stop the timer
@@ -618,7 +614,6 @@ static void stopTitleLoop()
 	}
 }
 
-
 /*!
  * Preparations before entering the game loop
  * Would start the timer in an event based mainloop
@@ -627,7 +622,9 @@ static void startGameLoop()
 {
 	SetGameMode(GS_NORMAL);
 
-	// Not sure what aLevelName is, in relation to game.map. But need to use aLevelName here, to be able to start the right map for campaign, and need game.hash, to start the right non-campaign map, if there are multiple identically named maps.
+	// Not sure what aLevelName is, in relation to game.map. But need to use aLevelName here, to be able to start the
+	// right map for campaign, and need game.hash, to start the right non-campaign map, if there are multiple
+	// identically named maps.
 	if (!levLoadData(aLevelName, &game.hash, nullptr, GTYPE_SCENARIO_START))
 	{
 		debug(LOG_FATAL, "Shutting down after failure");
@@ -666,7 +663,6 @@ static void startGameLoop()
 	screen_disableMapPreview();
 }
 
-
 /*!
  * Shutdown/cleanup after the game loop
  * Would stop the timer
@@ -678,7 +674,7 @@ static void stopGameLoop()
 	{
 		clearBlueprints();
 		initLoadingScreen(true); // returning to f.e. do a loader.render not active
-		pie_EnableFog(false); // don't let the normal loop code set status on
+		pie_EnableFog(false);	// don't let the normal loop code set status on
 		if (gameLoopStatus != GAMECODE_LOADGAME)
 		{
 			if (!levReleaseAll())
@@ -706,7 +702,6 @@ static void stopGameLoop()
 	gameInitialised = false;
 }
 
-
 /*!
  * Load a savegame and start into the game loop
  * Game data should be initialised afterwards, so that startGameLoop is not necessary anymore.
@@ -721,10 +716,11 @@ static bool initSaveGameLoad()
 	{
 		// FIXME: we really should throw up a error window, but we can't (easily) so I won't.
 		debug(LOG_ERROR, "Trying to load Game %s failed!", saveGameName);
-		debug(LOG_POPUP, "Failed to load a save game! It is either corrupted or a unsupported format.\n\nRestarting main menu.");
+		debug(LOG_POPUP,
+			  "Failed to load a save game! It is either corrupted or a unsupported format.\n\nRestarting main menu.");
 		// FIXME: If we bomb out on a in game load, then we would crash if we don't do the next two calls
 		// Doesn't seem to be a way to tell where we are in game loop to determine if/when we should do the two calls.
-		gameLoopStatus = GAMECODE_FASTEXIT;	// clear out all old data
+		gameLoopStatus = GAMECODE_FASTEXIT; // clear out all old data
 		stopGameLoop();
 		startTitleLoop(); // Restart into titleloop
 		SetGameMode(GS_TITLE_SCREEN);
@@ -747,7 +743,6 @@ static bool initSaveGameLoad()
 	return true;
 }
 
-
 /*!
  * Run the code inside the gameloop
  */
@@ -756,34 +751,33 @@ static void runGameLoop()
 	gameLoopStatus = gameLoop();
 	switch (gameLoopStatus)
 	{
-	case GAMECODE_CONTINUE:
-	case GAMECODE_PLAYVIDEO:
-		break;
-	case GAMECODE_QUITGAME:
-		debug(LOG_MAIN, "GAMECODE_QUITGAME");
-		stopGameLoop();
-		startTitleLoop(); // Restart into titleloop
-		break;
-	case GAMECODE_LOADGAME:
-		debug(LOG_MAIN, "GAMECODE_LOADGAME");
-		stopGameLoop();
-		initSaveGameLoad(); // Restart and load a savegame
-		break;
-	case GAMECODE_NEWLEVEL:
-		debug(LOG_MAIN, "GAMECODE_NEWLEVEL");
-		stopGameLoop();
-		startGameLoop(); // Restart gameloop
-		break;
-	// Never thrown:
-	case GAMECODE_FASTEXIT:
-	case GAMECODE_RESTARTGAME:
-		break;
-	default:
-		debug(LOG_ERROR, "Unknown code returned by gameLoop");
-		break;
+		case GAMECODE_CONTINUE:
+		case GAMECODE_PLAYVIDEO:
+			break;
+		case GAMECODE_QUITGAME:
+			debug(LOG_MAIN, "GAMECODE_QUITGAME");
+			stopGameLoop();
+			startTitleLoop(); // Restart into titleloop
+			break;
+		case GAMECODE_LOADGAME:
+			debug(LOG_MAIN, "GAMECODE_LOADGAME");
+			stopGameLoop();
+			initSaveGameLoad(); // Restart and load a savegame
+			break;
+		case GAMECODE_NEWLEVEL:
+			debug(LOG_MAIN, "GAMECODE_NEWLEVEL");
+			stopGameLoop();
+			startGameLoop(); // Restart gameloop
+			break;
+		// Never thrown:
+		case GAMECODE_FASTEXIT:
+		case GAMECODE_RESTARTGAME:
+			break;
+		default:
+			debug(LOG_ERROR, "Unknown code returned by gameLoop");
+			break;
 	}
 }
-
 
 /*!
  * Run the code inside the titleloop
@@ -792,14 +786,14 @@ static void runTitleLoop()
 {
 	switch (titleLoop())
 	{
-	case TITLECODE_CONTINUE:
-		break;
-	case TITLECODE_QUITGAME:
-		debug(LOG_MAIN, "TITLECODE_QUITGAME");
-		stopTitleLoop();
-		wzQuit();
-		break;
-	case TITLECODE_SAVEGAMELOAD:
+		case TITLECODE_CONTINUE:
+			break;
+		case TITLECODE_QUITGAME:
+			debug(LOG_MAIN, "TITLECODE_QUITGAME");
+			stopTitleLoop();
+			wzQuit();
+			break;
+		case TITLECODE_SAVEGAMELOAD:
 		{
 			debug(LOG_MAIN, "TITLECODE_SAVEGAMELOAD");
 			initLoadingScreen(true);
@@ -815,23 +809,23 @@ static void runTitleLoop()
 			closeLoadingScreen();
 			break;
 		}
-	case TITLECODE_STARTGAME:
-		debug(LOG_MAIN, "TITLECODE_STARTGAME");
-		initLoadingScreen(true);
-		stopTitleLoop();
-		startGameLoop(); // Restart into gameloop
-		closeLoadingScreen();
-		break;
-	case TITLECODE_SHOWINTRO:
-		debug(LOG_MAIN, "TITLECODE_SHOWINTRO");
-		seq_ClearSeqList();
-		seq_AddSeqToList("titles.ogg", nullptr, nullptr, false);
-		seq_AddSeqToList("devastation.ogg", nullptr, "devastation.txa", false);
-		seq_StartNextFullScreenVideo();
-		break;
-	default:
-		debug(LOG_ERROR, "Unknown code returned by titleLoop");
-		break;
+		case TITLECODE_STARTGAME:
+			debug(LOG_MAIN, "TITLECODE_STARTGAME");
+			initLoadingScreen(true);
+			stopTitleLoop();
+			startGameLoop(); // Restart into gameloop
+			closeLoadingScreen();
+			break;
+		case TITLECODE_SHOWINTRO:
+			debug(LOG_MAIN, "TITLECODE_SHOWINTRO");
+			seq_ClearSeqList();
+			seq_AddSeqToList("titles.ogg", nullptr, nullptr, false);
+			seq_AddSeqToList("devastation.ogg", nullptr, "devastation.txa", false);
+			seq_StartNextFullScreenVideo();
+			break;
+		default:
+			debug(LOG_ERROR, "Unknown code returned by titleLoop");
+			break;
 	}
 }
 
@@ -847,7 +841,7 @@ void mainLoop()
 	if (keyPressed(KEY_F10))
 	{
 		kf_ScreenDump();
-		inputLoseFocus();		// remove it from input stream
+		inputLoseFocus(); // remove it from input stream
 	}
 
 	if (NetPlay.bComms || focusState == FOCUS_IN || !war_GetPauseOnFocusLoss())
@@ -856,22 +850,24 @@ void mainLoop()
 		{
 			videoLoop(); // Display the video if necessary
 		}
-		else switch (GetGameMode())
+		else
+			switch (GetGameMode())
 			{
-			case GS_NORMAL: // Run the gameloop code
-				runGameLoop();
-				break;
-			case GS_TITLE_SCREEN: // Run the titleloop code
-				runTitleLoop();
-				break;
-			default:
-				break;
+				case GS_NORMAL: // Run the gameloop code
+					runGameLoop();
+					break;
+				case GS_TITLE_SCREEN: // Run the titleloop code
+					runTitleLoop();
+					break;
+				default:
+					break;
 			}
 		realTimeUpdate(); // Update realTime.
 	}
 }
 
-bool getUTF8CmdLine(int *const utfargc WZ_DECL_UNUSED, const char *** const utfargv WZ_DECL_UNUSED) // explicitely pass by reference
+bool getUTF8CmdLine(int *const utfargc WZ_DECL_UNUSED,
+					const char ***const utfargv WZ_DECL_UNUSED) // explicitely pass by reference
 {
 #ifdef WZ_OS_WIN
 	int wargc;
@@ -883,7 +879,8 @@ bool getUTF8CmdLine(int *const utfargc WZ_DECL_UNUSED, const char *** const utfa
 		char *err_string;
 
 		// Retrieve a (locally encoded) string describing the error (uses LocalAlloc() to allocate memory)
-		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, (char *)&err_string, 0, NULL);
+		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, (char *)&err_string,
+					   0, NULL);
 
 		debug(LOG_FATAL, "CommandLineToArgvW failed: %s (code:%d)", err_string, err);
 
@@ -901,7 +898,7 @@ bool getUTF8CmdLine(int *const utfargc WZ_DECL_UNUSED, const char *** const utfa
 	}
 	for (int i = 0; i < wargc; ++i)
 	{
-		static_assert(sizeof(wchar_t) == sizeof(utf_16_char), "");			  // Should be true on windows
+		static_assert(sizeof(wchar_t) == sizeof(utf_16_char), "");		  // Should be true on windows
 		(*utfargv)[i] = UTF16toUTF8((const utf_16_char *)wargv[i], NULL); // only returns null when memory runs out
 		if ((*utfargv)[i] == NULL)
 		{
@@ -922,9 +919,10 @@ extern const char *BACKEND;
 
 int realmain(int argc, char *argv[])
 {
+	gflags::ParseCommandLineFlags(&argc, &argv, true);
 	int utfargc = argc;
 	const char **utfargv = (const char **)argv;
-	wzMain(argc, argv);		// init Qt integration first
+	wzMain(argc, argv); // init Qt integration first
 
 	debug_init();
 	debug_register_callback(debug_callback_stderr, nullptr, nullptr, nullptr);
@@ -933,14 +931,16 @@ int realmain(int argc, char *argv[])
 #endif // WZ_OS_WIN && DEBUG_INSANE
 
 	// *****
-	// NOTE: Try *NOT* to use debug() output routines without some other method of informing the user.  All this output is sent to /dev/nul at this point on some platforms!
+	// NOTE: Try *NOT* to use debug() output routines without some other method of informing the user.  All this output
+	// is sent to /dev/nul at this point on some platforms!
 	// *****
 	if (!getUTF8CmdLine(&utfargc, &utfargv))
 	{
 		return EXIT_FAILURE;
 	}
 
-	setupExceptionHandler(utfargc, utfargv, version_getFormattedVersionString(), version_getVersionedAppDirFolderName());
+	setupExceptionHandler(utfargc, utfargv, version_getFormattedVersionString(),
+						  version_getVersionedAppDirFolderName());
 
 	/*** Initialize PhysicsFS ***/
 	initialize_PhysicsFS(utfargv[0]);
@@ -963,34 +963,34 @@ int realmain(int argc, char *argv[])
 
 	/*** Initialize directory structure ***/
 
-	PHYSFS_mkdir("challenges");	// custom challenges
+	PHYSFS_mkdir("challenges"); // custom challenges
 
-	PHYSFS_mkdir("logs");		// netplay, mingw crash reports & WZ logs
+	PHYSFS_mkdir("logs"); // netplay, mingw crash reports & WZ logs
 
 	make_dir(MultiCustomMapsPath, "maps", nullptr); // needed to prevent crashes when getting map
 
-	PHYSFS_mkdir("mods/autoload");	// mods that are automatically loaded
-	PHYSFS_mkdir("mods/campaign");	// campaign only mods activated with --mod_ca=example.wz
-	PHYSFS_mkdir("mods/downloads");	// mod download directory
+	PHYSFS_mkdir("mods/autoload");  // mods that are automatically loaded
+	PHYSFS_mkdir("mods/campaign");  // campaign only mods activated with --mod_ca=example.wz
+	PHYSFS_mkdir("mods/downloads"); // mod download directory
 	PHYSFS_mkdir("mods/global");	// global mods activated with --mod=example.wz
-	PHYSFS_mkdir("mods/multiplay");	// multiplay only mods activated with --mod_mp=example.wz
-	PHYSFS_mkdir("mods/music");	// music mods that are automatically loaded
+	PHYSFS_mkdir("mods/multiplay"); // multiplay only mods activated with --mod_mp=example.wz
+	PHYSFS_mkdir("mods/music");		// music mods that are automatically loaded
 
 	make_dir(MultiPlayersPath, "multiplay", "players"); // player profiles
 
-	PHYSFS_mkdir("music");	// custom music overriding default music and music mods
+	PHYSFS_mkdir("music"); // custom music overriding default music and music mods
 
-	make_dir(SaveGamePath, "savegames", nullptr); 	// save games
-	PHYSFS_mkdir("savegames/campaign");		// campaign save games
-	PHYSFS_mkdir("savegames/skirmish");		// skirmish save games
+	make_dir(SaveGamePath, "savegames", nullptr); // save games
+	PHYSFS_mkdir("savegames/campaign");			  // campaign save games
+	PHYSFS_mkdir("savegames/skirmish");			  // skirmish save games
 
-	make_dir(ScreenDumpPath, "screenshots", nullptr);	// for screenshots
+	make_dir(ScreenDumpPath, "screenshots", nullptr); // for screenshots
 
-	PHYSFS_mkdir("tests");			// test games launched with --skirmish=game
+	PHYSFS_mkdir("tests"); // test games launched with --skirmish=game
 
-	PHYSFS_mkdir("userdata");		// per-mod data user generated data
-	PHYSFS_mkdir("userdata/campaign");	// contains campaign templates
-	PHYSFS_mkdir("userdata/mp");		// contains multiplayer templates
+	PHYSFS_mkdir("userdata");				   // per-mod data user generated data
+	PHYSFS_mkdir("userdata/campaign");		   // contains campaign templates
+	PHYSFS_mkdir("userdata/mp");			   // contains multiplayer templates
 	memset(rulesettag, 0, sizeof(rulesettag)); // stores tag property of ruleset.json files
 
 	if (!customDebugfile)
@@ -1001,12 +1001,13 @@ int realmain(int argc, char *argv[])
 		struct tm *newtime;
 		char buf[PATH_MAX];
 
-		time(&aclock);					// Get time in seconds
-		newtime = localtime(&aclock);		// Convert time to struct
+		time(&aclock);				  // Get time in seconds
+		newtime = localtime(&aclock); // Convert time to struct
 		// Note: We are using fopen(), and not physfs routines to open the file
 		// log name is logs/(or \)WZlog-MMDD_HHMMSS.txt
-		snprintf(buf, sizeof(buf), "%slogs%sWZlog-%02d%02d_%02d%02d%02d.txt", PHYSFS_getWriteDir(), PHYSFS_getDirSeparator(),
-		         newtime->tm_mon + 1, newtime->tm_mday, newtime->tm_hour, newtime->tm_min, newtime->tm_sec);
+		snprintf(buf, sizeof(buf), "%slogs%sWZlog-%02d%02d_%02d%02d%02d.txt", PHYSFS_getWriteDir(),
+				 PHYSFS_getDirSeparator(), newtime->tm_mon + 1, newtime->tm_mday, newtime->tm_hour, newtime->tm_min,
+				 newtime->tm_sec);
 		debug_register_callback(debug_callback_file, debug_callback_file_init, debug_callback_file_exit, buf);
 
 		debug(LOG_WZ, "Using %s debug file", buf);
@@ -1017,9 +1018,10 @@ int realmain(int argc, char *argv[])
 	debug(LOG_WZ, "Warzone 2100 - %s", version_getFormattedVersionString());
 	debug(LOG_WZ, "Using language: %s", getLanguage());
 	debug(LOG_WZ, "Backend: %s", BACKEND);
-	debug(LOG_MEMORY, "sizeof: SIMPLE_OBJECT=%ld, BASE_OBJECT=%ld, DROID=%ld, STRUCTURE=%ld, FEATURE=%ld, PROJECTILE=%ld",
-	      (long)sizeof(SIMPLE_OBJECT), (long)sizeof(BASE_OBJECT), (long)sizeof(DROID), (long)sizeof(STRUCTURE), (long)sizeof(FEATURE), (long)sizeof(PROJECTILE));
-
+	debug(LOG_MEMORY,
+		  "sizeof: SIMPLE_OBJECT=%ld, BASE_OBJECT=%ld, DROID=%ld, STRUCTURE=%ld, FEATURE=%ld, PROJECTILE=%ld",
+		  (long)sizeof(SIMPLE_OBJECT), (long)sizeof(BASE_OBJECT), (long)sizeof(DROID), (long)sizeof(STRUCTURE),
+		  (long)sizeof(FEATURE), (long)sizeof(PROJECTILE));
 
 	/* Put in the writedir root */
 	sstrcpy(KeyMapPath, "keymap.json");
@@ -1124,8 +1126,10 @@ int realmain(int argc, char *argv[])
 	debug(LOG_WZ, "Warzone 2100 - %s", version_getFormattedVersionString());
 	debug(LOG_WZ, "Using language: %s", getLanguage());
 	debug(LOG_WZ, "Backend: %s", BACKEND);
-	debug(LOG_MEMORY, "sizeof: SIMPLE_OBJECT=%ld, BASE_OBJECT=%ld, DROID=%ld, STRUCTURE=%ld, FEATURE=%ld, PROJECTILE=%ld",
-	      (long)sizeof(SIMPLE_OBJECT), (long)sizeof(BASE_OBJECT), (long)sizeof(DROID), (long)sizeof(STRUCTURE), (long)sizeof(FEATURE), (long)sizeof(PROJECTILE));
+	debug(LOG_MEMORY,
+		  "sizeof: SIMPLE_OBJECT=%ld, BASE_OBJECT=%ld, DROID=%ld, STRUCTURE=%ld, FEATURE=%ld, PROJECTILE=%ld",
+		  (long)sizeof(SIMPLE_OBJECT), (long)sizeof(BASE_OBJECT), (long)sizeof(DROID), (long)sizeof(STRUCTURE),
+		  (long)sizeof(FEATURE), (long)sizeof(PROJECTILE));
 
 	int w = pie_GetVideoBufferWidth();
 	int h = pie_GetVideoBufferHeight();
@@ -1170,7 +1174,7 @@ int realmain(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	//set all the pause states to false
+	// set all the pause states to false
 	setAllPauseStates(false);
 
 	// Copy this info to be used by the crash handler for the dump file
@@ -1182,18 +1186,18 @@ int realmain(int argc, char *argv[])
 	// Do the game mode specific initialisation.
 	switch (GetGameMode())
 	{
-	case GS_TITLE_SCREEN:
-		startTitleLoop();
-		break;
-	case GS_SAVEGAMELOAD:
-		initSaveGameLoad();
-		break;
-	case GS_NORMAL:
-		startGameLoop();
-		break;
-	default:
-		debug(LOG_ERROR, "Weirdy game status, I'm afraid!!");
-		break;
+		case GS_TITLE_SCREEN:
+			startTitleLoop();
+			break;
+		case GS_SAVEGAMELOAD:
+			initSaveGameLoad();
+			break;
+		case GS_NORMAL:
+			startGameLoop();
+			break;
+		default:
+			debug(LOG_ERROR, "Weirdy game status, I'm afraid!!");
+			break;
 	}
 
 #if defined(WZ_CC_MSVC) && defined(DEBUG)
@@ -1203,10 +1207,10 @@ int realmain(int argc, char *argv[])
 	wzMainEventLoop();
 	saveConfig();
 	systemShutdown();
-#ifdef WZ_OS_WIN	// clean up the memory allocated for the command line conversion
+#ifdef WZ_OS_WIN // clean up the memory allocated for the command line conversion
 	for (int i = 0; i < argc; i++)
 	{
-		const char *** const utfargvF = &utfargv;
+		const char ***const utfargvF = &utfargv;
 		free((void *)(*utfargvF)[i]);
 	}
 	free(utfargv);
@@ -1219,15 +1223,9 @@ int realmain(int argc, char *argv[])
 /*!
  * Get the mode the game is currently in
  */
-GS_GAMEMODE GetGameMode()
-{
-	return gameStatus;
-}
+GS_GAMEMODE GetGameMode() { return gameStatus; }
 
 /*!
  * Set the current mode
  */
-void SetGameMode(GS_GAMEMODE status)
-{
-	gameStatus = status;
-}
+void SetGameMode(GS_GAMEMODE status) { gameStatus = status; }

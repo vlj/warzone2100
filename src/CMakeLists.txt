@@ -53,6 +53,7 @@ endif()
 if(ENABLE_NLS)
 	find_package (Intl REQUIRED)
 endif()
+find_package(gflags REQUIRED)
 
 file(GLOB HEADERS "*.h")
 file(GLOB SRC "*.cpp")
@@ -89,6 +90,7 @@ target_link_libraries(warzone2100
 	Qt5::Script
 	Qt5::Gui
 	Qt5::Widgets
+  gflags
 	)
 if(ENABLE_NLS)
 	target_link_libraries(warzone2100 "${Intl_LIBRARIES}")

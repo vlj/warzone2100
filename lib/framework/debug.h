@@ -28,11 +28,11 @@
  * are used outside of the framework library.
  */
 #if !defined(_frame_h) && !defined(FRAME_LIB_INCLUDE)
-# error Framework header files MUST be included from Frame.h ONLY.
+#error Framework header files MUST be included from Frame.h ONLY.
 #endif
 
 #include "wzglobal.h"
-
+#include <glog/logging.h>
 #if defined(WZ_OS_WIN)
 #include <assert.h>
 #endif
@@ -48,14 +48,13 @@
  *
  */
 
-#define MAX_EVENT_NAME_LEN	100
+#define MAX_EVENT_NAME_LEN 100
 
 /** Stores name of the last function or event called by scripts. */
 extern char last_called_script_event[MAX_EVENT_NAME_LEN];
 
 /** Whether asserts are currently enabled. */
 extern bool assertEnabled;
-
 
 /* Do the correct assert call for each compiler */
 #if defined(WZ_OS_WIN)
@@ -64,15 +63,12 @@ extern bool assertEnabled;
 #define wz_assert(expr) raise(SIGTRAP)
 #endif
 
-
 /** Deals with failure in an assert. Expression is (re-)evaluated for output in the assert() call. */
-#define ASSERT_FAILURE(expr, expr_string, location_description, function, ...) \
-	( \
-	  (void)_debug(__LINE__, LOG_INFO, function, __VA_ARGS__), \
-	  (void)_debug(__LINE__, LOG_INFO, function, "Assert in Warzone: %s (%s), last script event: '%s'", \
-	               location_description, expr_string, last_called_script_event), \
-	  ( assertEnabled ? (void)wz_assert(expr) : (void)0 )\
-	)
+#define ASSERT_FAILURE(expr, expr_string, location_description, function, ...)                                         \
+	((void)_debug(__LINE__, LOG_INFO, function, __VA_ARGS__),                                                          \
+	 (void)_debug(__LINE__, LOG_INFO, function, "Assert in Warzone: %s (%s), last script event: '%s'",                 \
+				  location_description, expr_string, last_called_script_event),                                        \
+	 (assertEnabled ? (void)wz_assert(expr) : (void)0))
 
 /**
  * Internal assert helper macro to allow some debug functions to use an alternate calling location.
@@ -90,13 +86,11 @@ extern bool assertEnabled;
  * \return Will return whatever assert(expr) returns. That's undefined though,
  *         so unless you have a good reason to, don't depend on it.
  */
-#define ASSERT_HELPER(expr, location_description, function, ...) \
-	( \
-	  likely(expr) ? /* if (expr) */ \
-	  (void)0 \
-	  : /* else */\
-	  ASSERT_FAILURE(expr, #expr, location_description, function, __VA_ARGS__) \
-	)
+#define ASSERT_HELPER(expr, location_description, function, ...)                                                       \
+	(likely(expr) ? /* if (expr) */                                                                                    \
+		 (void)0                                                                                                       \
+				  : /* else */                                                                                         \
+		 ASSERT_FAILURE(expr, #expr, location_description, function, __VA_ARGS__))
 
 /**
  *
@@ -105,16 +99,23 @@ extern bool assertEnabled;
  *
  * Arguments:	ASSERT( condition, "Format string with variables: %d, %d", var1, var2 );
  */
-#define ASSERT(expr, ...) \
-	ASSERT_HELPER(expr, AT_MACRO, __FUNCTION__, __VA_ARGS__)
+#define ASSERT(expr, ...) ASSERT_HELPER(expr, AT_MACRO, __FUNCTION__, __VA_ARGS__)
 
 /**
  *
- * Assert-or-return macro that returns given return value (can also be a mere comma if function has no return value) on failure,
- * and also provides asserts and debug output for debugging.
+ * Assert-or-return macro that returns given return value (can also be a mere comma if function has no return value) on
+ * failure, and also provides asserts and debug output for debugging.
  */
-#define ASSERT_OR_RETURN(retval, expr, ...) \
-	do { bool _wzeval = likely(expr); if (!_wzeval) { ASSERT_FAILURE(expr, #expr, AT_MACRO, __FUNCTION__, __VA_ARGS__); return retval; } } while (0)
+#define ASSERT_OR_RETURN(retval, expr, ...)                                                                            \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		bool _wzeval = likely(expr);                                                                                   \
+		if (!_wzeval)                                                                                                  \
+		{                                                                                                              \
+			ASSERT_FAILURE(expr, #expr, AT_MACRO, __FUNCTION__, __VA_ARGS__);                                          \
+			return retval;                                                                                             \
+		}                                                                                                              \
+	} while (0)
 
 /***
  ***
@@ -136,8 +137,8 @@ enum code_part
 	LOG_NET,
 	LOG_MEMORY,
 	LOG_WARNING, /**< special; on in debug mode */
-	LOG_ERROR, /**< special; on by default */
-	LOG_NEVER, /**< if too verbose for anything but dedicated debugging... */
+	LOG_ERROR,   /**< special; on by default */
+	LOG_NEVER,   /**< if too verbose for anything but dedicated debugging... */
 	LOG_SCRIPT,
 	LOG_MOVEMENT,
 	LOG_ATTACK,
@@ -154,11 +155,11 @@ enum code_part
 	LOG_INFO, /**< special; on by default, for both debug & release builds */
 	LOG_TERRAIN,
 	LOG_FEATURE,
-	LOG_FATAL,	/**< special; on by default, for both debug & release builds  */
-	LOG_INPUT,	// mouse / keyboard events
-	LOG_POPUP,	// special, on by default, for both debug & release builds (used for OS dependent popup code)
-	LOG_CONSOLE,	// send console messages to file
-	LOG_LAST /**< _must_ be last! */
+	LOG_FATAL,   /**< special; on by default, for both debug & release builds  */
+	LOG_INPUT,   // mouse / keyboard events
+	LOG_POPUP,   // special, on by default, for both debug & release builds (used for OS dependent popup code)
+	LOG_CONSOLE, // send console messages to file
+	LOG_LAST	 /**< _must_ be last! */
 };
 
 extern bool enabled_debug[LOG_LAST];
@@ -171,9 +172,9 @@ struct debug_callback
 {
 	debug_callback *next;
 	debug_callback_fn callback; /// Function which does the output
-	debug_callback_init init; /// Setup function
-	debug_callback_exit exit; /// Cleaning function
-	void *data;  /// Used to pass data to the above functions. Eg a filename or handle.
+	debug_callback_init init;   /// Setup function
+	debug_callback_exit exit;   /// Cleaning function
+	void *data;					/// Used to pass data to the above functions. Eg a filename or handle.
 };
 
 /**
@@ -206,7 +207,8 @@ const char *debugLastError();
  * \param	exit		Cleanup function called when unregistering the callback (optional, may be NULL)
  * \param	data		Data to be passed to all three functions (optional, may be NULL)
  */
-void debug_register_callback(debug_callback_fn callback, debug_callback_init init, debug_callback_exit exit, void *data);
+void debug_register_callback(debug_callback_fn callback, debug_callback_init init, debug_callback_exit exit,
+							 void *data);
 
 void debug_callback_file(void **data, const char *outputBuffer);
 bool debug_callback_file_init(void **data);
@@ -225,20 +227,38 @@ void debug_callback_win32debug(void **data, const char *outputBuffer);
  */
 bool debug_enable_switch(const char *str);
 // macro for always outputting informational responses on both debug & release builds
-#define info(...) do { _debug(__LINE__, LOG_INFO, __FUNCTION__, __VA_ARGS__); } while(0)
+#define info(...)                                                                                                      \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		_debug(__LINE__, LOG_INFO, __FUNCTION__, __VA_ARGS__);                                                         \
+	} while (0)
 /**
  * Output printf style format str with additional arguments.
  *
  * Only outputs if debugging of part was formerly enabled with debug_enable_switch.
  */
-#define debug(part, ...) do { if (enabled_debug[part]) _debug(__LINE__, part, __FUNCTION__, __VA_ARGS__); } while(0)
+#define debug(part, ...)                                                                                               \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		if (enabled_debug[part])                                                                                       \
+			_debug(__LINE__, part, __FUNCTION__, __VA_ARGS__);                                                         \
+	} while (0)
 #ifdef WZ_CC_MINGW
-void _debug(int line, code_part part, const char *function, const char *str, ...) WZ_DECL_FORMAT(__MINGW_PRINTF_FORMAT, 4, 5);
+void _debug(int line, code_part part, const char *function, const char *str, ...)
+	WZ_DECL_FORMAT(__MINGW_PRINTF_FORMAT, 4, 5);
 #else
 void _debug(int line, code_part part, const char *function, const char *str, ...) WZ_DECL_FORMAT(printf, 4, 5);
 #endif
 
-#define debugBacktrace(part, ...) do { if (enabled_debug[part]) { _debug(__LINE__, part, __FUNCTION__, __VA_ARGS__); _debugBacktrace(part); }} while(0)
+#define debugBacktrace(part, ...)                                                                                      \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		if (enabled_debug[part])                                                                                       \
+		{                                                                                                              \
+			_debug(__LINE__, part, __FUNCTION__, __VA_ARGS__);                                                         \
+			_debugBacktrace(part);                                                                                     \
+		}                                                                                                              \
+	} while (0)
 void _debugBacktrace(code_part part);
 
 /** Global to keep track of which game object to trace. */
@@ -249,16 +269,15 @@ extern UDWORD traceID;
  * has been enabled.
  * @see debug
  */
-#define objTrace(id, ...) do { if (id == traceID) _realObjTrace(id, __FUNCTION__, __VA_ARGS__); } while(0)
+#define objTrace(id, ...)                                                                                              \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		if (id == traceID)                                                                                             \
+			_realObjTrace(id, __FUNCTION__, __VA_ARGS__);                                                              \
+	} while (0)
 void _realObjTrace(int id, const char *function, const char *str, ...) WZ_DECL_FORMAT(printf, 3, 4);
-static inline void objTraceEnable(UDWORD id)
-{
-	traceID = id;
-}
-static inline void objTraceDisable()
-{
-	traceID = (UDWORD) - 1;
-}
+static inline void objTraceEnable(UDWORD id) { traceID = id; }
+static inline void objTraceDisable() { traceID = (UDWORD)-1; }
 
 // MSVC specific rotuines to set/clear allocation tracking
 #if defined(WZ_CC_MSVC) && defined(DEBUG)

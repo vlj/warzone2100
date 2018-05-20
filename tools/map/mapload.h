@@ -128,7 +128,7 @@ static inline unsigned short TileNumber_tile(unsigned short tilenumber)
 
 static inline unsigned char terrainType(const MAPTILE * tile)
 {
-	return terrainTypes[TileNumber_tile(tile->texture)];
+	return terrainTypes[TileNumber_tile(static_cast<uint16_t>(tile->texture))];
 }
 
 // map.h: 357

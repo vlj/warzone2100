@@ -105,7 +105,7 @@ include_directories(${WZ_FRAMEWORK_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} ${OPENGL_INC
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
 add_library(maputils mapload.cpp)
-target_link_libraries(maputils PUBLIC PNG::PNG Qt5::Core ${PHYSFS_LIBRARY})
+target_link_libraries(maputils PUBLIC PNG::PNG Qt5::Core ${PHYSFS_LIBRARY} gamelib)
 
 # map2lnd
 ADD_EXECUTABLE(map2lnd

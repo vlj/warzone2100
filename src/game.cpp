@@ -32,6 +32,7 @@
 #include "lib/framework/physfs_ext.h"
 #include "lib/framework/strres.h"
 #include "lib/framework/opengl.h"
+#include <map/terrain_types.h>
 
 #include "lib/gamelib/gtime.h"
 #include "lib/ivis_opengl/ivisdef.h"
@@ -2069,23 +2070,8 @@ bool loadGame(const char *pGameToLoad, bool keepObjects, bool freeMem, bool User
 		aFileName[fileExten] = '\0';
 		strcat(aFileName, "ttypes.ttp");
 		/* Load in the chosen file data */
-		pFileData = fileLoadBuffer;
-		if (!loadFileToBuffer(aFileName, pFileData, FILE_LOAD_BUFFER_SIZE, &fileSize))
-		{
-			debug(LOG_ERROR, "Failed with: %s", aFileName);
-			goto error;
-		}
+		std::unique_ptr<TerrainTypeData> ttdata{loadTerrainTypes(aFileName)};
 
-
-		//load the terrain type data
-		if (pFileData)
-		{
-			if (!loadTerrainTypeMap(pFileData, fileSize))
-			{
-				debug(LOG_ERROR, "Failed with: %s", aFileName);
-				goto error;
-			}
-		}
 	}
 
 	//load up the Droid Templates BEFORE any structures are loaded
@@ -5861,62 +5847,6 @@ bool writeTemplateFile(const char *pFileName)
 		writeTemplate(&psCurr);
 	}
 	ini.endArray();
-	return true;
-}
-
-// -----------------------------------------------------------------------------------------
-// load up a terrain tile type map file
-bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize)
-{
-	TILETYPE_SAVEHEADER	*psHeader;
-	UDWORD				i;
-	UWORD				*pType;
-
-	if (filesize < TILETYPE_HEADER_SIZE)
-	{
-		debug(LOG_ERROR, "loadTerrainTypeMap: file too small");
-		return false;
-	}
-
-	// Check the header
-	psHeader = (TILETYPE_SAVEHEADER *)pFileData;
-	if (psHeader->aFileType[0] != 't' || psHeader->aFileType[1] != 't' ||
-	    psHeader->aFileType[2] != 'y' || psHeader->aFileType[3] != 'p')
-	{
-		debug(LOG_ERROR, "loadTerrainTypeMap: Incorrect file type");
-
-		return false;
-	}
-
-	/* TILETYPE_SAVEHEADER */
-	endian_udword(&psHeader->version);
-	endian_udword(&psHeader->quantity);
-
-	// reset the terrain table
-	memset(terrainTypes, 0, sizeof(terrainTypes));
-
-	// Load the terrain type mapping
-	pType = (UWORD *)(pFileData + TILETYPE_HEADER_SIZE);
-	endian_uword(pType);
-	if (psHeader->quantity >= MAX_TILE_TEXTURES)
-	{
-		// Workaround for fugly map editor bug, since we can't fix the map editor
-		psHeader->quantity = MAX_TILE_TEXTURES - 1;
-	}
-	for (i = 0; i < psHeader->quantity; i++)
-	{
-		if (*pType > TER_MAX)
-		{
-			debug(LOG_ERROR, "loadTerrainTypeMap: terrain type out of range");
-
-			return false;
-		}
-
-		terrainTypes[i] = (UBYTE) * pType;
-		pType++;
-		endian_uword(pType);
-	}
-
 	return true;
 }
 

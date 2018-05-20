@@ -117,9 +117,6 @@ bool loadMissionExtras(const char *pGameToLoad, SWORD levelType);
 // load the script state given a .gam name
 bool loadScriptState(char *pFileName);
 
-/// Load the terrain types
-bool loadTerrainTypeMap(const char *pFileData, UDWORD filesize);
-
 bool saveGame(const char *aFileName, GAME_TYPE saveType);
 
 // Get the campaign number for loadGameInit game

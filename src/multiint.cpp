@@ -52,6 +52,7 @@
 #include "lib/widget/widget.h"
 #include "lib/widget/widgint.h"
 #include "lib/widget/label.h"
+#include <map/terrain_types.h>
 
 #include "challenge.h"
 #include "main.h"
@@ -593,17 +594,17 @@ void loadMapPreview(bool hideInterface)
 	sstrcpy(aFileName, psLevel->apDataFiles[psLevel->game]);
 	aFileName[strlen(aFileName) - 4] = '\0';
 	sstrcat(aFileName, "/ttypes.ttp");
-	pFileData = fileLoadBuffer;
 
-	if (!loadFileToBuffer(aFileName, pFileData, FILE_LOAD_BUFFER_SIZE, &fileSize))
-	{
-		debug(LOG_ERROR, "Failed to load terrain types file: [%s]", aFileName);
-		return;
-	}
-	if (!loadTerrainTypeMap(pFileData, fileSize))
+	std::unique_ptr<TerrainTypeData> ttype{loadTerrainTypes(aFileName)};
+	if (!ttype)
 	{
 		debug(LOG_ERROR, "Failed to load terrain types");
 		return;
+	}
+	memset(terrainTypes, 0, sizeof(terrainTypes));
+	for (int i = 0; i < ttype->numTerrainTypes; i++)
+	{
+		terrainTypes[i] = (UBYTE)ttype->terrainTypes[i];
 	}
 
 	// load the map data

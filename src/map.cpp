@@ -31,6 +31,7 @@
 #include "lib/framework/physfs_ext.h"
 #include "lib/ivis_opengl/tex.h"
 #include "lib/netplay/netplay.h"  // For syncDebug
+#include <map/map.h>
 
 #include "map.h"
 #include "hci.h"
@@ -735,50 +736,20 @@ static void generateRiverbed()
 /* Initialise the map structure */
 bool mapLoad(char *filename, bool preview)
 {
-	UDWORD		numGw, width, height;
-	char		aFileType[4];
+	UDWORD		width, height;
 	UDWORD		version;
 	UDWORD		i, x, y;
-	PHYSFS_file	*fp = PHYSFS_openRead(filename);
 	MersenneTwister mt(12345);  // 12345 = random seed.
 
-	if (!fp)
+    std::unique_ptr<MapData> loadedMap{mapLoad(filename)};
+
+    if (!loadedMap)
 	{
-		debug(LOG_ERROR, "%s not found", filename);
 		return false;
 	}
-	else if (WZ_PHYSFS_readBytes(fp, aFileType, 4) != 4
-	         || !PHYSFS_readULE32(fp, &version)
-	         || !PHYSFS_readULE32(fp, &width)
-	         || !PHYSFS_readULE32(fp, &height)
-	         || aFileType[0] != 'm'
-	         || aFileType[1] != 'a'
-	         || aFileType[2] != 'p')
-	{
-		debug(LOG_ERROR, "Bad header in %s", filename);
-		goto failure;
-	}
-	else if (version <= VERSION_9)
-	{
-		debug(LOG_ERROR, "%s: Unsupported save format version %u", filename, version);
-		goto failure;
-	}
-	else if (version > CURRENT_VERSION_NUM)
-	{
-		debug(LOG_ERROR, "%s: Undefined save format version %u", filename, version);
-		goto failure;
-	}
-	else if (width * height > MAP_MAXAREA)
-	{
-		debug(LOG_ERROR, "Map %s too large : %d %d", filename, width, height);
-		goto failure;
-	}
-
-	if (width <= 1 || height <= 1)
-	{
-		debug(LOG_ERROR, "Map is too small : %u, %u", width, height);
-		goto failure;
-	}
+	width = loadedMap->width;
+	height = loadedMap->height;
+	version = loadedMap->mapVersion;
 
 	/* See if this is the first time a map has been loaded */
 	ASSERT(psMapTiles == nullptr, "Map has not been cleared before calling mapLoad()!");
@@ -799,7 +770,7 @@ bool mapLoad(char *filename, bool preview)
 	// load the ground types
 	if (!mapLoadGroundTypes())
 	{
-		goto failure;
+		return false;
 	}
 
 	//load in the map data itself
@@ -807,17 +778,8 @@ bool mapLoad(char *filename, bool preview)
 	/* Load in the map data */
 	for (i = 0; i < mapWidth * mapHeight; i++)
 	{
-		UWORD	texture;
-		UBYTE	height;
-
-		if (!PHYSFS_readULE16(fp, &texture) || !PHYSFS_readULE8(fp, &height))
-		{
-			debug(LOG_ERROR, "%s: Error during savegame load", filename);
-			goto failure;
-		}
-
-		psMapTiles[i].texture = texture;
-		psMapTiles[i].height = height * ELEVATION_SCALE;
+		psMapTiles[i].texture = static_cast<uint16_t>(loadedMap->mMapTiles[i].texture);
+		psMapTiles[i].height = loadedMap->mMapTiles[i].height;
 
 		// Visibility stuff
 		memset(psMapTiles[i].watchers, 0, sizeof(psMapTiles[i].watchers));
@@ -831,25 +793,11 @@ bool mapLoad(char *filename, bool preview)
 	if (preview)
 	{
 		// no need to do anything else for the map preview
-		goto ok;
+		return true;
 	}
-
-	if (!PHYSFS_readULE32(fp, &version) || !PHYSFS_readULE32(fp, &numGw) || version != 1)
+	for (const auto gateway : loadedMap->mGateways)
 	{
-		debug(LOG_ERROR, "Bad gateway in %s", filename);
-		goto failure;
-	}
-
-	for (i = 0; i < numGw; i++)
-	{
-		UBYTE	x0, y0, x1, y1;
-
-		if (!PHYSFS_readULE8(fp, &x0) || !PHYSFS_readULE8(fp, &y0) || !PHYSFS_readULE8(fp, &x1) || !PHYSFS_readULE8(fp, &y1))
-		{
-			debug(LOG_ERROR, "%s: Failed to read gateway info", filename);
-			goto failure;
-		}
-		if (!gwNewGateway(x0, y0, x1, y1))
+		if (!gwNewGateway(gateway.x1, gateway.y1, gateway.x2, gateway.y2))
 		{
 			debug(LOG_ERROR, "%s: Unable to add gateway %d - dropping it", filename, i);
 		}
@@ -857,7 +805,7 @@ bool mapLoad(char *filename, bool preview)
 
 	if (!mapSetGroundTypes())
 	{
-		goto failure;
+		return false;
 	}
 
 	for (y = 0; y < mapHeight; y++)
@@ -916,13 +864,7 @@ bool mapLoad(char *filename, bool preview)
 
 	/* Set continents. This should ideally be done in advance by the map editor. */
 	mapFloodFillContinents();
-ok:
-	PHYSFS_close(fp);
 	return true;
-
-failure:
-	PHYSFS_close(fp);
-	return false;
 }
 
 /* Save the map data */

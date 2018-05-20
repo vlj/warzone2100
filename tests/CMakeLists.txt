@@ -1,5 +1,6 @@
 enable_testing()
 find_package(GTest REQUIRED)
+find_package(glog REQUIRED)
 add_executable(mapTest maptest.cpp)
 target_include_directories(mapTest PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_link_libraries(mapTest PRIVATE GTest::GTest GTest::Main framework maputils)
@@ -26,7 +27,7 @@ add_executable(jsTest lint.cpp lint.h qslint.cpp qtscripttest.cpp)
 target_include_directories(jsTest PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_link_libraries(jsTest PRIVATE GTest::GTest GTest::Main framework maputils Qt5::Script)
 
-gtest_discover_tests(jsTest WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../data")
+#gtest_discover_tests(jsTest WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../data")
 
 set_target_properties (jsTest PROPERTIES
     FOLDER Tests

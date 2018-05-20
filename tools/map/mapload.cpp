@@ -1,5 +1,8 @@
 // tool "framework"
 #include "maplib.h"
+#include <map/map.h>
+#include <map/terrain_types.h>
+#include <memory>
 
 // Self
 #include "mapload.h"
@@ -18,7 +21,7 @@ void mapFree(GAMEMAP *map)
 
 		for (i = 0; i < ARRAY_SIZE(map->mLndObjects); ++i)
 		{
-			free(map->mLndObjects[i]);
+			//free(map->mLndObjects[i]);
 		}
 	}
 	free(map);
@@ -43,98 +46,40 @@ GAMEMAP *mapLoad(char *filename)
 	#define readS8(v) ( littleEndian ? PHYSFS_readSLE8(fp, v) : PHYSFS_readSBE8(fp, v) )
 	#define readS16(v) ( littleEndian ? PHYSFS_readSLE16(fp, v) : PHYSFS_readSBE16(fp, v) )
 	#define readS32(v) ( littleEndian ? PHYSFS_readSLE32(fp, v) : PHYSFS_readSBE32(fp, v) )
-	
+
 	/* === Load map data === */
-
-	strcpy(path, filename);
-	strcat(path, "/game.map");
-	fp = PHYSFS_openRead(path);
-	map->mGateways = NULL;
-	map->mMapTiles = NULL;
-
-	if (!fp)
 	{
-		debug(LOG_ERROR, "Could not open %s", path);
-		map->mapVersion = 0;
-		map->width = UINT32_MAX;
-		map->height = UINT32_MAX;
-		map->mMapTiles = NULL;
-		goto mapfailure;
-	}
-	else if (WZ_PHYSFS_readBytes(fp, aFileType, 4) != 4
-		|| !readU32(&map->mapVersion)
-		|| !readU32(&map->width)
-		|| !readU32(&map->height)
-		|| aFileType[0] != 'm'
-		|| aFileType[1] != 'a'
-		|| aFileType[2] != 'p')
-	{
-		debug(LOG_ERROR, "Bad header in %s", path);
-		goto failure;
-	}
-	else if (map->mapVersion <= 9)
-	{
-		debug(LOG_ERROR, "%s: Unsupported save format version %u", path, map->mapVersion);
-		goto failure;
-	}
-	else if (map->mapVersion > 36)
-	{
-		debug(LOG_ERROR, "%s: Undefined save format version %u", path, map->mapVersion);
-		goto failure;
-	}
-	else if (map->width * map->height > MAP_MAXAREA)
-	{
-		debug(LOG_ERROR, "Map %s too large : %d %d", path, map->width, map->height);
-		goto failure;
-	}
-
-	/* Allocate the memory for the map */
-	map->mMapTiles = (MAPTILE *)calloc(map->width * map->height, sizeof(*map->mMapTiles));
-	if (!map->mMapTiles)
-	{
-		debug(LOG_ERROR, "Out of memory");
-		goto failure;
-	}
-	
-	/* Load in the map data */
-	for (i = 0; i < map->width * map->height; i++)
-	{
-		uint16_t	texture;
-		uint8_t		height;
-
-		if (!readU16(&texture) || !readU8(&height))
+		strcpy(path, filename);
+		strcat(path, "/game.map");
+		std::unique_ptr<MapData> loadedMap = mapLoad(std::string(path));
+		if (loadedMap)
 		{
-			debug(LOG_ERROR, "%s: Error during savegame load", path);
-			goto failure;
-		}
-
-		map->mMapTiles[i].texture = static_cast<TerrainType>(texture);
-		map->mMapTiles[i].height = height;
-		for (j = 0; j < MAX_PLAYERS; j++)
-		{
-			map->mMapTiles[i].tileVisBits = (uint8_t)(map->mMapTiles[i].tileVisBits &~ (uint8_t)(1 << j));
+			map->mapVersion = loadedMap->mapVersion;
+			map->width = loadedMap->width;
+			map->height = loadedMap->height;
+			map->mMapTiles = (MAPTILE *)calloc(map->width * map->height, sizeof(*map->mMapTiles));
+			for (int i = 0; i < map->width * map->height; i++)
+			{
+				map->mMapTiles[i].texture = static_cast<TerrainType>(loadedMap->mMapTiles[i].texture);
+				map->mMapTiles[i].height = loadedMap->mMapTiles[i].height;
+				for (j = 0; j < MAX_PLAYERS; j++)
+				{
+					map->mMapTiles[i].tileVisBits = (uint8_t)(map->mMapTiles[i].tileVisBits & ~(uint8_t)(1 << j));
+				}
+			}
+			map->numGateways = loadedMap->mGateways.size();
+			map->mGateways = (GATEWAY *)calloc(map->numGateways, sizeof(*map->mGateways));
+			for (int i = 0; i < map->numGateways; i++)
+			{
+				map->mGateways[i].x1 = loadedMap->mGateways[i].x1;
+				map->mGateways[i].x2 = loadedMap->mGateways[i].x2;
+				map->mGateways[i].y1 = loadedMap->mGateways[i].y1;
+				map->mGateways[i].y2 = loadedMap->mGateways[i].y2;
+			}
 		}
 	}
 
-	if (!readU32(&gwVersion) || !readU32(&map->numGateways) || gwVersion != 1)
-	{
-		debug(LOG_ERROR, "Bad gateway in %s", path);
-		goto failure;
-	}
-
-	map->mGateways = (GATEWAY *)calloc(map->numGateways, sizeof(*map->mGateways));
-	for (i = 0; i < map->numGateways; i++)
-	{
-		if (!readU8(&map->mGateways[i].x1) || !readU8(&map->mGateways[i].y1)
-			|| !readU8(&map->mGateways[i].x2) || !readU8(&map->mGateways[i].y2))
-		{
-			debug(LOG_ERROR, "%s: Failed to read gateway info", path);
-			goto failure;
-		}
-	}
-	PHYSFS_close(fp);
 mapfailure:
-
 	/* === Load game data === */
 
 	strcpy(path, filename);
@@ -258,70 +203,39 @@ featfailure:
 
 
 	/* === Load terrain data === */
-
-	littleEndian = true;
+    {
 	strcpy(path, filename);
 	strcat(path, "/ttypes.ttp");
-	fp = PHYSFS_openRead(path);
-	if (!fp)
-	{
-		map->terrainVersion = 0;
-		goto terrainfailure;
-	}
-	else if (WZ_PHYSFS_readBytes(fp, aFileType, 4) != 4
-		|| aFileType[0] != 't'
-		|| aFileType[1] != 't'
-		|| aFileType[2] != 'y'
-		|| aFileType[3] != 'p'
-		|| !readU32(&map->terrainVersion)
-		|| !readU32(&map->numTerrainTypes))
-	{
-		debug(LOG_ERROR, "Bad features header in %s", path);
-		goto failure;
-	}
-	
-	if (map->numTerrainTypes >= MAX_TILE_TEXTURES)
-	{
-		// Workaround for fugly map editor bug, since we can't fix the map editor
-		map->numTerrainTypes = MAX_TILE_TEXTURES - 1;
-	}
-
-	// reset the terrain table
-	memset(terrainTypes, 0, sizeof(terrainTypes));
-
-	for (i = 0; i < map->numTerrainTypes; i++)
-	{
-		readU16(&pType);
-		
-		if (pType > TER_MAX)
+	std::unique_ptr<TerrainTypeData> ttype{loadTerrainTypes(path)};
+    if (ttype)
+    {
+		map->terrainVersion = ttype->terrainVersion;
+		map->terrainVersion = ttype->numTerrainTypes;
+		for (i = 0; i < map->numTerrainTypes; i++)
 		{
-			debug(LOG_ERROR, "loadTerrainTypeMap: terrain type out of range");
-			goto terrainfailure;
+			terrainTypes[i] = (uint8_t)ttype->terrainTypes[i];
 		}
-
-		terrainTypes[i] = (uint8_t)pType;
+		if (terrainTypes[0] == 1 && terrainTypes[1] == 0 && terrainTypes[2] == 2)
+		{
+			map->tileset = TILESET_ARIZONA;
+		}
+		else if (terrainTypes[0] == 2 && terrainTypes[1] == 2 && terrainTypes[2] == 2)
+		{
+			map->tileset = TILESET_URBAN;
+		}
+		else if (terrainTypes[0] == 0 && terrainTypes[1] == 0 && terrainTypes[2] == 2)
+		{
+			map->tileset = TILESET_ROCKIES;
+		}
+		else
+		{
+			debug(LOG_ERROR, "Unknown terrain signature in %s: %u %u %u", path, terrainTypes[0], terrainTypes[1],
+				  terrainTypes[2]);
+			map->tileset = TILESET_ARIZONA; // Set something random. Why just have 3 tilesets, anyway?
+		}
 	}
 
-	if (terrainTypes[0] == 1 && terrainTypes[1] == 0 && terrainTypes[2] == 2)
-	{
-		map->tileset = TILESET_ARIZONA;
-	}
-	else if (terrainTypes[0] == 2 && terrainTypes[1] == 2 && terrainTypes[2] == 2)
-	{
-		map->tileset = TILESET_URBAN;
-	}
-	else if (terrainTypes[0] == 0 && terrainTypes[1] == 0 && terrainTypes[2] == 2)
-	{
-		map->tileset = TILESET_ROCKIES;
-	}
-	else
-	{
-		debug(LOG_ERROR, "Unknown terrain signature in %s: %u %u %u", path,
-		      terrainTypes[0], terrainTypes[1], terrainTypes[2]);
-		map->tileset = TILESET_ARIZONA;  // Set something random. Why just have 3 tilesets, anyway?
-	}
-	
-	PHYSFS_close(fp);
+    }
 terrainfailure:
 
 	/* === Load structure data === */

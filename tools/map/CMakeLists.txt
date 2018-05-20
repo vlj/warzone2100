@@ -141,4 +141,23 @@ TARGET_LINK_LIBRARIES(mapinfo maputils)
 ## Other stuff
 set (CONFIGURED YES CACHE INTERNAL "")
 
+set_target_properties (mapinfo PROPERTIES
+    FOLDER Tools
+)
+set_target_properties (mapconv PROPERTIES
+    FOLDER Tools
+)
+set_target_properties (map2preview PROPERTIES
+    FOLDER Tools
+)
+set_target_properties (map2png PROPERTIES
+    FOLDER Tools
+)
+set_target_properties (map2lnd PROPERTIES
+    FOLDER Tools
+)
+set_target_properties (maputils PROPERTIES
+    FOLDER Tools
+)
+
 # vim: ts=4:sw=4:expandtab

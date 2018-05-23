@@ -6,3 +6,5 @@ SpaceBeforeAssignmentOperators: true
 TabWidth: 4
 IndentWidth: 4
 ColumnLimit: 120
+AlignOperands: true
+ReflowComments: true

@@ -9,6 +9,7 @@ file(GLOB SRC "*.cpp")
 set(HEADERS
   ${CMAKE_SOURCE_DIR}/includes/map/map.h
   ${CMAKE_SOURCE_DIR}/includes/map/terrain_types.h
+  ${CMAKE_SOURCE_DIR}/includes/map/features.h
   audp_parser.h
   gtime.h
   parser.h

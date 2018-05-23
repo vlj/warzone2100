@@ -2,6 +2,7 @@
 #include "maplib.h"
 #include <map/map.h>
 #include <map/terrain_types.h>
+#include <map/features.h>
 #include <memory>
 
 // Self
@@ -140,75 +141,43 @@ mapfailure:
 	littleEndian = true;
 	strcpy(path, filename);
 	strcat(path, "/feat.bjo");
-	fp = PHYSFS_openRead(path);
-	if (!fp)
 	{
-		debug(LOG_ERROR, "Feature file %s not found", path);
-		map->featVersion = 0;
-		map->numFeatures = 0;
-		map->mLndObjects[IMD_FEATURE] = NULL;
-		goto featfailure;
-	}
-	else if (WZ_PHYSFS_readBytes(fp, aFileType, 4) != 4
-		|| aFileType[0] != 'f'
-		|| aFileType[1] != 'e'
-		|| aFileType[2] != 'a'
-		|| aFileType[3] != 't'
-		|| !readU32(&map->featVersion)
-		|| !readU32(&map->numFeatures))
-	{
-		debug(LOG_ERROR, "Bad features header in %s", path);
-		goto failure;
-	}
-	map->mLndObjects[IMD_FEATURE] = (LND_OBJECT *)malloc(sizeof(*map->mLndObjects[IMD_FEATURE]) * map->numFeatures);
-	for(i = 0; i < map->numFeatures; i++)
-	{
-		LND_OBJECT *psObj = &map->mLndObjects[IMD_FEATURE][i];
-		int nameLength = 60;
-		uint32_t dummy;
-		uint8_t visibility[8];
+		auto featData = loadFeatures(path);
+		if (featData)
+		{
+			map->featVersion = featData->featVersion;
+			map->numFeatures = featData->mLndObjects.size();
+			map->mLndObjects[IMD_FEATURE] =
+				(LND_OBJECT *)malloc(sizeof(*map->mLndObjects[IMD_FEATURE]) * map->numFeatures);
 
-		if (map->featVersion <= 19)
-		{
-			nameLength = 40;
-		}
-		if (WZ_PHYSFS_readBytes(fp, psObj->name, nameLength) != nameLength
-			|| !readU32(&psObj->id)
-			|| !readU32(&psObj->x) || !readU32(&psObj->y) || !readU32(&psObj->z)
-			|| !readU32(&psObj->direction)
-			|| !readU32(&psObj->player)
-			|| !readU32(&dummy) // BOOL inFire
-			|| !readU32(&dummy) // burnStart
-			|| !readU32(&dummy)) // burnDamage
-		{
-			debug(LOG_ERROR, "Failed to read feature from %s", path);
-			goto failure;
-		}
-		psObj->player = 0;	// work around invalid feature owner
-		if (map->featVersion >= 14 && WZ_PHYSFS_readBytes(fp, &visibility, 8) != 8)
-		{
-			debug(LOG_ERROR, "Failed to read feature visibility from %s", path);
-			goto failure;
-		}
-		psObj->type = 0;	// IMD LND type for feature
-		// Sanity check data
-		if (psObj->x >= map->width * TILE_WIDTH || psObj->y >= map->height * TILE_HEIGHT)
-		{
-			debug(LOG_ERROR, "Bad feature coordinate %u(%u, %u)", psObj->id, psObj->x, psObj->y);
-			goto failure;
+			for (int i = 0; i < map->numFeatures; ++i)
+			{
+				LND_OBJECT &psObj = map->mLndObjects[IMD_FEATURE][i];
+				psObj.direction = featData->mLndObjects[i].direction;
+				psObj.id = featData->mLndObjects[i].id;
+				memcpy(psObj.name, featData->mLndObjects[i].name, 128);
+				psObj.player = featData->mLndObjects[i].player;
+				psObj.type = featData->mLndObjects[i].type;
+				psObj.x = featData->mLndObjects[i].x;
+				psObj.y = featData->mLndObjects[i].y;
+				psObj.z = featData->mLndObjects[i].z;
+
+				if (psObj.x >= map->width * TILE_WIDTH || psObj.y >= map->height * TILE_HEIGHT)
+				{
+					debug(LOG_ERROR, "Bad feature coordinate %u(%u, %u)", psObj.id, psObj.x, psObj.y);
+					goto failure;
+				}
+			}
 		}
 	}
-	PHYSFS_close(fp);
-featfailure:
-
 
 	/* === Load terrain data === */
-    {
-	strcpy(path, filename);
-	strcat(path, "/ttypes.ttp");
-	std::unique_ptr<TerrainTypeData> ttype{loadTerrainTypes(path)};
-    if (ttype)
-    {
+	{
+		strcpy(path, filename);
+		strcat(path, "/ttypes.ttp");
+		std::unique_ptr<TerrainTypeData> ttype{loadTerrainTypes(path)};
+		if (ttype)
+		{
 		map->terrainVersion = ttype->terrainVersion;
 		map->terrainVersion = ttype->numTerrainTypes;
 		for (i = 0; i < map->numTerrainTypes; i++)
